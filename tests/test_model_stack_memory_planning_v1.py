@@ -13,6 +13,7 @@ from noetrium_platform.composition.model_stack_materialization import (
     _kv_cache_budget_bytes,
     _model_compute_requirement,
     _model_runtime_vram_budget_bytes,
+    _tensor_parallel_supported_by_model_geometry,
 )
 
 
@@ -71,6 +72,18 @@ def test_tensor_parallel_reduces_weight_and_kv_budget(tmp_path: Path) -> None:
     )
     assert two < one
     assert two > 8 * _GIB
+
+
+
+def test_qwen3_tensor_parallel_candidates_follow_attention_head_geometry(
+    tmp_path: Path,
+) -> None:
+    _qwen3_config(tmp_path)
+    assert _tensor_parallel_supported_by_model_geometry(tmp_path, 1)
+    assert _tensor_parallel_supported_by_model_geometry(tmp_path, 2)
+    assert not _tensor_parallel_supported_by_model_geometry(tmp_path, 3)
+    assert _tensor_parallel_supported_by_model_geometry(tmp_path, 4)
+    assert _tensor_parallel_supported_by_model_geometry(tmp_path, 8)
 
 
 def test_memory_utilization_rounds_up_absolute_global_target() -> None:

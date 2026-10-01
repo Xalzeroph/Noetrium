@@ -52,7 +52,7 @@ class ExactServiceSupervisor:
     def stop_exact(
         self,
         contract: ServiceLaunchContract,
-        expected_process: ServiceProcessIdentity,
+        expected_process: ServiceProcessIdentity | None = None,
     ) -> ServiceSupervisorState:
         with self._store.mutation():
             return self._stop.stop_exact(contract, expected_process)

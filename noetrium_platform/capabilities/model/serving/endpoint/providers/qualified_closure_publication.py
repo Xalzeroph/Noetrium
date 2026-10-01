@@ -16,7 +16,11 @@ from noetrium_platform.capabilities.model.serving.endpoint.api.publication impor
     QualifiedModelClosurePublicationReceipt,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonical_digest
-from noetrium_platform.foundation.kernel.kernel.durability import InterprocessFileLock, atomic_replace_bytes
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    InterprocessFileLock,
+    atomic_replace_bytes,
+    sha256_bytes,
+)
 
 from .qualified_closure_codec import (
     QualifiedClosureCodecError,
@@ -190,6 +194,7 @@ def publish_qualified_model_deployment_closure(
         [Path], RuntimeQualificationEvidenceStorePort
     ],
     runtime_canary_store_factory: Callable[[Path], RuntimeCanaryEvidenceStorePort],
+    replace_malformed_existing: bool = False,
     now: float | None = None,
 ) -> QualifiedModelClosurePublicationReceipt:
     """Publish exact runtime receipts, archive prior exact closure, then atomically expose current."""
@@ -216,6 +221,11 @@ def publish_qualified_model_deployment_closure(
     except QualifiedClosureCodecError as exc:
         raise QualifiedModelClosurePublicationError("qualified closure publication is invalid") from exc
 
+    if type(replace_malformed_existing) is not bool:
+        raise TypeError(
+            "replace_malformed_existing must be boolean"
+        )
+
     current_time = time.time() if now is None else float(now)
     if not math.isfinite(current_time):
         raise QualifiedModelClosurePublicationError("qualified closure publication time must be finite")
@@ -229,13 +239,43 @@ def publish_qualified_model_deployment_closure(
                 existing = decode_qualified_closure(
                     json.loads(existing_bytes.decode("utf-8"))
                 )
-            except (OSError, UnicodeDecodeError, json.JSONDecodeError, QualifiedClosureCodecError) as exc:
-                raise QualifiedModelClosurePublicationError(
-                    "existing qualified closure is malformed and requires explicit state migration"
-                ) from exc
-            if existing.closure_digest == decoded.closure_digest:
+            except (
+                OSError,
+                UnicodeDecodeError,
+                json.JSONDecodeError,
+                QualifiedClosureCodecError,
+            ) as exc:
+                if not replace_malformed_existing:
+                    raise QualifiedModelClosurePublicationError(
+                        "existing qualified closure is malformed and requires explicit state migration"
+                    ) from exc
+                if existing_bytes is None:
+                    raise QualifiedModelClosurePublicationError(
+                        "malformed qualified closure cannot be read for quarantine"
+                    ) from exc
+                malformed_root = (
+                    closure_path.parent
+                    / "qualified-model-closure-history"
+                    / "malformed"
+                )
+                malformed_root.mkdir(parents=True, exist_ok=True)
+                malformed_digest = sha256_bytes(existing_bytes)
+                malformed_path = malformed_root / f"{malformed_digest}.json"
+                if malformed_path.exists():
+                    if malformed_path.read_bytes() != existing_bytes:
+                        raise QualifiedModelClosurePublicationError(
+                            "malformed qualified closure quarantine content drift"
+                        )
+                else:
+                    atomic_replace_bytes(malformed_path, existing_bytes)
+                    if malformed_path.read_bytes() != existing_bytes:
+                        raise QualifiedModelClosurePublicationError(
+                            "malformed qualified closure quarantine readback drift"
+                        )
+                existing = None
+            if existing is not None and existing.closure_digest == decoded.closure_digest:
                 existing_digest = existing.closure_digest
-            else:
+            elif existing is not None:
                 history_root = closure_path.parent / "qualified-model-closure-history"
                 history_root.mkdir(parents=True, exist_ok=True)
                 history_path = history_root / f"{existing.closure_digest}.json"

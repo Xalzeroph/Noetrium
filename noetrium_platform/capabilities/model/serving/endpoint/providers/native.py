@@ -13,7 +13,10 @@ from noetrium_platform.capabilities.model.serving.api.admission import (
     ModelAdmissionPort,
     ModelAdmissionTimeout,
 )
-from noetrium_platform.capabilities.model.request.api import ModelOperationEnvelope
+from noetrium_platform.capabilities.model.request.api import (
+    ModelOperationEnvelope,
+    model_request_owner_id,
+)
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     AsyncJsonHttpTransportPort,
     JsonHttpResponse,
@@ -451,10 +454,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
         accumulator=ModelStreamAccumulator(plan)
         deadline=Deadline.after(self.route.timeout_s)
         try:
-            owner_id=(
-                request.request.context.study_id
-                or request.request.context.run_id
-            )
+            owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
                 timeout_seconds=max(0.0,deadline.remaining_seconds),
                 owner_id=owner_id,
@@ -698,7 +698,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
         plan=self._operation_wire(request)
         deadline=Deadline.after(self.route.timeout_s)
         try:
-            owner_id=request.request.context.study_id or request.request.context.run_id
+            owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
                 timeout_seconds=max(0.0,deadline.remaining_seconds),
                 owner_id=owner_id,
@@ -812,7 +812,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
         plan,wire=self._plan(request)
         deadline=Deadline.after(self.route.timeout_s)
         try:
-            owner_id=request.request.context.study_id or request.request.context.run_id
+            owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
                 timeout_seconds=max(0.0,deadline.remaining_seconds),
                 owner_id=owner_id,

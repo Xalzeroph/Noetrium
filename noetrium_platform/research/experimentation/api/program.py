@@ -7,11 +7,12 @@ slots saturated instead of imposing fixed wave barriers.
 """
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from queue import Queue
+from typing import Protocol, runtime_checkable
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -57,6 +58,29 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyMetricAggregationPort,
     StudyMetricObservation,
 )
+
+
+@runtime_checkable
+class _BoundStudyPreparationPort(Protocol):
+    """Optional preparation seam on the canonical Study execution adapter."""
+
+    def prepare_bound(
+        self,
+        unit: StudyExecutionUnit,
+        bindings: tuple[object, ...],
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None: ...
+
+    def prepare_bound_variant(
+        self,
+        assignment: StudyAssignment,
+        binding: object,
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None: ...
 
 
 class ExperimentBatchKind(StrEnum):
@@ -412,6 +436,11 @@ class ExperimentProgramBinding:
         )
         self.compiled = compiled
         self.adapter = adapter
+        self._preparation = (
+            adapter
+            if isinstance(adapter, _BoundStudyPreparationPort)
+            else None
+        )
         self.aggregation = aggregation
         self.execution_binding_digest = execution_binding_digest
         self.execution_id = execution_id
@@ -426,6 +455,18 @@ class ExperimentProgramBinding:
             row.variant.variant_id: row for row in compiled.plan.bindings
         }
 
+    @staticmethod
+    def _prepare_once(
+        index: int,
+        items: tuple[object, ...],
+        prepare,
+        prepared: set[int],
+    ) -> None:
+        if prepare is None or index < 0 or index >= len(items) or index in prepared:
+            return
+        prepare(items[index])
+        prepared.add(index)
+
     def _parallel(
         self,
         items: tuple[object, ...],
@@ -433,11 +474,20 @@ class ExperimentProgramBinding:
         *,
         batch_id: str,
         limit: int,
+        prepare=None,
     ) -> tuple[object, ...]:
         if type(limit) is not int or limit <= 0:
             raise ValueError("parallel experiment limit must be positive")
+        prepared: set[int] = set()
+
         if len(items) <= 1 or limit == 1:
-            return tuple(fn(item) for item in items)
+            values: list[object] = []
+            for index, item in enumerate(items):
+                self._prepare_once(index, items, prepare, prepared)
+                self._prepare_once(index + 1, items, prepare, prepared)
+                values.append(fn(item))
+            return tuple(values)
+
         if self.task_group is None:
             raise RuntimeError("parallel experiment batch requires TaskGroupPort")
         timeout = self.compiled.plan.protocol.concurrency_policy.repetition_timeout_seconds
@@ -447,8 +497,19 @@ class ExperimentProgramBinding:
         values: list[object | None] = [None] * len(items)
         errors: list[BaseException] = []
         next_index = 0
+        prepared_upto = 0
+
+        def prepare_through(stop: int) -> None:
+            nonlocal prepared_upto
+            target = min(len(items), max(prepared_upto, stop))
+            if prepare is not None:
+                for candidate_index in range(prepared_upto, target):
+                    prepare(items[candidate_index])
+            prepared_upto = target
 
         def submit(index: int) -> None:
+            if index >= prepared_upto:
+                prepare_through(index + 1)
             item = items[index]
 
             def run(_context, owned=item, owned_index=index):
@@ -467,9 +528,15 @@ class ExperimentProgramBinding:
                 deadline=Deadline.after(timeout),
             )
 
+        # Publish preparation for both the active wave and one complete
+        # replacement wave before workers can begin consuming the active wave.
+        # The frontier is monotonic: every item crosses preparation exactly once
+        # instead of repeatedly rescanning an overlapping lookahead window.
+        prepare_through(2 * limit)
         while next_index < len(items) and len(active) < limit:
             submit(next_index)
             next_index += 1
+
         while active:
             index = completion.get()
             handle = active.pop(index)
@@ -478,8 +545,12 @@ class ExperimentProgramBinding:
             except BaseException as exc:
                 errors.append(exc)
             if next_index < len(items):
+                # Extend the replacement frontier before making the next slot
+                # runnable so startup work always leads execution.
+                prepare_through(next_index + limit + 1)
                 submit(next_index)
                 next_index += 1
+
         if errors:
             raise ExceptionGroup(f"experiment batch failed: {batch_id}", errors)
         if any(value is None for value in values):
@@ -492,8 +563,11 @@ class ExperimentProgramBinding:
         fn,
         *,
         batch_id: str,
+        prepare=None,
     ) -> tuple[object, ...]:
         policy = self.compiled.plan.protocol.concurrency_policy
+        prepared: set[int] = set()
+
         if (
             len(assignments) <= 1
             or (
@@ -501,7 +575,23 @@ class ExperimentProgramBinding:
                 and policy.max_parallel_assignments == 1
             )
         ):
-            return tuple(fn(item) for item in assignments)
+            values: list[object] = []
+            for index, assignment in enumerate(assignments):
+                self._prepare_once(
+                    index,
+                    assignments,
+                    prepare,
+                    prepared,
+                )
+                self._prepare_once(
+                    index + 1,
+                    assignments,
+                    prepare,
+                    prepared,
+                )
+                values.append(fn(assignment))
+            return tuple(values)
+
         if self.task_group is None:
             raise RuntimeError("parallel experiment batch requires TaskGroupPort")
         repetition_limit = policy.max_parallel_repetitions
@@ -512,20 +602,33 @@ class ExperimentProgramBinding:
         by_repetition: dict[int, list[int]] = defaultdict(list)
         for index, assignment in enumerate(assignments):
             by_repetition[assignment.repetition].append(index)
-        waiting_repetitions = list(sorted(by_repetition))
+        waiting_repetitions = deque(sorted(by_repetition))
         active_repetitions: set[int] = set()
-        pending_by_repetition = {
-            repetition: list(indexes)
+        indexes_by_repetition = {
+            repetition: tuple(indexes)
             for repetition, indexes in by_repetition.items()
+        }
+        next_index_by_repetition: dict[int, int] = {
+            repetition: 0 for repetition in by_repetition
+        }
+        prepared_count_by_repetition: dict[int, int] = {
+            repetition: 0 for repetition in by_repetition
         }
         active_counts: dict[int, int] = defaultdict(int)
         active: dict[int, tuple[int, object]] = {}
         values: list[object | None] = [None] * len(assignments)
         errors: list[BaseException] = []
 
-        def activate_repetitions() -> None:
-            while waiting_repetitions and len(active_repetitions) < repetition_limit:
-                active_repetitions.add(waiting_repetitions.pop(0))
+        def activate_repetitions() -> tuple[int, ...]:
+            activated: list[int] = []
+            while (
+                waiting_repetitions
+                and len(active_repetitions) < repetition_limit
+            ):
+                repetition = waiting_repetitions.popleft()
+                active_repetitions.add(repetition)
+                activated.append(repetition)
+            return tuple(activated)
 
         def submit(index: int, repetition: int) -> None:
             assignment = assignments[index]
@@ -549,12 +652,34 @@ class ExperimentProgramBinding:
             active_counts[repetition] += 1
 
         def refill(repetition: int) -> None:
-            pending = pending_by_repetition[repetition]
-            while pending and active_counts[repetition] < assignment_limit:
-                submit(pending.pop(0), repetition)
+            indexes = indexes_by_repetition[repetition]
+            next_position = next_index_by_repetition[repetition]
+            available_slots = max(
+                0,
+                assignment_limit - active_counts[repetition],
+            )
+            # Prepare current admissions plus one replacement wave. Both the
+            # submission cursor and preparation frontier are monotonic, so each
+            # assignment is inspected/prepared exactly once.
+            target_prepared = min(
+                len(indexes),
+                next_position + available_slots + assignment_limit,
+            )
+            prepared_count = prepared_count_by_repetition[repetition]
+            if prepare is not None:
+                for position in range(prepared_count, target_prepared):
+                    prepare(assignments[indexes[position]])
+            prepared_count_by_repetition[repetition] = target_prepared
 
-        activate_repetitions()
-        for repetition in tuple(sorted(active_repetitions)):
+            while (
+                next_position < len(indexes)
+                and active_counts[repetition] < assignment_limit
+            ):
+                submit(indexes[next_position], repetition)
+                next_position += 1
+            next_index_by_repetition[repetition] = next_position
+
+        for repetition in activate_repetitions():
             refill(repetition)
 
         while active:
@@ -567,19 +692,23 @@ class ExperimentProgramBinding:
                 errors.append(exc)
             refill(repetition)
             if (
-                not pending_by_repetition[repetition]
+                next_index_by_repetition[repetition]
+                >= len(indexes_by_repetition[repetition])
                 and active_counts[repetition] == 0
             ):
                 active_repetitions.remove(repetition)
-                activate_repetitions()
-                for candidate in tuple(sorted(active_repetitions)):
-                    if active_counts[candidate] == 0:
-                        refill(candidate)
+                for candidate in activate_repetitions():
+                    refill(candidate)
 
         if errors:
-            raise ExceptionGroup(f"experiment batch failed: {batch_id}", errors)
+            raise ExceptionGroup(
+                f"experiment batch failed: {batch_id}",
+                errors,
+            )
         if any(value is None for value in values):
-            raise RuntimeError("experiment rolling assignment scheduler lost a result")
+            raise RuntimeError(
+                "experiment rolling assignment scheduler lost a result"
+            )
         return tuple(values)
 
     def _execute_batch(self, batch: ExperimentBatch) -> tuple[StudyMetricObservation, ...]:
@@ -603,11 +732,30 @@ class ExperimentProgramBinding:
                     raise ValueError("experiment unit did not return exact assignment observations")
                 return values
 
+            def prepare_unit(unit: StudyExecutionUnit) -> None:
+                if self._preparation is None:
+                    return
+                bindings = tuple(
+                    self._binding_by_variant[row.variant_id]
+                    for row in unit.assignments
+                )
+                self._preparation.prepare_bound(
+                    unit,
+                    bindings,
+                    plan.plan_digest,
+                    execution_id=self.execution_id,
+                )
+
             groups = self._parallel(
                 units,
                 execute,
                 batch_id=batch.batch_id,
                 limit=plan.protocol.concurrency_policy.max_parallel_repetitions,
+                prepare=(
+                    prepare_unit
+                    if self._preparation is not None
+                    else None
+                ),
             )
             return tuple(
                 observation
@@ -625,10 +773,25 @@ class ExperimentProgramBinding:
                 execution_id=self.execution_id,
             )
 
+        def prepare_variant(assignment: StudyAssignment) -> None:
+            if self._preparation is None:
+                return
+            self._preparation.prepare_bound_variant(
+                assignment,
+                self._binding_by_variant[assignment.variant_id],
+                plan.plan_digest,
+                execution_id=self.execution_id,
+            )
+
         observations = self._parallel_assignments(
             assignments,
             execute_variant,
             batch_id=batch.batch_id,
+            prepare=(
+                prepare_variant
+                if self._preparation is not None
+                else None
+            ),
         )
         return tuple(observations)
 
@@ -715,7 +878,8 @@ class ExperimentProgramBinding:
             raise RuntimeError(
                 f"ExperimentProgram is not executable: status={session.status.value}"
             )
-        session.checkpoint()
+        # Every accepted ExperimentProgram transition is already durable in
+        # the journal; automatic full-snapshot persistence here is redundant.
         return experiment_report_from_data(self.compiled, session.data)
 
     def handlers(self) -> ProgramHandlerRegistry:

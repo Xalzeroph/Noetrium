@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import pytest
 from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 from noetrium_platform.composition.model_requests import (
@@ -6,6 +8,8 @@ from noetrium_platform.composition.model_requests import (
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointDispatchResult,
+    ModelEndpointError,
+    ModelEndpointRequestRejected,
     ModelEndpointPoolSnapshot,
     ModelEndpointRequest,
     ModelEndpointResponse,
@@ -18,7 +22,12 @@ from noetrium_platform.foundation.kernel.kernel import (
     ImmutableModelIdentity,
     canonical_digest,
 )
-from noetrium_platform.research.execution.policy.api import ExecutionBudgetPolicy
+from noetrium_platform.research.execution.policy.api import (
+    ExecutionBudgetDelta,
+    ExecutionBudgetExceeded,
+    ExecutionBudgetPolicy,
+    ExecutionBudgetReservationRequest,
+)
 from noetrium_platform.research.execution.policy.runtime import SQLiteExecutionBudgetAuthority
 from tests._model_tokenization_support import FixedModelRequestTokenizationProvider
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
@@ -259,3 +268,147 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
     assert recorder.reconstruct(envelope).compiled_prompt_text == (
         '[{"content":"Q: How many?\\nA:","role":"user"}]'
     )
+
+
+class _RejectedPool(_Pool):
+    def complete(self, request, body):
+        raise ModelEndpointRequestRejected(
+            "request rejected before provider dispatch",
+            failure_kind="invalid_request",
+            retryable=False,
+            affects_replica_health=False,
+        )
+
+
+class _TimeoutPool(_Pool):
+    def complete(self, request, body):
+        raise ModelEndpointError(
+            "model request timed out after dispatch",
+            failure_kind="timeout",
+            retryable=True,
+            affects_replica_health=True,
+        )
+
+
+def _failure_loop(tmp_path, pool):
+    factory = MethodViewChatRequestFactory(
+        "qwen",
+        {"temperature": 0, "max_tokens": 64},
+    )
+    binding = MethodModelEndpointBinding(
+        agent_id="cot.reasoner",
+        role="reasoner",
+        model=_model(),
+        request_factory_digest=factory.digest,
+    )
+    recorder = build_model_request_recorder(tmp_path / "failure-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    return MethodModelAgentLoop(
+        binding=binding,
+        pool=pool,
+        recorder=recorder,
+        request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
+    ), budget
+
+
+def test_execution_budget_abort_releases_and_same_charge_can_retry(tmp_path) -> None:
+    _tokenization, budget = _runtime_dependencies(tmp_path)
+    requested = ExecutionBudgetDelta(model_calls=1, tokens=10)
+    try:
+        first = budget.reserve("assignment-1", "retryable-charge", requested)
+        reserved = budget.snapshot("assignment-1")
+        assert reserved.reserved.model_calls == 1
+        assert reserved.reserved.tokens == 10
+
+        aborted = budget.abort(first)
+        assert aborted.reserved.model_calls == 0
+        assert aborted.reserved.tokens == 0
+        assert aborted.usage.model_calls == 0
+        assert aborted.usage.tokens == 0
+
+        second = budget.reserve("assignment-1", "retryable-charge", requested)
+        assert second.reservation_digest == first.reservation_digest
+        retried = budget.snapshot("assignment-1")
+        assert retried.reserved.model_calls == 1
+        assert retried.reserved.tokens == 10
+
+        committed, violations = budget.commit(second, requested)
+        assert violations == ()
+        assert committed.reserved.model_calls == 0
+        assert committed.usage.model_calls == 1
+        assert committed.usage.tokens == 10
+    finally:
+        budget.close()
+
+
+def test_model_pre_dispatch_rejection_aborts_budget_reservation(tmp_path) -> None:
+    loop, budget = _failure_loop(tmp_path, _RejectedPool())
+    try:
+        with pytest.raises(ModelEndpointRequestRejected, match="before provider dispatch"):
+            loop.run(_request())
+        snapshot = budget.snapshot("assignment-1")
+        assert snapshot.reserved.model_calls == 0
+        assert snapshot.reserved.tokens == 0
+        assert snapshot.usage.model_calls == 0
+        assert snapshot.usage.tokens == 0
+    finally:
+        budget.close()
+
+
+def test_model_uncertain_failure_conservatively_commits_requested_budget(tmp_path) -> None:
+    loop, budget = _failure_loop(tmp_path, _TimeoutPool())
+    try:
+        with pytest.raises(ModelEndpointError, match="timed out after dispatch"):
+            loop.run(_request())
+        snapshot = budget.snapshot("assignment-1")
+        assert snapshot.reserved.model_calls == 0
+        assert snapshot.reserved.tokens == 0
+        assert snapshot.usage.model_calls == 1
+        assert snapshot.usage.tokens == 73
+    finally:
+        budget.close()
+
+
+def test_execution_budget_batch_reservation_is_atomic(tmp_path) -> None:
+    _tokenization, budget = _runtime_dependencies(tmp_path)
+    try:
+        accepted = budget.reserve_batch(
+            "assignment-1",
+            (
+                ExecutionBudgetReservationRequest(
+                    "batch-a",
+                    ExecutionBudgetDelta(model_calls=1, tokens=10),
+                ),
+                ExecutionBudgetReservationRequest(
+                    "batch-b",
+                    ExecutionBudgetDelta(model_calls=1, tokens=20),
+                ),
+            ),
+        )
+        assert tuple(row.charge_id for row in accepted) == ("batch-a", "batch-b")
+        after_accept = budget.snapshot("assignment-1")
+        assert after_accept.reserved.model_calls == 2
+        assert after_accept.reserved.tokens == 30
+        for reservation in accepted:
+            budget.abort(reservation)
+
+        with pytest.raises(ExecutionBudgetExceeded, match="reservation rejected"):
+            budget.reserve_batch(
+                "assignment-1",
+                tuple(
+                    ExecutionBudgetReservationRequest(
+                        f"overflow-{index}",
+                        ExecutionBudgetDelta(model_calls=1, tokens=1),
+                    )
+                    for index in range(11)
+                ),
+            )
+
+        after_reject = budget.snapshot("assignment-1")
+        assert after_reject.reserved.model_calls == 0
+        assert after_reject.reserved.tokens == 0
+        assert after_reject.usage.model_calls == 0
+    finally:
+        budget.close()

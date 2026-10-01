@@ -7,7 +7,14 @@ from .contracts import (
     ModelEndpointResponse,
     ModelEndpointRoute,
 )
-from .ports import AsyncJsonHttpTransportPort, AsyncJsonSseTransportPort, ModelEndpointFactoryPort, ModelEndpointPort, ModelJsonHttpClientPort
+from .ports import (
+    AsyncJsonHttpTransportPort,
+    AsyncJsonSseTransportPort,
+    AsyncTextHttpTransportPort,
+    ModelEndpointFactoryPort,
+    ModelEndpointPort,
+    ModelJsonHttpClientPort,
+)
 from .streaming import (
     ModelStreamEvent, ModelStreamEventKind, RawServerSentEvent, ServerSentEventDecoder, SseHttpResponse,
 )
@@ -26,10 +33,14 @@ from .replica import (
     ModelEndpointReplicaBindingPort,
 )
 from .publication import QualifiedModelClosurePublication, QualifiedModelClosurePublicationReceipt
+from .pressure import (
+    ModelRuntimePressureObserverPort,
+    ModelRuntimePressureSnapshot,
+)
 from .qualification import QualifiedModelEndpointBinding, QualifiedModelEndpointBindingPort
 
 __all__ = [
-    "AsyncJsonHttpTransportPort", "JsonHttpResponse", "ModelEndpointError",
+    "AsyncJsonHttpTransportPort", "AsyncTextHttpTransportPort", "JsonHttpResponse", "ModelEndpointError",
     "SseHttpResponse",
     "AsyncJsonSseTransportPort",
     "ModelEndpointRequestRejected",
@@ -46,5 +57,6 @@ __all__ = [
     "ModelStreamEvent",
     "ModelEndpointReplicaBindingPort",
     "QualifiedModelClosurePublicationReceipt", "QualifiedModelEndpointBinding",
+    "ModelRuntimePressureObserverPort", "ModelRuntimePressureSnapshot",
     "QualifiedModelEndpointBindingPort",
 ]

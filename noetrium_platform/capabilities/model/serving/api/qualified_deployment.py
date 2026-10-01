@@ -34,12 +34,30 @@ class ResourceEnvelope:
     ttft_p99_seconds: float
     tpot_p99_seconds: float
     minimum_output_tokens_per_second: float
+    preferred_operating_concurrency: int | None = None
 
     def __post_init__(self) -> None:
         if self.peak_gpu_memory_bytes_per_device <= 0 or self.peak_host_memory_bytes <= 0:
             raise ValueError("resource envelope requires measured positive memory peaks")
         if type(self.max_qualified_concurrency) is not int or self.max_qualified_concurrency <= 0:
             raise ValueError("qualified concurrency must be positive")
+        preferred = self.preferred_operating_concurrency
+        if preferred is None:
+            preferred = self.max_qualified_concurrency
+            object.__setattr__(
+                self,
+                "preferred_operating_concurrency",
+                preferred,
+            )
+        if (
+            type(preferred) is not int
+            or preferred <= 0
+            or preferred > self.max_qualified_concurrency
+        ):
+            raise ValueError(
+                "preferred operating concurrency must be positive and "
+                "cannot exceed qualified concurrency"
+            )
         _require_positive_finite(self.ttft_p99_seconds, "ttft_p99_seconds")
         _require_positive_finite(self.tpot_p99_seconds, "tpot_p99_seconds")
         _require_positive_finite(

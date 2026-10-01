@@ -218,11 +218,13 @@ class StudyCapabilityRouter(CapabilityPort):
             return rows
 
     def close(self) -> None:
-        try:
-            if self._effect_executor is not None:
-                self._effect_executor.close()
-        finally:
-            self._scope.dispose()
+        """Dispose only the registration scope owned by this routing view.
+
+        Dispatcher, capability sessions and the effect executor are injected shared
+        authorities. Their lifecycle belongs to the composition that created them,
+        never to a per-turn router.
+        """
+        self._scope.dispose()
 
 
 __all__ = [

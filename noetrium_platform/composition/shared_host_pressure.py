@@ -6,7 +6,6 @@ from enum import StrEnum
 import math
 import os
 from pathlib import Path
-from tempfile import gettempdir
 from threading import Lock, RLock, local
 import time
 from uuid import uuid4
@@ -36,6 +35,10 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.infrastructure.resources.compute.api import (
     HostRuntimeObserverPort,
     HostRuntimeStatus,
+)
+from noetrium_platform.composition.runtime_coordination import (
+    runtime_coordination_root,
+    runtime_coordination_user_namespace,
 )
 from noetrium_platform.research.execution.policy.api import (
     AdmissionIdentity,
@@ -554,62 +557,12 @@ class _ResourceCompetitionReservationLock:
         self._ledger._exit_transaction(exc_type, exc, traceback)
 
 
-def _resource_competition_user_namespace() -> str:
-    getuid = getattr(os, "getuid", None)
-    if callable(getuid):
-        return f"uid-{int(getuid())}"
-    raw = (
-        os.environ.get("USERNAME")
-        or os.environ.get("USER")
-        or os.environ.get("LOGNAME")
-        or "unknown-user"
-    )
-    return "user-" + canonical_digest(raw)[:16]
-
-
-_RUNTIME_COORDINATION_ROOT_ENV = "NOETRIUM_RUNTIME_COORDINATION_ROOT"
-
-
-def _resource_competition_runtime_root() -> Path:
-    explicit = os.environ.get(_RUNTIME_COORDINATION_ROOT_ENV, "").strip()
-    if explicit:
-        root = Path(explicit)
-        if not root.is_absolute():
-            raise ValueError(
-                f"{_RUNTIME_COORDINATION_ROOT_ENV} must be an absolute path"
-            )
-        return root
-
-    xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", "").strip()
-    if xdg_runtime:
-        candidate = Path(xdg_runtime).absolute()
-        if candidate.is_dir() and os.access(candidate, os.W_OK | os.X_OK):
-            return candidate / "noetrium"
-
-    getuid = getattr(os, "getuid", None)
-    if callable(getuid):
-        candidate = Path("/run/user") / str(int(getuid()))
-        if candidate.is_dir() and os.access(candidate, os.W_OK | os.X_OK):
-            return candidate / "noetrium"
-        shared_memory = Path("/dev/shm")
-        if shared_memory.is_dir() and os.access(
-            shared_memory, os.W_OK | os.X_OK
-        ):
-            return shared_memory / f"noetrium-uid-{int(getuid())}"
-
-    if os.name != "nt":
-        raise RuntimeError(
-            "no writable host runtime coordination filesystem is available"
-        )
-    return Path(gettempdir()).absolute() / "noetrium"
-
-
 def _default_resource_competition_directory() -> Path:
     reading = LocalLeaseClock().read()
     return (
-        _resource_competition_runtime_root()
+        runtime_coordination_root()
         / "resource-competition"
-        / _resource_competition_user_namespace()
+        / runtime_coordination_user_namespace()
         / reading.host_identity_digest
         / reading.boot_identity_digest
     )
@@ -1517,6 +1470,85 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             if sleep_for <= 0:
                 raise TimeoutError("resource competition admission deadline expired")
             blocking_wait(sleep_for)
+
+    def try_acquire(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> ExecutionPermitLeasePort | None:
+        """Attempt one permit without waiting on logical or physical pressure."""
+
+        if group_id not in self._intents:
+            raise KeyError(
+                "execution group is not registered with resource competition gate: "
+                f"{group_id}"
+            )
+        if self._cancelled(cancellation):
+            raise TaskCancelled(
+                cancellation.reason or "resource competition admission cancelled"
+            )
+        if deadline is not None and deadline.expired:
+            raise TimeoutError("resource competition admission deadline expired")
+        if not self.decision(group_id, lane_kind).admitted:
+            return None
+
+        lease = self._delegate.try_acquire(
+            group_id,
+            lane_kind,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+        if lease is None:
+            return None
+
+        effective_demand = self._effective_demand(
+            self._demands.get(group_id, ResourceCompetitionDemand()),
+            lane_kind,
+        )
+        owned_storage = ()
+        try:
+            with self._reservation_lock:
+                resolved_storage, storage_unavailable = (
+                    self._resolved_storage_capacities(effective_demand)
+                )
+                reason = self._competition_reason(
+                    group_id,
+                    lane_kind,
+                    1,
+                    resolved_storage=resolved_storage,
+                    storage_unavailable=storage_unavailable,
+                )
+                if reason is not None:
+                    lease.release()
+                    return None
+                storage_reservations = tuple(
+                    _StorageReservation(
+                        row.capacity_id,
+                        row.bytes_per_permit,
+                        row.inodes_per_permit,
+                    )
+                    for row in resolved_storage
+                )
+                owned_storage = self._reserve_demand(
+                    effective_demand,
+                    permit_count=1,
+                    storage=storage_reservations,
+                )
+        except BaseException:
+            lease.release()
+            raise
+
+        return _ResourceCompetitionLease(
+            lease,
+            lambda owned_demand=effective_demand, storage=owned_storage:
+                self._release_one_demand(
+                    owned_demand,
+                    storage=storage,
+                ),
+        )
 
     def acquire(
         self,

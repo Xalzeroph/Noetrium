@@ -178,6 +178,19 @@ class ModelOperationEnvelope:
 ModelEndpointEnvelope = ModelRequestEnvelope | ModelOperationEnvelope
 
 
+def model_request_owner_id(request: ModelEndpointEnvelope) -> str:
+    """Return the canonical execution owner used for model-serving fairness."""
+
+    if not isinstance(request, (ModelRequestEnvelope, ModelOperationEnvelope)):
+        raise TypeError("model request owner requires a model endpoint envelope")
+    context = request.context
+    execution_tenant_id = getattr(context, "execution_tenant_id", None)
+    for candidate in (execution_tenant_id, context.study_id, context.run_id):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    raise ValueError("model request context has no schedulable execution owner")
+
+
 @dataclass(frozen=True, slots=True)
 class ReconstructedModelRequest:
     request_body: JsonObject
@@ -254,4 +267,5 @@ __all__ = [
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",
     "ReconstructedModelRequest",
+    "model_request_owner_id",
 ]

@@ -314,6 +314,14 @@ class ResearchProgramHost:
             f"research host {self.host_id} exhausted terminal replay attempts"
         )
 
+    def accepted_commits(
+        self,
+        machine_id: str,
+    ):
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("research machine_id is required")
+        return self.journal.commits(machine_id)
+
     def open_session(
         self,
         *,
@@ -464,7 +472,10 @@ class ResearchProgramHost:
                 )
             )
 
-        session.checkpoint()
+        # Accepted transitions are already crash-durable in the Machine Journal.
+        # Persisting a second full MachineSnapshot here duplicates the durability
+        # barrier and is not consulted when a journal head exists. Explicit
+        # checkpoint callers still use MachineExecutor.checkpoint().
         run = ResearchMachineRun(
             tuple(commits),
             session.status,
@@ -524,7 +535,8 @@ class ResearchProgramHost:
             payload=payload,
             max_steps=self.max_steps,
         )
-        session.checkpoint()
+        # The journal is the single recovery authority. Avoid a second full
+        # snapshot write/fsync at every host execution boundary.
         return self._project_execution(session, run)
 
 

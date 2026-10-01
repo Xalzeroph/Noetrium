@@ -1,17 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
+from hashlib import sha256
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import ModelRequestRecorderPort, ModelRequestTokenBudget, ModelRequestTokenizationPort
 from noetrium_platform.capabilities.api import (
     ModelEndpointDispatchPoolPort,
 )
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointRequestRejected,
+)
 from noetrium_platform.research.execution.policy.api import (
     ExecutionBudgetAuthorityPort,
     ExecutionBudgetDelta,
     ExecutionBudgetExceeded,
+    ExecutionBudgetReservation,
+    ExecutionBudgetReservationRequest,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     EffectCertainty,
@@ -20,6 +26,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     ImmutableModelIdentity,
     JsonInput,
     JsonObject,
+    canonical_bytes,
     canonical_digest,
     canonical_text,
     freeze_json,
@@ -115,7 +122,7 @@ class MethodViewChatRequestFactory:
             self,
             "_digest",
             canonical_digest({
-                "factory": "method-view-chat.v3",
+                "factory": "method-view-chat.v4",
                 "served_model_name": self.served_model_name,
                 "generation_options": self.generation_options,
                 "sampling_seed_domain": {
@@ -180,7 +187,8 @@ class MethodViewChatRequestFactory:
                 "Method request factory requires MethodAgentRequest"
             )
         messages = self._messages(request)
-        compiled_prompt_text = canonical_text(messages)
+        compiled_prompt_bytes = canonical_bytes(messages)
+        compiled_prompt_text = compiled_prompt_bytes.decode("utf-8")
 
         view = request.view
         generation = view.get(
@@ -202,9 +210,10 @@ class MethodViewChatRequestFactory:
                 "method view prompt_id must be non-empty text"
             )
         if prompt_digest is None:
-            prompt_digest = canonical_digest({
-                "compiled_prompt_text": compiled_prompt_text,
-            })
+            # The compiled prompt text is exactly the UTF-8 decoding of these
+            # canonical bytes. Hash those bytes directly instead of wrapping
+            # the entire prompt in another JSON object and re-encoding it.
+            prompt_digest = sha256(compiled_prompt_bytes).hexdigest()
         else:
             require_sha256(
                 prompt_digest,
@@ -298,6 +307,48 @@ class MethodModelEndpointBinding:
     @property
     def digest(self) -> str:
         return self._digest
+
+
+@dataclass(frozen=True, slots=True)
+class _MethodModelInvocationPlan:
+    request: MethodAgentRequest
+    compiled: CompiledMethodAgentRequest
+    body: JsonObject
+    token_budget: ModelRequestTokenBudget
+    scope_id: str
+    budget_request: ExecutionBudgetReservationRequest
+    request_id: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.request, MethodAgentRequest):
+            raise TypeError("Method model invocation plan requires request")
+        if not isinstance(self.compiled, CompiledMethodAgentRequest):
+            raise TypeError("Method model invocation plan requires compiled request")
+        object.__setattr__(self, "body", freeze_json(self.body))
+        if not isinstance(self.token_budget, ModelRequestTokenBudget):
+            raise TypeError("Method model invocation plan requires token budget")
+        if type(self.scope_id) is not str or not self.scope_id.strip():
+            raise ValueError("Method model invocation plan requires budget scope")
+        if not isinstance(
+            self.budget_request,
+            ExecutionBudgetReservationRequest,
+        ):
+            raise TypeError("Method model invocation plan requires budget request")
+        if type(self.request_id) is not str or not self.request_id.strip():
+            raise ValueError("Method model invocation plan requires request_id")
+
+
+@dataclass(frozen=True, slots=True)
+class MethodAgentPanelInvocation:
+    member_index: int
+    invoke: Callable[[], MethodAgentResult]
+    abort: Callable[[], object]
+
+    def __post_init__(self) -> None:
+        if type(self.member_index) is not int or self.member_index < 0:
+            raise ValueError("Method panel invocation member_index is invalid")
+        if not callable(self.invoke) or not callable(self.abort):
+            raise TypeError("Method panel invocation callbacks must be callable")
 
 
 def _require_model_budget(
@@ -415,11 +466,25 @@ class MethodModelAgentLoop:
             return resolved
         return None
 
-    def _prepare_budgeted_body(
+    def _plan_budgeted_body(
         self,
         request: MethodAgentRequest,
         body: Mapping[str, JsonInput],
-    ):
+        *,
+        additional_reserved_tokens: int = 0,
+    ) -> tuple[
+        JsonObject,
+        ModelRequestTokenBudget,
+        str,
+        ExecutionBudgetReservationRequest,
+    ]:
+        if (
+            type(additional_reserved_tokens) is not int
+            or additional_reserved_tokens < 0
+        ):
+            raise ValueError(
+                "additional_reserved_tokens must be a non-negative integer"
+            )
         if not request.context.trial_budget:
             raise RuntimeError(
                 "canonical model execution requires a frozen TrialBudget"
@@ -442,7 +507,11 @@ class MethodModelAgentLoop:
         if max_tokens is not None:
             if type(max_tokens) is not int or max_tokens <= 0:
                 raise ValueError("TrialBudget max_tokens must be positive integer")
-            used = snapshot.usage.tokens + snapshot.reserved.tokens
+            used = (
+                snapshot.usage.tokens
+                + snapshot.reserved.tokens
+                + additional_reserved_tokens
+            )
             remaining = max_tokens - used
             if token_budget.input_tokens > remaining:
                 raise ExecutionBudgetExceeded(
@@ -479,14 +548,19 @@ class MethodModelAgentLoop:
                 }
             )
         )
-        reservation = self.execution_budget.reserve(
+        return (
+            freeze_json(mutable),
+            token_budget,
             scope_id,
-            charge_id,
-            requested,
+            ExecutionBudgetReservationRequest(charge_id, requested),
         )
-        return mutable, token_budget, reservation
 
-    def run(self, request: MethodAgentRequest) -> MethodAgentResult:
+    def _plan_invocation(
+        self,
+        request: MethodAgentRequest,
+        *,
+        additional_reserved_tokens: int = 0,
+    ) -> _MethodModelInvocationPlan:
         if not isinstance(request, MethodAgentRequest):
             raise TypeError("method model agent requires MethodAgentRequest")
         if request.agent_id != self.binding.agent_id:
@@ -497,32 +571,112 @@ class MethodModelAgentLoop:
         compiled = self.request_factory.compile(request)
         body = compiled.body
         _require_model_budget(request, body)
-        body, token_budget, budget_reservation = self._prepare_budgeted_body(
-            request,
-            body,
+        body, token_budget, scope_id, budget_request = (
+            self._plan_budgeted_body(
+                request,
+                body,
+                additional_reserved_tokens=additional_reserved_tokens,
+            )
         )
+        body_sha256 = canonical_digest(body)
         request_id = (
             "method-model-pool:"
-            + canonical_digest({
-                "operation_id": operation_id,
-                "binding_digest": self.binding.digest,
-                "replica_set_digest": self._replica_set_digest,
-                "body": body,
-            })
+            + canonical_digest(
+                {
+                    "schema": "method-model-pool-request.v2",
+                    "operation_id": operation_id,
+                    "binding_digest": self.binding.digest,
+                    "replica_set_digest": self._replica_set_digest,
+                    "body_sha256": body_sha256,
+                }
+            )
         )
-        envelope = self.recorder.record(
+        return _MethodModelInvocationPlan(
+            request=request,
+            compiled=compiled,
+            body=body,
+            token_budget=token_budget,
+            scope_id=scope_id,
+            budget_request=budget_request,
             request_id=request_id,
-            context=request.context,
-            role=self.binding.role,
-            model=self.binding.model,
-            prompt_generation_id=compiled.prompt_generation_id,
-            prompt_id=compiled.prompt_id,
-            prompt_digest=compiled.prompt_digest,
-            request_body=body,
-            compiled_prompt_text=compiled.compiled_prompt_text,
         )
-        self.recorder.verify_visible_request(envelope, body)
-        dispatch = self.pool.complete(envelope, body)
+
+    def _execute_reserved(
+        self,
+        plan: _MethodModelInvocationPlan,
+        budget_reservation: ExecutionBudgetReservation,
+    ) -> MethodAgentResult:
+        if not isinstance(plan, _MethodModelInvocationPlan):
+            raise TypeError("Method model dispatch requires invocation plan")
+        if not isinstance(
+            budget_reservation,
+            ExecutionBudgetReservation,
+        ):
+            raise TypeError("Method model dispatch requires budget reservation")
+        if budget_reservation.scope_id != plan.scope_id:
+            raise ValueError("Method model budget reservation scope drift")
+        if (
+            budget_reservation.charge_id
+            != plan.budget_request.charge_id
+            or budget_reservation.requested
+            != plan.budget_request.requested
+        ):
+            raise ValueError("Method model budget reservation identity drift")
+        request = plan.request
+        compiled = plan.compiled
+        body = plan.body
+        token_budget = plan.token_budget
+        request_id = plan.request_id
+        try:
+            envelope = self.recorder.record(
+                request_id=request_id,
+                context=request.context,
+                role=self.binding.role,
+                model=self.binding.model,
+                prompt_generation_id=compiled.prompt_generation_id,
+                prompt_id=compiled.prompt_id,
+                prompt_digest=compiled.prompt_digest,
+                request_body=body,
+                # MethodViewChatRequestFactory defines compiled prompt text as
+                # canonical_text(body["messages"]). The durable request body is
+                # therefore the sole lossless carrier; recorder reconstruction
+                # regenerates the exact text without a second blob publication.
+                compiled_prompt_text=None,
+            )
+            self.recorder.verify_visible_request(envelope, body)
+        except BaseException as exc:
+            try:
+                self.execution_budget.abort(budget_reservation)
+            except BaseException as budget_exc:
+                raise ExceptionGroup(
+                    "model request preparation and budget abort failed",
+                    [exc, budget_exc],
+                ) from exc
+            raise
+
+        try:
+            dispatch = self.pool.complete(envelope, body)
+        except ModelEndpointRequestRejected as exc:
+            try:
+                self.execution_budget.abort(budget_reservation)
+            except BaseException as budget_exc:
+                raise ExceptionGroup(
+                    "model request rejection and budget abort failed",
+                    [exc, budget_exc],
+                ) from exc
+            raise
+        except BaseException as exc:
+            try:
+                self.execution_budget.commit(
+                    budget_reservation,
+                    budget_reservation.requested,
+                )
+            except BaseException as budget_exc:
+                raise ExceptionGroup(
+                    "model invocation failure and conservative budget commit failed",
+                    [exc, budget_exc],
+                ) from exc
+            raise
         if dispatch.replica_set_digest != self._replica_set_digest:
             raise RuntimeError("method model replica-set identity drift during dispatch")
         if dispatch.selection_policy_digest != self._selection_policy_digest:
@@ -630,6 +784,26 @@ class MethodModelAgentLoop:
             effect_receipts=(receipt,),
         )
 
+    def run(self, request: MethodAgentRequest) -> MethodAgentResult:
+        plan = self._plan_invocation(request)
+        reservation = self.execution_budget.reserve_batch(
+            plan.scope_id,
+            (plan.budget_request,),
+        )[0]
+        return self._execute_reserved(plan, reservation)
+
+
+@runtime_checkable
+class MethodAgentPanelExecutionPort(Protocol):
+    """Physical fan-out mechanics for one scientific Method model panel."""
+
+    def execute(
+        self,
+        role: str,
+        invocations: tuple[MethodAgentPanelInvocation, ...],
+        request: MethodAgentRequest,
+    ) -> tuple[tuple[int, MethodAgentResult], ...]: ...
+
 
 class MethodAgentPanelLoop:
     # Scientific panel cardinality is preserved; physical replicas stay inside
@@ -638,6 +812,8 @@ class MethodAgentPanelLoop:
         self,
         role: str,
         members: tuple[tuple[int, MethodModelAgentLoop], ...],
+        *,
+        execution: MethodAgentPanelExecutionPort,
     ) -> None:
         if type(role) is not str or not role.strip():
             raise ValueError("method model panel role must be non-empty text")
@@ -657,8 +833,14 @@ class MethodAgentPanelLoop:
                 raise ValueError("method model panel member role drift")
             if loop.binding.member_index != member_index:
                 raise ValueError("method model panel member index drift")
+        if not isinstance(execution, MethodAgentPanelExecutionPort):
+            raise TypeError(
+                "method model panel execution must satisfy "
+                "MethodAgentPanelExecutionPort"
+            )
         self.role = role
         self.members = members
+        self.execution = execution
         self._identity_digest = canonical_digest(
             {
                 "router": "method-model-panel.v1",
@@ -682,10 +864,78 @@ class MethodAgentPanelLoop:
         outputs = []
         events = []
         effects = []
+
+        authority = self.members[0][1].execution_budget
+        scope_id = request.context.lifetime_id
+        if type(scope_id) is not str or not scope_id.strip():
+            raise RuntimeError("Method model panel requires budget lifetime scope")
+        plans = []
+        additional_reserved_tokens = 0
         for member_index, loop in self.members:
-            result = loop.run(
-                replace(request, agent_id=loop.binding.agent_id)
+            if loop.execution_budget is not authority:
+                raise RuntimeError(
+                    "Method model panel members must share one budget authority"
+                )
+            member_request = replace(
+                request,
+                agent_id=loop.binding.agent_id,
             )
+            plan = loop._plan_invocation(
+                member_request,
+                additional_reserved_tokens=additional_reserved_tokens,
+            )
+            if plan.scope_id != scope_id:
+                raise RuntimeError("Method model panel budget scope drift")
+            plans.append((member_index, loop, plan))
+            additional_reserved_tokens += plan.budget_request.requested.tokens
+
+        reservations = authority.reserve_batch(
+            scope_id,
+            tuple(plan.budget_request for _, _, plan in plans),
+        )
+        if len(reservations) != len(plans):
+            raise RuntimeError("Method model panel budget reservation cardinality drift")
+
+        invocations = []
+        for (member_index, loop, plan), reservation in zip(
+            plans,
+            reservations,
+            strict=True,
+        ):
+            def invoke(
+                loop=loop,
+                plan=plan,
+                reservation=reservation,
+            ):
+                return loop._execute_reserved(plan, reservation)
+
+            def abort(
+                authority=authority,
+                reservation=reservation,
+            ):
+                return authority.abort(reservation)
+
+            invocations.append(
+                MethodAgentPanelInvocation(
+                    member_index=member_index,
+                    invoke=invoke,
+                    abort=abort,
+                )
+            )
+
+        rows = self.execution.execute(
+            self.role,
+            tuple(invocations),
+            request,
+        )
+        expected_indexes = tuple(range(len(self.members)))
+        indexes = tuple(row[0] for row in rows)
+        if indexes != expected_indexes:
+            raise RuntimeError(
+                "method model panel execution returned non-canonical member order"
+            )
+        for member_index, result in rows:
+            loop = self.members[member_index][1]
             if not isinstance(result, MethodAgentResult):
                 raise TypeError(
                     "method model panel member must return MethodAgentResult"
@@ -770,6 +1020,8 @@ class MethodAgentLoopRouter:
 __all__ = [
     "CompiledMethodAgentRequest",
     "MethodModelAgentLoop",
+    "MethodAgentPanelExecutionPort",
+    "MethodAgentPanelInvocation",
     "MethodAgentPanelLoop",
     "MethodAgentLoopRouter",
     "MethodAgentRequestFactoryPort",

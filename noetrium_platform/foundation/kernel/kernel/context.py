@@ -34,6 +34,7 @@ class ExecutionContext:
     participant_generations: tuple[tuple[str, str], ...] = ()
     platform_generation: str | None = None
     participant_context: JsonObject = field(default_factory=dict)
+    execution_tenant_id: str | None = None
 
     def __post_init__(self) -> None:
         if type(self.condition_selections) is not tuple or any(
@@ -148,6 +149,19 @@ class ExecutionContext:
                     "ExecutionContext execution_policy_admission_digest "
                     "must be lowercase SHA-256 or None"
                 )
+        if self.execution_tenant_id is not None:
+            if (
+                type(self.execution_tenant_id) is not str
+                or not self.execution_tenant_id.strip()
+            ):
+                raise ValueError(
+                    "ExecutionContext execution_tenant_id must be non-empty text or None"
+                )
+            object.__setattr__(
+                self,
+                "execution_tenant_id",
+                self.execution_tenant_id.strip(),
+            )
         if not isinstance(self.participant_context, Mapping):
             raise TypeError("ExecutionContext participant_context must be an object")
         object.__setattr__(

@@ -41,6 +41,7 @@ class QualifiedModelEndpointBinding:
     verified_capabilities: tuple[str, ...] = ()
     completion_path: str = "/v1/chat/completions"
     timeout_s: float = 120.0
+    preferred_admitted_concurrency: int | None = None
 
     def __post_init__(self) -> None:
         """Validate the complete canary evidence set and fixed deployment identities.
@@ -72,6 +73,16 @@ class QualifiedModelEndpointBinding:
             raise ValueError("qualified model binding timeout_s must be finite and positive")
         if type(self.max_admitted_concurrency) is not int or self.max_admitted_concurrency <= 0:
             raise ValueError("qualified model binding concurrency must be positive")
+        preferred = self.preferred_admitted_concurrency
+        if preferred is not None and (
+            type(preferred) is not int
+            or preferred <= 0
+            or preferred > self.max_admitted_concurrency
+        ):
+            raise ValueError(
+                "qualified model binding preferred concurrency must be "
+                "positive and cannot exceed max_admitted_concurrency"
+            )
         if type(self.runtime_canary_evidence_digests) is not tuple or not self.runtime_canary_evidence_digests:
             raise ValueError("qualified model binding requires runtime canary evidence digests")
         if len(set(self.runtime_canary_evidence_digests)) != len(self.runtime_canary_evidence_digests):

@@ -48,6 +48,11 @@ class _Authority(LocalMinecraftLifetimeSessionAuthority):
         self.lock = RLock()
         self.runtimes = {}
         self._lifetime_locks = {}
+        self._retirements = {}
+        self._preparations = {}
+        self._preparation_failures = {}
+        self._retirement_failures = []
+        self._retirement_sequence = 0
         self._opener = opener
 
     def _open(self, context):
@@ -64,7 +69,7 @@ def _runtime(session):
     )
 
 
-def test_bridge_blocking_operations_use_blocking_io_not_serial_actor() -> None:
+def test_bridge_sync_boundary_uses_local_ordering_without_double_dispatch() -> None:
     group = _ImmediateTaskGroup()
     bridge = object.__new__(JsonlMinecraftBridge)
     bridge._operation_lock = Lock()
@@ -74,8 +79,10 @@ def test_bridge_blocking_operations_use_blocking_io_not_serial_actor() -> None:
     result = bridge._call_owned("start", lambda value: value + 1, 41)
 
     assert result == 42
-    assert len(group.specs) == 1
-    assert group.specs[0].lane_kind is ExecutionLaneKind.BLOCKING_IO
+    # The synchronous bridge boundary already runs inside capability-owned
+    # execution. Re-submitting it would add a second scheduler hop while the
+    # transport's long pipe drains remain task-group owned.
+    assert group.specs == []
     assert group.serial_actor_opened is False
 
 

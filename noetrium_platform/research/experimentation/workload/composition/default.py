@@ -70,12 +70,18 @@ def bind_workload_graph(
         raise ValueError(
             "workload composition received both explicit and executor-owned task groups"
         )
+    frontier_capacity = getattr(workload, "task_frontier_capacity", None)
     return WorkloadGraphBinding(
         workload,
         journal=journal,
         task_group=task_group,
         task_group_scope=(
             task_group_scope if callable(task_group_scope) else None
+        ),
+        max_active_tasks=(
+            int(frontier_capacity)
+            if frontier_capacity is not None
+            else None
         ),
     )
 

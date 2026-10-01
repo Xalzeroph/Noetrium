@@ -247,3 +247,11 @@ def test_facade_consumes_role01_strict_finite_json_contract(value):
 def test_product_json_renderer_rejects_mapping_key_coercion():
     with pytest.raises(TypeError, match="native string keys"):
         plain_json({1: "must-not-be-stringified"})
+
+
+def test_research_parser_exposes_terminal_runtime_fabric_retirement():
+    parser = build_research_parser()
+    args = parser.parse_args(["retire", "--project", "."])
+    assert args.command == "retire"
+    assert args.project_root == Path(".")
+    assert args.config is None

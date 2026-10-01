@@ -327,6 +327,7 @@ class VisibilityDeciderRegistryPort(Protocol):
 class VisibilityDeciderRegistry(VisibilityDeciderRegistryPort):
     def __init__(self) -> None:
         self._deciders: dict[str, tuple[VisibilityDecider, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -351,6 +352,7 @@ class VisibilityDeciderRegistry(VisibilityDeciderRegistryPort):
                     f"visibility decider already registered: {decider}"
                 )
             self._deciders[decider] = value
+            self._identity_digest_cache = None
 
     def resolve(self, decider: str) -> VisibilityDecider:
         decider = _text(decider, "visibility decider")
@@ -375,10 +377,15 @@ class VisibilityDeciderRegistry(VisibilityDeciderRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (name, digest)
-                for name, (_, digest) in sorted(self._deciders.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (name, implementation_digest)
+                    for name, (_, implementation_digest)
+                    in sorted(self._deciders.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 @dataclass(frozen=True, slots=True)

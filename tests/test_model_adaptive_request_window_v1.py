@@ -56,6 +56,31 @@ def test_adaptive_window_rate_limit_reduces_and_transient_does_not():
     assert snap.max_limit == 20
 
 
+def test_adaptive_window_history_is_bounded_without_resetting_sequence():
+    clock = _Clock(0)
+    window = AdaptiveRequestWindow(
+        max_limit=2,
+        policy=AdaptiveRequestWindowPolicy(
+            min_limit=1,
+            start_limit=2,
+            decrease_factor=0.5,
+            scale_up_percent=1.0,
+            cooldown_seconds=0,
+        ),
+        clock=clock,
+    )
+    for _ in range(300):
+        window.on_capacity_pressure()
+        clock.value += 1
+        window.on_clean_completion()
+        clock.value += 1
+
+    snap = window.snapshot()
+    assert len(snap.history) == 256
+    assert snap.history[-1].sequence > 256
+    assert snap.history[-1].sequence - snap.history[0].sequence == 255
+
+
 def test_adaptive_window_never_exceeds_qualified_max():
     clock=_Clock(100)
     window=AdaptiveRequestWindow(
@@ -169,3 +194,53 @@ def test_pool_transient_failure_does_not_shrink_adaptive_window():
     assert snap.adaptive_limit == 8
     assert snap.failures == 1
     assert snap.adaptive_scale_up_suspended is True
+
+
+def test_capacity_pressure_enforces_growth_cooldown():
+    clock=_Clock(0)
+    window=AdaptiveRequestWindow(
+        max_limit=20,
+        policy=AdaptiveRequestWindowPolicy(
+            min_limit=1,
+            start_limit=10,
+            decrease_factor=0.5,
+            scale_up_percent=0.2,
+            cooldown_seconds=10,
+        ),
+        clock=clock,
+    )
+    window.on_capacity_pressure()
+    assert window.limit == 5
+    clock.value = 1
+    for _ in range(50):
+        window.on_clean_completion()
+    assert window.limit == 5
+    assert window.snapshot().scale_up_suspended is True
+    clock.value = 10
+    for _ in range(5):
+        window.on_clean_completion()
+    assert window.limit == 6
+
+
+def test_transient_failure_enforces_growth_cooldown_without_shrinking():
+    clock=_Clock(0)
+    window=AdaptiveRequestWindow(
+        max_limit=20,
+        policy=AdaptiveRequestWindowPolicy(
+            min_limit=1,
+            start_limit=8,
+            scale_up_percent=0.25,
+            cooldown_seconds=10,
+        ),
+        clock=clock,
+    )
+    window.on_transient_failure()
+    assert window.limit == 8
+    clock.value = 5
+    for _ in range(32):
+        window.on_clean_completion()
+    assert window.limit == 8
+    clock.value = 10
+    for _ in range(8):
+        window.on_clean_completion()
+    assert window.limit == 10

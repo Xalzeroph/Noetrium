@@ -29,17 +29,18 @@ class ServiceStopCoordinator:
     def stop_exact(
         self,
         contract: ServiceLaunchContract,
-        expected_process: ServiceProcessIdentity,
+        expected_process: ServiceProcessIdentity | None = None,
     ) -> ServiceSupervisorState:
-        if type(expected_process) is not ServiceProcessIdentity:
+        if expected_process is not None and type(expected_process) is not ServiceProcessIdentity:
             raise TypeError(
-                "service stop requires exact ServiceProcessIdentity"
+                "service stop requires exact ServiceProcessIdentity or None"
             )
         state = self._observation.observe_state(contract)
         if state is None:
             raise RuntimeError("service supervisor state is missing")
         if (
-            state.process is not None
+            expected_process is not None
+            and state.process is not None
             and state.process != expected_process
         ):
             raise ServiceContractDrift(

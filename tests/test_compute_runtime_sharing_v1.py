@@ -81,6 +81,31 @@ def test_runtime_scheduler_uses_busy_gpu_when_idle_gpu_lacks_required_headroom()
     assert allocation.gpu_ids == ("GPU-busy",)
 
 
+def test_runtime_scheduler_honors_explicit_gpu_exclusion() -> None:
+    scheduler = compute_scheduler(
+        _inventory(), gpu_runtime_observer=_Observer(_snapshot())
+    )
+    allocation = scheduler.allocate(
+        "excluded-idle",
+        _scope(),
+        _requirement(),
+        excluded_gpus=frozenset({("node", "GPU-idle")}),
+    )
+    assert allocation.gpu_ids == ("GPU-busy",)
+
+
+def test_runtime_scheduler_revalidates_exact_unbound_gpu_after_external_capacity_drift() -> None:
+    observer = _Observer(_snapshot())
+    scheduler = compute_scheduler(_inventory(), gpu_runtime_observer=observer)
+    requirement = _requirement()
+    allocation = scheduler.allocate("drift", _scope(), requirement)
+    assert allocation.gpu_ids == ("GPU-idle",)
+    assert scheduler.unbound_placement_satisfies(allocation, requirement) is True
+
+    observer.value = _snapshot(idle_free=8 * 1024, busy_free=48 * 1024)
+    assert scheduler.unbound_placement_satisfies(allocation, requirement) is False
+
+
 def _single_gpu_inventory() -> TestComputeInventory:
     inventory = TestComputeInventory()
     inventory.register_host(
@@ -503,3 +528,28 @@ def test_unknown_process_visibility_is_never_ranked_as_idle() -> None:
         assert "no compute host" in str(exc)
     else:
         raise AssertionError("idle-only scheduling trusted incomplete process visibility")
+
+
+def test_unbound_placement_revalidation_uses_live_free_memory_without_double_counting_self() -> None:
+    observer = _Observer(_single_gpu_snapshot(free_gib=30))
+    scheduler = compute_scheduler(
+        _single_gpu_inventory(),
+        gpu_runtime_observer=observer,
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        required_gpu_free_memory_bytes=24 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    allocation = scheduler.allocate("revalidate-self", _scope(), requirement)
+
+    # Its own 24 GiB reservation must not be subtracted again during exact
+    # revalidation; the physical 30 GiB free still satisfies the placement.
+    assert scheduler.unbound_placement_satisfies(allocation, requirement)
+
+    # External usage arriving after admission is visible immediately and makes
+    # the exact still-unbound placement invalid.
+    observer.value = _single_gpu_snapshot(free_gib=20)
+    assert not scheduler.unbound_placement_satisfies(allocation, requirement)

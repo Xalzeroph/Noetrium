@@ -13,9 +13,15 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
     EndpointAllocationPort,
 )
+from noetrium_platform.infrastructure.resources.allocation.runtime import (
+    EndpointPhysicalConvergencePending,
+)
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation,
     ComputeSchedulerPort,
+)
+from noetrium_platform.infrastructure.resources.compute.runtime import (
+    ComputePhysicalConvergencePending,
 )
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerContainerReconciliation,
@@ -213,7 +219,7 @@ class ManagedResourceReconciler:
         interval_seconds: float,
         stop: ResourceReconcileStopPort,
         max_cycles: int | None = None,
-    ) -> ManagedResourceReconciliation:
+    ) -> ManagedResourceReconciliation | None:
         if (
             isinstance(interval_seconds, bool)
             or not isinstance(interval_seconds, (int, float))
@@ -233,7 +239,25 @@ class ManagedResourceReconciler:
         cycles = 0
         latest: ManagedResourceReconciliation | None = None
         while True:
-            latest = self.reconcile()
+            try:
+                latest = self.reconcile()
+            except (
+                EndpointPhysicalConvergencePending,
+                ComputePhysicalConvergencePending,
+            ):
+                # Physical convergence pending is a fail-closed *cycle* result,
+                # not a controller failure. The dependency transaction already
+                # stopped before releasing any lower ownership layer. Keep the
+                # long-lived reconciler alive and retry from fresh provider
+                # truth on the next cycle instead of cancelling research work.
+                cycles += 1
+                if max_cycles is not None and cycles >= max_cycles:
+                    if latest is None:
+                        raise
+                    return latest
+                if stop.wait(float(interval_seconds)):
+                    return latest
+                continue
             cycles += 1
             if max_cycles is not None and cycles >= max_cycles:
                 return latest

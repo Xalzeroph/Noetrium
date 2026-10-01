@@ -76,6 +76,20 @@ class MemoryEffectJournalBackend(EffectJournalPersistenceBackend):
                 and row.phase in allowed
                 and intent_id != exclude_intent_id
             )
+    def scan_run(
+        self,
+        *,
+        run_id: str,
+    ) -> tuple[EncodedEffectIntentRecord, ...]:
+        if type(run_id) is not str or not run_id.strip():
+            raise ValueError("effect journal run_id must be non-empty text")
+        with self._lock:
+            return tuple(
+                row
+                for _intent_id, row in sorted(self._records.items())
+                if row.run_id == run_id
+            )
+
     def write_session(self) -> MemoryEffectJournalWriteSession:
         return MemoryEffectJournalWriteSession(self)
 

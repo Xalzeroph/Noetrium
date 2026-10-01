@@ -234,6 +234,58 @@ def test_managed_docker_prestart_lease_is_not_released_by_reconcile() -> None:
     assert resources.get(handle.lease.lease_id).state is LeaseState.ACTIVE
 
 
+
+def test_managed_docker_confirmed_warm_generation_survives_expiry_and_recovery() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = TestResourceLeaseRegistry(clock=clock)
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    first = _reserve(authority, "warm-worker")
+    observed = runtime.start(first)
+    authority.confirm_running(first)
+
+    retention_resource = ResourceIdentity(
+        ResourceKind.RUNTIME_FABRIC,
+        "container:warm-worker",
+    )
+    retained = resources.active_for(retention_resource)
+    assert len(retained) == 1
+    assert retained[0].expires_at_epoch_s is None
+
+    clock.advance(1.0)
+    report = authority.reconcile()
+    assert report.removed_container_ids == ()
+    assert runtime.inspect(observed.container_id) == observed
+    assert resources.get(first.lease.lease_id).state is LeaseState.EXPIRED
+
+    recovered = authority.recover(
+        allocation_id=first.allocation_id,
+        image=first.image,
+        runtime_identity_digest=first.runtime_identity_digest,
+    )
+    assert recovered is not None
+    assert recovered.lease.fencing_token > first.lease.fencing_token
+    assert (
+        recovered.physical_generation_fencing_token
+        == first.physical_generation_fencing_token
+    )
+
+    # A recovered control generation has a fresh logical fence while the
+    # immutable Docker generation still carries its original physical fence.
+    # Generic reconcile must recognize that exact adopted pairing.
+    second_report = authority.reconcile()
+    assert second_report.removed_container_ids == ()
+    assert runtime.inspect(observed.container_id) == observed
+
+    released = authority.release(recovered)
+    assert released.state is LeaseState.RELEASED
+    assert runtime.inspect(observed.container_id) is None
+    assert resources.active_for(retention_resource) == ()
+
+
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
@@ -588,6 +640,83 @@ def test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobserv
 
     assert runner.present is False
     assert [call[1] for call in runner.calls] == ["inspect", "rm", "inspect"]
+
+
+
+class _BatchInspectRunner:
+    def __init__(self, count: int) -> None:
+        self.ids = tuple(f"cid-{index:03d}" for index in range(count))
+        self.calls: list[tuple[str, ...]] = []
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float):
+        del timeout_seconds
+        self.calls.append(argv)
+        from types import SimpleNamespace
+        if argv[1] == "ps":
+            return SimpleNamespace(
+                returncode=0,
+                stdout="\n".join(self.ids) + ("\n" if self.ids else ""),
+                stderr="",
+            )
+        if argv[1] == "inspect":
+            rows = []
+            for container_id in argv[2:]:
+                rows.append(
+                    {
+                        "Id": container_id,
+                        "Name": f"/{container_id}",
+                        "Config": {
+                            "Image": "image:batch",
+                            "Labels": {
+                                MANAGED_CONTAINER_LABEL:
+                                    MANAGED_CONTAINER_LABEL_VALUE,
+                                LABEL_AUTHORITY: "1" * 64,
+                            },
+                        },
+                        "State": {"Running": True},
+                    }
+                )
+            return SimpleNamespace(
+                returncode=0,
+                stdout=json.dumps(rows),
+                stderr="",
+            )
+        raise AssertionError(f"unexpected Docker command: {argv}")
+
+
+def test_docker_provider_batches_managed_container_inspection() -> None:
+    runner = _BatchInspectRunner(17)
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        runner,
+        authority_id="1" * 64,
+    )
+
+    rows = provider.list_managed()
+
+    assert tuple(row.container_id for row in rows) == runner.ids
+    assert [call[1] for call in runner.calls] == ["ps", "inspect"]
+    assert "--no-trunc" in runner.calls[0]
+    assert runner.calls[1][2:] == runner.ids
+
+
+def test_docker_provider_bounds_large_batch_inspection_argv() -> None:
+    runner = _BatchInspectRunner(
+        DockerCliManagedContainerProvider._INSPECT_BATCH_SIZE + 3
+    )
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        runner,
+        authority_id="1" * 64,
+    )
+
+    rows = provider.list_managed()
+
+    assert len(rows) == len(runner.ids)
+    inspect_calls = [call for call in runner.calls if call[1] == "inspect"]
+    assert len(inspect_calls) == 2
+    assert len(inspect_calls[0][2:]) == provider._INSPECT_BATCH_SIZE
+    assert len(inspect_calls[1][2:]) == 3
 
 
 class _UnavailableDockerRuntime(FakeDockerRuntime):

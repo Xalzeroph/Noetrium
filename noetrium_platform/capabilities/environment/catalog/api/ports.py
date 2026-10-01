@@ -81,6 +81,14 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         role: str,
         scope: ScopeIdentity,
     ) -> EnvironmentInstanceAcquisition: ...
+    def provision_reusable_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition: ...
     def recover_reusable_instance(
         self,
         profile_id: str,
@@ -92,6 +100,9 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         scope: ScopeIdentity,
     ) -> EnvironmentInstanceAcquisition: ...
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
+    def unbind_if_bound(
+        self, role: str, scope: ScopeIdentity
+    ) -> EnvironmentBinding | None: ...
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def release_instance(
         self,

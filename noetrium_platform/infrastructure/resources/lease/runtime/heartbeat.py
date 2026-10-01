@@ -9,6 +9,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     HeartbeatSpec,
     ScheduledTaskHandlePort,
     TaskContextPort,
+    TaskFailureScope,
     TaskGroupPort,
 )
 
@@ -90,6 +91,7 @@ class LeaseHeartbeatGuard(Generic[RowT]):
                     interval_seconds=self._interval_seconds,
                     initial_delay_seconds=self._interval_seconds,
                     lane_capacity=self._lane_capacity,
+                    failure_scope=TaskFailureScope.CALLER,
                 ),
                 self._renew_once,
             )
@@ -111,8 +113,10 @@ class LeaseHeartbeatGuard(Generic[RowT]):
         if scheduled is None:
             return
         try:
+            # Health is exact to this lease generation. The shared task group
+            # may host unrelated guards whose caller-scoped failures must not
+            # poison this guard.
             scheduled.assert_healthy()
-            self._task_group.assert_healthy()
         except BaseException as exc:
             raise LeaseHeartbeatError(
                 f"lease heartbeat failed: {type(exc).__name__}: {exc}"

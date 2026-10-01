@@ -118,3 +118,67 @@ def test_concurrent_reusable_acquisition_never_double_assigns_instance(tmp_path)
     )
     assert reacquired.instance.instance_id == min(instance_ids)
     assert reacquired.instance.generation == 2
+
+
+def test_concurrent_empty_pool_provision_and_acquire_is_atomic(tmp_path) -> None:
+    database = tmp_path / "environment-provision.sqlite"
+    scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
+    scopes = SQLiteScopeRegistry(database)
+    scopes.register(scope, PLATFORM_SCOPE)
+    profile_id = "minecraft-scale"
+    profile_revision = "1" * 64
+    runtime_identity_digest = "2" * 64
+    runtime_reference = "container:minecraft-scale"
+    catalog = SQLiteExecutionEnvironmentCatalog(database, scopes)
+    catalog.register_profile_revision(
+        EnvironmentProfileRevision(profile_id, "minecraft", profile_revision)
+    )
+    materialization = EnvironmentProfileMaterialization(
+        profile_id,
+        profile_revision,
+        "3" * 64,
+        runtime_identity_digest,
+        "4" * 64,
+        runtime_reference,
+    )
+    catalog.register_profile_materialization(materialization)
+
+    count = 8
+
+    def provision(index: int):
+        local = SQLiteExecutionEnvironmentCatalog(
+            database, SQLiteScopeRegistry(database)
+        )
+        return local.provision_reusable_instance(
+            EnvironmentInstance(
+                f"minecraft-slot-{index:02d}",
+                "5" * 64,
+                "minecraft.mineflayer",
+                runtime_reference,
+                runtime_identity_digest,
+                materialization.materialization_digest,
+                scope,
+                profile_id,
+                profile_revision,
+            ),
+            binding_id=f"binding-{index:02d}",
+            role=f"minecraft.assignment.{index:02d}",
+            scope=scope,
+        )
+
+    with ThreadPoolExecutor(max_workers=count) as executor:
+        rows = tuple(executor.map(provision, range(count)))
+
+    assert len({row.instance.instance_id for row in rows}) == count
+    assert all(row.instance.state.value == "in_use" for row in rows)
+    assert all(row.instance.generation == 1 for row in rows)
+    observer = SQLiteExecutionEnvironmentCatalog(
+        database, SQLiteScopeRegistry(database)
+    )
+    assert len(observer.bindings()) == count
+    assert observer.reusable_instances(
+        profile_id,
+        profile_revision,
+        runtime_identity_digest,
+        materialization.materialization_digest,
+    ) == ()

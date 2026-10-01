@@ -556,6 +556,37 @@ def test_cancel_pending_lane_drains_published_ready_token_without_killing_worker
     factory.close()
 
 
+def test_shared_serial_factory_materializes_workers_only_on_demand() -> None:
+    import threading
+
+    prefix = "serial-lazy-worker-test"
+    factory = SharedSerialExecutionLaneFactory(
+        max_workers=64,
+        thread_name_prefix=prefix,
+    )
+    assert not [
+        thread
+        for thread in threading.enumerate()
+        if thread.name.startswith(prefix + ":")
+    ]
+
+    lane = factory.create("lazy-lane", capacity=2)
+    assert lane.submit(lambda: 7).result(1) == 7
+    workers = [
+        thread
+        for thread in threading.enumerate()
+        if thread.name.startswith(prefix + ":")
+    ]
+    assert len(workers) == 1
+    lane.close()
+    factory.close()
+    assert not [
+        thread
+        for thread in threading.enumerate()
+        if thread.name.startswith(prefix + ":")
+    ]
+
+
 def test_shared_serial_lane_is_pinned_to_one_worker_thread() -> None:
     from threading import get_ident
 
@@ -565,6 +596,42 @@ def test_shared_serial_lane_is_pinned_to_one_worker_thread() -> None:
     assert len(set(thread_ids)) == 1
     lane.close()
     factory.close()
+
+
+def test_shared_serial_factory_binds_hot_lanes_by_first_use_pressure() -> None:
+    factory = SharedSerialExecutionLaneFactory(
+        max_workers=2,
+        thread_name_prefix="serial-first-use-balance-test",
+    )
+    # Under creation-time round-robin, lane-0 and lane-2 both land on worker 0.
+    # First-use pressure assignment must instead let lane-2 run while lane-0
+    # is blocked, without sacrificing permanent affinity for either lane.
+    lane_0 = factory.create("lane-0", capacity=2)
+    factory.create("lane-1-unused", capacity=2)
+    lane_2 = factory.create("lane-2", capacity=2)
+    release = Event()
+    first_started = Event()
+    second_started = Event()
+
+    def hold() -> int:
+        first_started.set()
+        assert release.wait(2)
+        return 0
+
+    first = lane_0.submit(hold)
+    assert first_started.wait(1)
+    second = lane_2.submit(lambda: second_started.set() or 2)
+    try:
+        assert second_started.wait(1), (
+            "hot lane was pinned behind an unrelated busy lane by creation order"
+        )
+        assert second.result(1) == 2
+    finally:
+        release.set()
+        assert first.result(1) == 0
+        lane_0.close()
+        lane_2.close()
+        factory.close()
 
 
 def test_shared_serial_factory_multiplexes_many_lanes_onto_fixed_workers() -> None:

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Mapping
 from contextlib import nullcontext
 from queue import Queue
-from dataclasses import replace
-from threading import Lock
+from dataclasses import dataclass, replace
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
@@ -12,6 +12,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionSpec,
     TaskFailureScope,
     TaskGroupPort,
+    SingleFlightCache,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
@@ -49,10 +50,10 @@ _FRONTIER_OPERATION = "workload.frontier.execute"
 _WORKLOAD_PROGRAM_VERSION = "2"
 
 
-def _encode_task_result(value: WorkloadTaskResult) -> dict[str, object]:
-    encoded = thaw_json(workload_task_result_payload(value))
-    if not isinstance(encoded, dict):
-        raise TypeError("workload task payload must decode to object")
+def _encode_task_result(value: WorkloadTaskResult) -> Mapping[str, object]:
+    encoded = workload_task_result_payload(value)
+    if not isinstance(encoded, Mapping):
+        raise TypeError("workload task payload must encode to object")
     return encoded
 
 
@@ -142,6 +143,16 @@ def _compile_workload_program(workload: AssignmentWorkload) -> ResearchProgram:
     )
 
 
+@dataclass(slots=True)
+class _WorkloadExecutionBinding:
+    by_id: dict[str, ExperimentTaskSpec]
+    workload: AssignmentWorkload
+    context: ExecutionContext
+    ordinal_by_id: dict[str, int]
+    task_group: TaskGroupPort | None
+    completed_results: tuple[WorkloadTaskResult, ...] | None = None
+
+
 class WorkloadGraphBinding:
     """Execute an immutable workload DAG through one completion-driven frontier.
 
@@ -158,6 +169,7 @@ class WorkloadGraphBinding:
         journal: MachineJournalPort,
         task_group: TaskGroupPort | None = None,
         task_group_scope=None,
+        max_active_tasks: int | None = None,
     ) -> None:
         if not callable(getattr(workload, "execute_one", None)):
             raise TypeError("workload graph binding requires WorkloadTaskExecutionPort")
@@ -169,6 +181,10 @@ class WorkloadGraphBinding:
             raise TypeError("workload graph task_group_scope must be callable")
         if task_group is not None and task_group_scope is not None:
             raise ValueError("workload graph accepts one task-group authority")
+        if max_active_tasks is not None and (
+            type(max_active_tasks) is not int or max_active_tasks <= 0
+        ):
+            raise ValueError("workload graph max_active_tasks must be positive or None")
         workload_identity = getattr(workload, "identity_digest", None)
         if type(workload_identity) is not str or len(workload_identity) != 64:
             raise TypeError("workload graph binding requires a task executor identity digest")
@@ -176,8 +192,9 @@ class WorkloadGraphBinding:
         self._journal = journal
         self._task_group = task_group
         self._task_group_scope = task_group_scope
-        self._program_cache_lock = Lock()
-        self._program_cache: dict[str, ResearchProgram] = {}
+        self._max_active_tasks = max_active_tasks
+        self._program_cache: SingleFlightCache[ResearchProgram] = SingleFlightCache()
+        self._host_cache: SingleFlightCache[ResearchProgramHost] = SingleFlightCache()
         self.identity_digest = canonical_digest({
             "binding": "workload-research-program-binding.v4",
             "task_executor": workload_identity,
@@ -193,21 +210,10 @@ class WorkloadGraphBinding:
 
     def _program_for(self, workload: AssignmentWorkload) -> ResearchProgram:
         digest = workload.workload_digest
-        with self._program_cache_lock:
-            cached = self._program_cache.get(digest)
-            if cached is not None:
-                return cached
-        compiled = _compile_workload_program(workload)
-        with self._program_cache_lock:
-            current = self._program_cache.get(digest)
-            if current is not None:
-                if current.program_digest != compiled.program_digest:
-                    raise RuntimeError(
-                        "workload program identity drifted for immutable workload"
-                    )
-                return current
-            self._program_cache[digest] = compiled
-            return compiled
+        return self._program_cache.get_or_create(
+            digest,
+            lambda: _compile_workload_program(workload),
+        )
 
     @staticmethod
     def _child_context(
@@ -249,6 +255,52 @@ class WorkloadGraphBinding:
             },
         )
 
+    def _execute_frontier(
+        self,
+        request: ProgramNodeRequest,
+        binding: object,
+    ) -> ProgramNodeResult:
+        if not isinstance(binding, _WorkloadExecutionBinding):
+            raise TypeError(
+                "workload frontier requires _WorkloadExecutionBinding"
+            )
+        execute = self._frontier_handler(
+            by_id=binding.by_id,
+            workload=binding.workload,
+            context=binding.context,
+            ordinal_by_id=binding.ordinal_by_id,
+            task_group=binding.task_group,
+        )
+        return execute(request, binding)
+
+    def _host_for(self, workload: AssignmentWorkload) -> ResearchProgramHost:
+        digest = workload.workload_digest
+
+        def build() -> ResearchProgramHost:
+            program = self._program_for(workload)
+            operation = ResearchHostOperation(
+                _FRONTIER_OPERATION,
+                self._execute_frontier,
+                canonical_digest({
+                    "operation": _FRONTIER_OPERATION,
+                    "binding_identity": self.identity_digest,
+                    "workload_digest": digest,
+                }),
+            )
+            return ResearchProgramHost(
+                host_id=f"workload:{digest[:24]}",
+                program=program,
+                operations=(operation,),
+                journal=self._journal,
+                max_steps=2,
+                dependency_identity={
+                    "binding_identity": self.identity_digest,
+                    "workload_digest": digest,
+                },
+            )
+
+        return self._host_cache.get_or_create(digest, build)
+
     def _frontier_handler(
         self,
         *,
@@ -258,8 +310,8 @@ class WorkloadGraphBinding:
         ordinal_by_id: dict[str, int],
         task_group: TaskGroupPort | None,
     ):
-        dependency_lists: dict[str, list[str]] = {
-            task_id: [] for task_id in workload.task_ids
+        dependency_lists: dict[str, set[str]] = {
+            task_id: set() for task_id in workload.task_ids
         }
         dependency_relations = {
             TaskGraphRelation.PREREQUISITE,
@@ -268,12 +320,20 @@ class WorkloadGraphBinding:
         for edge in workload.task_graph.edges:
             if edge.relation not in dependency_relations:
                 continue
-            rows = dependency_lists[edge.target_task_id]
-            if edge.source_task_id not in rows:
-                rows.append(edge.source_task_id)
+            dependency_lists[edge.target_task_id].add(edge.source_task_id)
         dependencies = {
             task_id: tuple(sorted(rows, key=ordinal_by_id.__getitem__))
             for task_id, rows in dependency_lists.items()
+        }
+        dependent_lists: dict[str, list[str]] = {
+            task_id: [] for task_id in workload.task_ids
+        }
+        for task_id, dependency_ids in dependencies.items():
+            for dependency_id in dependency_ids:
+                dependent_lists[dependency_id].append(task_id)
+        dependents = {
+            task_id: tuple(sorted(rows, key=ordinal_by_id.__getitem__))
+            for task_id, rows in dependent_lists.items()
         }
 
         def execute(request: ProgramNodeRequest, _binding: object) -> ProgramNodeResult:
@@ -293,6 +353,32 @@ class WorkloadGraphBinding:
             errors: list[BaseException] = []
             draining = False
 
+            remaining_dependencies: dict[str, int] = {}
+            failed_dependencies: dict[str, list[str]] = {}
+            ready: deque[str] = deque()
+            blocked_ready: deque[str] = deque()
+            for task_id in workload.task_ids:
+                if task_id not in unresolved:
+                    continue
+                dependency_ids = dependencies[task_id]
+                remaining = sum(
+                    dependency_id not in results
+                    for dependency_id in dependency_ids
+                )
+                failed = [
+                    dependency_id
+                    for dependency_id in dependency_ids
+                    if dependency_id in results
+                    and not results[dependency_id].success
+                ]
+                remaining_dependencies[task_id] = remaining
+                failed_dependencies[task_id] = failed
+                if remaining == 0:
+                    if failed:
+                        blocked_ready.append(task_id)
+                    else:
+                        ready.append(task_id)
+
             def accept_result(task_id: str, result: WorkloadTaskResult) -> None:
                 task = by_id[task_id]
                 if result.task_id != task.task_id:
@@ -307,39 +393,41 @@ class WorkloadGraphBinding:
                     )
                 results[task_id] = result
 
-            def settle_blocked() -> None:
-                while True:
-                    blocked_now: list[tuple[str, tuple[str, ...]]] = []
-                    for task_id in workload.task_ids:
-                        if task_id not in unresolved:
-                            continue
-                        deps = dependencies[task_id]
-                        if not deps or any(dep not in results for dep in deps):
-                            continue
-                        failed = tuple(
-                            dep for dep in deps if not results[dep].success
+            def advance_dependents(task_id: str) -> None:
+                result = results[task_id]
+                for dependent_id in dependents[task_id]:
+                    if dependent_id not in unresolved:
+                        continue
+                    remaining = remaining_dependencies[dependent_id] - 1
+                    if remaining < 0:
+                        raise RuntimeError(
+                            "workload dependency accounting underflow"
                         )
-                        if failed:
-                            blocked_now.append((task_id, failed))
-                    if not blocked_now:
-                        return
-                    for task_id, failed in blocked_now:
-                        results[task_id] = self._blocked_result(
-                            by_id[task_id],
-                            failed,
-                        )
-                        unresolved.remove(task_id)
+                    remaining_dependencies[dependent_id] = remaining
+                    if not result.success:
+                        failed_dependencies[dependent_id].append(task_id)
+                    if remaining == 0:
+                        if failed_dependencies[dependent_id]:
+                            blocked_ready.append(dependent_id)
+                        else:
+                            ready.append(dependent_id)
 
-            def ready_ids() -> tuple[str, ...]:
-                return tuple(
-                    task_id
-                    for task_id in workload.task_ids
-                    if task_id in unresolved
-                    and all(dep in results for dep in dependencies[task_id])
-                    and all(
-                        results[dep].success for dep in dependencies[task_id]
+            def settle_blocked() -> None:
+                while blocked_ready:
+                    task_id = blocked_ready.popleft()
+                    if task_id not in unresolved:
+                        continue
+                    failed = tuple(failed_dependencies[task_id])
+                    if not failed:
+                        raise RuntimeError(
+                            "blocked workload task has no failed dependency"
+                        )
+                    results[task_id] = self._blocked_result(
+                        by_id[task_id],
+                        failed,
                     )
-                )
+                    unresolved.remove(task_id)
+                    advance_dependents(task_id)
 
             def run_one(task_id: str) -> WorkloadTaskResult:
                 task = by_id[task_id]
@@ -378,22 +466,29 @@ class WorkloadGraphBinding:
             if task_group is None:
                 while unresolved:
                     settle_blocked()
-                    ready = ready_ids()
                     if not ready:
                         if unresolved:
                             raise RuntimeError(
                                 "validated workload DAG stalled without a ready task"
                             )
                         break
-                    for task_id in ready:
-                        unresolved.remove(task_id)
-                        accept_result(task_id, run_one(task_id))
+                    task_id = ready.popleft()
+                    if task_id not in unresolved:
+                        continue
+                    unresolved.remove(task_id)
+                    accept_result(task_id, run_one(task_id))
+                    advance_dependents(task_id)
             else:
                 while unresolved or active:
                     if not draining:
                         settle_blocked()
-                        for task_id in ready_ids():
-                            submit(task_id)
+                        while ready and (
+                            self._max_active_tasks is None
+                            or len(active) < self._max_active_tasks
+                        ):
+                            task_id = ready.popleft()
+                            if task_id in unresolved:
+                                submit(task_id)
                     if not active:
                         if draining and errors:
                             break
@@ -411,6 +506,7 @@ class WorkloadGraphBinding:
                                 "workload task executor returned invalid result"
                             )
                         accept_result(completed_id, value)
+                        advance_dependents(completed_id)
                     except BaseException as exc:
                         errors.append(exc)
                         draining = True
@@ -420,12 +516,21 @@ class WorkloadGraphBinding:
                         errors,
                     )
 
+            ordered_results = tuple(
+                results[task_id] for task_id in workload.task_ids
+            )
+            if isinstance(_binding, _WorkloadExecutionBinding):
+                _binding.completed_results = ordered_results
             encoded = {
-                task_id: _encode_task_result(results[task_id])
-                for task_id in workload.task_ids
+                task_id: _encode_task_result(result)
+                for task_id, result in zip(
+                    workload.task_ids,
+                    ordered_results,
+                    strict=True,
+                )
             }
             return ProgramNodeResult(
-                value={"completed_task_ids": tuple(encoded)},
+                value={"completed_task_ids": workload.task_ids},
                 semantic_state_update={"workload_results": encoded},
             )
         return execute
@@ -468,32 +573,14 @@ class WorkloadGraphBinding:
                 raise TypeError(
                     "workload task-group scope returned invalid TaskGroupPort"
                 )
-            operation = ResearchHostOperation(
-                _FRONTIER_OPERATION,
-                self._frontier_handler(
-                    by_id=by_id,
-                    workload=workload,
-                    context=context,
-                    ordinal_by_id=ordinal_by_id,
-                    task_group=task_group,
-                ),
-                canonical_digest({
-                    "operation": _FRONTIER_OPERATION,
-                    "binding_identity": self.identity_digest,
-                    "workload_digest": workload.workload_digest,
-                }),
+            binding = _WorkloadExecutionBinding(
+                by_id=by_id,
+                workload=workload,
+                context=context,
+                ordinal_by_id=ordinal_by_id,
+                task_group=task_group,
             )
-            host = ResearchProgramHost(
-                host_id=f"workload:{workload.workload_digest[:24]}",
-                program=program,
-                operations=(operation,),
-                journal=self._journal,
-                max_steps=2,
-                dependency_identity={
-                    "binding_identity": self.identity_digest,
-                    "workload_digest": workload.workload_digest,
-                },
-            )
+            host = self._host_for(workload)
             machine_id = (
                 "workload:"
                 + canonical_digest({
@@ -513,7 +600,7 @@ class WorkloadGraphBinding:
                     "run_id": context.run_id,
                     "lifetime_id": context.lifetime_id,
                 },
-                binding=self,
+                binding=binding,
                 initial_data={},
                 command_id_prefix=machine_id,
             )
@@ -529,6 +616,8 @@ class WorkloadGraphBinding:
                 ),
                 scope=FailureScope.RUN,
             )
+        if binding.completed_results is not None:
+            return WorkloadGraphResult(binding.completed_results)
         semantic = thaw_json(execution.semantic_state)
         raw_results = semantic.get("workload_results")
         if not isinstance(raw_results, dict):

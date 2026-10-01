@@ -66,7 +66,10 @@ def _fake_outputs(inspect_document: list[dict], smoke: dict):
 
 def test_container_definition_uses_only_prebuilt_distribution_wheel():
     dockerfile = (ROOT / "deploy" / "Dockerfile").read_text(encoding="utf-8")
+    assert "COPY runtime-dependencies.txt" in dockerfile
     assert "COPY *.whl" in dockerfile
+    assert "pip install -r /tmp/noetrium-runtime-dependencies.txt" in dockerfile
+    assert 'pip install --no-deps "$wheel"' in dockerfile
     assert "COPY noetrium_platform " not in dockerfile
     assert "python -m pip wheel" not in dockerfile
     assert "PLATFORM_WHEEL_SHA256" in dockerfile
@@ -83,13 +86,18 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     assert "apt-get" not in dockerfile
     assert " install git" not in dockerfile.lower()
     user_layer = dockerfile.index("RUN useradd")
+    dependency_copy = dockerfile.index("COPY runtime-dependencies.txt")
+    dependency_install = dockerfile.index(
+        "RUN python -m pip install -r /tmp/noetrium-runtime-dependencies.txt"
+    )
     wheel_copy = dockerfile.index("COPY *.whl")
     wheel_arg = dockerfile.index("ARG PLATFORM_WHEEL_SHA256")
     wheel_install = dockerfile.index("RUN wheel=")
     entrypoint_copy = dockerfile.index("COPY --chmod=0755 container-entrypoint.sh")
     source_arg = dockerfile.index("ARG PLATFORM_SOURCE_SHA")
     provenance_label = dockerfile.index("LABEL org.opencontainers.image.revision")
-    assert user_layer < wheel_copy < wheel_arg < wheel_install
+    assert user_layer < dependency_copy < dependency_install < wheel_copy
+    assert wheel_copy < wheel_arg < wheel_install
     assert wheel_install < entrypoint_copy < source_arg < provenance_label
 
 def test_container_qualification_uses_ephemeral_tmpfs():
@@ -226,10 +234,12 @@ def _write_distribution_evidence(
     assets.mkdir(exist_ok=True)
     dockerfile = assets / "Dockerfile"
     entrypoint = assets / "container-entrypoint.sh"
+    runtime_dependencies = assets / "runtime-dependencies.txt"
     dockerfile.write_bytes(b"FROM exact\n")
     entrypoint.write_bytes(b"#!/bin/sh\n")
+    runtime_dependencies.write_bytes(b"httpx[http2]>=0.28,<0.29\n")
     evidence = {
-        "schema": context._DISTRIBUTION_SCHEMA,
+        "schema": context._RUNTIME_ARTIFACT_SCHEMA,
         "source_sha": SHA,
         "source_tree_sha256": tree_sha,
         "manifest_source": "content-addressed-filesystem-snapshot",
@@ -252,15 +262,22 @@ def _write_distribution_evidence(
                 "sha256": hashlib.sha256(entrypoint.read_bytes()).hexdigest(),
                 "size": entrypoint.stat().st_size,
             },
+            "runtime_dependencies": {
+                "path": "container-build-assets/runtime-dependencies.txt",
+                "sha256": hashlib.sha256(
+                    runtime_dependencies.read_bytes()
+                ).hexdigest(),
+                "size": runtime_dependencies.stat().st_size,
+            },
         },
         "oss_metadata": {"license_expression": "Apache-2.0", "license_files": ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]},
         "artifacts": {wheel.name: {"sha256": wheel_sha, "size": wheel.stat().st_size}},
     }
-    evidence_path = dist / "DISTRIBUTION_RELEASE_EVIDENCE.json"
+    evidence_path = dist / context._RUNTIME_ARTIFACT_EVIDENCE
     raw = (json.dumps(evidence, sort_keys=True) + "\n").encode("utf-8")
     evidence_path.write_bytes(raw)
     digest = hashlib.sha256(raw).hexdigest()
-    (dist / "DISTRIBUTION_RELEASE_EVIDENCE.json.sha256").write_bytes(
+    (dist / f"{context._RUNTIME_ARTIFACT_EVIDENCE}.sha256").write_bytes(
         f"{digest}  {evidence_path.name}\n".encode("utf-8")
     )
     return evidence_path
@@ -297,7 +314,14 @@ def test_prepare_context_uses_evidence_bound_snapshot_assets(tmp_path: Path):
         assert (output / wheel.name).read_bytes() == b"exact-wheel"
         assert (output / "Dockerfile").read_bytes() == b"FROM exact\n"
         assert (output / "container-entrypoint.sh").read_bytes() == b"#!/bin/sh\n"
+        assert (output / "runtime-dependencies.txt").read_bytes() == (
+            b"httpx[http2]>=0.28,<0.29\n"
+        )
+        assert receipt.schema == "noetrium.container-build-context.v2"
         assert receipt.wheel_sha256 == wheel_sha
+        assert receipt.runtime_dependencies_sha256 == hashlib.sha256(
+            b"httpx[http2]>=0.28,<0.29\n"
+        ).hexdigest()
         assert receipt.distribution_evidence_sha256 == hashlib.sha256(evidence_path.read_bytes()).hexdigest()
 
 def test_ci_builds_container_from_formal_distribution_context():
@@ -327,8 +351,8 @@ def test_prepare_context_rejects_tampered_distribution_evidence_sidecar(monkeypa
             wheel_sha=hashlib.sha256(wheel.read_bytes()).hexdigest(),
             tree_sha="e" * 64,
         )
-        (dist / "DISTRIBUTION_RELEASE_EVIDENCE.json.sha256").write_text(
-            "0" * 64 + "  DISTRIBUTION_RELEASE_EVIDENCE.json\n",
+        (dist / f"{context._RUNTIME_ARTIFACT_EVIDENCE}.sha256").write_text(
+            "0" * 64 + f"  {context._RUNTIME_ARTIFACT_EVIDENCE}\n",
             encoding="utf-8",
         )
         with pytest.raises(ValueError, match="sidecar mismatch"):
@@ -351,7 +375,7 @@ def test_prepare_context_rejects_missing_oss_metadata_authority(tmp_path: Path) 
     raw = (json.dumps(evidence, sort_keys=True) + "\n").encode("utf-8")
     evidence_path.write_bytes(raw)
     digest = hashlib.sha256(raw).hexdigest()
-    (dist / "DISTRIBUTION_RELEASE_EVIDENCE.json.sha256").write_bytes(
+    (dist / f"{context._RUNTIME_ARTIFACT_EVIDENCE}.sha256").write_bytes(
         f"{digest}  {evidence_path.name}\n".encode("utf-8")
     )
 

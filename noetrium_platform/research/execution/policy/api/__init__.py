@@ -15,6 +15,7 @@ from .budget import (
     ExecutionBudgetExceeded,
     ExecutionBudgetPolicy,
     ExecutionBudgetReservation,
+    ExecutionBudgetReservationRequest,
     ExecutionBudgetSnapshot,
 )
 __all__ = tuple(__all__) + (
@@ -23,5 +24,6 @@ __all__ = tuple(__all__) + (
     "ExecutionBudgetExceeded",
     "ExecutionBudgetPolicy",
     "ExecutionBudgetReservation",
+    "ExecutionBudgetReservationRequest",
     "ExecutionBudgetSnapshot",
 )

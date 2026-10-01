@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from types import MappingProxyType
 
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
@@ -89,6 +90,18 @@ class ProgramRule:
     state_matches: JsonObject = field(default_factory=dict)
     payload_matches: JsonObject = field(default_factory=dict)
     configuration: JsonObject = field(default_factory=dict)
+    _state_matchers: tuple[tuple[tuple[str, ...], JsonValue], ...] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _payload_matchers: tuple[tuple[tuple[str, ...], JsonValue], ...] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -110,6 +123,22 @@ class ProgramRule:
             if not isinstance(value, Mapping):
                 raise TypeError(f"program rule {name} must be an object")
             object.__setattr__(self, name, freeze_json(value))
+        object.__setattr__(
+            self,
+            "_state_matchers",
+            tuple(
+                (tuple(path.split(".")), target)
+                for path, target in self.state_matches.items()
+            ),
+        )
+        object.__setattr__(
+            self,
+            "_payload_matchers",
+            tuple(
+                (tuple(path.split(".")), target)
+                for path, target in self.payload_matches.items()
+            ),
+        )
 
     def as_payload(self) -> JsonObject:
         return {
@@ -130,6 +159,12 @@ class ProgramRuleSet:
     max_matches: int | None = 1
     unhandled: UnhandledEventPolicy = UnhandledEventPolicy.ERROR
     rule_set_digest: str = field(init=False)
+    _rules_by_event: Mapping[str, tuple[ProgramRule, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         if type(self.rules) is not tuple or not self.rules:
@@ -145,6 +180,22 @@ class ProgramRuleSet:
             raise ValueError("rule dispatch max_matches must be positive or None")
         if not isinstance(self.unhandled, UnhandledEventPolicy):
             raise TypeError("unhandled policy must be UnhandledEventPolicy")
+        buckets: dict[str, list[ProgramRule]] = {}
+        for rule in self.rules:
+            buckets.setdefault(rule.event_kind, []).append(rule)
+        object.__setattr__(
+            self,
+            "_rules_by_event",
+            MappingProxyType({
+                event_kind: tuple(
+                    sorted(
+                        rows,
+                        key=lambda rule: (-rule.priority, rule.rule_id),
+                    )
+                )
+                for event_kind, rows in buckets.items()
+            }),
+        )
         object.__setattr__(
             self,
             "rule_set_digest",
@@ -160,17 +211,20 @@ class ProgramRuleSet:
         event: MachineEvent,
         state: Mapping[str, JsonValue],
     ) -> tuple[ProgramRule, ...]:
-        matches = tuple(
-            rule
-            for rule in self.rules
-            if rule.event_kind == event.kind
-            and _matches(state, rule.state_matches)
-            and _matches(event.payload, rule.payload_matches)
-        )
-        ordered = tuple(
-            sorted(matches, key=lambda rule: (-rule.priority, rule.rule_id))
-        )
-        return ordered if self.max_matches is None else ordered[: self.max_matches]
+        limit = self.max_matches
+        matches: list[ProgramRule] = []
+        for rule in self._rules_by_event.get(event.kind, ()):
+            if (
+                _matches_compiled(state, rule._state_matchers)
+                and _matches_compiled(
+                    event.payload,
+                    rule._payload_matchers,
+                )
+            ):
+                matches.append(rule)
+                if limit is not None and len(matches) >= limit:
+                    break
+        return tuple(matches)
 
     def as_payload(self) -> JsonObject:
         return {
@@ -181,20 +235,26 @@ class ProgramRuleSet:
         }
 
 
-def _lookup(value: Mapping[str, JsonValue], path: str) -> JsonValue:
+def _lookup_parts(
+    value: Mapping[str, JsonValue],
+    parts: tuple[str, ...],
+) -> JsonValue:
     current: object = value
-    for part in path.split("."):
+    for part in parts:
         if not isinstance(current, Mapping) or part not in current:
             return None
         current = current[part]
     return current  # type: ignore[return-value]
 
 
-def _matches(
+def _matches_compiled(
     value: Mapping[str, JsonValue],
-    expected: Mapping[str, JsonValue],
+    matchers: tuple[tuple[tuple[str, ...], JsonValue], ...],
 ) -> bool:
-    return all(_lookup(value, path) == target for path, target in expected.items())
+    return all(
+        _lookup_parts(value, parts) == target
+        for parts, target in matchers
+    )
 
 
 def compile_rule_program(

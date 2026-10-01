@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+import json
 
 from noetrium_platform.infrastructure.lifecycle.process.api import ProcessCommandRunnerPort
 
@@ -12,6 +13,7 @@ from noetrium_platform.infrastructure.lifecycle.session.api import (
 )
 
 from .binding import DirectoryPersistentSessionBindingStore
+from .docker_transport import DockerPersistentSessionControl
 from .status import BoundPersistentSessionStatusProbe
 from .tmux_transport import TmuxPersistentSessionControl
 
@@ -74,11 +76,64 @@ def _tmux_factory(
     )
 
 
+def _tuple_json_option(options: dict[str, str], key: str) -> tuple[str, ...]:
+    raw = options.get(key, "[]")
+    value = json.loads(raw)
+    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
+        raise ValueError(f"{key} must be a JSON list of non-empty strings")
+    return tuple(value)
+
+
+def _docker_factory(
+    config: PersistentSessionBackendConfig,
+    *,
+    process_runner: ProcessCommandRunnerPort,
+) -> PersistentSessionControlPort:
+    options = config.as_dict()
+    allowed = {
+        "docker_executable", "image", "user", "network_host", "gpus",
+        "mounts_json", "group_add_json", "restart_policy",
+        "binary_identity_digest", "image_identity", "daemon_identity",
+        "command_timeout_s",
+    }
+    unknown = sorted(set(options) - allowed)
+    if unknown:
+        raise ValueError(f"unknown Docker persistent-session options: {unknown}")
+    image = options.get("image", "").strip()
+    if not image:
+        raise ValueError("Docker persistent-session backend requires image")
+    network_raw = options.get("network_host", "true").strip().lower()
+    if network_raw not in {"true", "false"}:
+        raise ValueError("network_host must be true or false")
+    return DockerPersistentSessionControl(
+        process_runner=process_runner,
+        image=image,
+        docker_executable=options.get("docker_executable", "docker"),
+        command_timeout_s=float(options.get("command_timeout_s", "10.0")),
+        user=options.get("user"),
+        network_host=network_raw == "true",
+        gpus=options.get("gpus"),
+        mounts=_tuple_json_option(options, "mounts_json"),
+        group_add=_tuple_json_option(options, "group_add_json"),
+        restart_policy=options.get("restart_policy", "unless-stopped"),
+        binary_identity_digest=options.get("binary_identity_digest"),
+        image_identity=options.get("image_identity"),
+        daemon_identity=options.get("daemon_identity"),
+    )
+
+
 def default_persistent_session_backend_registry(
     process_runner: ProcessCommandRunnerPort,
 ) -> PersistentSessionBackendRegistry:
     return PersistentSessionBackendRegistry(
-        {"tmux": lambda config: _tmux_factory(config, process_runner=process_runner)}
+        {
+            "tmux": lambda config: _tmux_factory(
+                config, process_runner=process_runner
+            ),
+            "docker": lambda config: _docker_factory(
+                config, process_runner=process_runner
+            ),
+        }
     )
 
 

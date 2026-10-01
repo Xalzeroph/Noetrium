@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from hashlib import sha256
 from pathlib import Path
+import re
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
@@ -40,7 +41,6 @@ from .machine import (
     MachineConflict,
     MachineIntegrityError,
     MachineStatus,
-    STRUCTURED_STATE_DELTA_THRESHOLD_BYTES,
 )
 from .contracts import ChildMachineLink
 
@@ -62,6 +62,15 @@ def _command_document(command: MachineCommand) -> dict[str, object]:
 
 _MACHINE_COMMIT_RECORD_SCHEMA = "machine.commit.v3"
 _DEFAULT_STATE_SNAPSHOT_INTERVAL = 256
+_DEFAULT_STRUCTURED_STATE_THRESHOLD_BYTES = 0
+_MACHINE_JOURNAL_RECOVERY_ANCHOR_SCHEMA = "machine.journal-recovery-anchor.v1"
+_MACHINE_JOURNAL_RECOVERY_ANCHOR_FIELDS = {
+    "machine_id", "prefix_size", "prefix_sha256", "anchor_commit",
+    "has_emitted", "structured_state_enabled",
+}
+_JOURNAL_ID_TOKEN = re.compile(
+    rb'"(command_id|commit_id)":("(?:\\\\.|[^"\\\\])*")'
+)
 _UNCHANGED = object()
 
 
@@ -759,6 +768,11 @@ class _DirectoryJournalCache:
         "history",
         "file_identity",
         "structured_state_enabled",
+        "history_complete",
+        "prefix_command_tokens",
+        "prefix_commit_tokens",
+        "prefix_hasher",
+        "prefix_size",
     )
 
     def __init__(
@@ -766,10 +780,21 @@ class _DirectoryJournalCache:
         history: _JournalHistory,
         file_identity: tuple[int, int, int, int, int] | None,
         structured_state_enabled: bool = False,
+        *,
+        history_complete: bool = True,
+        prefix_command_tokens: frozenset[bytes] = frozenset(),
+        prefix_commit_tokens: frozenset[bytes] = frozenset(),
+        prefix_hasher=None,
+        prefix_size: int = 0,
     ) -> None:
         self.history = history
         self.file_identity = file_identity
         self.structured_state_enabled = structured_state_enabled
+        self.history_complete = history_complete
+        self.prefix_command_tokens = prefix_command_tokens
+        self.prefix_commit_tokens = prefix_commit_tokens
+        self.prefix_hasher = sha256() if prefix_hasher is None else prefix_hasher
+        self.prefix_size = prefix_size
 
 
 class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
@@ -788,7 +813,7 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         root: Path,
         *,
         structured_state_threshold_bytes: int = (
-            STRUCTURED_STATE_DELTA_THRESHOLD_BYTES
+            _DEFAULT_STRUCTURED_STATE_THRESHOLD_BYTES
         ),
         state_snapshot_interval: int = _DEFAULT_STATE_SNAPSHOT_INTERVAL,
     ) -> None:
@@ -809,8 +834,10 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         self.root = Path(root)
         self.logs = self.root / "machines"
         self.locks = self.root / "locks"
+        self.anchors = self.root / "recovery-anchors"
         self.logs.mkdir(parents=True, exist_ok=True)
         self.locks.mkdir(parents=True, exist_ok=True)
+        self.anchors.mkdir(parents=True, exist_ok=True)
         self._structured_state_threshold_bytes = (
             structured_state_threshold_bytes
         )
@@ -828,6 +855,9 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
 
     def _lock_path(self, machine_id: str) -> Path:
         return self.locks / f"{self._file_key(machine_id)}.lock"
+
+    def _anchor_path(self, machine_id: str) -> Path:
+        return self.anchors / f"{self._file_key(machine_id)}.json"
 
     def _retirement_path(self, machine_id: str) -> Path:
         return (
@@ -1033,9 +1063,198 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                 f"cannot decode machine journal: {path}"
             ) from exc
 
+    @staticmethod
+    def _seed_history_from_anchor(
+        anchor: MachineCommit,
+        *,
+        has_emitted: bool,
+    ) -> _JournalHistory:
+        history = _JournalHistory()
+        history.commits.append(anchor)
+        history.by_command_id[anchor.command_id] = anchor
+        history.by_commit_id[anchor.commit_id] = anchor
+        history.has_emitted = bool(has_emitted or anchor.emitted_commands)
+        return history
+
+    def _load_recovery_anchor(
+        self,
+        machine_id: str,
+        *,
+        raw: bytes,
+        path: Path,
+        file_identity: tuple[int, int, int, int, int],
+    ) -> _DirectoryJournalCache | None:
+        anchor_path = self._anchor_path(machine_id)
+        if not anchor_path.is_file():
+            return None
+        try:
+            payload = decode_checksummed_document(
+                anchor_path.read_bytes(),
+                expected_schema=_MACHINE_JOURNAL_RECOVERY_ANCHOR_SCHEMA,
+            ).payload
+            if set(payload) != _MACHINE_JOURNAL_RECOVERY_ANCHOR_FIELDS:
+                return None
+            if payload.get("machine_id") != machine_id:
+                return None
+            prefix_size = payload.get("prefix_size")
+            prefix_sha256 = payload.get("prefix_sha256")
+            has_emitted = payload.get("has_emitted")
+            structured_state_enabled = payload.get("structured_state_enabled")
+            anchor_document = payload.get("anchor_commit")
+            if (
+                type(prefix_size) is not int
+                or prefix_size <= 0
+                or prefix_size > len(raw)
+                or type(prefix_sha256) is not str
+                or type(has_emitted) is not bool
+                or type(structured_state_enabled) is not bool
+                or not isinstance(anchor_document, dict)
+            ):
+                return None
+            require_sha256(
+                prefix_sha256,
+                "machine journal recovery anchor prefix_sha256",
+            )
+            prefix = raw[:prefix_size]
+            prefix_hasher = sha256()
+            prefix_hasher.update(prefix)
+            if prefix_hasher.hexdigest() != prefix_sha256:
+                return None
+            if anchor_document.get("state_encoding") != "snapshot":
+                return None
+            anchor_line = canonical_bytes(anchor_document) + b"\n"
+            if len(anchor_line) > prefix_size or not prefix.endswith(anchor_line):
+                return None
+            anchor = _decode_commit(
+                anchor_document,
+                previous_state=None,
+            )
+            if (
+                anchor.machine_id != machine_id
+                or anchor.revision <= 0
+                or anchor.revision % self._state_snapshot_interval != 0
+            ):
+                return None
+
+            prefix_before_anchor = prefix[:-len(anchor_line)]
+            command_tokens: set[bytes] = set()
+            commit_tokens: set[bytes] = set()
+            for match in _JOURNAL_ID_TOKEN.finditer(prefix_before_anchor):
+                if match.group(1) == b"command_id":
+                    command_tokens.add(match.group(2))
+                else:
+                    commit_tokens.add(match.group(2))
+            prefix_command_tokens = frozenset(command_tokens)
+            prefix_commit_tokens = frozenset(commit_tokens)
+            history = self._seed_history_from_anchor(
+                anchor,
+                has_emitted=has_emitted,
+            )
+            previous_state: object | None = anchor.state
+            tail = raw[prefix_size:]
+            prefix_hasher.update(tail)
+            for line in tail.splitlines():
+                if not line:
+                    continue
+                if len(line) > self._structured_state_threshold_bytes:
+                    structured_state_enabled = True
+                commit = self._decode_line(
+                    line,
+                    machine_id=machine_id,
+                    path=path,
+                    previous_state=previous_state,
+                )
+                history.accept(commit)
+                previous_state = commit.state
+            return _DirectoryJournalCache(
+                history,
+                file_identity,
+                structured_state_enabled,
+                history_complete=False,
+                prefix_command_tokens=prefix_command_tokens,
+                prefix_commit_tokens=prefix_commit_tokens,
+                prefix_hasher=prefix_hasher,
+                prefix_size=len(raw),
+            )
+        except (
+            OSError,
+            ChecksummedDocumentError,
+            MachineIntegrityError,
+            MachineConflict,
+            TypeError,
+            ValueError,
+        ):
+            # Recovery anchors are disposable acceleration artifacts. Any
+            # malformed/stale anchor falls back to full authoritative replay.
+            return None
+
+    def _publish_recovery_anchor(
+        self,
+        commit: MachineCommit,
+        *,
+        committed_payload: bytes,
+        prefix_size: int,
+        prefix_sha256: str,
+        has_emitted: bool,
+        structured_state_enabled: bool,
+    ) -> None:
+        if commit.revision % self._state_snapshot_interval != 0:
+            return
+        try:
+            anchor_document = _commit_document(
+                commit,
+                previous_state=None,
+                force_snapshot=True,
+            )
+            anchor_line = canonical_bytes(anchor_document) + b"\n"
+            if committed_payload != anchor_line:
+                raise MachineIntegrityError(
+                    "recovery anchor revision was not committed as full snapshot"
+                )
+            require_sha256(
+                prefix_sha256,
+                "machine journal recovery anchor prefix_sha256",
+            )
+            if type(prefix_size) is not int or prefix_size <= 0:
+                raise MachineIntegrityError(
+                    "machine journal recovery anchor prefix size is invalid"
+                )
+            anchor_path = self._anchor_path(commit.machine_id)
+            staging = anchor_path.with_suffix(".tmp")
+            encoded = encode_checksummed_document(
+                _MACHINE_JOURNAL_RECOVERY_ANCHOR_SCHEMA,
+                {
+                    "machine_id": commit.machine_id,
+                    "prefix_size": prefix_size,
+                    "prefix_sha256": prefix_sha256,
+                    "anchor_commit": anchor_document,
+                    "has_emitted": bool(has_emitted),
+                    "structured_state_enabled": bool(
+                        structured_state_enabled
+                    ),
+                },
+            )
+            # Recovery anchors are disposable acceleration artifacts, not
+            # accepted-transition authority. Atomic rename prevents readers
+            # from observing a partial document; an OS crash may lose this
+            # sidecar entirely, in which case cold open simply full-replays
+            # the authoritative journal. Do not pay a second fsync barrier.
+            try:
+                staging.unlink(missing_ok=True)
+                staging.write_bytes(encoded)
+                staging.replace(anchor_path)
+            finally:
+                staging.unlink(missing_ok=True)
+        except OSError:
+            # The journal commit is already authoritative. Losing a derived
+            # accelerator must not turn a successful transition into ambiguity.
+            return
+
     def _read_authoritative(
         self,
         machine_id: str,
+        *,
+        force_full: bool = False,
     ) -> _DirectoryJournalCache:
         path = self._log_path(machine_id)
         before = self._file_identity(path)
@@ -1056,6 +1275,17 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             raise MachineIntegrityError(
                 "machine journal contains a torn trailing record"
             )
+
+        if not force_full:
+            accelerated = self._load_recovery_anchor(
+                machine_id,
+                raw=raw,
+                path=path,
+                file_identity=after,
+            )
+            if accelerated is not None:
+                return accelerated
+
         history = _JournalHistory()
         previous_state: object | None = None
         structured_state_enabled = False
@@ -1081,11 +1311,25 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             history,
             after,
             structured_state_enabled,
+            history_complete=True,
+            prefix_hasher=sha256(raw),
+            prefix_size=len(raw),
         )
+
+    def close(self) -> None:
+        """Release journal-local resources.
+
+        Accepted records use the canonical durable append primitive and do not
+        retain process-owned file descriptors.
+        """
+
+        return None
 
     def _authoritative_cache_locked(
         self,
         machine_id: str,
+        *,
+        require_full: bool = False,
     ) -> _DirectoryJournalCache:
         current_identity = self._file_identity(
             self._log_path(machine_id)
@@ -1093,7 +1337,10 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         cached = self._cache.get(machine_id)
         if cached is not None:
             previous = cached.file_identity
-            if previous == current_identity:
+            if (
+                previous == current_identity
+                and (not require_full or cached.history_complete)
+            ):
                 return cached
             if previous is not None:
                 if current_identity is None:
@@ -1115,11 +1362,20 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     raise MachineIntegrityError(
                         "machine journal was truncated"
                     )
-        rebuilt = self._read_authoritative(machine_id)
+        rebuilt = self._read_authoritative(
+            machine_id,
+            force_full=require_full,
+        )
         self._cache[machine_id] = rebuilt
         return rebuilt
 
-    def _project_history(self, machine_id: str, projector):
+    def _project_history(
+        self,
+        machine_id: str,
+        projector,
+        *,
+        require_full: bool = False,
+    ):
         # Project one validated cache value without copying full history.
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("machine_id is required")
@@ -1134,19 +1390,24 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             if (
                 cached is not None
                 and cached.file_identity == identity
+                and (not require_full or cached.history_complete)
             ):
                 return projector(cached.history)
 
         with InterprocessFileLock(self._lock_path(machine_id)):
             with self._cache_lock:
                 return projector(
-                    self._authoritative_cache_locked(machine_id).history
+                    self._authoritative_cache_locked(
+                        machine_id,
+                        require_full=require_full,
+                    ).history
                 )
 
     def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
         return self._project_history(
             machine_id,
             lambda history: history.snapshot(),
+            require_full=True,
         )
 
     def append(self, commit: MachineCommit) -> MachineCommit:
@@ -1162,6 +1423,19 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                 cached = self._authoritative_cache_locked(
                     commit.machine_id
                 )
+                if (
+                    not cached.history_complete
+                    and (
+                        canonical_bytes(commit.command_id)
+                        in cached.prefix_command_tokens
+                        or canonical_bytes(commit.commit_id)
+                        in cached.prefix_commit_tokens
+                    )
+                ):
+                    cached = self._authoritative_cache_locked(
+                        commit.machine_id,
+                        require_full=True,
+                    )
                 existing = cached.history.validate_next(commit)
                 if existing is not None:
                     return existing
@@ -1181,19 +1455,47 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                         )
                     ) + b"\n"
                 )
-                durable_append_bytes(path, payload)
+
+            # The exact per-machine lock remains held while the accepted record
+            # crosses its durability barrier. The process-wide cache lock does
+            # not: unrelated Machines are independent durability streams and
+            # must be able to fsync concurrently.
+            durable_append_bytes(path, payload)
+
+            with self._cache_lock:
+                authoritative = self._cache.get(commit.machine_id)
+                if authoritative is not cached:
+                    raise MachineIntegrityError(
+                        "machine journal cache authority changed during durable append"
+                    )
                 cached.history.accept(commit)
-                if (
-                    len(payload)
-                    > self._structured_state_threshold_bytes
-                ):
+                if len(payload) > self._structured_state_threshold_bytes:
                     cached.structured_state_enabled = True
+                cached.prefix_hasher.update(payload)
+                cached.prefix_size += len(payload)
                 cached.file_identity = self._file_identity(path)
                 if cached.file_identity is None:
                     raise MachineIntegrityError(
                         "machine journal disappeared after durable append"
                     )
-                return commit
+                if cached.file_identity[0] != cached.prefix_size:
+                    raise MachineIntegrityError(
+                        "machine journal byte size drifted from incremental digest"
+                    )
+                has_emitted = cached.history.has_emitted
+                structured_state_enabled = cached.structured_state_enabled
+                prefix_size = cached.prefix_size
+                prefix_sha256 = cached.prefix_hasher.copy().hexdigest()
+
+            self._publish_recovery_anchor(
+                commit,
+                committed_payload=payload,
+                prefix_size=prefix_size,
+                prefix_sha256=prefix_sha256,
+                has_emitted=has_emitted,
+                structured_state_enabled=structured_state_enabled,
+            )
+            return commit
 
     def head(
         self,
@@ -1222,13 +1524,31 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         machine_ids = tuple(
             sorted(set(cached_machine_ids).union(self._machine_ids()))
         )
+        token = canonical_bytes(commit_id)
         for machine_id in machine_ids:
-            value = self._project_history(
-                machine_id,
-                lambda history: history.by_commit_id.get(commit_id),
-            )
-            if value is not None:
-                return value
+            if self._retirement_path(machine_id).exists():
+                continue
+            path = self._log_path(machine_id)
+            identity = self._file_identity(path)
+            with InterprocessFileLock(self._lock_path(machine_id)):
+                with self._cache_lock:
+                    cached = self._cache.get(machine_id)
+                    if cached is None or cached.file_identity != identity:
+                        cached = self._authoritative_cache_locked(machine_id)
+                    value = cached.history.by_commit_id.get(commit_id)
+                    if value is not None:
+                        return value
+                    if cached.history_complete:
+                        continue
+                    if token not in cached.prefix_commit_tokens:
+                        continue
+                    cached = self._authoritative_cache_locked(
+                        machine_id,
+                        require_full=True,
+                    )
+                    value = cached.history.by_commit_id.get(commit_id)
+                    if value is not None:
+                        return value
         return None
 
     def command_commit(
@@ -1236,12 +1556,39 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         machine_id: str,
         command_id: str,
     ) -> MachineCommit | None:
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("machine_id is required")
         if type(command_id) is not str or not command_id.strip():
             raise ValueError("command_id is required")
-        return self._project_history(
-            machine_id,
-            lambda history: history.by_command_id.get(command_id),
-        )
+        if self._retirement_path(machine_id).exists():
+            raise MachineIntegrityError(
+                "machine journal identity is retired"
+            )
+        path = self._log_path(machine_id)
+        identity = self._file_identity(path)
+        with InterprocessFileLock(self._lock_path(machine_id)):
+            with self._cache_lock:
+                cached = self._cache.get(machine_id)
+                if (
+                    cached is None
+                    or cached.file_identity != identity
+                ):
+                    cached = self._authoritative_cache_locked(machine_id)
+                value = cached.history.by_command_id.get(command_id)
+                if value is not None:
+                    return value
+                if cached.history_complete:
+                    return None
+                if (
+                    canonical_bytes(command_id)
+                    not in cached.prefix_command_tokens
+                ):
+                    return None
+                cached = self._authoritative_cache_locked(
+                    machine_id,
+                    require_full=True,
+                )
+                return cached.history.by_command_id.get(command_id)
 
     def has_emitted_commands(self, machine_id: str) -> bool:
         return self._project_history(
@@ -1447,6 +1794,10 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     raise RuntimeError(
                         "purged machine journal carrier reappeared as unowned residue"
                     )
+                try:
+                    self._anchor_path(machine_id).unlink(missing_ok=True)
+                except OSError:
+                    pass
                 with self._cache_lock:
                     self._cache.pop(machine_id, None)
                 return True
@@ -1521,6 +1872,10 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     MachineJournalRetirementPhase.PURGED,
                     carrier_generation=carrier_generation,
                 )
+                try:
+                    self._anchor_path(machine_id).unlink(missing_ok=True)
+                except OSError:
+                    pass
                 with self._cache_lock:
                     self._cache.pop(machine_id, None)
                 return True

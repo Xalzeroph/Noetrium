@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import os
 from threading import RLock
 from pathlib import Path
 from typing import Mapping
-from uuid import uuid4
 
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ContentAddressedSingleFlight,
+    TaskGroupPort,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_local_command_runner
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities
+from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities, ManagedDirectoryKind
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.api import ModelAuthorities, ModelRevisionAuthorityPort
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSpec
@@ -41,6 +44,7 @@ from noetrium_platform.capabilities.model.qualification.composition import (
 from noetrium_platform.infrastructure.resources.compute.api import ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver, NvidiaSmiGpuRuntimeObserver
 from noetrium_platform.composition.resource_probes import LocalCommandResourceProbe
+from noetrium_platform.composition.runtime_coordination import runtime_coordination_root
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
@@ -103,11 +107,37 @@ _MODEL_SERVING_CACHE_ENVIRONMENT = (
     ("CUDA_CACHE_PATH", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "cuda")),
     ("VLLM_CACHE_ROOT", str(_MODEL_SERVING_CACHE_ROOT / "topology" / "vllm")),
 )
-_DYNAMIC_MODEL_ENDPOINT_FLAGS = frozenset({
+_MODEL_COMPILE_DYNAMIC_VALUE_FLAGS = frozenset({
     "--host",
     "--port",
     "--data-parallel-rpc-port",
 })
+_MODEL_COMPILE_IGNORED_VALUE_FLAGS = frozenset({
+    "--max-num-seqs",
+    "--generation-config",
+})
+_MODEL_COMPILE_IGNORED_SWITCH_FLAGS = frozenset({
+    "--disable-uvicorn-access-log",
+    "--disable-log-stats",
+    "--enable-server-load-tracking",
+})
+
+
+def _compile_semantic_compilation_config(raw: str) -> str | None:
+    try:
+        document = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return raw
+    if not isinstance(document, dict):
+        return raw
+    # CUDA-graph capture buckets change startup work and runtime padding, not
+    # the generated model graph. vLLM maintains its own internal graph-cache
+    # hash under this outer cache, so stripping this field only enables safe
+    # reuse of identical compiler artifacts.
+    document.pop("cudagraph_capture_sizes", None)
+    if not document:
+        return None
+    return json.dumps(document, sort_keys=True, separators=(",", ":"))
 
 
 def _model_cache_semantic_argv(argv: tuple[str, ...]) -> tuple[str, ...]:
@@ -115,17 +145,62 @@ def _model_cache_semantic_argv(argv: tuple[str, ...]) -> tuple[str, ...]:
     index = 0
     while index < len(argv):
         value = argv[index]
-        if value in _DYNAMIC_MODEL_ENDPOINT_FLAGS:
+        if value in _MODEL_COMPILE_IGNORED_SWITCH_FLAGS:
+            index += 1
+            continue
+        if value in _MODEL_COMPILE_DYNAMIC_VALUE_FLAGS:
+            if index + 1 >= len(argv):
+                rows.append(value)
+                index += 1
+                continue
             rows.extend((value, "<dynamic>"))
             index += 2
             continue
-        matched = next(
-            (flag for flag in _DYNAMIC_MODEL_ENDPOINT_FLAGS if value.startswith(flag + "=")),
+        if value in _MODEL_COMPILE_IGNORED_VALUE_FLAGS:
+            index += 2 if index + 1 < len(argv) else 1
+            continue
+        if value == "--compilation-config":
+            if index + 1 >= len(argv):
+                rows.append(value)
+                index += 1
+                continue
+            semantic = _compile_semantic_compilation_config(argv[index + 1])
+            if semantic is not None:
+                rows.extend((value, semantic))
+            index += 2
+            continue
+
+        dynamic_match = next(
+            (
+                flag
+                for flag in _MODEL_COMPILE_DYNAMIC_VALUE_FLAGS
+                if value.startswith(flag + "=")
+            ),
             None,
         )
-        rows.append(f"{matched}=<dynamic>" if matched is not None else value)
+        if dynamic_match is not None:
+            rows.append(f"{dynamic_match}=<dynamic>")
+            index += 1
+            continue
+        if any(
+            value.startswith(flag + "=")
+            for flag in _MODEL_COMPILE_IGNORED_VALUE_FLAGS
+        ):
+            index += 1
+            continue
+        compilation_prefix = "--compilation-config="
+        if value.startswith(compilation_prefix):
+            semantic = _compile_semantic_compilation_config(
+                value[len(compilation_prefix):]
+            )
+            if semantic is not None:
+                rows.append(compilation_prefix + semantic)
+            index += 1
+            continue
+        rows.append(value)
         index += 1
     return tuple(rows)
+
 
 
 def _model_serving_cache_keys(spec: ModelDeploymentSpec) -> tuple[str, str]:
@@ -142,9 +217,18 @@ def _model_serving_cache_keys(spec: ModelDeploymentSpec) -> tuple[str, str]:
     )
     topology_key = canonical_digest(
         {
-            "schema": "noetrium.model-serving-topology-cache.v1",
+            "schema": "noetrium.model-serving-topology-cache.v2",
             "compile_key": compile_key,
-            "gpu_devices": spec.gpu_devices,
+            # A one-device vLLM runtime has no inter-GPU topology state.
+            # Sharing its vLLM graph cache across interchangeable placements
+            # avoids recompiling the same stack whenever the scheduler moves
+            # it to another GPU. Multi-GPU runtimes keep exact device tuples
+            # because vLLM persists P2P topology evidence there.
+            "gpu_topology": (
+                ("single-device",)
+                if len(spec.gpu_devices) == 1
+                else spec.gpu_devices
+            ),
         }
     )
     return compile_key, topology_key
@@ -168,6 +252,8 @@ def _model_serving_environment(
 class ManagementPlaneAuthorities:
     scopes: ScopeRegistryPort
     directories: DirectoryManagementAuthorities
+    durable_directories: DirectoryManagementAuthorities
+    physical_directories: DirectoryManagementAuthorities
     execution_environments: ExecutionEnvironmentCatalogPort
     python_environments: PythonEnvironmentAuthorities
     models: ModelAuthorities
@@ -370,6 +456,8 @@ def discover_local_docker_root(
 def build_local_management_plane(
     layout: DirectoryLayout,
     *,
+    durable_layout: DirectoryLayout | None = None,
+    physical_layout: DirectoryLayout | None = None,
     base_service_environment: tuple[tuple[str, str], ...] = (),
     model_source_environment: tuple[tuple[str, str], ...] = (),
     huggingface_cli: str = "hf",
@@ -386,10 +474,25 @@ def build_local_management_plane(
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
     directory_layout = directories.layout
+    durable_directories = (
+        directories
+        if durable_layout is None
+        else build_local_directory_authorities(durable_layout)
+    )
+    durable_directory_layout = durable_directories.layout
+    physical_directories = (
+        directories
+        if physical_layout is None
+        else build_local_directory_authorities(physical_layout)
+    )
+    physical_directory_layout = physical_directories.layout
     lease_clock = LocalLeaseClock()
     physical_host_identity = lease_clock.read().host_identity_digest
     meta = build_platform_meta(
         directory_layout.layout.state / "platform-meta",
+        resource_root=(
+            physical_directory_layout.layout.state / "platform-resources"
+        ),
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
         lease_clock=lease_clock,
@@ -397,14 +500,14 @@ def build_local_management_plane(
     docker_authority_id = canonical_digest(
         {
             "schema": "noetrium.docker-container-authority.v1",
-            "state_root": str(directory_layout.layout.state.resolve()),
+            "state_root": str(physical_directory_layout.layout.state.resolve()),
         }
     )
     docker_owner_generation_id = canonical_digest(
         {
-            "schema": "noetrium.docker-controller-generation.v1",
+            "schema": "noetrium.docker-controller-generation.v2",
             "authority_id": docker_authority_id,
-            "nonce": uuid4().hex,
+            "physical_host_identity": physical_host_identity,
         }
     )
     docker_containers = DockerContainerLeaseAuthority(
@@ -436,10 +539,10 @@ def build_local_management_plane(
     scopes = meta.scopes
     host = compose_local_host(planner=meta.capability_composition)
     runner = SubprocessEnvironmentCommandRunner(local_commands)
-    pip_cache = directory_layout.layout.cache / "pip"
-    conda_cache = directory_layout.layout.cache / "conda-packages"
+    pip_cache = durable_directory_layout.layout.cache / "pip"
+    conda_cache = durable_directory_layout.layout.cache / "conda-packages"
     environments = build_python_environment_authorities(
-        directory_layout,
+        durable_directory_layout,
         (
             VenvEnvironmentBackend(runner, pip_cache=pip_cache),
             CondaEnvironmentBackend(
@@ -454,14 +557,17 @@ def build_local_management_plane(
         runner,
     )
     execution_environments = meta.environments
-    asset_registry = ModelAssetRegistry(directory_layout)
-    deployment_registry = ModelDeploymentRegistry(directory_layout)
-    applied_store = AppliedModelDeploymentStore(directory_layout)
+    asset_registry = ModelAssetRegistry(durable_directory_layout)
+    deployment_registry = ModelDeploymentRegistry(physical_directory_layout)
+    applied_store = AppliedModelDeploymentStore(physical_directory_layout)
     # Exact clear tombstones dominate any active-path residue that can reappear
     # after a crash between unlink and directory durability. Converge those
     # paths before model controllers or new service starts are composed.
     applied_store.reconcile_cleared()
-    asset_storage = LocalModelAssetStorage(directory_layout, additional_pools=model_storage_pools)
+    asset_storage = LocalModelAssetStorage(
+        durable_directory_layout,
+        additional_pools=model_storage_pools,
+    )
     deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
     assets = ModelAssetManager(
         asset_registry,
@@ -470,14 +576,14 @@ def build_local_management_plane(
         (HuggingFaceCliModelSource(
             asset_storage,
             executable=huggingface_cli,
-            cache_root=directory_layout.layout.cache / "huggingface",
+            cache_root=durable_directory_layout.layout.cache / "huggingface",
             environment=dict(model_source_environment),
             command_runner=local_commands,
         ),),
     )
     assignments = ModelAssignmentManager(scopes)
     service_factory = LocalModelServiceRuntimeFactory(
-        directory_layout,
+        physical_directory_layout,
         assets=assets,
         docker_containers=docker_containers,
         docker_runner=docker_commands,
@@ -495,7 +601,7 @@ def build_local_management_plane(
     deployment_runtime = ModelDeploymentRuntime(
         applied_store, deployment_catalog, materializer, service_factory
     )
-    auto_recovery = DurableModelAutoRecoveryAuthority(directory_layout)
+    auto_recovery = DurableModelAutoRecoveryAuthority(physical_directory_layout)
     fleet = ModelFleetRuntime(deployment_catalog, deployment_runtime, auto_recovery)
     deployment_logs = ModelDeploymentLogReader(
         applied_store, deployment_catalog, materializer, service_factory
@@ -508,7 +614,7 @@ def build_local_management_plane(
     )
     controller = ModelDesiredStateController(
         fleet,
-        FileModelControllerStateStore(directory_layout.layout.state / "model" / "deployments" / "controller.json"),
+        FileModelControllerStateStore(physical_directory_layout.layout.state / "model" / "deployments" / "controller.json"),
     )
     models = ModelAuthorities(
         assets, assignments, deployment_catalog, deployment_runtime, fleet, deployment_logs, resources, controller
@@ -516,16 +622,18 @@ def build_local_management_plane(
     return ManagementPlaneAuthorities(
         scopes=scopes,
         directories=directories,
+        durable_directories=durable_directories,
+        physical_directories=physical_directories,
         execution_environments=execution_environments,
         python_environments=environments,
         models=models,
         model_revisions=sqlite_revision_authority(
-            directory_layout.layout.state / "model" / "revisions.sqlite3"
+            durable_directory_layout.layout.state / "model" / "revisions.sqlite3"
         ),
         host=host,
         compute_scheduler=meta.compute_scheduler,
         deployment_qualification=build_local_deployment_qualification(
-            directory_layout.layout.state / "model" / "qualification",
+            durable_directory_layout.layout.state / "model" / "qualification",
             environments.packages,
             environments.execution,
             local_commands,
@@ -557,6 +665,17 @@ def bind_local_model_replica_pool(
         ),
         endpoint_lease_guards=execution_pool.endpoint_lease_guard_factory(
             plane.platform_meta.endpoint_allocations
+        ),
+        realization_singleflight=ContentAddressedSingleFlight(
+            runtime_coordination_root() / "global-single-flight"
+        ),
+        runtime_fabric_leases=plane.platform_meta.resource_leases,
+        runtime_fabric_consumer_lease_id=(
+            "runtime-fabric-consumer:" + execution_pool.owner_generation_id
+        ),
+        runtime_fabric_consumer_lock_path=(
+            plane.physical_directories.layout.root(ManagedDirectoryKind.LOCKS)
+            / "runtime-fabric-consumers.lock"
         ),
     )
 

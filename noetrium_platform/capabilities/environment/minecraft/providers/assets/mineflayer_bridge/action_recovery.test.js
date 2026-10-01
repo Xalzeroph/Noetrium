@@ -85,3 +85,56 @@ test('terminal not_applied provider outcome survives reconstruction', () => {
     assert.equal(duplicate.record.outcome.errors[0].name, 'NoPath')
   } finally { fs.rmSync(root, { recursive: true, force: true }) }
 })
+
+
+test('trailing torn journal record is ignored after crash reconstruction', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mc-action-recovery-'))
+  try {
+    const first = new ActionRecoveryJournal()
+    first.configure(root)
+    first.begin('action-torn', digest, 'chat')
+    first.close()
+
+    fs.appendFileSync(path.join(root, 'actions.jsonl'), '{"schema":"minecraft-action-recovery-v1"')
+    const restarted = new ActionRecoveryJournal()
+    restarted.configure(root)
+    const reconciled = restarted.reconcile('action-torn', digest)
+    assert.equal(reconciled.state, 'intent')
+    assert.equal(reconciled.disposition, 'unknown')
+    restarted.close()
+  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+})
+
+test('legacy per-action record migrates forward through append journal', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mc-action-recovery-'))
+  try {
+    const legacy = {
+      schema: 'minecraft-action-recovery-v1',
+      action_id: 'action-legacy',
+      request_digest: digest,
+      action_type: 'wait',
+      state: 'intent',
+      disposition: 'unknown'
+    }
+    const legacyPath = path.join(root, 'legacy.json')
+    fs.writeFileSync(legacyPath, JSON.stringify(legacy) + '\n')
+
+    const first = new ActionRecoveryJournal()
+    first.configure(root)
+    first.complete('action-legacy', digest, 'wait', {
+      verified: true,
+      effect_disposition: 'applied',
+      outcome: { status: 'applied', code: 'WAIT_COMPLETED' }
+    })
+    first.close()
+    fs.unlinkSync(legacyPath)
+
+    const restarted = new ActionRecoveryJournal()
+    restarted.configure(root)
+    const reconciled = restarted.reconcile('action-legacy', digest)
+    assert.equal(reconciled.state, 'terminal')
+    assert.equal(reconciled.disposition, 'applied')
+    assert.equal(reconciled.outcome.code, 'WAIT_COMPLETED')
+    restarted.close()
+  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+})

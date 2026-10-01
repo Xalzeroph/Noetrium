@@ -217,7 +217,7 @@ To add a profile without changing central platform code:
 
 1. add a registry row with `profile_id`, `category_id`, lifecycle and isolation policy;
 2. declare any profile-specific immutable image/parameter inputs under `build_inputs`; do not add profile-name conditionals to the builder;
-3. add a Dockerfile that extends `PLATFORM_BASE_IMAGE` unless the profile is `base-only`;
+3. add a Dockerfile that extends `PLATFORM_ENVIRONMENT_BASE_IMAGE` unless the profile is `base-only`;
 4. add a profile-local doctor hook;
 5. add a Compose overlay if the profile needs one and wire every declared build-input environment variable through it;
 6. run `./deploy/build-environments.sh validate`;

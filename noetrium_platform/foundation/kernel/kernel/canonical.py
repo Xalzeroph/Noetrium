@@ -58,6 +58,7 @@ class _FrozenJsonObject(Mapping[str, JsonValue]):
         "_canonical_validated_max_depth",
         "_canonical_normalized",
         "_canonical_normalized_remaining_depth",
+        "_required_depth",
     )
 
     def __init__(
@@ -76,6 +77,7 @@ class _FrozenJsonObject(Mapping[str, JsonValue]):
         self._canonical_validated_max_depth: int | None = None
         self._canonical_normalized: dict[str, object] | None = None
         self._canonical_normalized_remaining_depth: int | None = None
+        self._required_depth: int | None = None
 
     def __getitem__(self, key: str) -> JsonValue:
         return self._data[key]
@@ -123,6 +125,35 @@ class _FrozenJsonObject(Mapping[str, JsonValue]):
             self._canonical_normalized_remaining_depth = validated_remaining_depth
 
 
+def _frozen_json_required_depth(value: JsonValue) -> int:
+    """Return exact remaining depth required by an already-frozen JSON value.
+
+    Frozen objects are immutable and acyclic, so this structural fact is stable
+    for their lifetime.  Caching it lets the same scientific payload be embedded
+    at deeper Machine/Program layers without recursively revalidating the whole
+    subtree on every wrapper, while preserving the exact max-depth contract.
+    """
+    if isinstance(value, _FrozenJsonObject):
+        cached = value._required_depth
+        if cached is not None:
+            return cached
+        if not value:
+            required = 0
+        else:
+            required = 1 + max(
+                _frozen_json_required_depth(item)
+                for item in value.values()
+            )
+        value._required_depth = required
+        return required
+    if isinstance(value, tuple):
+        if not value:
+            return 0
+        return 1 + max(_frozen_json_required_depth(item) for item in value)
+    return 0
+
+
+
 def _enter(value: object, active: set[int], *, depth: int, max_depth: int) -> int | None:
     if depth > max_depth:
         raise CanonicalEncodingError(f"canonical payload exceeds maximum depth {max_depth}")
@@ -165,6 +196,16 @@ def _normalize(value: object, *, active: set[int], depth: int, max_depth: int) -
                 and remaining_depth >= validated_remaining
             ):
                 return cached_normalized
+            required_depth = value._required_depth
+            if required_depth is None and cached_normalized is not None:
+                required_depth = _frozen_json_required_depth(value)
+            if required_depth is not None:
+                if remaining_depth < required_depth:
+                    raise CanonicalEncodingError(
+                        f"canonical payload exceeds maximum depth {max_depth}"
+                    )
+                if cached_normalized is not None:
+                    return cached_normalized
             rows: dict[str, object] = {}
             for key, item in value.items():
                 rows[key] = _normalize(
@@ -362,21 +403,11 @@ def _freeze_json(value: JsonInput, *, active: set[int], depth: int, max_depth: i
         remaining = max_depth - depth
         if remaining >= value._validated_depth_limit:
             return value
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise CanonicalEncodingError(
-                    "frozen JSON mappings require string keys"
-                )
-            validated = _freeze_json(
-                item,
-                active=active,
-                depth=depth + 1,
-                max_depth=max_depth,
+        required_depth = _frozen_json_required_depth(value)
+        if remaining < required_depth:
+            raise CanonicalEncodingError(
+                f"frozen JSON exceeds maximum depth {max_depth}"
             )
-            if validated is not item:
-                raise CanonicalEncodingError(
-                    "trusted frozen JSON contained a mutable descendant"
-                )
         value._validated_depth_limit = remaining
         return value
     if not isinstance(value, (Mapping, list, tuple)):

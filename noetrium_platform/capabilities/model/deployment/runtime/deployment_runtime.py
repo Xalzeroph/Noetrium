@@ -83,18 +83,65 @@ class ModelDeploymentRuntime:
             )
         return desired, applied
 
+    def _stop_cleared_orphans_unlocked(
+        self,
+        desired: ModelDeploymentSpec,
+    ) -> int:
+        """Stop exact physical processes fenced by terminal applied tombstones.
+
+        A cleared snapshot is higher-order evidence that its process generation
+        must never be live again. If the exact process still exists after a crash
+        window, stop it using the frozen historical contract instead of
+        reconstructing any launch-time dynamic parameters from current host state.
+        """
+
+        stopped = 0
+        for cleared in self._applied_store.cleared_snapshots(
+            desired.deployment_id
+        ):
+            runtime = self._service_factory.open(
+                cleared.spec,
+                cleared.contract,
+                environment=cleared.environment,
+                readiness_url=cleared.spec.readiness_url,
+            )
+            observation = runtime.reconcile_exact(cleared.contract)
+            if observation.process is None:
+                continue
+            if observation.process != cleared.process:
+                raise RuntimeError(
+                    "cleared model process generation drifted before orphan stop: "
+                    f"{desired.deployment_id}"
+                )
+            outcome = runtime.stop_exact(
+                cleared.contract,
+                cleared.process,
+            )
+            if not outcome.stopped:
+                raise RuntimeError(
+                    "cleared model physical process did not stop: "
+                    f"{desired.deployment_id}"
+                )
+            stopped += 1
+        return stopped
+
     def _stop_applied(
         self,
         desired: ModelDeploymentSpec,
         applied: AppliedModelDeployment | None,
     ) -> ModelDeploymentStatus:
         if applied is None:
+            orphan_count = self._stop_cleared_orphans_unlocked(desired)
             return ModelDeploymentStatus(
                 desired.deployment_id,
                 desired.service_id,
                 desired.desired_state,
                 ModelRuntimeState.STOPPED,
-                detail="not-applied",
+                detail=(
+                    "cleared-orphan-stopped"
+                    if orphan_count
+                    else "not-applied"
+                ),
             )
         runtime = self._service_factory.open(
             applied.spec,
@@ -139,6 +186,61 @@ class ModelDeploymentRuntime:
             desired.desired_state,
             ModelRuntimeState.STOPPED if stopped_converged else ModelRuntimeState.ERROR,
         )
+
+    def recover_applied(
+        self,
+        generation: ModelDeploymentGeneration,
+    ) -> ModelDeploymentGeneration:
+        """Rebuild a lost applied proof from one exact live service only.
+
+        This recovery path is deliberately non-creative: it reconciles the
+        durable service state against the freshly materialized exact contract
+        and refuses recovery if the physical process is absent or drifted.
+        It never starts a replacement process.
+        """
+        with self._lock:
+            desired, applied = self._require_generation(generation)
+            if applied is not None:
+                return self._generation_value(desired, applied)
+            if self._applied_store.cleared_snapshots(desired.deployment_id):
+                raise RuntimeError(
+                    "cleared applied model generation cannot be recovered; "
+                    "retire the stale realization and re-place it: "
+                    f"{desired.deployment_id}"
+                )
+
+            self._materializer.validate_materialization_inputs(desired)
+            contract, environment = self._materializer.materialize(desired)
+            runtime = self._service_factory.open(
+                desired,
+                contract,
+                environment=environment,
+                readiness_url=desired.readiness_url,
+            )
+            observation = runtime.reconcile_exact(contract)
+            if observation.process is None:
+                raise RuntimeError(
+                    "model durable physical process is missing during applied "
+                    f"recovery: {desired.deployment_id}"
+                )
+
+            recovered = AppliedModelDeployment(
+                desired,
+                contract,
+                environment,
+                observation.process,
+            )
+            self._applied_store.put(recovered)
+            persisted = self._applied_store.read(desired.deployment_id)
+            if (
+                persisted is None
+                or persisted.runtime_digest != recovered.runtime_digest
+            ):
+                raise RuntimeError(
+                    "model applied recovery did not durably converge: "
+                    f"{desired.deployment_id}"
+                )
+            return self._generation_value(desired, persisted)
 
     def start(
         self,
@@ -424,8 +526,15 @@ class ModelDeploymentRuntime:
                         f"generation did not stop: {generation.deployment_id}"
                     )
             elif generation.applied_runtime_digest is None:
-                # No physical generation existed in the captured snapshot.
-                pass
+                # No live applied pointer exists. A crash window may still have
+                # left the exact process named by a terminal clear tombstone
+                # running; converge that orphan before retiring logical identity.
+                stopped = self._stop_applied(desired, None)
+                if stopped.runtime_state is not ModelRuntimeState.STOPPED:
+                    raise RuntimeError(
+                        "model deployment orphan cleanup did not converge: "
+                        f"{generation.deployment_id}"
+                    )
             else:
                 # Retry after the exact captured physical generation was already
                 # proven stopped and its applied record was cleared. Desired

@@ -66,6 +66,7 @@ def qualify_and_publish_model_deployment_closure(
     api_keys_by_deployment: Mapping[str, str] | None = None,
     transports_by_deployment: Mapping[str, AsyncJsonHttpTransportPort] | None = None,
     extra_evidence_refs_by_deployment: Mapping[str, tuple[str, ...]] | None = None,
+    replace_malformed_existing: bool = False,
 ) -> QualifiedModelClosurePublicationReceipt:
     """Run exact live canaries and atomically publish one claim-eligible closure."""
 
@@ -225,7 +226,11 @@ def qualify_and_publish_model_deployment_closure(
         runtime_qualification_receipts=tuple(receipts),
         runtime_canary_evidence=tuple(canary_evidence),
     )
-    return publish_qualified_model_deployment_closure(path, publication)
+    return publish_qualified_model_deployment_closure(
+        path,
+        publication,
+        replace_malformed_existing=replace_malformed_existing,
+    )
 
 
 __all__ = ["qualify_and_publish_model_deployment_closure"]

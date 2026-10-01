@@ -83,6 +83,7 @@ class PlatformMetaAuthorities:
 def build_platform_meta(
     root: str | Path,
     *,
+    resource_root: str | Path | None = None,
     gpu_runtime_observer: GpuRuntimeObserverPort | None = None,
     host_runtime_observer: HostRuntimeObserverPort | None = None,
     lease_clock: LeaseClockPort | None = None,
@@ -98,6 +99,13 @@ def build_platform_meta(
     root = Path(root)
     root.mkdir(parents=True, exist_ok=True)
     database = root / "platform-meta.sqlite"
+    physical_root = root if resource_root is None else Path(resource_root)
+    physical_root.mkdir(parents=True, exist_ok=True)
+    resource_database = (
+        database
+        if resource_root is None
+        else physical_root / "platform-resources.sqlite"
+    )
     scopes = SQLiteScopeRegistry(database)
     systems = build_default_system_registry()
     evolution_store = SQLiteEvolutionStore(
@@ -107,7 +115,7 @@ def build_platform_meta(
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
     resolved_lease_clock = lease_clock or LocalLeaseClock()
-    resources = ResourceLeaseRegistry(database, clock=resolved_lease_clock)
+    resources = ResourceLeaseRegistry(resource_database, clock=resolved_lease_clock)
     environments = SQLiteExecutionEnvironmentCatalog(
         root / "platform-environments.sqlite",
         scopes,
@@ -116,18 +124,21 @@ def build_platform_meta(
         catalog=environments,
         ownership=resources,
         leases=resources,
+        coordination_lock_path=(
+            physical_root / "environment-instance-authority.lock"
+        ),
     )
     endpoint_candidates = LocalEndpointCandidateSource()
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(
-            database,
+            resource_database,
             clock=resolved_lease_clock,
         ),
         probe=SocketEndpointProbe(),
         candidates=endpoint_candidates,
     )
     compute = compose_compute_authority(
-        database,
+        resource_database,
         clock=resolved_lease_clock,
         gpu_runtime_observer=gpu_runtime_observer,
         host_runtime_observer=host_runtime_observer,

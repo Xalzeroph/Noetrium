@@ -12,6 +12,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceIdentity,
     ResourceKind,
     ResourceLease,
+    ResourceLeaseCardinality,
     ResourceLeaseClockConflict,
     ResourceLeaseConflict,
     ResourceLeaseExpired,
@@ -21,7 +22,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 )
 
 
-RESOURCE_SCHEMA_VERSION = 5
+RESOURCE_SCHEMA_VERSION = 6
 
 
 def ensure_resource_schema(conn: sqlite3.Connection) -> None:
@@ -41,10 +42,20 @@ def ensure_resource_schema(conn: sqlite3.Connection) -> None:
             scope_kind TEXT NOT NULL,
             scope_id TEXT NOT NULL,
             ownership TEXT NOT NULL,
+            lease_cardinality TEXT NOT NULL DEFAULT 'single-active',
             UNIQUE(resource_kind, resource_id)
         )
         """
     )
+    owner_columns = {
+        str(row[1])
+        for row in conn.execute("PRAGMA table_info(resource_owners)").fetchall()
+    }
+    if "lease_cardinality" not in owner_columns:
+        conn.execute(
+            "ALTER TABLE resource_owners ADD COLUMN lease_cardinality "
+            "TEXT NOT NULL DEFAULT 'single-active'"
+        )
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS resource_leases(
@@ -94,8 +105,13 @@ def ensure_resource_schema(conn: sqlite3.Connection) -> None:
             last_token = MAX(resource_lease_fencing.last_token, excluded.last_token)
         """
     )
+    # Exclusivity is explicit owner lease-cardinality semantics, not a schema
+    # accident. SINGLE_ACTIVE remains the default for every ownership kind; only
+    # owners that explicitly opt into MULTI_ACTIVE admit concurrent consumers.
+    # BEGIN IMMEDIATE serializes the admission check below.
+    conn.execute("DROP INDEX IF EXISTS one_active_resource_lease")
     conn.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS one_active_resource_lease "
+        "CREATE INDEX IF NOT EXISTS active_resource_leases "
         "ON resource_leases(resource_key) WHERE state='active'"
     )
     conn.execute(
@@ -266,6 +282,11 @@ def decode_resource_owner(row: tuple[object, ...]) -> ResourceOwner:
         ResourceIdentity(ResourceKind(str(row[1])), str(row[2])),
         ScopeIdentity(ScopeKind(str(row[3])), str(row[4])),
         ResourceOwnership(str(row[5])),
+        (
+            ResourceLeaseCardinality.SINGLE_ACTIVE
+            if len(row) < 7 or row[6] is None
+            else ResourceLeaseCardinality(str(row[6]))
+        ),
     )
 
 
@@ -295,7 +316,7 @@ def ensure_resource_owner(conn: sqlite3.Connection, owner: ResourceOwner) -> Non
         return
     conn.execute(
         "INSERT INTO resource_owners(resource_key,resource_kind,resource_id,"
-        "scope_kind,scope_id,ownership) VALUES(?,?,?,?,?,?)",
+        "scope_kind,scope_id,ownership,lease_cardinality) VALUES(?,?,?,?,?,?,?)",
         (
             owner.resource.key,
             owner.resource.kind.value,
@@ -303,6 +324,7 @@ def ensure_resource_owner(conn: sqlite3.Connection, owner: ResourceOwner) -> Non
             owner.scope.kind.value,
             owner.scope.scope_id,
             owner.ownership.value,
+            owner.lease_cardinality.value,
         ),
     )
 
@@ -321,11 +343,17 @@ def acquire_resource_lease(
     ):
         raise ValueError("lease ttl_seconds must be finite and > 0")
     owner = conn.execute(
-        "SELECT 1 FROM resource_owners WHERE resource_key=?",
+        "SELECT lease_cardinality FROM resource_owners WHERE resource_key=?",
         (lease.resource.key,),
     ).fetchone()
     if owner is None:
         raise KeyError(lease.resource.key)
+    try:
+        lease_cardinality = ResourceLeaseCardinality(str(owner[0]))
+    except (IndexError, ValueError) as exc:
+        raise ResourceOwnershipConflict(
+            f"resource owner has invalid lease cardinality: {lease.resource.key}"
+        ) from exc
     expire_resource(conn, lease.resource.key, now_epoch_s)
     row = conn.execute(
         "SELECT * FROM resource_leases WHERE lease_id=?",
@@ -345,14 +373,15 @@ def acquire_resource_lease(
         if existing.state is LeaseState.ACTIVE:
             return existing
         next_generation = existing.holder_generation + 1
-    active = conn.execute(
-        "SELECT 1 FROM resource_leases WHERE resource_key=? AND state='active'",
-        (lease.resource.key,),
-    ).fetchone()
-    if active is not None:
-        raise ResourceLeaseConflict(
-            f"resource already has an active lease: {lease.resource.key}"
-        )
+    if lease_cardinality is ResourceLeaseCardinality.SINGLE_ACTIVE:
+        active = conn.execute(
+            "SELECT 1 FROM resource_leases WHERE resource_key=? AND state='active'",
+            (lease.resource.key,),
+        ).fetchone()
+        if active is not None:
+            raise ResourceLeaseConflict(
+                f"resource already has an active lease: {lease.resource.key}"
+            )
     fencing = next_fencing_token(conn, lease.resource.key)
     expires_at = (
         lease.expires_at_epoch_s

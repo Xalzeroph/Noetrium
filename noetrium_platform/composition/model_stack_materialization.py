@@ -41,6 +41,21 @@ _GIB = 1024 ** 3
 _VLLM_REPOSITORY = "vllm/vllm-openai"
 _RUNTIME_FINGERPRINT_SCHEMA = "noetrium.docker-model-runtime-fingerprint.v1"
 _VERSION_RE = re.compile(r"^v?(\d+(?:\.\d+){1,3})(?:[-+].*)?$")
+_VLLM_CUDAGRAPH_CAPTURE_SIZES = (
+    1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512,
+)
+_VLLM_COMPILATION_CONFIG = json.dumps(
+    {"cudagraph_capture_sizes": _VLLM_CUDAGRAPH_CAPTURE_SIZES},
+    sort_keys=True,
+    separators=(",", ":"),
+)
+_VLLM_PLATFORM_ENGINE_ARGS = (
+    "--disable-uvicorn-access-log",
+    "--generation-config",
+    "vllm",
+    "--compilation-config",
+    _VLLM_COMPILATION_CONFIG,
+)
 
 
 _DTYPE_BYTES = {
@@ -92,15 +107,35 @@ def _model_text_config(asset_path: Path) -> dict[str, object]:
     return document
 
 
-def _kv_cache_budget_bytes(
+def _tensor_parallel_supported_by_model_geometry(
+    asset_path: Path,
+    tensor_parallel: int,
+) -> bool:
+    if type(tensor_parallel) is not int or tensor_parallel <= 0:
+        raise ValueError("model tensor parallelism must be positive integer")
+    document = _model_text_config(asset_path)
+    attention_heads = _positive_int(
+        document,
+        "num_attention_heads",
+        "n_head",
+        "num_heads",
+    )
+    if attention_heads is None:
+        raise RuntimeError(
+            "model config lacks attention-head geometry for tensor parallel planning"
+        )
+    return attention_heads % tensor_parallel == 0
+
+
+def model_kv_cache_bytes_per_token(
     asset_path: Path,
     *,
-    context_length: int,
     dtype: str,
     tensor_parallel: int,
 ) -> int:
-    if context_length <= 0 or tensor_parallel <= 0:
-        raise ValueError("KV cache planning requires positive context/tensor parallelism")
+    """Exact per-device KV bytes for one token under the canonical model geometry."""
+    if tensor_parallel <= 0:
+        raise ValueError("KV cache planning requires positive tensor parallelism")
     document = _model_text_config(asset_path)
     layers = _positive_int(document, "num_hidden_layers", "n_layer", "num_layers")
     attention_heads = _positive_int(
@@ -129,24 +164,56 @@ def _kv_cache_budget_bytes(
     dtype_bytes = _DTYPE_BYTES.get(dtype.strip().lower())
     if dtype_bytes is None:
         raise RuntimeError("unsupported model dtype for KV memory planning: " + dtype)
-    # KV heads can be sharded only until one head remains per rank. MQA/GQA
-    # therefore stop shrinking once tensor parallelism exceeds KV-head count.
     kv_partitions = min(tensor_parallel, kv_heads)
     per_device_kv_heads = math.ceil(kv_heads / kv_partitions)
     raw = (
-        context_length
-        * layers
+        layers
         * per_device_kv_heads
         * head_dim
-        * 2  # key + value
+        * 2
         * dtype_bytes
     )
-    budget = math.ceil(
-        raw
-        * _KV_CACHE_FRAGMENTATION_NUMERATOR
-        / _KV_CACHE_FRAGMENTATION_DENOMINATOR
+    return max(
+        1,
+        math.ceil(
+            raw
+            * _KV_CACHE_FRAGMENTATION_NUMERATOR
+            / _KV_CACHE_FRAGMENTATION_DENOMINATOR
+        ),
     )
-    return max(_MIN_KV_CACHE_BYTES, budget)
+
+
+def model_kv_cache_budget_bytes(
+    asset_path: Path,
+    *,
+    context_length: int,
+    dtype: str,
+    tensor_parallel: int,
+) -> int:
+    """Canonical per-device KV budget for one full-context sequence."""
+    if context_length <= 0:
+        raise ValueError("KV cache planning requires positive context length")
+    per_token = model_kv_cache_bytes_per_token(
+        asset_path,
+        dtype=dtype,
+        tensor_parallel=tensor_parallel,
+    )
+    return max(_MIN_KV_CACHE_BYTES, per_token * context_length)
+
+
+def _kv_cache_budget_bytes(
+    asset_path: Path,
+    *,
+    context_length: int,
+    dtype: str,
+    tensor_parallel: int,
+) -> int:
+    return model_kv_cache_budget_bytes(
+        asset_path,
+        context_length=context_length,
+        dtype=dtype,
+        tensor_parallel=tensor_parallel,
+    )
 
 
 def _model_runtime_vram_budget_bytes(
@@ -227,6 +294,11 @@ class MaterializedModelStack:
                 "fingerprint_ref": self.fingerprint_ref,
             }
         )
+
+
+class ModelStackPlacementUnavailable(RuntimeError):
+    """No currently admissible compute topology can host a model stack."""
+
 
 
 class DockerModelStackMaterializer:
@@ -590,18 +662,24 @@ print(json.dumps({
             attention_backend=None,
             scheduler_policy="default",
             engine_args=(
-                ()
-                if gpu_memory_utilization is None
-                else (
-                    "--gpu-memory-utilization",
-                    (
-                        f"{gpu_memory_utilization:.6f}"
-                        .rstrip("0")
-                        .rstrip(".")
-                    ),
+                _VLLM_PLATFORM_ENGINE_ARGS
+                + (
+                    ()
+                    if gpu_memory_utilization is None
+                    else (
+                        "--gpu-memory-utilization",
+                        (
+                            f"{gpu_memory_utilization:.6f}"
+                            .rstrip("0")
+                            .rstrip(".")
+                        ),
+                    )
                 )
             ),
-            serving_policy=ModelServingPolicy(),
+            serving_policy=ModelServingPolicy(
+                prefix_caching=True,
+                chunked_prefill=True,
+            ),
         )
         base = _model_compute_requirement(
             asset.path,
@@ -623,13 +701,12 @@ print(json.dumps({
             ),
         )
 
-    def materialize(
+    def _source_context(
         self,
         model_id: str,
         *,
-        scope: ScopeIdentity | None = None,
-        max_tensor_parallel: int = 8,
-    ) -> MaterializedModelStack:
+        scope: ScopeIdentity | None,
+    ) -> tuple[ScopeIdentity, str, str, dict[str, str]]:
         asset = self._ensure_asset(model_id, scope=scope)
         holder_scope = asset.scope if scope is None else scope
         source, image_digest = self._resolve_vllm_image()
@@ -637,7 +714,57 @@ print(json.dumps({
             engine="vllm",
             image_digest=image_digest,
         )
+        return holder_scope, source, image_digest, fingerprint
+
+    def materialize_for_tensor_parallel(
+        self,
+        model_id: str,
+        tensor_parallel: int,
+        *,
+        scope: ScopeIdentity | None = None,
+    ) -> MaterializedModelStack:
+        if type(tensor_parallel) is not int or tensor_parallel <= 0:
+            raise ValueError("model tensor parallelism must be positive")
+        holder_scope, source, image_digest, fingerprint = self._source_context(
+            model_id,
+            scope=scope,
+        )
+        asset = self._assets.model(model_id)
+        if not _tensor_parallel_supported_by_model_geometry(
+            asset.path,
+            tensor_parallel,
+        ):
+            raise ValueError(
+                "model tensor parallelism is incompatible with attention-head geometry: "
+                f"{model_id}:tp={tensor_parallel}"
+            )
+        return self._candidate(
+            model_id=model_id,
+            scope=holder_scope,
+            tensor_parallel=tensor_parallel,
+            image_digest=image_digest,
+            image_source=source,
+            fingerprint=fingerprint,
+        )
+
+    def materialize(
+        self,
+        model_id: str,
+        *,
+        scope: ScopeIdentity | None = None,
+        max_tensor_parallel: int = 8,
+    ) -> MaterializedModelStack:
+        holder_scope, source, image_digest, fingerprint = self._source_context(
+            model_id,
+            scope=scope,
+        )
+        asset = self._assets.model(model_id)
         for tensor_parallel in range(1, max_tensor_parallel + 1):
+            if not _tensor_parallel_supported_by_model_geometry(
+                asset.path,
+                tensor_parallel,
+            ):
+                continue
             provisional = self._candidate(
                 model_id=model_id,
                 scope=holder_scope,
@@ -651,7 +778,7 @@ print(json.dumps({
                 scope=holder_scope,
             ):
                 return provisional
-        raise RuntimeError(
+        raise ModelStackPlacementUnavailable(
             "no compute topology can materialize model stack: " + model_id
         )
 
@@ -659,4 +786,7 @@ print(json.dumps({
 __all__ = [
     "DockerModelStackMaterializer",
     "MaterializedModelStack",
+    "ModelStackPlacementUnavailable",
+    "model_kv_cache_budget_bytes",
+    "model_kv_cache_bytes_per_token",
 ]

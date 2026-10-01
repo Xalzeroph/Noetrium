@@ -13,6 +13,7 @@ import httpx
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     AsyncJsonHttpTransportPort,
     AsyncJsonSseTransportPort,
+    AsyncTextHttpTransportPort,
     JsonHttpResponse,
     ModelEndpointError,
     RawServerSentEvent,
@@ -54,6 +55,7 @@ class PooledModelHttpTransportSnapshot:
 class PooledModelHttpTransport(
     AsyncJsonHttpTransportPort,
     AsyncJsonSseTransportPort,
+    AsyncTextHttpTransportPort,
 ):
     """Single pooled HTTP transport for model provider traffic.
 
@@ -340,6 +342,91 @@ class PooledModelHttpTransport(
                 other_http_responses=self._other_http_responses,
                 transport_digest=self._transport_digest,
             )
+
+    async def get_text(
+        self,
+        url: str,
+        *,
+        timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
+    ) -> str:
+        self._bind_loop()
+        timeout = self._validate_timeout(
+            timeout_s,
+            "model endpoint text HTTP timeout",
+        )
+        per_request = self._validate_headers(headers)
+        with self._state_lock:
+            self._requests_started += 1
+        try:
+            async with asyncio.timeout(timeout):
+                async with self._client.stream(
+                    "GET",
+                    url,
+                    headers=self._request_headers(
+                        per_request,
+                        accept="text/plain",
+                    ),
+                    timeout=self._request_timeout(timeout_s=timeout),
+                ) as response:
+                    raw = await self._read_bounded_raw(response)
+                    version = response.http_version
+                    status = response.status_code
+        except ModelEndpointError:
+            with self._state_lock:
+                self._requests_failed += 1
+            raise
+        except TimeoutError as exc:
+            with self._state_lock:
+                self._requests_failed += 1
+            raise ModelEndpointError(
+                "model endpoint text HTTP total request timeout",
+                failure_kind="timeout",
+                retryable=True,
+                affects_replica_health=False,
+                transport_digest=self._transport_digest,
+            ) from exc
+        except httpx.HTTPError as exc:
+            with self._state_lock:
+                self._requests_failed += 1
+            translated = self._translate_httpx_error(
+                exc,
+                request_body=b"",
+            )
+            translated.affects_replica_health = False
+            raise translated from exc
+        self._record_http_version(version)
+        if not 200 <= status < 300:
+            with self._state_lock:
+                self._requests_failed += 1
+            raise ModelEndpointError(
+                f"model endpoint text HTTP status is not successful: {status}",
+                response_body=raw,
+                status_code=status,
+                failure_kind="transient" if status >= 500 else "invalid_request",
+                retryable=status >= 500,
+                affects_replica_health=False,
+                http_version=version,
+                transport_digest=self._transport_digest,
+            )
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            with self._state_lock:
+                self._requests_failed += 1
+            raise ModelEndpointError(
+                "model endpoint text HTTP response is not UTF-8",
+                response_body=raw,
+                status_code=status,
+                failure_kind="invalid_request",
+                retryable=False,
+                affects_replica_health=False,
+                http_version=version,
+                transport_digest=self._transport_digest,
+            ) from exc
+        with self._state_lock:
+            self._requests_completed += 1
+        return text
 
     async def post_json(
         self,

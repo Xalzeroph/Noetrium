@@ -12,10 +12,11 @@ text into Journal metadata.
 """
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 import json
 from threading import RLock
+from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import (
@@ -226,6 +227,7 @@ class ModelResponseSelectorRegistryPort(Protocol):
 class ModelResponseSelectorRegistry(ModelResponseSelectorRegistryPort):
     def __init__(self) -> None:
         self._selectors: dict[str, tuple[ModelResponseSelector, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -252,6 +254,7 @@ class ModelResponseSelectorRegistry(ModelResponseSelectorRegistryPort):
                     f"model response selector already registered: {selector}"
                 )
             self._selectors[selector] = value
+            self._identity_digest_cache = None
 
     def resolve(self, selector: str) -> ModelResponseSelector:
         if type(selector) is not str or not selector.strip():
@@ -271,11 +274,15 @@ class ModelResponseSelectorRegistry(ModelResponseSelectorRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (selector, implementation_digest)
-                for selector, (_, implementation_digest)
-                in sorted(self._selectors.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (selector, implementation_digest)
+                    for selector, (_, implementation_digest)
+                    in sorted(self._selectors.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 @dataclass(frozen=True, slots=True)
@@ -393,7 +400,7 @@ def _blob_ref_payload(ref: ArtifactBlobRef) -> JsonObject:
 
 
 def _blob_ref_from_payload(value: object) -> ArtifactBlobRef:
-    if not isinstance(value, dict):
+    if not isinstance(value, Mapping):
         raise TypeError("model response artifact reference must be an object")
     return ArtifactBlobRef(
         value["content_sha256"],
@@ -413,6 +420,21 @@ class ModelInvocationRuntimeBinding:
     selectors: ModelResponseSelectorRegistryPort | None = None
     last_error: BaseException | None = None
     outcome: ModelInvocationOutcome | None = None
+    _client_by_digest: Mapping[
+        str,
+        ProjectModelCapabilityClientPort,
+    ] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _binding_digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         if not isinstance(self.program, ModelInvocationProgram):
@@ -448,18 +470,27 @@ class ModelInvocationRuntimeBinding:
             raise TypeError(
                 "model invocation clients must implement ProjectModelCapabilityClientPort"
             )
-        client_digests = tuple(client.binding.digest() for client in self.clients)
-        if len(client_digests) != len(set(client_digests)):
+        client_by_digest = {
+            client.binding.digest(): client
+            for client in self.clients
+        }
+        if len(client_by_digest) != len(self.clients):
             raise ValueError("model invocation client bindings must be unique")
-        if set(client_digests) != set(self.binding_set.binding_digests):
+        admitted_digests = frozenset(self.binding_set.binding_digests)
+        if frozenset(client_by_digest) != admitted_digests:
             raise ValueError(
                 "model invocation clients must exactly cover frozen binding set"
             )
+        object.__setattr__(
+            self,
+            "_client_by_digest",
+            MappingProxyType(client_by_digest),
+        )
         candidate_digests = tuple(
             candidate.binding_digest for candidate in self.program.candidates
         )
         if any(
-            digest not in set(self.binding_set.binding_digests)
+            digest not in admitted_digests
             for digest in candidate_digests
         ):
             raise ValueError(
@@ -479,43 +510,44 @@ class ModelInvocationRuntimeBinding:
             raise ValueError(
                 "model invocation selector registry is unused without selector"
             )
-
-    @property
-    def binding_digest(self) -> str:
         selectors = (
             self.selectors.selectors()
             if isinstance(self.selectors, ModelResponseSelectorRegistry)
             else ()
         )
-        return canonical_digest({
-            "model_invocation_program_digest": self.program.program_digest,
-            "binding_set_digest": self.binding_set.binding_set_digest,
-            "input_digest": self.input_digest,
-            "request_factory": {
-                "factory_id": self.request_factory.factory_id,
-                "implementation_digest": (
-                    self.request_factory.implementation_digest
+        object.__setattr__(
+            self,
+            "_binding_digest",
+            canonical_digest({
+                "model_invocation_program_digest": self.program.program_digest,
+                "binding_set_digest": self.binding_set.binding_set_digest,
+                "input_digest": self.input_digest,
+                "request_factory": {
+                    "factory_id": self.request_factory.factory_id,
+                    "implementation_digest": (
+                        self.request_factory.implementation_digest
+                    ),
+                },
+                "selectors": selectors,
+                "selector_registry_digest": (
+                    None
+                    if self.selectors is None
+                    else self.selectors.identity_digest
                 ),
-            },
-            "selectors": selectors,
-            "selector_registry_digest": (
-                None
-                if self.selectors is None
-                else self.selectors.identity_digest
-            ),
-        })
+            }),
+        )
+
+    @property
+    def binding_digest(self) -> str:
+        return self._binding_digest
 
     def client_for(self, binding_digest: str) -> ProjectModelCapabilityClientPort:
-        matches = tuple(
-            client
-            for client in self.clients
-            if client.binding.digest() == binding_digest
-        )
-        if len(matches) != 1:
+        try:
+            return self._client_by_digest[binding_digest]
+        except KeyError as exc:
             raise KeyError(
                 f"no unique model client for binding digest {binding_digest}"
-            )
-        return matches[0]
+            ) from exc
 
     def request_for(
         self,
@@ -545,12 +577,34 @@ class ModelInvocationRuntimeBinding:
 
 
 def _attempt_rows(request: ProgramNodeRequest) -> list[dict[str, JsonValue]]:
-    value = thaw_json(request.data.get("model_attempts", ()))
+    value = request.data.get("model_attempts", ())
     if not isinstance(value, (tuple, list)):
         raise TypeError("model invocation attempt ledger must be a sequence")
-    if any(not isinstance(row, dict) for row in value):
+    if any(not isinstance(row, Mapping) for row in value):
         raise TypeError("model invocation attempt rows must be objects")
+    # Machine state is already deeply immutable.  Copy only the row shell that
+    # the next attempt may extend; recursively thawing every historical row
+    # makes A attempts pay O(A^2) metadata-copy cost.
     return [dict(row) for row in value]
+
+
+def _successful_response_count(
+    rows: list[dict[str, JsonValue]],
+) -> int:
+    if not rows:
+        return 0
+    latest = rows[-1]
+    attempt_index = latest.get("attempt_index")
+    if type(attempt_index) is not int or attempt_index != len(rows):
+        raise RuntimeError(
+            "model attempt ledger sequence is not contiguous"
+        )
+    value = latest.get("success_count_after")
+    if type(value) is not int or value < 0 or value > len(rows):
+        raise RuntimeError(
+            "model attempt ledger success count is invalid"
+        )
+    return value
 
 
 def _successful_responses(
@@ -562,7 +616,7 @@ def _successful_responses(
         ref_value = row.get("response_ref")
         if ref_value is None:
             continue
-        ref = _blob_ref_from_payload(thaw_json(ref_value))
+        ref = _blob_ref_from_payload(ref_value)
         response = _decode_response(binding.responses.get(ref))
         if response.response_digest != row.get("response_digest"):
             raise RuntimeError("stored model response digest drifted")
@@ -588,13 +642,13 @@ def _attempt(
         raise ValueError("runtime ModelInvocationProgram identity drifted")
 
     rows = _attempt_rows(request)
+    success_count = _successful_response_count(rows)
     attempt_index = len(rows) + 1
     if attempt_index > len(binding.program.candidates):
-        successes = _successful_responses(binding, rows)
-        if len(successes) < binding.program.minimum_successes:
+        if success_count < binding.program.minimum_successes:
             return ProgramNodeResult(
                 value={
-                    "success_count": len(successes),
+                    "success_count": success_count,
                     "attempt_count": len(rows),
                 },
                 status=MachineStatus.FAILED,
@@ -605,11 +659,11 @@ def _attempt(
                     "type": "runtime_model_invocation_failed",
                     "reason": "insufficient_successes",
                     "attempt_count": len(rows),
-                    "success_count": len(successes),
+                    "success_count": success_count,
                 },),
             )
         return ProgramNodeResult(
-            value={"success_count": len(successes)},
+            value={"success_count": success_count},
             next_node="select",
         )
 
@@ -647,6 +701,7 @@ def _attempt(
         "response_ref": None,
         "failure_type": None,
         "failure_digest": None,
+        "success_count_after": success_count,
     }
 
     invocation = ModelCapabilityInvocation.from_requirement(
@@ -668,8 +723,8 @@ def _attempt(
         })
         row["failure_type"] = failure_type
         row["failure_digest"] = failure_digest
+        row["success_count_after"] = success_count
         rows.append(row)
-        success_count = len(_successful_responses(binding, rows))
         remaining = len(binding.program.candidates) - len(rows)
         can_still_satisfy = (
             success_count + remaining >= binding.program.minimum_successes
@@ -727,9 +782,10 @@ def _attempt(
     )
     row["response_digest"] = response.response_digest
     row["response_ref"] = _blob_ref_payload(ref)
+    success_count += 1
+    row["success_count_after"] = success_count
     rows.append(row)
 
-    success_count = len(_successful_responses(binding, rows))
     remaining = len(binding.program.candidates) - len(rows)
     next_node = (
         "select"
@@ -768,7 +824,12 @@ def _select(
             "runtime.model.select requires ModelInvocationRuntimeBinding"
         )
     rows = _attempt_rows(request)
+    expected_success_count = _successful_response_count(rows)
     responses = _successful_responses(binding, rows)
+    if len(responses) != expected_success_count:
+        raise RuntimeError(
+            "model attempt ledger success count disagrees with durable responses"
+        )
     if len(responses) < binding.program.minimum_successes:
         return ProgramNodeResult(
             value={
@@ -891,7 +952,7 @@ def model_invocation_runtime_operations() -> tuple[ResearchHostOperation, ...]:
             _attempt,
             canonical_digest({
                 "operation": "runtime.model.attempt",
-                "implementation_revision": 1,
+                "implementation_revision": 2,
             }),
         ),
         ResearchHostOperation(
@@ -899,7 +960,7 @@ def model_invocation_runtime_operations() -> tuple[ResearchHostOperation, ...]:
             _select,
             canonical_digest({
                 "operation": "runtime.model.select",
-                "implementation_revision": 1,
+                "implementation_revision": 2,
             }),
         ),
     )
@@ -1022,11 +1083,18 @@ class ModelInvocationRuntime:
             )
         if binding.outcome is None:
             # Crash-reopen path: reconstruct outcome from authoritative Machine data.
-            rows_value = thaw_json(execution.data.get("model_attempts", ()))
+            rows_value = execution.data.get("model_attempts", ())
             if not isinstance(rows_value, (tuple, list)):
                 raise TypeError("model invocation attempts are invalid")
-            rows = [dict(row) for row in rows_value if isinstance(row, dict)]
+            if any(not isinstance(row, Mapping) for row in rows_value):
+                raise TypeError("model invocation attempt rows are invalid")
+            rows = [dict(row) for row in rows_value]
+            expected_success_count = _successful_response_count(rows)
             responses = _successful_responses(binding, rows)
+            if len(responses) != expected_success_count:
+                raise RuntimeError(
+                    "model attempt ledger success count disagrees with durable responses"
+                )
             selected_digest = execution.data.get(
                 "selected_model_response_digest"
             )

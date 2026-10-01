@@ -484,3 +484,51 @@ def test_environment_instance_release_retries_uncertain_durable_release_without_
     assert converged.state is EnvironmentInstanceState.DIRTY
     assert resources.active_for(resource) == ()
     assert leases.release_calls == 2
+
+
+def test_environment_instance_reconcile_tolerates_binding_removed_after_snapshot() -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, instance = _prepare_catalog(catalog, scope)
+    resources = TestResourceLeaseRegistry()
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=resources,
+        reconcile_on_start=False,
+    )
+    handle = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-snapshot-race",
+        role="runner",
+        scope=scope,
+    )
+    resources.release(
+        handle.lease.lease_id,
+        fencing_token=handle.lease.fencing_token,
+    )
+    original_bindings = catalog.bindings
+    raced = False
+
+    def bindings_with_concurrent_removal():
+        nonlocal raced
+        rows = original_bindings()
+        if not raced:
+            raced = True
+            catalog.unbind("runner", scope)
+        return rows
+
+    catalog.bindings = bindings_with_concurrent_removal  # type: ignore[method-assign]
+    report = authority.reconcile()
+
+    assert report.dirtied_instance_ids == (instance.instance_id,)
+    assert catalog.bindings() == ()
+    assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    assert resources.active_for(
+        ResourceIdentity(ResourceKind.EXECUTION_ENVIRONMENT, instance.instance_id)
+    ) == ()

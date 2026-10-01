@@ -78,6 +78,11 @@ class ResearchExecutionAuthorities:
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None
     method_runtime_inventory: MethodRuntimePortInventory | None = None
     definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None
+    owned_runtime_resources: tuple[object, ...] = field(
+        default=(),
+        repr=False,
+        compare=False,
+    )
 
     def __post_init__(self) -> None:
         _require_sha256(
@@ -122,6 +127,23 @@ class ResearchExecutionAuthorities:
                 "research execution method_runtime_inventory must be "
                 "MethodRuntimePortInventory"
             )
+        if type(self.owned_runtime_resources) is not tuple or any(
+            not callable(getattr(resource, "close", None))
+            for resource in self.owned_runtime_resources
+        ):
+            raise TypeError(
+                "research execution owned_runtime_resources must be a tuple of closeable owners"
+            )
+
+    def close(self) -> None:
+        errors: list[BaseException] = []
+        for resource in reversed(self.owned_runtime_resources):
+            try:
+                resource.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise ExceptionGroup("research execution authority shutdown failed", errors)
 
     @classmethod
     def from_study_bindings(
@@ -132,6 +154,7 @@ class ResearchExecutionAuthorities:
         experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
         method_runtime_inventory: MethodRuntimePortInventory | None = None,
         definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
+        owned_runtime_resources: tuple[object, ...] = (),
     ) -> ResearchExecutionAuthorities:
         if not isinstance(research_bindings, ResearchBindingAuthorityPort):
             raise TypeError(
@@ -147,6 +170,7 @@ class ResearchExecutionAuthorities:
             experiment_runtime_components,
             method_runtime_inventory,
             definition_bindings,
+            owned_runtime_resources,
         )
 
 
@@ -159,6 +183,7 @@ class ResearchExecutionContext:
     content: ResearchExecutionContentAuthorities | None = None
     authority_inputs: tuple[tuple[str, str], ...] = ()
     execution_budget: ExecutionBudgetAuthorityPort | None = None
+    execution_tenant_id: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_root, Path):
@@ -166,6 +191,19 @@ class ResearchExecutionContext:
         if not isinstance(self.runtime, ManagedResearchRuntime):
             raise TypeError(
                 "research execution context runtime must be ManagedResearchRuntime"
+            )
+        if self.execution_tenant_id is not None:
+            if (
+                type(self.execution_tenant_id) is not str
+                or not self.execution_tenant_id.strip()
+            ):
+                raise ValueError(
+                    "research execution context tenant must be non-empty text or None"
+                )
+            object.__setattr__(
+                self,
+                "execution_tenant_id",
+                self.execution_tenant_id.strip(),
             )
         if self.content is None:
             object.__setattr__(
@@ -312,6 +350,7 @@ def open_local_research_execution_context(
     *,
     start_background_controllers: bool,
     authority_inputs: tuple[tuple[str, str], ...] = (),
+    terminal_retirement_on_success: bool = False,
 ) -> Iterator[ResearchExecutionContext]:
     """Open the one ManagedResearchRuntime used by a portfolio execution."""
 
@@ -339,7 +378,10 @@ def open_local_research_execution_context(
             )
         raise
     else:
-        runtime.close()
+        if terminal_retirement_on_success:
+            runtime.retire_runtime_fabric()
+        else:
+            runtime.close()
 
 
 @dataclass(frozen=True, slots=True)

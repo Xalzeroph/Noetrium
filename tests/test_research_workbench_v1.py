@@ -26,7 +26,7 @@ from noetrium_platform.research.experimentation.workbench.providers import (
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    MeasurementRecord, MeasurementValue, MeasurementValueKind,
+    AssignmentWorkload, MeasurementRecord, MeasurementValue, MeasurementValueKind,
     StudyAssignment, StudyMetricObservation,
 )
 
@@ -190,7 +190,13 @@ def test_table_schema_rejects_wrong_types_and_non_nullable_nulls():
 def test_study_observation_adapter_feeds_shared_statistics_and_figures():
     observations = tuple(
         StudyMetricObservation(
-            StudyAssignment("study", variant, repetition, f"seed-{repetition}"),
+            StudyAssignment(
+                "study",
+                variant,
+                repetition,
+                f"seed-{repetition}",
+                AssignmentWorkload((f"task-{variant}-{repetition}",)),
+            ),
             (("return", float(score)), ("latency", float(10 + repetition))),
         )
         for repetition, (variant, score) in enumerate(
@@ -295,8 +301,20 @@ def test_research_lifecycle_compares_all_candidates_against_one_baseline():
 
 def test_research_lifecycle_adapts_authoritative_measurement_records_once():
     assignments = (
-        StudyAssignment("study", "control", 0, "seed-1"),
-        StudyAssignment("study", "candidate-a", 0, "seed-1"),
+        StudyAssignment(
+            "study",
+            "control",
+            0,
+            "seed-1",
+            AssignmentWorkload(("task-control",)),
+        ),
+        StudyAssignment(
+            "study",
+            "candidate-a",
+            0,
+            "seed-1",
+            AssignmentWorkload(("task-candidate",)),
+        ),
     )
     records = tuple(
         MeasurementRecord(

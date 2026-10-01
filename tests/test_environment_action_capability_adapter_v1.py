@@ -208,6 +208,46 @@ def test_prepared_bridge_preserves_outer_capability_identity_and_inner_environme
     assert reconciliation.result.diagnostics["environment_effect"]["request_digest"] == inner_digest
 
 
+def test_environment_bridge_separates_decision_view_from_raw_evidence() -> None:
+    class DecisionEnvironment(_DurableEnvironment):
+        def execute_prepared_action(self, request, handle):
+            base = _result(request)
+            return ActionResult(
+                action_id=base.action_id,
+                accepted=base.accepted,
+                observation=Observation(
+                    "obs-decision",
+                    "env-gen-2",
+                    {
+                        "kind": "rich_environment_result",
+                        "events": (
+                            {"kind": "raw_event", "payload": {"large": "raw"}},
+                        ),
+                        "decision_view": {
+                            "kind": "decision.v1",
+                            "state": {"health": 20},
+                        },
+                    },
+                    ("artifact-1",),
+                ),
+                effect=base.effect,
+                diagnostics=base.diagnostics,
+            )
+
+    environment = DecisionEnvironment()
+    adapter = EnvironmentSessionCapabilityAdapter(environment)
+    request = _request()
+    handle = adapter.prepare_capability_effect(request)
+    result = adapter.execute_prepared_capability(request, handle)
+
+    observation = result.payload["observation"]
+    assert observation["payload"]["kind"] == "decision.v1"
+    assert observation["payload"]["state"]["health"] == 20
+    assert "events" not in observation["payload"]
+    assert result.evidence["observation"]["payload"]["events"][0]["kind"] == "raw_event"
+    assert result.evidence["observation"]["payload"]["decision_view"]["kind"] == "decision.v1"
+
+
 def test_environment_bridge_delegates_checkpoint_restore_and_close() -> None:
     environment = _DurableEnvironment()
     adapter = EnvironmentSessionCapabilityAdapter(environment)

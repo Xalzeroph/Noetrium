@@ -19,6 +19,38 @@ class ResourceKind(StrEnum):
     CONTAINER = "container"
     NETWORK_ENDPOINT = "network-endpoint"
     RECOVERY = "recovery"
+    RUNTIME_FABRIC = "runtime-fabric"
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceLeasePolicy:
+    """Universal TTL/renewal policy for generic durable resource leases."""
+
+    ttl_seconds: float = 120.0
+    renewal_interval_seconds: float = 30.0
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(float(self.ttl_seconds)) or self.ttl_seconds <= 0:
+            raise ValueError("resource lease ttl_seconds must be finite and > 0")
+        if (
+            not math.isfinite(float(self.renewal_interval_seconds))
+            or self.renewal_interval_seconds <= 0
+        ):
+            raise ValueError(
+                "resource lease renewal_interval_seconds must be finite and > 0"
+            )
+        if self.renewal_interval_seconds >= self.ttl_seconds:
+            raise ValueError(
+                "resource lease renewal interval must be shorter than ttl"
+            )
+
+
+DEFAULT_RESOURCE_LEASE_POLICY = ResourceLeasePolicy()
+
+
+class ResourceLeaseCardinality(StrEnum):
+    SINGLE_ACTIVE = "single-active"
+    MULTI_ACTIVE = "multi-active"
 
 
 class ResourceOwnership(StrEnum):
@@ -52,6 +84,7 @@ class ResourceOwner:
     resource: ResourceIdentity
     scope: ScopeIdentity
     ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED
+    lease_cardinality: ResourceLeaseCardinality = ResourceLeaseCardinality.SINGLE_ACTIVE
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,6 +149,9 @@ __all__ = [
     "ResourceIdentity",
     "ResourceKind",
     "ResourceLease",
+    "ResourceLeaseCardinality",
+    "ResourceLeasePolicy",
+    "DEFAULT_RESOURCE_LEASE_POLICY",
     "ResourceOwner",
     "ResourceOwnership",
 ]

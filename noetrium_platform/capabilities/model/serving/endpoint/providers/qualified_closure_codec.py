@@ -271,6 +271,7 @@ def _envelope(raw: object, *, field: str) -> ResourceEnvelope:
             "peak_gpu_memory_bytes_per_device", "peak_host_memory_bytes",
             "max_qualified_concurrency", "ttft_p99_seconds", "tpot_p99_seconds",
             "minimum_output_tokens_per_second",
+            "preferred_operating_concurrency",
         }),
     )
     return ResourceEnvelope(
@@ -288,6 +289,11 @@ def _envelope(raw: object, *, field: str) -> ResourceEnvelope:
         minimum_output_tokens_per_second=_number(
             value["minimum_output_tokens_per_second"],
             field=f"{field}.minimum_output_tokens_per_second",
+            positive=True,
+        ),
+        preferred_operating_concurrency=_integer(
+            value["preferred_operating_concurrency"],
+            field=f"{field}.preferred_operating_concurrency",
             positive=True,
         ),
     )

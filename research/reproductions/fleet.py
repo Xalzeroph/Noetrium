@@ -40,6 +40,7 @@ from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
 from noetrium_platform.research.experimentation.api import (
     ResearchBindingContribution,
     ResearchManifestRequirementsUnresolved,
@@ -1365,6 +1366,7 @@ def execute_materialized_reproduction_fleet(
     authority_manifest_digest: str,
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    operation_dispatcher: OperationDispatchPort,
     content_authorities: ResearchExecutionContentAuthorities | None = None,
 ):
     """Repository adapter over the cardinality-agnostic portfolio executor."""
@@ -1397,6 +1399,7 @@ def execute_materialized_reproduction_fleet(
         execution_id=resolved_execution_id,
         message=_fleet_revision_message(fleet, authority_manifest_digest),
         execution_pool=execution_pool,
+        operation_dispatcher=operation_dispatcher,
         content_authorities=content_authorities,
     ).receipt
 
@@ -1541,6 +1544,7 @@ def run_repository_execution_fleet(
     state_root: Path,
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    operation_dispatcher: OperationDispatchPort,
 ) -> ReproductionFleetExecutionResult:
     """discover -> resolve -> materialize -> compile -> commit -> RUN.
 
@@ -1565,6 +1569,7 @@ def run_repository_execution_fleet(
         authority_manifest_digest=authorities.authority_manifest_digest,
         execution_id=execution_id,
         execution_pool=execution_pool,
+        operation_dispatcher=operation_dispatcher,
     )
     return ReproductionFleetExecutionResult(
         fleet,

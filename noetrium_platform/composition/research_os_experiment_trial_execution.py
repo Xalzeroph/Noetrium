@@ -19,6 +19,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskVerifierPort,
     TrialExecutionReceipt,
     TrialExecutionRequest,
+    TrialPreparationPort,
     TrialProviderPort,
     VariantBinding,
 )
@@ -411,6 +412,52 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             ),
         )
 
+    def _prepare_request(self, request: TrialExecutionRequest) -> None:
+        provider = self._provider_binding.provider
+        if isinstance(provider, TrialPreparationPort):
+            provider.prepare_trial(request)
+
+    def prepare_bound_variant(
+        self,
+        assignment: StudyAssignment,
+        binding: VariantBinding,
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None:
+        self._prepare_request(
+            self._request(
+                assignment,
+                binding,
+                plan_digest,
+                execution_id=execution_id,
+            )
+        )
+
+    def prepare_bound(
+        self,
+        unit: StudyExecutionUnit,
+        bindings: tuple[VariantBinding, ...],
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None:
+        if len(unit.assignments) != len(bindings):
+            raise ValueError(
+                "Trial Study preparation unit/binding cardinality mismatch"
+            )
+        for assignment, binding in zip(
+            unit.assignments,
+            bindings,
+            strict=True,
+        ):
+            self.prepare_bound_variant(
+                assignment,
+                binding,
+                plan_digest,
+                execution_id=execution_id,
+            )
+
     def execute_bound_variant(
         self,
         assignment: StudyAssignment,
@@ -425,7 +472,9 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             plan_digest,
             execution_id=execution_id,
         )
-        provider_receipt = self._provider_binding.provider.run_trial(request)
+        self._prepare_request(request)
+        provider = self._provider_binding.provider
+        provider_receipt = provider.run_trial(request)
         receipt = TrialVerifierOrchestrator().finalize(
             request,
             provider_receipt,

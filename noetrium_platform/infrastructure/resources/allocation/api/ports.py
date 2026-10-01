@@ -54,6 +54,15 @@ class AtomicEndpointReservationPort(Protocol):
         self, proof: EndpointBindingProof, *, expected_previous_binding_proof_digest: str,
         now: float | None = None,
     ) -> EndpointAllocation: ...
+    def reacquire(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        """Reacquire one exact durable allocation with fresh fencing."""
+        ...
     def renew(
         self, allocation: EndpointAllocation, *, ttl_seconds: float, now: float | None = None
     ) -> EndpointAllocation: ...
@@ -100,6 +109,15 @@ class EndpointAllocationPort(Protocol):
     def replace_bound(
         self, proof: EndpointBindingProof, *, expected_previous_binding_proof_digest: str
     ) -> EndpointAllocation: ...
+    def reacquire(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float | None = None,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        """Reacquire one exact durable allocation with fresh fencing."""
+        ...
     def renew(self, allocation: EndpointAllocation, *, ttl_seconds: float | None = None) -> EndpointAllocation: ...
     def renew_many(self, allocations: tuple[EndpointAllocation, ...], *, ttl_seconds: float | None = None) -> tuple[EndpointAllocation, ...]: ...
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:

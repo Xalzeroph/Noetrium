@@ -16,6 +16,7 @@ from noetrium_platform.research.execution.api import (
     ExecutionBudgetPolicy,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    MeasurementContentReference,
     MeasurementRecord,
     MeasurementValue,
     MeasurementValueKind,
@@ -132,8 +133,56 @@ class StandardWorkloadMeasurementProjection:
                 )
             return MeasurementValue(MeasurementValueKind.BOOLEAN, boolean=boolean)
 
+        if resolved_reducer != "last":
+            raise ValueError(
+                "non-scalar/non-boolean source measurements use reducer='last'; "
+                "statistical aggregation belongs to the derived Metric/Analysis layer"
+            )
+        value=values[-1]
+        if definition.value_kind is MeasurementValueKind.CATEGORICAL:
+            if type(value) is not str:
+                raise TypeError("categorical measurement source must resolve text")
+            return MeasurementValue(MeasurementValueKind.CATEGORICAL,categorical=value)
+        if definition.value_kind is MeasurementValueKind.STRUCTURED:
+            if not isinstance(value,Mapping):
+                raise TypeError("structured measurement source must resolve an object")
+            return MeasurementValue(MeasurementValueKind.STRUCTURED,structured=value)
+        if definition.value_kind is MeasurementValueKind.SEQUENCE:
+            if isinstance(value,(str,bytes,bytearray)) or not isinstance(value,(tuple,list)):
+                raise TypeError("sequence measurement source must resolve a sequence")
+            return MeasurementValue(MeasurementValueKind.SEQUENCE,sequence=tuple(value))
+        if definition.value_kind is MeasurementValueKind.DISTRIBUTION:
+            if not isinstance(value,(tuple,list)):
+                raise TypeError("distribution measurement source must resolve a sequence")
+            return MeasurementValue(
+                MeasurementValueKind.DISTRIBUTION,
+                distribution=tuple(tuple(row) for row in value),
+            )
+        if definition.value_kind is MeasurementValueKind.MATRIX:
+            if not isinstance(value,(tuple,list)):
+                raise TypeError("matrix measurement source must resolve a sequence")
+            return MeasurementValue(
+                MeasurementValueKind.MATRIX,
+                matrix=tuple(tuple(row) for row in value),
+            )
+        if definition.value_kind is MeasurementValueKind.TEXT_JUDGEMENT:
+            if type(value) is not str:
+                raise TypeError("text-judgement measurement source must resolve text")
+            return MeasurementValue(
+                MeasurementValueKind.TEXT_JUDGEMENT,
+                text_judgement=value,
+            )
+        if definition.value_kind is MeasurementValueKind.CONTENT_REFERENCE:
+            if type(value) is not MeasurementContentReference:
+                raise TypeError(
+                    "content-reference measurement source must resolve MeasurementContentReference"
+                )
+            return MeasurementValue(
+                MeasurementValueKind.CONTENT_REFERENCE,
+                content_reference=value,
+            )
         raise ValueError(
-            "declared workload measurement source currently requires scalar or boolean value_kind"
+            f"unsupported declared measurement value kind: {definition.value_kind.value}"
         )
 
     @classmethod
@@ -430,6 +479,7 @@ class WorkloadTrialProvider:
             span_id=f"trial:{request.assignment.assignment_digest[:16]}",
             study_id=request.assignment.study_id,
             condition_id=request.assignment.variant_id,
+            execution_tenant_id=request.project_id,
             condition_selections=tuple(
                 (row.factor_id, row.level_id)
                 for row in request.intervention_spec.selections

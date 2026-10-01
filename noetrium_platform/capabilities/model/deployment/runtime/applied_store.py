@@ -182,6 +182,44 @@ class AppliedModelDeploymentStore:
                 return None
             return current
 
+    def cleared_snapshots(
+        self,
+        deployment_id: str,
+    ) -> tuple[AppliedModelDeployment, ...]:
+        """Return terminal process generations retained for exact orphan cleanup.
+
+        A cleared snapshot is never live applied state and must never be
+        resurrected. It remains authoritative evidence for one exact process
+        lifetime until the enclosing deployment identity is retired, which lets
+        recovery stop a stale physical process without reconstructing a dynamic
+        launch contract from current host conditions.
+        """
+
+        self._validate_id(deployment_id)
+        with InterprocessFileLock(self._lock_path(deployment_id)):
+            prefix = f"{self._key(deployment_id)}."
+            values: list[AppliedModelDeployment] = []
+            for marker in sorted(self._cleared_root.glob(f"{prefix}*.json")):
+                try:
+                    value = self._decode(marker)
+                except (
+                    OSError,
+                    UnicodeDecodeError,
+                    json.JSONDecodeError,
+                    ValueError,
+                ) as exc:
+                    raise RuntimeError(
+                        "applied model clear tombstone is unreadable: "
+                        + deployment_id
+                    ) from exc
+                if value.spec.deployment_id != deployment_id:
+                    raise RuntimeError(
+                        "applied model clear tombstone identity drifted: "
+                        + deployment_id
+                    )
+                values.append(value)
+            return tuple(values)
+
     def clear(
         self,
         deployment_id: str,

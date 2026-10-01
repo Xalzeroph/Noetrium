@@ -660,6 +660,76 @@ class ExecutionEnvironmentCatalog:
         acquired = self._instance(candidate.instance_id)
         return EnvironmentInstanceAcquisition(binding, acquired)
 
+    def provision_reusable_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        """Atomically publish one fresh instance already owned by its caller.
+
+        Provisioning must never expose a transient CLEAN slot between instance
+        registration and acquisition: another concurrent consumer could steal
+        that slot and strand the creator. The new instance therefore enters the
+        catalog directly as the caller's IN_USE generation with its binding.
+        """
+        if not isinstance(instance, EnvironmentInstance):
+            raise TypeError(
+                "environment reusable provisioning requires EnvironmentInstance"
+            )
+        for field_name, value in (("binding_id", binding_id), ("role", role)):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"environment reusable provisioning {field_name} "
+                    "must be canonical non-empty text"
+                )
+        if type(scope) is not ScopeIdentity:
+            raise TypeError(
+                "environment reusable provisioning scope must be ScopeIdentity"
+            )
+        self._require_new_profile_admission(
+            instance.profile_id, instance.profile_revision
+        )
+        self._validate_instance_materialization(instance)
+        self._validate_fresh_instance(instance)
+        if instance.instance_id in self._instances:
+            raise EnvironmentCatalogConflict(instance.instance_id)
+        key = (role, scope.key)
+        if key in self._binding_rows:
+            raise EnvironmentCatalogConflict(
+                f"environment binding already exists for {key!r}"
+            )
+
+        binding = EnvironmentBinding(
+            binding_id, scope, role, instance.instance_id
+        )
+        next_instance = replace(
+            instance,
+            state=EnvironmentInstanceState.IN_USE,
+            generation=instance.generation + 1,
+            cleanliness_proof_digest=None,
+        )
+        self._bindings.bind(
+            ScopedValue(
+                "execution-environment-instance",
+                binding.role,
+                binding.scope,
+                binding,
+            )
+        )
+        self._binding_rows[key] = binding
+        self._binding_keys_by_instance.setdefault(instance.instance_id, set()).add(
+            key
+        )
+        self._set_instance(next_instance)
+        return EnvironmentInstanceAcquisition(binding, next_instance)
+
     def recover_reusable_instance(
         self,
         profile_id: str,
@@ -748,6 +818,16 @@ class ExecutionEnvironmentCatalog:
             binding = self._binding_rows.pop(key)
         except KeyError as exc:
             raise EnvironmentCatalogNotFound(key) from exc
+        self._rebuild_bindings()
+        return binding
+
+    def unbind_if_bound(
+        self, role: str, scope: ScopeIdentity
+    ) -> EnvironmentBinding | None:
+        key = (role, scope.key)
+        binding = self._binding_rows.pop(key, None)
+        if binding is None:
+            return None
         self._rebuild_bindings()
         return binding
 
@@ -1896,6 +1976,40 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             timeout_seconds=self.timeout_seconds,
         )
 
+    def provision_reusable_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        def provision_once() -> EnvironmentInstanceAcquisition:
+            self._load()
+            try:
+                value = ExecutionEnvironmentCatalog.provision_reusable_instance(
+                    self,
+                    instance,
+                    binding_id=binding_id,
+                    role=role,
+                    scope=scope,
+                )
+                self._persist()
+                return value
+            except BaseException:
+                # A failed mutation may have changed only this process's
+                # projection. Always reload before another authoritative use.
+                self._loaded = False
+                raise
+
+        return retry_until_deadline(
+            provision_once,
+            should_retry=lambda exc: isinstance(
+                exc, EnvironmentCatalogStaleRevision
+            ),
+            timeout_seconds=self.timeout_seconds,
+        )
+
     def recover_reusable_instance(
         self,
         profile_id: str,
@@ -1933,6 +2047,15 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self._load()
         value = super().unbind(role, scope)
         self._persist()
+        return value
+
+    def unbind_if_bound(
+        self, role: str, scope: ScopeIdentity
+    ) -> EnvironmentBinding | None:
+        self._load()
+        value = super().unbind_if_bound(role, scope)
+        if value is not None:
+            self._persist()
         return value
 
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:

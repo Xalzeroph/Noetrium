@@ -151,6 +151,22 @@ class ExecutionBudgetSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class ExecutionBudgetReservationRequest:
+    charge_id: str
+    requested: ExecutionBudgetDelta
+
+    def __post_init__(self) -> None:
+        if type(self.charge_id) is not str or not self.charge_id.strip():
+            raise ValueError(
+                "execution budget reservation request charge_id is required"
+            )
+        if not isinstance(self.requested, ExecutionBudgetDelta):
+            raise TypeError(
+                "execution budget reservation request delta must be typed"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class ExecutionBudgetReservation:
     scope_id: str
     charge_id: str
@@ -195,11 +211,22 @@ class ExecutionBudgetAuthorityPort(Protocol):
         requested: ExecutionBudgetDelta,
     ) -> ExecutionBudgetReservation: ...
 
+    def reserve_batch(
+        self,
+        scope_id: str,
+        requests: tuple[ExecutionBudgetReservationRequest, ...],
+    ) -> tuple[ExecutionBudgetReservation, ...]: ...
+
     def commit(
         self,
         reservation: ExecutionBudgetReservation,
         actual: ExecutionBudgetDelta,
     ) -> tuple[ExecutionBudgetSnapshot, tuple[str, ...]]: ...
+
+    def abort(
+        self,
+        reservation: ExecutionBudgetReservation,
+    ) -> ExecutionBudgetSnapshot: ...
 
     def consume(
         self,
@@ -215,5 +242,6 @@ __all__ = [
     "ExecutionBudgetExceeded",
     "ExecutionBudgetPolicy",
     "ExecutionBudgetReservation",
+    "ExecutionBudgetReservationRequest",
     "ExecutionBudgetSnapshot",
 ]

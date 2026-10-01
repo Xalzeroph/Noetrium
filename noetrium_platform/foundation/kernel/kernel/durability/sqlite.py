@@ -116,7 +116,7 @@ class DurableSQLiteWriterOwner:
     def _connection_locked(self) -> sqlite3.Connection:
         self._require_process()
         if self._closed:
-            raise RuntimeError("durable SQLite writer owner is closed")
+            raise RuntimeError(f"durable SQLite writer owner is closed: {self._path}")
         connection = self._connection
         if connection is None:
             connection = open_durable_sqlite_writer(

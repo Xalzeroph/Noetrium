@@ -288,14 +288,16 @@ class DirectoryArtifactBlobStore(
         current = self._read_lifecycle_unlocked(ref.content_sha256)
         path = self._path(ref.content_sha256)
         if current is None:
-            active = _BlobLifecycleRecord(
+            # Generation 1 ACTIVE is the immutable blob store's implicit
+            # default state. Persist lifecycle metadata only when leaving the
+            # default state (RETIRING/PURGED) or when a later generation is
+            # republished after a tombstone.
+            return _BlobLifecycleRecord(
                 ref.content_sha256,
                 1,
                 ArtifactBlobLifecycleState.ACTIVE,
                 ref.size_bytes,
             )
-            self._write_lifecycle_unlocked(active)
-            return active
         if current.size_bytes != ref.size_bytes:
             raise ArtifactBlobStoreError(
                 "artifact blob lifecycle size conflicts with content identity"
@@ -327,14 +329,12 @@ class DirectoryArtifactBlobStore(
         path = self._path(ref.content_sha256)
         if current is None:
             self._read_ref_payload_unlocked(ref)
-            current = _BlobLifecycleRecord(
+            return _BlobLifecycleRecord(
                 ref.content_sha256,
                 1,
                 ArtifactBlobLifecycleState.ACTIVE,
                 ref.size_bytes,
-            )
-            self._write_lifecycle_unlocked(current)
-            return current.generation_view()
+            ).generation_view()
         if current.size_bytes != ref.size_bytes:
             raise ArtifactBlobStoreError(
                 "artifact blob ref size does not match physical generation"
@@ -429,21 +429,10 @@ class DirectoryArtifactBlobStore(
                 current = self._read_lifecycle_unlocked(digest)
 
                 if current is None:
-                    lifecycle = _BlobLifecycleRecord(
-                        digest,
-                        1,
-                        ArtifactBlobLifecycleState.ACTIVE,
-                        ref.size_bytes,
-                    )
-                    lifecycle_updates.append(
-                        (
-                            self._lifecycle_path(digest),
-                            encode_checksummed_document(
-                                _LIFECYCLE_SCHEMA,
-                                lifecycle.document(),
-                            ),
-                        )
-                    )
+                    # The durable immutable blob itself is sufficient evidence
+                    # for generation-1 ACTIVE. Avoid a second metadata
+                    # publication on the hot path.
+                    pass
                 else:
                     if current.size_bytes != ref.size_bytes:
                         raise ArtifactBlobStoreError(
@@ -478,19 +467,32 @@ class DirectoryArtifactBlobStore(
                 if not path.exists():
                     missing_blobs.append((path, payload))
 
+            published_digests: set[str] = set()
+            publication_raced = False
             if missing_blobs:
                 try:
                     durable_publish_immutable_bytes_many(
                         tuple(missing_blobs),
                         staging_dir=self._staging_root,
                     )
+                    published_digests.update(
+                        path.stem
+                        for path, _payload in missing_blobs
+                    )
                 except FileExistsError:
                     # A non-cooperating external immutable publisher may win the
-                    # no-replace race. Verification below is the authority: exact
-                    # bytes are accepted, any mismatch fails closed.
-                    pass
+                    # no-replace race. Verification below remains authoritative
+                    # for every raced target because the batched publisher may
+                    # have linked a prefix before the collision.
+                    publication_raced = True
 
             for digest in digests:
+                # Successful publication already proves these exact bytes were
+                # flushed, linked with no-replace semantics, and parent-fsynced.
+                # Re-reading them immediately only doubles hot-path I/O. Existing
+                # blobs and any raced publication are still fully verified.
+                if not publication_raced and digest in published_digests:
+                    continue
                 self._verify_existing(
                     self._path(digest),
                     payload_by_digest[digest],
@@ -543,16 +545,7 @@ class DirectoryArtifactBlobStore(
                     media_type,
                 )
                 self._read_ref_payload_unlocked(ref)
-                if lifecycle is None:
-                    self._write_lifecycle_unlocked(
-                        _BlobLifecycleRecord(
-                            digest,
-                            1,
-                            ArtifactBlobLifecycleState.ACTIVE,
-                            size_bytes,
-                        )
-                    )
-                elif lifecycle.size_bytes != size_bytes:
+                if lifecycle is not None and lifecycle.size_bytes != size_bytes:
                     raise ArtifactBlobStoreError(
                         "artifact blob lifecycle size drifted"
                     )
@@ -573,16 +566,7 @@ class DirectoryArtifactBlobStore(
                         "artifact blob generation is not active"
                     )
                 payload = self._read_ref_payload_unlocked(ref)
-                if lifecycle is None:
-                    self._write_lifecycle_unlocked(
-                        _BlobLifecycleRecord(
-                            digest,
-                            1,
-                            ArtifactBlobLifecycleState.ACTIVE,
-                            ref.size_bytes,
-                        )
-                    )
-                elif lifecycle.size_bytes != ref.size_bytes:
+                if lifecycle is not None and lifecycle.size_bytes != ref.size_bytes:
                     raise ArtifactBlobStoreError(
                         "artifact blob lifecycle size drifted"
                     )
@@ -674,7 +658,6 @@ class DirectoryArtifactBlobStore(
                 ArtifactBlobLifecycleState.ACTIVE,
                 ref.size_bytes,
             )
-            self._write_lifecycle_unlocked(current)
         if current.size_bytes != ref.size_bytes:
             raise ArtifactBlobStoreError(
                 "artifact blob purge ref size drifted"

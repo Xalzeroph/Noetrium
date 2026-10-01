@@ -32,12 +32,18 @@ def test_preclosure_canary_endpoints_share_qualified_admission_authority() -> No
         deployment, route, task_group=object(), admission_registry=registry, transport=transport,
     )
 
-    assert first.route == route
-    assert second.route == route
-    assert first._admission is second._admission
-    assert first._admission.snapshot().capacity == (
+    first_replica = first.replica_set.members[0]
+    second_replica = second.replica_set.members[0]
+    assert first_replica.route == route
+    assert second_replica.route == route
+    first_endpoint = first._runtimes[deployment.deployment_id].endpoint
+    second_endpoint = second._runtimes[deployment.deployment_id].endpoint
+    assert first_endpoint._admission is second_endpoint._admission
+    assert first_endpoint._admission.snapshot().capacity == (
         deployment.certificate.resource_envelope.max_qualified_concurrency
     )
+    first.close()
+    second.close()
     registry.close()
 
 

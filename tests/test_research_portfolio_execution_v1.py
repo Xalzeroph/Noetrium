@@ -4,6 +4,9 @@ from pathlib import Path
 
 from noetrium import api
 from noetrium_platform.product import research_os as research_os_api
+from noetrium_platform.foundation.kernel.kernel import OperationExecutor
+from noetrium_platform.research.execution.workflow.runtime import KernelOperationDispatcher
+from noetrium_platform.research.execution.policy.runtime import SQLiteExecutionBudgetAuthority
 from noetrium_platform.composition.managed_research_runtime import ManagedResearchRuntime
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
@@ -16,6 +19,10 @@ from noetrium_platform.composition.research_portfolio_execution import (
 
 def _bootstrap():
     return None
+
+
+def _operation_dispatcher():
+    return KernelOperationDispatcher(OperationExecutor())
 
 
 def _portfolio() -> research_os_api.ResearchPortfolio:
@@ -51,6 +58,7 @@ def test_single_program_and_multi_program_use_cardinality_agnostic_execution(
         portfolio,
         state_root=tmp_path / "state",
         authorities=authorities,
+        operation_dispatcher=_operation_dispatcher(),
     )
     assert result.portfolio_id == "paper"
     assert result.receipt.state == "succeeded"
@@ -115,6 +123,7 @@ def test_multiple_programs_use_the_same_portfolio_executor(tmp_path: Path) -> No
         portfolio,
         state_root=tmp_path / "state",
         authorities=authorities,
+        operation_dispatcher=_operation_dispatcher(),
     )
 
     assert preflight.selected_node_ids == ("p1::root", "p2::root")
@@ -143,9 +152,15 @@ def test_generic_materializer_loader_is_cardinality_agnostic(
 
     module.build = build
     monkeypatch.setitem(sys.modules, module_name, module)
+    execution_budget = SQLiteExecutionBudgetAuthority(
+        tmp_path / "execution-budget.sqlite3",
+        resource_policy_digest="1" * 64,
+        checkpoint_replay_proof_digest="2" * 64,
+    )
     context = ResearchExecutionContext(
         tmp_path,
         object.__new__(ManagedResearchRuntime),
+        execution_budget=execution_budget,
     )
 
     materializer = load_research_execution_authority_materializer(
@@ -155,3 +170,4 @@ def test_generic_materializer_loader_is_cardinality_agnostic(
 
     assert isinstance(materializer, _Materializer)
     assert seen == [context]
+    execution_budget.close()

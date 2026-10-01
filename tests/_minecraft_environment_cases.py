@@ -453,6 +453,56 @@ class _SessionBridge:
         self.close_calls += 1
 
 
+class _EntityProjectionBridge(_SessionBridge):
+    def command(self, command, payload, *, timeout_s):
+        if command != "observe_entities":
+            return super().command(command, payload, timeout_s=timeout_s)
+        del timeout_s
+        self.calls.append((command, dict(payload)))
+        events = (
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 11,
+                    "uuid": "rabbit-a",
+                    "name": "rabbit",
+                    "mob_type": "Rabbit",
+                    "type": "animal",
+                    "position": {"x": 2, "y": 64, "z": 0},
+                    "distance": 2.0,
+                },
+                sequence=2,
+            ),
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 12,
+                    "uuid": "rabbit-b",
+                    "name": "rabbit",
+                    "mob_type": "Rabbit",
+                    "type": "animal",
+                    "position": {"x": 5, "y": 64, "z": 0},
+                    "distance": 5.0,
+                },
+                sequence=3,
+            ),
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 21,
+                    "uuid": "player-alice",
+                    "username": "Alice",
+                    "name": "player",
+                    "type": "player",
+                    "position": {"x": 3, "y": 64, "z": 1},
+                    "distance": 3.2,
+                },
+                sequence=4,
+            ),
+        )
+        return MinecraftBridgeCommandResult(command, True, True, events, {})
+
+
 class _NoEntityObservationBridge(_SessionBridge):
     def supports_command(self, command: str) -> bool:
         return command == "snapshot"
@@ -591,6 +641,45 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
     assert len(bridge.calls) == call_count
     session.close()
     assert bridge.closed is True
+
+
+def test_minecraft_decision_view_aggregates_by_default_and_can_expand_entities() -> None:
+    bridge = _EntityProjectionBridge()
+    spec = MinecraftEnvironmentSpec(
+        endpoint=MinecraftEndpointSpec(),
+        bridge=MinecraftBridgeSpec(command=("fake-node",), cwd="."),
+        max_entities=8,
+    )
+    session = MinecraftEnvironmentSession(
+        session_id="mc-context-session",
+        implementation=MinecraftEnvironmentImplementation(spec, lambda _spec: bridge),
+        bridge=bridge,
+    )
+    context = ExecutionContext("run", "trace", "span", task_id="task")
+
+    observed = session.observe(context)
+    raw_entities = observed.payload["state"]["nearby_entities"]
+    assert len(raw_entities) == 3
+    assert raw_entities[0]["runtime_id"] in {11, 12, 21}
+
+    summary = observed.payload["decision_view"]
+    assert summary["kind"] == "minecraft_decision_view.v1"
+    nearby = summary["state"]["nearby_entities"]
+    assert nearby["mode"] == "summary"
+    assert nearby["counts"] == {"player": 1, "rabbit": 2}
+    assert len(nearby["rows"]) == 2
+    assert any(row[1] == "Alice" for row in nearby["rows"])
+    assert any(row[0] == 11 for row in nearby["rows"])
+    assert all("rabbit-" not in str(row) for row in nearby["rows"])
+
+    detailed = session._decision_view(detailed_entities=True)
+    detailed_nearby = detailed["state"]["nearby_entities"]
+    assert detailed_nearby["mode"] == "detailed"
+    assert len(detailed_nearby["rows"]) == 3
+    assert {row[0] for row in detailed_nearby["rows"]} == {11, 12, 21}
+    assert "state_digest" not in detailed
+    assert "last_event_sequence" not in detailed["state"]
+    session.close()
 
 
 def test_minecraft_session_prepared_action_binds_exact_identity_before_effect() -> None:
@@ -1358,6 +1447,32 @@ def test_minecraft_composition_joins_generic_participant_endpoint_without_second
     assert endpoint.implementation is assembly.implementation
 
 
+
+
+def test_minecraft_agent_observation_uses_canonical_decision_view_not_raw_state() -> None:
+    from noetrium_platform.composition.minecraft_agent import MinecraftAgentObservationPort
+
+    bridge = _EntityProjectionBridge()
+    spec = MinecraftEnvironmentSpec(
+        endpoint=MinecraftEndpointSpec(),
+        bridge=MinecraftBridgeSpec(command=("fake-node",), cwd="."),
+        max_entities=8,
+    )
+    session = MinecraftEnvironmentSession(
+        session_id="mc-agent-context",
+        implementation=MinecraftEnvironmentImplementation(spec, lambda _spec: bridge),
+        bridge=bridge,
+    )
+    context = ExecutionContext("run", "trace", "span", task_id="task")
+
+    observation = MinecraftAgentObservationPort(session).observe(context)
+    entities = observation.state["nearby_entities"]
+    assert entities["mode"] == "summary"
+    assert entities["counts"] == {"player": 1, "rabbit": 2}
+    assert len(entities["rows"]) == 2
+    assert "events" not in observation.state
+    assert observation.evidence_payload["events"]
+    session.close()
 
 
 def test_minecraft_agent_executor_preserves_effect_identity_and_possible_certainty() -> None:

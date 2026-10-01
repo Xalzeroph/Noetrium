@@ -14,6 +14,9 @@ from noetrium_platform.capabilities.model.deployment.composition import (
 from noetrium_platform.capabilities.model.stack.api import (
     MAX_VLLM_GPU_MEMORY_UTILIZATION,
 )
+from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import (
+    build_local_command_runner,
+)
 from noetrium_platform.capabilities.model.serving.api import (
     DeploymentPlacement,
     QualifiedDeploymentManifest,
@@ -45,6 +48,11 @@ from .model_runtime_bootstrap import (
     GPU_MEMORY_ACCOUNTING_EVIDENCE_REF,
     RequiredModelRuntime,
     bootstrap_required_qualified_model_runtime,
+    qualification_source_stack_digest,
+)
+from .model_stack_materialization import (
+    DockerModelStackMaterializer,
+    ModelStackPlacementUnavailable,
 )
 from .research_execution_pool import ResearchExecutionPool
 
@@ -98,6 +106,61 @@ def _refresh_compute_requirement(source) -> ComputeRequirement:
     )
 
 
+def _desired_stack_materializations(
+    model_topologies: tuple[tuple[str, int], ...],
+    *,
+    assets,
+    compute_scheduler,
+    state_root: Path,
+    execution_pool: ResearchExecutionPool,
+    model_replica_pool: LocalModelReplicaPoolRuntime,
+):
+    if not model_topologies:
+        return {}
+    group = execution_pool.open_control_group(
+        "qualified-model-refresh-stack-plan",
+        resource_id="qualified-model-refresh-stack-plan",
+    )
+    try:
+        runner = build_local_command_runner(
+            group,
+            task_namespace="qualified-model-refresh-stack-plan",
+        )
+        materializer = DockerModelStackMaterializer(
+            assets=assets,
+            compute_scheduler=compute_scheduler,
+            command_runner=runner,
+            state_root=state_root,
+        )
+        desired = {}
+        for model_id, tensor_parallel in model_topologies:
+            desired[(model_id, tensor_parallel)] = (
+                materializer.materialize_for_tensor_parallel(
+                    model_id,
+                    tensor_parallel,
+                )
+            )
+        return desired
+    finally:
+        execution_pool.close_control_group(
+            group,
+            cancel_pending=True,
+        )
+
+
+def _ensure_with_pressure_reclaim(
+    model_replica_pool: LocalModelReplicaPoolRuntime,
+    request: ModelReplicaPoolRequest,
+):
+    while True:
+        try:
+            return model_replica_pool.ensure(request)
+        except ComputePlacementUnavailable:
+            reclaimed = model_replica_pool.reclaim_one_stale_warm_realization()
+            if reclaimed is None:
+                raise
+
+
 def refresh_required_qualified_model_runtimes(
     *,
     authority_root: Path,
@@ -107,6 +170,7 @@ def refresh_required_qualified_model_runtimes(
     compute_scheduler,
     model_resources,
     state_root: Path,
+    runtime_workdir: Path,
     model_replica_pool: LocalModelReplicaPoolRuntime,
     deployment_runtime: ModelDeploymentRuntimePort,
     compute_inventory: ComputeInventoryPort,
@@ -145,7 +209,7 @@ def refresh_required_qualified_model_runtimes(
     if model_replica_pool is None:
         raise RuntimeError("qualified model runtime refresh requires replica pool")
 
-    loaded: list[tuple[Path, object]] = []
+    candidate_closures: list[tuple[Path, object]] = []
     for path in sorted(
         authority_root.glob("models/*/qualified-model-closure.json")
     ):
@@ -160,6 +224,47 @@ def refresh_required_qualified_model_runtimes(
             for deployment in closure.deployments
         }
         if model_ids.intersection(required):
+            candidate_closures.append((path, closure))
+
+    candidate_model_topologies = tuple(
+        sorted(
+            {
+                (
+                    deployment.stack.identity.model_id,
+                    deployment.stack.tensor_parallel,
+                )
+                for _path, closure in candidate_closures
+                for deployment in closure.deployments
+                if deployment.stack.identity.model_id in required
+            }
+        )
+    )
+    desired_stack_materializations = _desired_stack_materializations(
+        candidate_model_topologies,
+        assets=assets,
+        compute_scheduler=compute_scheduler,
+        state_root=state_root,
+        execution_pool=execution_pool,
+        model_replica_pool=model_replica_pool,
+    )
+
+    loaded: list[tuple[Path, object]] = []
+    for path, closure in candidate_closures:
+        relevant = tuple(
+            deployment
+            for deployment in closure.deployments
+            if deployment.stack.identity.model_id in required
+        )
+        if relevant and all(
+            qualification_source_stack_digest(deployment.stack)
+            == qualification_source_stack_digest(
+                desired_stack_materializations[(
+                    deployment.stack.identity.model_id,
+                    deployment.stack.tensor_parallel,
+                )].stack
+            )
+            for deployment in relevant
+        ):
             loaded.append((path, closure))
 
     found = {
@@ -179,6 +284,7 @@ def refresh_required_qualified_model_runtimes(
                 authority_root=authority_root,
                 project_root=project_root,
                 state_root=state_root,
+                runtime_workdir=runtime_workdir,
                 requirements=rows,
                 assets=assets,
                 compute_scheduler=compute_scheduler,
@@ -198,6 +304,7 @@ def refresh_required_qualified_model_runtimes(
         opened_leases = []
 
         try:
+            runtime_workdir.mkdir(parents=True, exist_ok=True)
             for source in closure.deployments:
                 model_id = source.stack.identity.model_id
                 if model_id not in required:
@@ -219,8 +326,11 @@ def refresh_required_qualified_model_runtimes(
                     scope=PLATFORM_SCOPE,
                     model_id=model_id,
                     engine=source.stack.identity.engine,
-                    cwd=project_root,
-                    compute=_refresh_compute_requirement(source),
+                    cwd=runtime_workdir,
+                    compute=desired_stack_materializations[(
+                        model_id,
+                        source.stack.tensor_parallel,
+                    )].compute,
                     model_stack=source.stack,
                     replica_count=1,
                     endpoint_host="127.0.0.1",
@@ -230,7 +340,10 @@ def refresh_required_qualified_model_runtimes(
                         + canonical_digest(str(path))[:24],
                     ),
                 )
-                lease = model_replica_pool.ensure(request)
+                lease = _ensure_with_pressure_reclaim(
+                    model_replica_pool,
+                    request,
+                )
                 opened_leases.append(lease)
                 lease.assert_healthy()
                 row = lease.report.placements[0]
@@ -403,6 +516,7 @@ def refresh_required_qualified_model_runtimes(
                         authority_root=authority_root,
                         project_root=project_root,
                         state_root=state_root,
+                        runtime_workdir=runtime_workdir,
                         requirements=rows,
                         assets=assets,
                         compute_scheduler=compute_scheduler,

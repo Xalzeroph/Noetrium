@@ -232,6 +232,113 @@ class MinecraftStateProjection:
         if resolved is not None:
             self.anchors[name] = resolved
 
+    def decision_view(
+        self,
+        *,
+        detailed_entities: bool = False,
+    ) -> dict[str, MinecraftJsonValue]:
+        """Compile the Minecraft-only model-facing state.
+
+        The authoritative compact state remains lossless and checkpointable.
+        Normal planning sees entity counts, the nearest representative of each
+        entity label, and every visible player. An explicit observe_entities
+        action may request the full columnar table. This mirrors mature
+        Minecraft agents: rich evidence is retained, but routine LLM context
+        contains only decision-relevant world state.
+        """
+
+        state = self.compact()
+        nearby = state.get("nearby_entities")
+        counts: dict[str, int] = {}
+        all_rows: list[list[MinecraftJsonValue]] = []
+        nearest_by_label: dict[str, tuple[float, list[MinecraftJsonValue]]] = {}
+        player_rows: list[list[MinecraftJsonValue]] = []
+
+        if isinstance(nearby, list):
+            for raw in nearby:
+                if not isinstance(raw, Mapping):
+                    continue
+                username = raw.get("username")
+                name = raw.get("name")
+                mob_type = raw.get("mob_type")
+                entity_type = raw.get("type")
+                label = str(
+                    name or mob_type or entity_type or username or "unknown"
+                )
+                counts[label] = counts.get(label, 0) + 1
+
+                position = raw.get("position")
+                if isinstance(position, Mapping):
+                    x = position.get("x")
+                    y = position.get("y")
+                    z = position.get("z")
+                else:
+                    x = y = z = None
+
+                row: list[MinecraftJsonValue] = [
+                    raw.get("runtime_id"),
+                    username,
+                    name,
+                    mob_type,
+                    entity_type,
+                    raw.get("distance"),
+                    x,
+                    y,
+                    z,
+                ]
+                all_rows.append(row)
+
+                distance_raw = raw.get("distance")
+                distance = (
+                    float(distance_raw)
+                    if isinstance(distance_raw, (int, float))
+                    and not isinstance(distance_raw, bool)
+                    else float("inf")
+                )
+                if username is not None or entity_type == "player":
+                    player_rows.append(row)
+                previous = nearest_by_label.get(label)
+                if previous is None or distance < previous[0]:
+                    nearest_by_label[label] = (distance, row)
+
+        if detailed_entities:
+            rows = all_rows
+            mode = "detailed"
+        else:
+            rows = [
+                pair[1]
+                for _, pair in sorted(nearest_by_label.items())
+            ]
+            seen = {
+                (row[0], row[1], row[2], row[3], row[4])
+                for row in rows
+            }
+            for row in player_rows:
+                identity = (row[0], row[1], row[2], row[3], row[4])
+                if identity not in seen:
+                    rows.append(row)
+                    seen.add(identity)
+            mode = "summary"
+
+        state.pop("last_event_sequence", None)
+        state["nearby_entities"] = {
+            "mode": mode,
+            "counts": dict(sorted(counts.items())),
+            "columns": [
+                "runtime_id",
+                "username",
+                "name",
+                "mob_type",
+                "type",
+                "distance",
+                "x",
+                "y",
+                "z",
+            ],
+            "rows": rows,
+        }
+        return state
+
     def compact(self) -> dict[str, MinecraftJsonValue]:
         entities = [
             value.compact()

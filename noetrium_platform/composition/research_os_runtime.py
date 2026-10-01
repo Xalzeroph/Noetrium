@@ -78,6 +78,9 @@ from .research_os_lowering import (
     LoweredResearchOSGraphNode,
     ResearchOSLoweringTarget,
 )
+from .research_os_scientific_analysis import (
+    materialize_research_scientific_inputs,
+)
 from .research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
     ResearchOSReconciliationIndeterminate,
@@ -458,6 +461,19 @@ class CanonicalResearchOSNodeRuntime(
             component_id=node.graph_node_id,
         )
         payload: JsonValue = inputs if inputs else None
+        scientific_projection = any(
+            isinstance(definition.config, Mapping)
+            and (
+                definition.config.get("analysis_engine") in {"workbench", "custom"}
+                or definition.config.get("metric_engine") == "study_measurement"
+            )
+            for definition in lowering.source.definitions
+        )
+        if scientific_projection:
+            payload = materialize_research_scientific_inputs(
+                payload,
+                self._content,
+            )
         machine_id = self._machine_id(
             context.run_id,
             node.graph_node_id,
@@ -471,6 +487,7 @@ class CanonicalResearchOSNodeRuntime(
                 admission.runtime_binding_digest,
                 execution_cut_id=execution_cut_id,
                 execution_id=context.run_id,
+                execution_tenant_id=context.execution_tenant_id,
                 deadline=deadline,
             )
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
@@ -628,6 +645,7 @@ class CanonicalResearchOSNodeRuntime(
         *,
         execution_cut_id: str,
         execution_id: str,
+        execution_tenant_id: str | None,
         deadline: Deadline | None,
     ) -> JsonValue:
         closure = lowering.experiment_closure
@@ -655,6 +673,7 @@ class CanonicalResearchOSNodeRuntime(
 
         group = self._execution_pool.open_experiment_group(
             f"research-os-experiment:{canonical_digest({'machine_id': machine_id})}",
+            tenant_id=execution_tenant_id,
             resource_id=(
                 "research-os-experiment:"
                 f"{closure.research_plan.experiment.experiment_id}"
@@ -1072,15 +1091,29 @@ class CanonicalResearchOSNodeRuntime(
 
     @staticmethod
     def _machine_id(
-        execution_cut_id: str,
+        execution_attempt_id: str,
         graph_node_id: str,
         lowering_digest: str,
     ) -> str:
+        """Return the stable lower-Machine identity for one durable graph attempt.
+
+        lowering_digest is validated by admission/program identity, but is deliberately
+        excluded from Machine identity. Reconciliation must address the same durable
+        attempt after a control-plane/code restart even when a new lowering implementation
+        would produce a different digest.
+        """
+        require_sha256(
+            execution_attempt_id,
+            "Research OS execution attempt identity",
+        )
+        if type(graph_node_id) is not str or not graph_node_id.strip():
+            raise ValueError("Research OS graph_node_id is required")
+        require_sha256(lowering_digest, "Research OS lowering digest")
         identity = canonical_digest(
             {
-                "execution_cut_id": execution_cut_id,
+                "schema": "noetrium.research-os-machine-identity.v2",
+                "execution_attempt_id": execution_attempt_id,
                 "graph_node_id": graph_node_id,
-                "lowering_digest": lowering_digest,
             }
         )
         return f"research-os:{identity}"

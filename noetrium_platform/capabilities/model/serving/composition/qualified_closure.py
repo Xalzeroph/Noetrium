@@ -18,6 +18,8 @@ from noetrium_platform.capabilities.model.serving.providers import (
 def publish_qualified_model_deployment_closure(
     path: str | Path,
     publication: QualifiedModelClosurePublication,
+    *,
+    replace_malformed_existing: bool = False,
 ) -> QualifiedModelClosurePublicationReceipt:
     """Publish one qualified deployment closure through the platform durable authorities."""
 
@@ -26,6 +28,7 @@ def publish_qualified_model_deployment_closure(
         publication,
         runtime_qualification_store_factory=DirectoryRuntimeQualificationEvidenceStore,
         runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
+        replace_malformed_existing=replace_malformed_existing,
     )
 
 

@@ -10,6 +10,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     HeartbeatTopologySnapshot,
     ScheduledTaskHandlePort,
     ScheduledTaskSpec,
+    TaskFailureScope,
 )
 from .task_group import StructuredTaskGroup
 
@@ -81,16 +82,23 @@ class UnifiedHeartbeatScheduler:
             if heartbeat_id in self._registering or (
                 current is not None and not current.cancelled
             ):
-                raise ValueError(f"heartbeat id already actively owned: {heartbeat_id}")
+                raise ValueError(
+                    f"heartbeat id already actively owned for runtime lifetime: {heartbeat_id}"
+                )
+            previous = current
             generation = self._next_generation.get(heartbeat_id, 0) + 1
             self._next_generation[heartbeat_id] = generation
             self._registering.add(heartbeat_id)
         try:
+            logical_task_id = f"heartbeat:{heartbeat_id}"
+            if previous is not None:
+                previous_group = self._group_resolver(previous.owner_group_id)
+                previous_group._retire_cancelled_recurring(logical_task_id)
             group = self._group_resolver(owner_group_id)
             delegate = group._schedule_serial_fixed_delay(
                 spec.lane_id,
                 ScheduledTaskSpec(
-                    task_id=f"heartbeat:{heartbeat_id}:generation:{generation}",
+                    task_id=logical_task_id,
                     interval_seconds=spec.interval_seconds,
                     initial_delay_seconds=spec.resolved_initial_delay_seconds,
                 ),
@@ -98,6 +106,8 @@ class UnifiedHeartbeatScheduler:
                 *args,
                 deadline=deadline,
                 capacity=spec.lane_capacity,
+                failure_scope=spec.failure_scope,
+                provider_task_id=f"heartbeat:{heartbeat_id}:generation:{generation}",
                 **kwargs,
             )
             with self._lock:
@@ -151,6 +161,34 @@ class UnifiedHeartbeatScheduler:
     def _assert_healthy(self, heartbeat_id: str, generation: int) -> None:
         record = self._record(heartbeat_id, generation)
         record.handle.assert_healthy()
+
+    def assert_healthy(self) -> None:
+        """Surface unresolved caller-scoped heartbeat failures globally.
+
+        GROUP-scoped heartbeat failures already belong to their owning task
+        group. CALLER-scoped failures intentionally do not poison that shared
+        group, but the runtime-wide heartbeat authority must still retain and
+        surface them at the final health/shutdown boundary.
+        """
+
+        with self._lock:
+            records = tuple(self._records.items())
+        failures: list[BaseException] = []
+        for heartbeat_id, record in records:
+            if record.spec.failure_scope is not TaskFailureScope.CALLER:
+                continue
+            try:
+                record.handle.assert_healthy()
+            except BaseException as exc:
+                failures.append(
+                    RuntimeError(
+                        "caller-scoped heartbeat failed: "
+                        f"{heartbeat_id}: {type(exc).__name__}: {exc}"
+                    )
+                )
+                failures[-1].__cause__ = exc
+        if failures:
+            raise ExceptionGroup("heartbeat scheduler unhealthy", failures)
 
     def snapshot(self) -> tuple[HeartbeatTopologySnapshot, ...]:
         with self._lock:

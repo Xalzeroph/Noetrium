@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 import tarfile
+import tomllib
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,9 +104,24 @@ def _project_platform_source(source_root: Path) -> dict[str, object]:
     }
 
 
-def _verify_workspace_exclusion(wheel: Path, sdist: Path) -> dict[str, object]:
+def _verify_wheel_workspace_exclusion(wheel: Path) -> dict[str, object]:
     with zipfile.ZipFile(wheel) as archive:
-        wheel_paths = tuple(sorted(name for name in archive.namelist() if _workspace_only_path(name)))
+        wheel_paths = tuple(
+            sorted(name for name in archive.namelist() if _workspace_only_path(name))
+        )
+    if wheel_paths:
+        raise RuntimeError(
+            "wheel contains source-workspace-only material: "
+            f"{wheel_paths[:20]}"
+        )
+    return {
+        "workspace_only_material_excluded": True,
+        "wheel_workspace_path_count": 0,
+    }
+
+
+def _verify_workspace_exclusion(wheel: Path, sdist: Path) -> dict[str, object]:
+    wheel_result = _verify_wheel_workspace_exclusion(wheel)
     with tarfile.open(sdist, "r:gz") as archive:
         relative_paths: list[str] = []
         for name in archive.getnames():
@@ -113,15 +129,16 @@ def _verify_workspace_exclusion(wheel: Path, sdist: Path) -> dict[str, object]:
             if len(parts) < 2:
                 continue
             relative_paths.append(PurePosixPath(*parts[1:]).as_posix())
-        sdist_paths = tuple(sorted(path for path in relative_paths if _workspace_only_path(path)))
-    if wheel_paths or sdist_paths:
+        sdist_paths = tuple(
+            sorted(path for path in relative_paths if _workspace_only_path(path))
+        )
+    if sdist_paths:
         raise RuntimeError(
-            "distribution contains source-workspace-only material: "
-            f"wheel={wheel_paths[:20]} sdist={sdist_paths[:20]}"
+            "sdist contains source-workspace-only material: "
+            f"{sdist_paths[:20]}"
         )
     return {
-        "workspace_only_material_excluded": True,
-        "wheel_workspace_path_count": 0,
+        **wheel_result,
         "sdist_workspace_path_count": 0,
     }
 
@@ -138,25 +155,52 @@ def _license_metadata(raw: bytes, *, artifact_kind: str) -> tuple[str, ...]:
     return files
 
 
-def _verify_oss_metadata(wheel: Path, sdist: Path) -> dict[str, object]:
+def _verify_wheel_oss_metadata(wheel: Path) -> dict[str, object]:
     with zipfile.ZipFile(wheel) as archive:
         names = archive.namelist()
-        metadata_names = [name for name in names if name.count("/") == 1 and name.endswith(".dist-info/METADATA")]
+        metadata_names = [
+            name
+            for name in names
+            if name.count("/") == 1 and name.endswith(".dist-info/METADATA")
+        ]
         if len(metadata_names) != 1:
-            raise RuntimeError("wheel must contain exactly one top-level dist-info METADATA")
+            raise RuntimeError(
+                "wheel must contain exactly one top-level dist-info METADATA"
+            )
         metadata_name = metadata_names[0]
         metadata_raw = archive.read(metadata_name)
-        wheel_metadata_raw = metadata_raw
-        wheel_license_files = _license_metadata(metadata_raw, artifact_kind="wheel")
+        wheel_license_files = _license_metadata(
+            metadata_raw,
+            artifact_kind="wheel",
+        )
         dist_info = metadata_name.rsplit("/", 1)[0]
-        expected = tuple(f"{dist_info}/licenses/{name}" for name in _REQUIRED_LICENSE_FILES)
+        expected = tuple(
+            f"{dist_info}/licenses/{name}"
+            for name in _REQUIRED_LICENSE_FILES
+        )
         missing = tuple(name for name in expected if name not in names)
         if missing:
-            raise RuntimeError(f"wheel is missing packaged legal files: {missing}")
+            raise RuntimeError(
+                f"wheel is missing packaged legal files: {missing}"
+            )
 
+    return {
+        "license_expression": _LICENSE_EXPRESSION,
+        "license_files": list(_REQUIRED_LICENSE_FILES),
+        "wheel_license_file_entries": list(wheel_license_files),
+        "wheel_metadata_sha256": hashlib.sha256(metadata_raw).hexdigest(),
+    }
+
+
+def _verify_oss_metadata(wheel: Path, sdist: Path) -> dict[str, object]:
+    wheel_metadata = _verify_wheel_oss_metadata(wheel)
     with tarfile.open(sdist, "r:gz") as archive:
         names = archive.getnames()
-        metadata_names = [name for name in names if name.count("/") == 1 and name.endswith("/PKG-INFO")]
+        metadata_names = [
+            name
+            for name in names
+            if name.count("/") == 1 and name.endswith("/PKG-INFO")
+        ]
         if len(metadata_names) != 1:
             raise RuntimeError("sdist must contain exactly one top-level PKG-INFO")
         metadata_name = metadata_names[0]
@@ -164,24 +208,30 @@ def _verify_oss_metadata(wheel: Path, sdist: Path) -> dict[str, object]:
         if handle is None:
             raise RuntimeError("sdist PKG-INFO is unreadable")
         metadata_raw = handle.read()
-        sdist_metadata_raw = metadata_raw
-        sdist_license_files = _license_metadata(metadata_raw, artifact_kind="sdist")
+        sdist_license_files = _license_metadata(
+            metadata_raw,
+            artifact_kind="sdist",
+        )
         package_root = metadata_name.rsplit("/", 1)[0]
-        expected = tuple(f"{package_root}/{name}" for name in _REQUIRED_LICENSE_FILES)
+        expected = tuple(
+            f"{package_root}/{name}"
+            for name in _REQUIRED_LICENSE_FILES
+        )
         missing = tuple(name for name in expected if name not in names)
         if missing:
-            raise RuntimeError(f"sdist is missing packaged legal files: {missing}")
+            raise RuntimeError(
+                f"sdist is missing packaged legal files: {missing}"
+            )
 
     return {
-        "license_expression": _LICENSE_EXPRESSION,
-        "license_files": list(_REQUIRED_LICENSE_FILES),
-        "wheel_license_file_entries": list(wheel_license_files),
+        **wheel_metadata,
         "sdist_license_file_entries": list(sdist_license_files),
-        "wheel_metadata_sha256": hashlib.sha256(wheel_metadata_raw).hexdigest(),
-        "sdist_metadata_sha256": hashlib.sha256(sdist_metadata_raw).hexdigest(),
+        "sdist_metadata_sha256": hashlib.sha256(metadata_raw).hexdigest(),
     }
 
 
+_RUNTIME_ARTIFACT_SCHEMA = "noetrium.runtime-artifact.v1"
+_RUNTIME_ARTIFACT_EVIDENCE = "RUNTIME_ARTIFACT_EVIDENCE.json"
 _MATERIALIZATION_SCHEMA = "noetrium.filesystem-source-snapshot.v1"
 _SOURCE_DATE_EPOCH = "315532800"
 
@@ -303,31 +353,71 @@ def _normalize_sdist(path: Path, *, source_date_epoch: str) -> None:
     canonical.replace(path)
 
 
-def _build_distributions(
-    output: Path, *, sha: str
-) -> tuple[Path, Path, dict[str, object], ReleaseManifest]:
+def _runtime_dependency_manifest(source_root: Path) -> str:
+    pyproject = source_root / "pyproject.toml"
+    document = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+    project = document.get("project")
+    if not isinstance(project, dict):
+        raise RuntimeError("pyproject project metadata is missing")
+    dependencies = project.get("dependencies", [])
+    if not isinstance(dependencies, list) or any(
+        not isinstance(value, str) or not value.strip()
+        for value in dependencies
+    ):
+        raise RuntimeError("project runtime dependencies are invalid")
+    # Dependency declaration order has no runtime meaning. Canonicalize it so
+    # source-only edits and harmless TOML reorderings keep one Docker layer.
+    return "\n".join(sorted(value.strip() for value in dependencies)) + "\n"
+
+
+def _build_artifacts(
+    output: Path,
+    *,
+    sha: str,
+    include_sdist: bool,
+) -> tuple[Path, Path | None, dict[str, object], ReleaseManifest]:
     if output.exists():
         shutil.rmtree(output)
     output.mkdir(parents=True)
     with tempfile.TemporaryDirectory(
-        prefix="noetrium-release-source-", dir=_external_temp_parent()
+        prefix="noetrium-release-source-",
+        dir=_external_temp_parent(),
     ) as td:
         source_root = Path(td) / "source"
         source_materialization_sha256, source_file_count, source_authority = (
             _materialize_exact_source(source_root)
         )
         if source_authority.source_tree_sha256 != sha:
-            raise RuntimeError("source identity drifted before formal distribution build")
+            raise RuntimeError(
+                "source identity drifted before formal distribution build"
+            )
         platform_projection = _project_platform_source(source_root)
         manifest = build_release_manifest(source_root)
         build_assets = output / "container-build-assets"
         build_assets.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source_root / "deploy" / "Dockerfile", build_assets / "Dockerfile")
+        shutil.copyfile(
+            source_root / "deploy" / "Dockerfile",
+            build_assets / "Dockerfile",
+        )
         shutil.copyfile(
             source_root / "deploy" / "container-entrypoint.sh",
             build_assets / "container-entrypoint.sh",
         )
-        argv = [sys.executable, "-m", "build", "--wheel", "--sdist", "--outdir", str(output)]
+        _write_text_lf(
+            build_assets / "runtime-dependencies.txt",
+            _runtime_dependency_manifest(source_root),
+        )
+
+        argv = [
+            sys.executable,
+            "-m",
+            "build",
+            "--no-isolation",
+            "--wheel",
+        ]
+        if include_sdist:
+            argv.append("--sdist")
+        argv.extend(("--outdir", str(output)))
         source_date_epoch = _source_date_epoch()
         build_env = os.environ.copy()
         build_env["SOURCE_DATE_EPOCH"] = source_date_epoch
@@ -349,17 +439,61 @@ def _build_distributions(
             "source_materialization_file_count": source_file_count,
             "platform_source_projection": platform_projection,
             "returncode": completed.returncode,
-            "stdout_sha256": hashlib.sha256(completed.stdout.encode()).hexdigest(),
-            "stderr_sha256": hashlib.sha256(completed.stderr.encode()).hexdigest(),
+            "stdout_sha256": hashlib.sha256(
+                completed.stdout.encode()
+            ).hexdigest(),
+            "stderr_sha256": hashlib.sha256(
+                completed.stderr.encode()
+            ).hexdigest(),
         }
+
     if completed.returncode != 0:
-        raise RuntimeError(completed.stderr[-4000:] or completed.stdout[-4000:] or "distribution build failed")
+        raise RuntimeError(
+            completed.stderr[-4000:]
+            or completed.stdout[-4000:]
+            or "distribution build failed"
+        )
+
     wheels = tuple(output.glob("*.whl"))
+    if len(wheels) != 1:
+        raise RuntimeError(
+            "distribution build must produce exactly one wheel"
+        )
+
     sdists = tuple(output.glob("*.tar.gz"))
-    if len(wheels) != 1 or len(sdists) != 1:
-        raise RuntimeError("distribution build must produce exactly one wheel and one sdist")
-    _normalize_sdist(sdists[0], source_date_epoch=source_date_epoch)
-    return wheels[0], sdists[0], command, manifest
+    if include_sdist:
+        if len(sdists) != 1:
+            raise RuntimeError(
+                "distribution build must produce exactly one sdist"
+            )
+        _normalize_sdist(
+            sdists[0],
+            source_date_epoch=source_date_epoch,
+        )
+        sdist: Path | None = sdists[0]
+    else:
+        if sdists:
+            raise RuntimeError(
+                "runtime artifact build unexpectedly produced an sdist"
+            )
+        sdist = None
+
+    return wheels[0], sdist, command, manifest
+
+
+def _build_distributions(
+    output: Path,
+    *,
+    sha: str,
+) -> tuple[Path, Path, dict[str, object], ReleaseManifest]:
+    wheel, sdist, command, manifest = _build_artifacts(
+        output,
+        sha=sha,
+        include_sdist=True,
+    )
+    if sdist is None:
+        raise AssertionError("release artifact graph did not produce sdist")
+    return wheel, sdist, command, manifest
 
 
 def _write_text_lf(path: Path, value: str) -> str:
@@ -375,6 +509,85 @@ def _write_json(path: Path, payload: object) -> str:
         path,
         json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
     )
+
+
+def _container_build_assets_authority(output: Path) -> dict[str, dict[str, object]]:
+    build_assets_root = output / "container-build-assets"
+    result: dict[str, dict[str, object]] = {}
+    for key, filename in (
+        ("dockerfile", "Dockerfile"),
+        ("entrypoint", "container-entrypoint.sh"),
+        ("runtime_dependencies", "runtime-dependencies.txt"),
+    ):
+        path = build_assets_root / filename
+        result[key] = {
+            "path": f"container-build-assets/{filename}",
+            "sha256": _sha256(path),
+            "size": path.stat().st_size,
+        }
+    return result
+
+
+def _write_runtime_artifact_evidence(
+    output: Path,
+    *,
+    sha: str,
+    wheel: Path,
+    build_command: dict[str, object],
+    manifest: ReleaseManifest,
+) -> tuple[dict[str, object], str]:
+    evidence: dict[str, object] = {
+        "schema": _RUNTIME_ARTIFACT_SCHEMA,
+        "manifest_source": "content-addressed-filesystem-snapshot",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "repository": "agent-noetrium-system",
+        "source_authority": "sha256-tree",
+        "source_sha": sha,
+        "source_tree_sha256": manifest.source_tree_sha256,
+        "release_manifest_digest": manifest.digest(),
+        "platform_version": manifest.platform_code_version,
+        "python_requires": manifest.python_requires,
+        "build_command": build_command,
+        "oss_metadata": _verify_wheel_oss_metadata(wheel),
+        "workspace_boundary": _verify_wheel_workspace_exclusion(wheel),
+        "container_build_assets": _container_build_assets_authority(output),
+        "artifacts": {
+            wheel.name: {
+                "sha256": _sha256(wheel),
+                "size": wheel.stat().st_size,
+            }
+        },
+    }
+    evidence_path = output / _RUNTIME_ARTIFACT_EVIDENCE
+    evidence_sha = _write_json(evidence_path, evidence)
+    _write_text_lf(
+        output / f"{_RUNTIME_ARTIFACT_EVIDENCE}.sha256",
+        f"{evidence_sha}  {evidence_path.name}\n",
+    )
+    return evidence, evidence_sha
+
+
+def build_runtime_artifact(output: Path) -> dict[str, object]:
+    output = Path(output).resolve()
+    if output == ROOT or ROOT in output.parents:
+        raise ValueError("runtime artifact output must be outside the source tree")
+    source_authority = _source_manifest(ROOT)
+    sha = source_authority.source_tree_sha256
+    wheel, sdist, build_command, manifest = _build_artifacts(
+        output,
+        sha=sha,
+        include_sdist=False,
+    )
+    if sdist is not None:
+        raise AssertionError("runtime artifact closure unexpectedly contains sdist")
+    evidence, _digest = _write_runtime_artifact_evidence(
+        output,
+        sha=sha,
+        wheel=wheel,
+        build_command=build_command,
+        manifest=manifest,
+    )
+    return evidence
 
 
 def _spdx_document(*, sha: str, version: str, artifacts: tuple[Path, ...]) -> dict:
@@ -416,6 +629,13 @@ def build_distribution_release(output: Path) -> dict:
     source_authority = _source_manifest(ROOT)
     sha = source_authority.source_tree_sha256
     wheel, sdist, build_command, manifest = _build_distributions(output, sha=sha)
+    runtime_artifact, runtime_artifact_sha = _write_runtime_artifact_evidence(
+        output,
+        sha=sha,
+        wheel=wheel,
+        build_command=build_command,
+        manifest=manifest,
+    )
     oss_metadata = _verify_oss_metadata(wheel, sdist)
     workspace_boundary = _verify_workspace_exclusion(wheel, sdist)
     verification_refs: dict[str, dict[str, str]] = {}
@@ -440,19 +660,9 @@ def build_distribution_release(output: Path) -> dict:
         path.name: {"sha256": _sha256(path), "size": path.stat().st_size}
         for path in (wheel, sdist, sbom_path, checksums_path)
     }
-    build_assets_root = output / "container-build-assets"
-    container_build_assets = {
-        "dockerfile": {
-            "path": "container-build-assets/Dockerfile",
-            "sha256": _sha256(build_assets_root / "Dockerfile"),
-            "size": (build_assets_root / "Dockerfile").stat().st_size,
-        },
-        "entrypoint": {
-            "path": "container-build-assets/container-entrypoint.sh",
-            "sha256": _sha256(build_assets_root / "container-entrypoint.sh"),
-            "size": (build_assets_root / "container-entrypoint.sh").stat().st_size,
-        },
-    }
+    container_build_assets = runtime_artifact["container_build_assets"]
+    if not isinstance(container_build_assets, dict):
+        raise RuntimeError("runtime artifact container-build authority is invalid")
     evidence = {
         "schema": "noetrium.distribution-release.v5",
         "manifest_source": "content-addressed-filesystem-snapshot",
@@ -468,6 +678,10 @@ def build_distribution_release(output: Path) -> dict:
         "oss_metadata": oss_metadata,
         "workspace_boundary": workspace_boundary,
         "installed_verification": verification_refs,
+        "runtime_artifact": {
+            "path": _RUNTIME_ARTIFACT_EVIDENCE,
+            "sha256": runtime_artifact_sha,
+        },
         "container_build_assets": container_build_assets,
         "artifacts": artifacts,
         "sbom_sha256": sbom_sha,
@@ -486,9 +700,17 @@ def build_distribution_release(output: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
+    parser.add_argument(
+        "--required-closure",
+        choices=("runtime", "release"),
+        default="release",
+    )
     args = parser.parse_args(argv)
     try:
-        evidence = build_distribution_release(args.output)
+        if args.required_closure == "runtime":
+            evidence = build_runtime_artifact(args.output)
+        else:
+            evidence = build_distribution_release(args.output)
     except Exception as exc:
         print(f"DISTRIBUTION_RELEASE_FAIL {type(exc).__qualname__}: {exc}", file=sys.stderr)
         return 1

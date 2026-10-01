@@ -929,7 +929,7 @@ class ResearchGraphScheduler:
                 tuple(sorted(reconciliation_required)),
             )
 
-        ready_pending = set(frontier.ready_node_ids(set(pending)))
+        ready_pending = set(frontier.ready_node_ids(pending.keys()))
         retry_times = tuple(
             record.retry_not_before_ns
             for node_id, record in live.items()
@@ -1212,7 +1212,7 @@ class ResearchGraphScheduler:
 
                 progressed = False
 
-                blocked_rows = frontier.blocked_nodes(set(pending))
+                blocked_rows = frontier.blocked_nodes(pending.keys())
                 if blocked_rows:
                     blocked_records = store.mark_blocked_many(
                         execution_id,
@@ -1245,7 +1245,7 @@ class ResearchGraphScheduler:
 
                 now_ns = time.time_ns()
                 if not draining:
-                    ready_node_ids = frontier.ready_node_ids(set(pending))
+                    ready_node_ids = frontier.ready_node_ids(pending.keys())
                     if ready_node_ids:
                         control_rows = node_control_store.node_control_states(
                             execution_id,

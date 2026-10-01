@@ -14,6 +14,8 @@ import tempfile
 import tomllib
 from urllib.parse import urlparse
 
+from noetrium_platform.composition.runtime_coordination import runtime_fabric_root
+
 _SCHEMA = "noetrium.project-runtime-lock"
 _NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
@@ -311,6 +313,9 @@ def main() -> int:
     parser.add_argument("--platform-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--base-image-id", required=True)
+    parser.add_argument("--runtime-fabric-root-output", type=Path, default=None)
+    parser.add_argument("--result-output", type=Path, default=None)
+    parser.add_argument("--materialization-input-digest", default=None)
     args = parser.parse_args()
 
     project_root = args.project_root.resolve()
@@ -333,11 +338,42 @@ def main() -> int:
     recipe = recipe_path.read_bytes()
     if not recipe:
         raise RuntimeError("canonical ProjectRuntime.Dockerfile must not be empty")
-    if not extras:
-        print("base")
-        return 0
 
     state_root.mkdir(parents=True, exist_ok=True)
+    namespace_root = runtime_fabric_root().resolve()
+    if args.runtime_fabric_root_output is not None:
+        namespace_output = args.runtime_fabric_root_output.resolve()
+        try:
+            namespace_output.relative_to(state_root)
+        except ValueError as exc:
+            raise RuntimeError(
+                "runtime fabric namespace output must remain under state root"
+            ) from exc
+        _atomic_write(
+            namespace_output,
+            (str(namespace_root) + "\n").encode("utf-8"),
+        )
+
+    if not extras:
+        runtime_key = "base"
+        if args.result_output is not None:
+            result_output = args.result_output.resolve()
+            try:
+                result_output.relative_to(state_root)
+            except ValueError as exc:
+                raise RuntimeError(
+                    "project runtime result output must remain under state root"
+                ) from exc
+            result = {
+                "schema": "noetrium.project-runtime-materializer-result.v1",
+                "materialization_input_digest": args.materialization_input_digest,
+                "runtime_key": runtime_key,
+                "base_image_id": args.base_image_id,
+                "fabric_namespace_root": str(namespace_root),
+            }
+            _atomic_write(result_output, _canonical(result) + b"\n")
+        print(runtime_key)
+        return 0
     base_constraints = _installed_constraints()
     if not base_constraints:
         raise RuntimeError("base runtime exposes no installed Python distribution inventory")
@@ -394,6 +430,22 @@ def main() -> int:
         )
         fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
+    if args.result_output is not None:
+        result_output = args.result_output.resolve()
+        try:
+            result_output.relative_to(state_root)
+        except ValueError as exc:
+            raise RuntimeError(
+                "project runtime result output must remain under state root"
+            ) from exc
+        result = {
+            "schema": "noetrium.project-runtime-materializer-result.v1",
+            "materialization_input_digest": args.materialization_input_digest,
+            "runtime_key": runtime_key,
+            "base_image_id": args.base_image_id,
+            "fabric_namespace_root": str(namespace_root),
+        }
+        _atomic_write(result_output, _canonical(result) + b"\n")
     print(runtime_key)
     return 0
 

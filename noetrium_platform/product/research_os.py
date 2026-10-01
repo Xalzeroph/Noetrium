@@ -40,6 +40,92 @@ from noetrium_platform.research.experimentation.api import (
 
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
 
+_MEASUREMENT_VALUE_KINDS = frozenset({
+    "scalar",
+    "boolean",
+    "categorical",
+    "structured",
+    "sequence",
+    "distribution",
+    "matrix",
+    "text_judgement",
+    "content_reference",
+})
+_MEASUREMENT_REDUCERS = frozenset({"sum", "mean", "last", "min", "max", "all", "any"})
+_METRIC_AGGREGATIONS = frozenset({
+    "count",
+    "sum",
+    "mean",
+    "min",
+    "max",
+    "stddev",
+    "p50",
+    "p95",
+    "first",
+    "last",
+    "distinct_count",
+})
+_METRIC_MISSING_POLICIES = frozenset({"skip", "zero", "fail"})
+_ANALYSIS_INFERENCE_METHODS = frozenset({
+    "none",
+    "normal_mean",
+    "bootstrap_mean",
+    "group_compare",
+    "compare_many",
+    "paired_compare",
+    "permutation_compare",
+})
+_ANALYSIS_MULTIPLICITY = frozenset({
+    "bonferroni",
+    "holm",
+    "benjamini_hochberg",
+    "benjamini_yekutieli",
+})
+_ANALYSIS_MISSING_POLICIES = frozenset({"reject", "skip"})
+
+
+def _research_declarative_metric(_payload: JsonValue = None) -> JsonValue:
+    """Frozen marker callable; Experimentation/Analysis lowering owns execution."""
+
+    return _payload
+
+
+def _research_declarative_analysis(_payload: JsonValue = None) -> JsonValue:
+    """Frozen marker callable; composition lowers the declared analysis to Workbench."""
+
+    return _payload
+
+
+def _plain_mapping(value: JsonInput, field: str) -> dict[str, JsonValue]:
+    if value is None:
+        return {}
+    frozen = freeze_json(value)
+    if not isinstance(frozen, Mapping):
+        raise TypeError(f"{field} must be an object")
+    return dict(frozen)
+
+
+def _path_tuple(value: object, field: str) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if type(value) is str:
+        parts = tuple(value.split("."))
+    elif type(value) is tuple:
+        parts = value
+    else:
+        raise TypeError(f"{field} must be dotted text or tuple")
+    if any(type(part) is not str or not part.strip() for part in parts):
+        raise ValueError(f"{field} must contain non-empty path segments")
+    return tuple(part.strip() for part in parts)
+
+
+def _path_list(values: object, field: str) -> tuple[tuple[str, ...], ...]:
+    if values in (None, ()):
+        return ()
+    if type(values) is not tuple:
+        raise TypeError(f"{field} must be a tuple")
+    return tuple(_path_tuple(value, field) for value in values)
+
 
 def _token(value: object, field: str) -> str:
     if type(value) is not str or _TOKEN.fullmatch(value) is None:
@@ -61,6 +147,7 @@ class ResearchDefinitionKind(StrEnum):
     BENCHMARK = "benchmark"
     DATASET = "dataset"
     METRIC = "metric"
+    ANALYSIS = "analysis"
     CONFIGURATION = "configuration"
     MODEL = "model"
     ENVIRONMENT = "environment"
@@ -1967,14 +2054,133 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
+        value_kind: str | None = None,
+        schema_id: str | None = None,
+        semantic_kind: str | None = None,
+        unit: str | None = None,
+        scale: str | None = None,
+        domain: str | None = None,
+        source_path: str | None = None,
+        reducer: str | None = None,
+        aggregation: str | None = None,
+        record_types: tuple[str, ...] = (),
+        schema_ids: tuple[str, ...] = (),
+        value_path: str | tuple[str, ...] | None = None,
+        group_by: tuple[str | tuple[str, ...], ...] = (),
+        predicates: tuple[Mapping[str, object], ...] = (),
+        missing: str = "skip",
+        description: str = "",
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
+        """Declare one downstream metric/measurement through the 4-root DSL.
+
+        Capture semantics (value_kind/source_path/reducer) lower into the Study
+        MeasurementProtocol. Raw-record semantics (aggregation/value_path/group_by)
+        lower into the universal Metric engine. A custom implementation remains
+        available for paper-specific formulas.
+        """
+
+        if value_kind is not None and value_kind not in _MEASUREMENT_VALUE_KINDS:
+            raise ValueError("metric value_kind is unsupported")
+        if reducer is not None and reducer not in _MEASUREMENT_REDUCERS:
+            raise ValueError("metric reducer is unsupported")
+        if aggregation is not None and aggregation not in _METRIC_AGGREGATIONS:
+            raise ValueError("metric aggregation is unsupported")
+        if missing not in _METRIC_MISSING_POLICIES:
+            raise ValueError("metric missing policy is unsupported")
+        if reducer is not None and source_path is None:
+            raise ValueError("metric reducer requires source_path")
+        if aggregation not in (None, "count") and value_path is None:
+            raise ValueError("derived metric aggregation requires value_path")
+        if type(record_types) is not tuple or any(
+            type(row) is not str or not row.strip() for row in record_types
+        ):
+            raise TypeError("metric record_types must contain non-empty strings")
+        if type(schema_ids) is not tuple or any(
+            type(row) is not str or not row.strip() for row in schema_ids
+        ):
+            raise TypeError("metric schema_ids must contain non-empty strings")
+        if type(predicates) is not tuple or any(
+            not isinstance(row, Mapping) for row in predicates
+        ):
+            raise TypeError("metric predicates must contain mappings")
+        predicate_rows = []
+        for row in predicates:
+            if "path" not in row or "equals" not in row:
+                raise ValueError("metric predicate requires path and equals")
+            predicate_rows.append({
+                "path": _path_tuple(row["path"], "metric predicate path"),
+                "equals": freeze_json(row["equals"]),
+            })
+        measurement = None
+        if any(
+            value is not None
+            for value in (
+                value_kind,
+                schema_id,
+                semantic_kind,
+                scale,
+                domain,
+                source_path,
+                reducer,
+            )
+        ):
+            resolved_kind = value_kind or "scalar"
+            if resolved_kind not in _MEASUREMENT_VALUE_KINDS:
+                raise ValueError("metric value_kind is unsupported")
+            measurement = {
+                "measurement_id": definition_id,
+                "schema_id": schema_id or f"{definition_id}.v1",
+                "value_kind": resolved_kind,
+                "semantic_kind": semantic_kind or definition_id,
+                "unit": unit,
+                "scale": scale,
+                "domain": domain,
+                "source_path": source_path,
+                "reducer": reducer,
+                "description": description,
+            }
+        derived = None
+        if aggregation is not None:
+            derived = {
+                "metric_id": definition_id,
+                "aggregation": aggregation,
+                "record_types": tuple(row.strip() for row in record_types),
+                "schema_ids": tuple(row.strip() for row in schema_ids),
+                "value_path": _path_tuple(value_path, "metric value_path"),
+                "group_by": _path_list(group_by, "metric group_by"),
+                "predicates": tuple(predicate_rows),
+                "missing": missing,
+                "unit": unit,
+                "description": description,
+            }
+        if implementation is None and measurement is None and derived is None:
+            raise ValueError(
+                "metric requires an implementation, measurement semantics, or derived semantics"
+            )
+        user = _plain_mapping(config, "metric config")
+        if "measurement" in user or "derived_metric" in user:
+            raise ValueError("metric config uses reserved scientific keys")
+        if measurement is not None:
+            user["measurement"] = measurement
+        if derived is not None:
+            user["derived_metric"] = derived
+        user["metric_engine"] = (
+            "custom"
+            if implementation is not None
+            else ("universal_raw" if derived is not None else "study_measurement")
+        )
+        selected = (
+            implementation
+            if implementation is not None
+            else _research_declarative_metric
+        )
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.METRIC,
-            implementation=implementation,
-            config=config,
+            implementation=selected,
+            config=user,
         )
 
     def dataset(
@@ -2260,15 +2466,119 @@ class ResearchProgramBuilder:
         definitions: tuple[str, ...] = (),
         outputs: tuple[ResearchOutputSpec, ...] = (),
         depends_on: tuple[str, ...] = (),
+        implementation: ResearchImplementation | Callable[..., object] | None = None,
+        value: str = "value",
+        group_by: tuple[str, ...] = (),
+        comparison_group: str | None = None,
+        baseline: JsonValue = None,
+        candidate: JsonValue = None,
+        candidates: tuple[JsonValue, ...] = (),
+        pair_by: str | None = None,
+        inference: str = "none",
+        replicates: int = 2000,
+        seed: int = 0,
+        multiple_comparison: str = "holm",
+        alpha: float = 0.05,
+        missing: str = "reject",
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
+        """Declare one analysis without exposing Workbench or Measurement internals."""
+
+        if inference not in _ANALYSIS_INFERENCE_METHODS:
+            raise ValueError("analysis inference method is unsupported")
+        if multiple_comparison not in _ANALYSIS_MULTIPLICITY:
+            raise ValueError("analysis multiple-comparison method is unsupported")
+        if missing not in _ANALYSIS_MISSING_POLICIES:
+            raise ValueError("analysis missing policy is unsupported")
+        if type(group_by) is not tuple or any(
+            type(row) is not str or not row.strip() for row in group_by
+        ):
+            raise TypeError("analysis group_by must contain non-empty strings")
+        if pair_by is not None and (type(pair_by) is not str or not pair_by.strip()):
+            raise ValueError("analysis pair_by must be non-empty text")
+        if comparison_group is not None and (
+            type(comparison_group) is not str or not comparison_group.strip()
+        ):
+            raise ValueError("analysis comparison_group must be non-empty text")
+        if type(replicates) is not int or replicates < 100:
+            raise ValueError("analysis replicates must be at least 100")
+        if type(seed) is not int:
+            raise TypeError("analysis seed must be an integer")
+        if isinstance(alpha, bool) or not isinstance(alpha, (int, float)) or not 0.0 < float(alpha) < 1.0:
+            raise ValueError("analysis alpha must be between zero and one")
+        if inference in {"group_compare", "compare_many", "paired_compare", "permutation_compare"}:
+            if comparison_group is None:
+                raise ValueError("comparison analysis requires comparison_group")
+            if baseline is None:
+                raise ValueError("comparison analysis requires baseline")
+        if inference in {"group_compare", "paired_compare", "permutation_compare"} and candidate is None:
+            raise ValueError("comparison analysis requires candidate")
+        if inference == "paired_compare" and pair_by is None:
+            raise ValueError("paired comparison requires pair_by")
+        if inference == "compare_many" and not candidates:
+            raise ValueError("compare_many requires candidates")
+        for definition_id in definitions:
+            existing = self._definitions.get(definition_id)
+            if existing is None:
+                continue
+            if existing.kind in {
+                ResearchDefinitionKind.METRIC,
+                ResearchDefinitionKind.ANALYSIS,
+            }:
+                raise ValueError(
+                    "Analysis data must arrive through typed ResearchGraph bindings; "
+                    f"do not attach {existing.kind.value} definition {definition_id!r}"
+                )
+            if existing.implementation is not None:
+                raise ValueError(
+                    "Analysis node may have exactly one executable implementation; "
+                    f"definition {definition_id!r} is already executable"
+                )
+        user = _plain_mapping(config, "analysis config")
+        if "analysis" in user:
+            raise ValueError("analysis config uses reserved scientific key")
+        analysis_spec = {
+            "schema": "research.analysis.v2",
+            "value": value,
+            "group_by": tuple(row.strip() for row in group_by),
+            "comparison_group": comparison_group,
+            "baseline": freeze_json(baseline),
+            "candidate": freeze_json(candidate),
+            "candidates": freeze_json(candidates),
+            "pair_by": pair_by,
+            "inference": inference,
+            "replicates": replicates,
+            "seed": seed,
+            "multiple_comparison": multiple_comparison,
+            "alpha": float(alpha),
+            "missing": missing,
+        }
+        user["analysis"] = analysis_spec
+        user["analysis_engine"] = (
+            "custom" if implementation is not None else "workbench"
+        )
+        analysis_definition_id = f"{node_id}.analysis"
+        if analysis_definition_id in self._definitions:
+            raise ValueError(
+                f"analysis definition already exists: {analysis_definition_id}"
+            )
+        self.definition(
+            analysis_definition_id,
+            kind=ResearchDefinitionKind.ANALYSIS,
+            implementation=(
+                implementation
+                if implementation is not None
+                else _research_declarative_analysis
+            ),
+            config=user,
+        )
         return self.node(
             node_id,
             kind=ResearchNodeKind.ANALYSIS,
-            definitions=definitions,
+            definitions=definitions + (analysis_definition_id,),
             outputs=outputs,
             depends_on=depends_on,
-            config=config,
+            config=None,
         )
 
     def selection(

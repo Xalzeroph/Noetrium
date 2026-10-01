@@ -130,6 +130,9 @@ class ModelEndpointReplicaSelectionCandidate:
     attempted_in_dispatch: bool = False
     prefix_affinity_score: float = 0.0
     prefix_affinity_depth: int = 0
+    runtime_requests_waiting: int = 0
+    runtime_gpu_kv_cache_usage: float = 0.0
+    runtime_pressure_observed: bool = False
 
     def __post_init__(self) -> None:
         if type(self.deployment_id) is not str or not self.deployment_id.strip():
@@ -161,6 +164,29 @@ class ModelEndpointReplicaSelectionCandidate:
         if type(self.prefix_affinity_depth) is not int or self.prefix_affinity_depth < 0:
             raise ValueError(
                 "model endpoint selection candidate prefix_affinity_depth must be non-negative"
+            )
+        if (
+            type(self.runtime_requests_waiting) is not int
+            or self.runtime_requests_waiting < 0
+        ):
+            raise ValueError(
+                "model endpoint selection candidate runtime_requests_waiting "
+                "must be non-negative"
+            )
+        if (
+            isinstance(self.runtime_gpu_kv_cache_usage, bool)
+            or not isinstance(self.runtime_gpu_kv_cache_usage, (int, float))
+            or not math.isfinite(float(self.runtime_gpu_kv_cache_usage))
+            or not 0.0 <= float(self.runtime_gpu_kv_cache_usage) <= 1.0
+        ):
+            raise ValueError(
+                "model endpoint selection candidate runtime_gpu_kv_cache_usage "
+                "must be finite in [0,1]"
+            )
+        if type(self.runtime_pressure_observed) is not bool:
+            raise TypeError(
+                "model endpoint selection candidate runtime_pressure_observed "
+                "must be bool"
             )
 
 
@@ -196,6 +222,11 @@ class ModelEndpointReplicaSnapshot:
     adaptive_window_history: tuple[tuple[int, int, int, str, float], ...] = ()
     prefix_affinity_entries: int = 0
     prefix_affinity_selections: int = 0
+    runtime_requests_running: int | None = None
+    runtime_requests_waiting: int | None = None
+    runtime_gpu_kv_cache_usage: float | None = None
+    runtime_prefix_cache_hit_rate: float | None = None
+    runtime_preemptions_total: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

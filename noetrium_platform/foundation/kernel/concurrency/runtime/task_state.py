@@ -99,11 +99,18 @@ class _TaskStateAuthority:
         lane_id: str,
         deadline,
         deadline_owner: _DeadlineOwner,
+        failure_scope: TaskFailureScope,
     ) -> _RecurringRecord:
         with self._lock:
             if task_id in self._tasks or task_id in self._recurring:
                 raise ValueError(f"task id already owned by group: {self._group_id}/{task_id}")
-            record = _RecurringRecord(task_id, lane_id, deadline, deadline_owner)
+            record = _RecurringRecord(
+                task_id,
+                lane_id,
+                deadline,
+                deadline_owner,
+                failure_scope,
+            )
             self._recurring[task_id] = record
             return record
 
@@ -192,7 +199,10 @@ class _TaskStateAuthority:
         self._cancel_deadline_handle(deadline_handle)
         if timer_handle is not None:
             timer_handle.cancel()
-        if self._failure_policy is TaskFailurePolicy.FAIL_FAST:
+        if (
+            record.failure_scope is TaskFailureScope.GROUP
+            and self._failure_policy is TaskFailurePolicy.FAIL_FAST
+        ):
             self._cancel_group(cancel_reason or f"scheduled task failed: {task_id}")
         return True
 
@@ -435,6 +445,28 @@ class _TaskStateAuthority:
         for task_id in recurring_ids:
             self.cancel_recurring(task_id)
 
+    def retire_cancelled_recurring(self, task_id: str) -> None:
+        """Forget one fully-converged cancelled recurring registration.
+
+        Logical recurring ids may be reused only after the previous physical
+        generation is cancelled and has no in-flight execution. Generation
+        fencing remains owned by the higher-level heartbeat authority.
+        """
+        with self._lock:
+            record = self._recurring.get(task_id)
+            if record is None:
+                return
+            current = record.current
+            if (
+                not record.cancelled
+                or record.state is not TaskState.CANCELLED
+                or (current is not None and not current.done())
+            ):
+                raise RuntimeError(
+                    f"cancelled recurring task has not converged: {self._group_id}/{task_id}"
+                )
+            self._recurring.pop(task_id, None)
+
     def recurring_failure(self, task_id: str) -> BaseException | None:
         with self._lock:
             record = self._recurring.get(task_id)
@@ -522,6 +554,7 @@ class _TaskStateAuthority:
                     if record.deadline is None
                     else record.deadline.monotonic_deadline,
                     failure_type=None if record.failure is None else type(record.failure).__name__,
+                    failure_scope=record.failure_scope,
                 )
                 for record in self._recurring.values()
             )

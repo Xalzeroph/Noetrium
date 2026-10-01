@@ -3,11 +3,52 @@ from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Callable
 from concurrent.futures import Future
+from pathlib import Path
 from threading import Lock
 from typing import Generic, TypeVar
 
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+)
+
 
 T = TypeVar("T")
+
+
+class ContentAddressedSingleFlight:
+    """Canonical host-visible producer fence for durable realizations.
+
+    The fence is deliberately result-agnostic. After waiting for an earlier
+    producer, the next caller must re-read the owning durable authority and
+    adopt the published realization before deciding to produce again.
+    """
+
+    def __init__(self, root: Path) -> None:
+        if not isinstance(root, Path):
+            raise TypeError("content-addressed single-flight root must be a Path")
+        self.root = root.expanduser().absolute()
+
+    @staticmethod
+    def identity(namespace: str, realization_key: str) -> str:
+        if type(namespace) is not str or not namespace.strip():
+            raise ValueError("single-flight namespace must be non-empty text")
+        if type(realization_key) is not str or not realization_key.strip():
+            raise ValueError("single-flight realization key must be non-empty text")
+        return canonical_digest(
+            {
+                "schema": "noetrium.content-addressed-single-flight.v1",
+                "namespace": namespace.strip(),
+                "realization_key": realization_key,
+            }
+        )
+
+    def lock_path(self, namespace: str, realization_key: str) -> Path:
+        digest = self.identity(namespace, realization_key)
+        return self.root / digest[:2] / f"{digest}.lock"
+
+    def producer(self, namespace: str, realization_key: str) -> InterprocessFileLock:
+        return InterprocessFileLock(self.lock_path(namespace, realization_key))
 
 
 class SingleFlightCache(Generic[T]):
@@ -71,4 +112,4 @@ class SingleFlightCache(Generic[T]):
             return len(self._values)
 
 
-__all__ = ["SingleFlightCache"]
+__all__ = ["ContentAddressedSingleFlight", "SingleFlightCache"]

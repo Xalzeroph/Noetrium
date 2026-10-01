@@ -599,6 +599,13 @@ class TrialMeasurementProjectionPort(Protocol):
 
 
 @runtime_checkable
+class TrialPreparationPort(Protocol):
+    """Optional pre-execution preparation that may overlap Trial setup."""
+
+    def prepare_trial(self, request: TrialExecutionRequest) -> None: ...
+
+
+@runtime_checkable
 class TrialProviderPort(Protocol):
     protocol_identity: ExperimentTrialProtocolIdentity
 

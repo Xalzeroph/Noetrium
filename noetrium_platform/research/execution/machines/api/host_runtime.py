@@ -106,6 +106,11 @@ class ResearchProgramHostPort(Protocol):
     host_id: str
     program: ResearchProgram
 
+    def accepted_commits(
+        self,
+        machine_id: str,
+    ) -> tuple[MachineCommit, ...]: ...
+
     def open_session(
         self,
         *,

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
-from hashlib import sha256
 from collections.abc import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import (
-    ExecutionContext, ImmutableModelIdentity, JsonInput, JsonObject, canonical_bytes, freeze_json,
+    ExecutionContext, ImmutableModelIdentity, JsonInput, JsonObject, canonical_bytes,
+    canonical_digest, canonical_text, freeze_json,
 )
 from noetrium_platform.substrate.api import ArtifactBlobStorePort
 from noetrium_platform.capabilities.model.request.api import (
@@ -16,6 +16,19 @@ from noetrium_platform.capabilities.model.request.api import (
     ReconstructedModelRequest,
 )
 
+
+
+def _derived_compiled_prompt_text(
+    body: Mapping[str, JsonInput],
+) -> str | None:
+    """Return the exact prompt projection already recoverable from wire body."""
+    messages = body.get("messages")
+    if isinstance(messages, (tuple, list)):
+        return canonical_text(messages)
+    prompt = body.get("prompt")
+    if isinstance(prompt, str):
+        return prompt
+    return None
 
 def _canonical_json(value: object) -> bytes:
     return canonical_bytes(value)
@@ -51,7 +64,11 @@ class ReconstructableModelRequestRecorder:
         publications: list[tuple[str, bytes, str]] = [
             ("body", _canonical_json(frozen_body), "application/json"),
         ]
-        if compiled_prompt_text is not None:
+        derived_prompt = _derived_compiled_prompt_text(frozen_body)
+        if (
+            compiled_prompt_text is not None
+            and compiled_prompt_text != derived_prompt
+        ):
             publications.append(
                 (
                     "prompt",
@@ -138,9 +155,11 @@ class ReconstructableModelRequestRecorder:
         body = json.loads(payload)
         if not isinstance(body, dict):
             raise RuntimeError("reconstructed model request body is not an object")
-        compiled = None
-        if envelope.compiled_prompt is not None:
-            compiled = self._content.get(envelope.compiled_prompt).decode("utf-8")
+        compiled = (
+            _derived_compiled_prompt_text(body)
+            if envelope.compiled_prompt is None
+            else self._content.get(envelope.compiled_prompt).decode("utf-8")
+        )
         tools = None
         if envelope.tool_schema_bundle is not None:
             tools = json.loads(self._content.get(envelope.tool_schema_bundle))
@@ -174,11 +193,12 @@ class ReconstructableModelRequestRecorder:
         envelope: ModelEndpointEnvelope,
         actual_body: Mapping[str, JsonInput],
     ) -> None:
-        payload = _canonical_json(actual_body)
+        frozen_body = freeze_json(actual_body)
+        payload = _canonical_json(frozen_body)
         reference = envelope.request_body
         if (
             len(payload) != reference.size_bytes
-            or sha256(payload).hexdigest() != reference.content_sha256
+            or canonical_digest(frozen_body) != reference.content_sha256
         ):
             raise RuntimeError(
                 "model-visible request drift: actual bytes are not durably referenced"

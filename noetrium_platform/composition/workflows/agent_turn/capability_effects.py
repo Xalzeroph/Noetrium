@@ -25,9 +25,6 @@ class CapabilityEffectExecutor:
         self._intent_operations = effect_intents
         self._provider = CapabilityEffectProviderOperations(dispatcher, capability_operations)
 
-    def close(self) -> None:
-        self._intent_operations.close()
-
     def invoke(
         self,
         *,

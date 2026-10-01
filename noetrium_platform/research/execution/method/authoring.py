@@ -82,6 +82,7 @@ class ResearchMethodCall:
     state: Mapping[str, JsonValue]
     input_value: JsonValue
     previous_value: JsonValue
+    effect_receipts: tuple[Mapping[str, JsonValue], ...]
     run_id: str
     trace_id: str
     condition_id: str | None
@@ -103,6 +104,20 @@ class ResearchMethodCall:
             state=request.state,
             input_value=request.input_value,
             previous_value=request.previous_value,
+            effect_receipts=tuple(
+                {
+                    "effect_id": receipt.effect_id,
+                    "request_digest": receipt.request_digest,
+                    "effect_class": receipt.effect_class.value,
+                    "certainty": receipt.certainty.value,
+                    "provider_instance_id": receipt.provider_instance_id,
+                    "verification_required": receipt.verification_required,
+                    "before_artifact": receipt.before_artifact,
+                    "after_artifact": receipt.after_artifact,
+                    "provider_receipt": receipt.provider_receipt,
+                }
+                for receipt in request.effect_receipts
+            ),
             run_id=request.context.run_id,
             trace_id=request.context.trace_id,
             condition_id=request.context.condition_id,

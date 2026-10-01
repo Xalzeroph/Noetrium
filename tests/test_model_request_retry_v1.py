@@ -260,3 +260,35 @@ def test_rate_limit_retry_prefers_unattempted_interchangeable_replica():
     assert [row.deployment_id for row in result.attempts] == ["dep-a","dep-b"]
     assert result.attempts[0].failure_kind == "rate_limit"
     assert result.response.deployment_id == "dep-b"
+
+
+def test_single_replica_transient_retry_waits_for_health_cooldown_and_recovers():
+    clock = _Clock()
+    route = ModelEndpointRoute("dep", "5" * 64, "http://127.0.0.1:1")
+    replica = OperationalModelEndpointReplica(route, capacity=8)
+    endpoint = _Endpoint(route, ["transient", "ok"])
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((replica,)),
+        lambda _: endpoint,
+        retry_policy=ModelRequestRetryPolicy(
+            max_attempts=2,
+            base_backoff_seconds=0.05,
+            max_backoff_seconds=0.5,
+        ),
+        failure_cooldown_seconds=2.0,
+        max_failure_cooldown_seconds=2.0,
+        clock=clock,
+        sleep=clock.sleep,
+    )
+
+    result = pool.complete(_request("retry-half-open"), _body())
+
+    assert [row.deployment_id for row in result.attempts] == ["dep", "dep"]
+    assert result.attempts[0].failure_kind == "transient"
+    assert result.attempts[0].wait_before_next_seconds == 2.0
+    assert result.attempts[1].outcome == "completed"
+    assert clock.value == 2.0
+    snapshot = pool.snapshot().replicas[0]
+    assert snapshot.failures == 1
+    assert snapshot.consecutive_failures == 0
+    assert snapshot.cooling_down is False

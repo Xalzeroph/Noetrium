@@ -119,6 +119,9 @@ class Fleet:
         self.shutdowns += 1
         return ()
 
+    def status_all(self):
+        return ()
+
 
 @dataclass
 class Models:
@@ -234,9 +237,9 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert managed.observability.closed is True
     assert controller.cycles >= 1
     assert resource_controller.cycles >= 1
-    assert resource_controller.cleaned == 1
-    assert fleet.removals == 1
-    assert fleet.shutdowns == 1
+    assert resource_controller.cleaned == 0
+    assert fleet.removals == 0
+    assert fleet.shutdowns == 0
     assert runtime_lock.released is True
 
 
@@ -296,12 +299,13 @@ def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quies
 
     pool.quiesce_error = None
     managed.close()
-    assert resource_controller.cleaned == 1
-    assert fleet.shutdowns == 1
+    assert resource_controller.cleaned == 0
+    assert fleet.removals == 0
+    assert fleet.shutdowns == 0
     assert pool.closed is True
     assert runtime_lock.released is True
 
-def test_managed_runtime_never_releases_resources_when_auto_model_retirement_fails() -> None:
+def test_managed_runtime_close_never_retires_warm_model_or_resource_fabric() -> None:
     (
         managed,
         pool,
@@ -311,42 +315,31 @@ def test_managed_runtime_never_releases_resources_when_auto_model_retirement_fai
         fleet,
         runtime_lock,
     ) = runtime()
-    fleet.remove_error = RuntimeError("auto model process survived")
+    fleet.remove_error = RuntimeError("retirement must not be called by run close")
 
-    try:
-        managed.close()
-    except ExceptionGroup as error:
-        assert "auto-managed model retirement" in str(error)
-    else:
-        raise AssertionError("auto model retirement failure was not surfaced")
+    managed.close()
 
     assert pool.workloads_quiesced is True
-    assert fleet.removals == 1
+    assert fleet.removals == 0
     assert fleet.shutdowns == 0
     assert resource_controller.cleaned == 0
-    assert pool.closed is False
-    assert runtime_lock.released is False
-
-    fleet.remove_error = None
-    managed.close()
-    assert fleet.removals == 2
-    assert fleet.shutdowns == 1
-    assert resource_controller.cleaned == 1
     assert pool.closed is True
     assert runtime_lock.released is True
 
 
-def test_startup_ownership_barrier_stops_auto_models_before_resource_reconcile() -> None:
+def test_startup_ownership_barrier_observes_models_without_reclaiming_resources() -> None:
     events: list[str] = []
 
     class StartupFleet:
-        def remove_selected(self, selector):
-            assert selector.tags == ("auto-managed",)
-            events.append("auto-models")
+        def status_all(self):
+            events.append("model-status")
+            return ()
 
     class StartupResources:
-        def recover_abandoned_owner_generation(self):
-            events.append("resources")
+        def reconcile(self):
+            raise AssertionError(
+                "generic resource reconciliation must wait for targeted adoption"
+            )
 
     class StartupModels:
         fleet = StartupFleet()
@@ -356,20 +349,19 @@ def test_startup_ownership_barrier_stops_auto_models_before_resource_reconcile()
 
     _reconcile_startup_ownership(StartupManagement(), StartupResources())
 
-    assert events == ["auto-models", "resources"]
+    assert events == ["model-status"]
 
 
-def test_startup_ownership_barrier_never_reclaims_resources_after_model_failure() -> None:
+def test_startup_ownership_barrier_never_reclaims_resources_after_model_observation_failure() -> None:
     events: list[str] = []
 
     class StartupFleet:
-        def remove_selected(self, selector):
-            assert selector.tags == ("auto-managed",)
-            events.append("auto-models")
-            raise RuntimeError("surviving model process")
+        def status_all(self):
+            events.append("model-status")
+            raise RuntimeError("model observation failed")
 
     class StartupResources:
-        def recover_abandoned_owner_generation(self):
+        def reconcile(self):
             events.append("resources")
             raise AssertionError("resource takeover must remain fenced")
 
@@ -382,9 +374,143 @@ def test_startup_ownership_barrier_never_reclaims_resources_after_model_failure(
     try:
         _reconcile_startup_ownership(StartupManagement(), StartupResources())
     except RuntimeError as exc:
-        assert "surviving model process" in str(exc)
+        assert "model observation failed" in str(exc)
     else:
-        raise AssertionError("startup model convergence failure was not surfaced")
+        raise AssertionError("startup model observation failure was not surfaced")
 
-    assert events == ["auto-models"]
+    assert events == ["model-status"]
 
+
+
+def _attach_test_fabric_consumer(managed, tmp_path, *, include_foreign=False):
+    from types import SimpleNamespace
+
+    from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+    from noetrium_platform.infrastructure.resources.lease.api import (
+        ResourceIdentity,
+        ResourceKind,
+        ResourceLease,
+        ResourceLeaseCardinality,
+        ResourceOwner,
+        ResourceOwnership,
+    )
+    from noetrium_platform.infrastructure.resources.lease.runtime import (
+        ManualLeaseClock,
+        ResourceLeaseRegistry,
+    )
+
+    registry = ResourceLeaseRegistry(
+        tmp_path / "fabric-resource.sqlite3",
+        clock=ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=10.0),
+    )
+    resource = ResourceIdentity(ResourceKind.RUNTIME_FABRIC, "host-runtime-fabric")
+    registry.register_owner(
+        ResourceOwner(
+            resource,
+            PLATFORM_SCOPE,
+            ResourceOwnership.SHARED,
+            ResourceLeaseCardinality.MULTI_ACTIVE,
+        )
+    )
+    own = registry.acquire(
+        ResourceLease(
+            "runtime-fabric-consumer:self",
+            resource,
+            PLATFORM_SCOPE,
+            "runtime-fabric-consumer",
+        ),
+        ttl_seconds=120.0,
+    )
+    foreign = None
+    if include_foreign:
+        foreign = registry.acquire(
+            ResourceLease(
+                "runtime-fabric-consumer:foreign",
+                resource,
+                PLATFORM_SCOPE,
+                "runtime-fabric-consumer",
+            ),
+            ttl_seconds=120.0,
+        )
+
+    class Guard:
+        def __init__(self, row):
+            self._row = row
+            self.closed = False
+
+        @property
+        def rows(self):
+            return (self._row,)
+
+        def assert_healthy(self):
+            return None
+
+        def close(self):
+            self.closed = True
+
+    guard = Guard(own)
+    managed.management.platform_meta = SimpleNamespace(
+        resource_leases=registry,
+        resource_ownership=registry,
+    )
+    managed._fabric_consumer_resource = resource
+    managed._fabric_consumer_lease = own
+    managed._fabric_consumer_guard = guard
+    managed._fabric_coordination_lock_path = tmp_path / "runtime-fabric.lock"
+    managed._fabric_consumer_released = False
+    return registry, resource, own, foreign, guard
+
+
+def test_terminal_runtime_fabric_retirement_refuses_foreign_consumer_without_side_effects(
+    tmp_path,
+) -> None:
+    managed, pool, _group, _controller, resources, fleet, _lock = runtime()
+    registry, resource, own, foreign, guard = _attach_test_fabric_consumer(
+        managed,
+        tmp_path,
+        include_foreign=True,
+    )
+
+    try:
+        managed.retire_runtime_fabric()
+    except RuntimeError as exc:
+        assert "active consumers" in str(exc)
+    else:
+        raise AssertionError("terminal retirement accepted a foreign Runtime Fabric consumer")
+
+    assert managed._closing is False
+    assert pool.workloads_quiesced is False
+    assert resources.cleaned == 0
+    assert fleet.removals == 0
+    assert fleet.shutdowns == 0
+    assert guard.closed is False
+    assert set(registry.active_for(resource)) == {own, foreign}
+
+    # Test cleanup: foreign consumer leaves, then ordinary close only detaches self.
+    registry.release(foreign.lease_id, fencing_token=foreign.fencing_token)
+    managed.close()
+    assert registry.active_for(resource) == ()
+
+
+def test_terminal_runtime_fabric_retirement_converges_after_zero_foreign_consumer(
+    tmp_path,
+) -> None:
+    managed, pool, _group, _controller, resources, fleet, runtime_lock = runtime()
+    registry, resource, own, foreign, guard = _attach_test_fabric_consumer(
+        managed,
+        tmp_path,
+        include_foreign=False,
+    )
+    assert foreign is None
+
+    managed.retire_runtime_fabric()
+
+    assert guard.closed is True
+    assert pool.workloads_quiesced is True
+    assert resources.cleaned == 1
+    assert fleet.removals == 1
+    assert fleet.shutdowns == 1
+    assert registry.active_for(resource) == ()
+    assert registry.owner(resource).ownership.value == "shared"
+    assert runtime_lock.released is True
+    assert managed._closed is True

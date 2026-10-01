@@ -213,6 +213,7 @@ class HeartbeatSpec:
     interval_seconds: float
     initial_delay_seconds: float | None = None
     lane_capacity: int | None = None
+    failure_scope: TaskFailureScope = TaskFailureScope.GROUP
 
     def __post_init__(self) -> None:
         if not self.heartbeat_id.strip():

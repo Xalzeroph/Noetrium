@@ -318,6 +318,26 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
             proof, expected_previous_binding_proof_digest=expected_previous_binding_proof_digest
         )
 
+    def reacquire(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float | None = None,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint reacquisition requires EndpointAllocation")
+        ttl = self._lease_ttl_seconds if ttl_seconds is None else float(ttl_seconds)
+        if not math.isfinite(ttl) or ttl <= 0:
+            raise ValueError(
+                "endpoint reacquisition ttl_seconds must be finite and > 0"
+            )
+        return self._reservations.reacquire(
+            allocation,
+            ttl_seconds=ttl,
+            now=now,
+        )
+
     def renew(
         self,
         allocation: EndpointAllocation,

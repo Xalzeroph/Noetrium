@@ -154,6 +154,42 @@ class ResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                     now_epoch_s=now_epoch_s,
                 )
 
+    def renew_many(
+        self,
+        leases: tuple[ResourceLease, ...],
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> tuple[ResourceLease, ...]:
+        if type(leases) is not tuple:
+            raise TypeError("resource lease batch renewal requires a tuple")
+        if not leases:
+            return ()
+        if any(type(row) is not ResourceLease for row in leases):
+            raise TypeError(
+                "resource lease batch renewal requires ResourceLease generations"
+            )
+        lease_ids = tuple(row.lease_id for row in leases)
+        if len(set(lease_ids)) != len(lease_ids):
+            raise ValueError("resource lease batch renewal requires unique lease ids")
+        with self._connection() as conn:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="resource lease batch renew",
+            ):
+                now_epoch_s = self._authority_now(conn, now)
+                return tuple(
+                    renew_resource_lease(
+                        conn,
+                        row.lease_id,
+                        fencing_token=row.fencing_token,
+                        ttl_seconds=ttl_seconds,
+                        now_epoch_s=now_epoch_s,
+                    )
+                    for row in leases
+                )
+
     def release(
         self,
         lease_id: str,

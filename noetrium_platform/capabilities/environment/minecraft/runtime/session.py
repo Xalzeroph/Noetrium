@@ -123,6 +123,7 @@ class MinecraftEnvironmentSession(EnvironmentSession):
                 observation=self._observation,
                 state_payload=self._state_payload,
                 last_observation=lambda: self._last_observation,
+                decision_view=self._decision_view,
             ),
         )
         self._event_log("lifecycle", "MC_SESSION_START", level="INFO", attributes={"session_id": session_id})
@@ -198,6 +199,18 @@ class MinecraftEnvironmentSession(EnvironmentSession):
             "state_digest": self._state.snapshot_digest(),
         }
 
+    def _decision_view(
+        self,
+        *,
+        detailed_entities: bool = False,
+    ) -> dict[str, JsonValue]:
+        return {
+            "kind": "minecraft_decision_view.v1",
+            "state": self._state.decision_view(
+                detailed_entities=detailed_entities,
+            ),
+        }
+
     def _observation(
         self,
         *,
@@ -267,6 +280,7 @@ class MinecraftEnvironmentSession(EnvironmentSession):
                     "snapshot": dict(snapshot.diagnostics),
                     "entities": dict(entities.diagnostics),
                 },
+                "decision_view": self._decision_view(),
                 **self._state_payload(),
             }
         )

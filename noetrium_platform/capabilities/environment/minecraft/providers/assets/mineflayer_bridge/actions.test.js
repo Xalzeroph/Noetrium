@@ -509,6 +509,85 @@ test('drop capture records relevant raw protocol packet order without changing a
 })
 
 
+test('goto records a partial applied effect when navigation moved but missed the target', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    bot.entity.position = new Vec3(3, 64, 0)
+    return { distance: 7, within_radius: false }
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'partial')
+    assert.equal(result.effect_disposition, 'applied')
+    assert.equal(result.verified, false)
+    assert.equal(result.outcome.moved, 3)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto proves not_applied when navigation ends without displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => ({ distance: 10, within_radius: false })
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'rejected')
+    assert.equal(result.effect_disposition, 'not_applied')
+    assert.equal(result.verified, false)
+    assert.equal(result.outcome.moved, 0)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto preserves applied certainty when pathfinder fails after displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    bot.entity.position = new Vec3(2, 64, 0)
+    const error = new Error('No path to goal')
+    error.code = 'NoPath'
+    throw error
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'partial')
+    assert.equal(result.effect_disposition, 'applied')
+    assert.equal(result.outcome.moved, 2)
+    assert.equal(result.outcome.navigation_error.code, 'NoPath')
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto proves not_applied when pathfinder fails before displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    const error = new Error('No path to goal')
+    error.code = 'NoPath'
+    throw error
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'rejected')
+    assert.equal(result.effect_disposition, 'not_applied')
+    assert.equal(result.outcome.moved, 0)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
 test('goto_entity delegates moving targets to runtime GoalFollow navigation', async () => {
   const bot = fakeBot([])
   const target = { id: 2, name: 'zombie', isValid: true, position: new Vec3(4, 64, 0) }

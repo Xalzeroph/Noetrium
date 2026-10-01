@@ -3,6 +3,7 @@ from __future__ import annotations
 from noetrium_platform.capabilities.model.serving.api.admission import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     AsyncJsonHttpTransportPort,
+    AsyncTextHttpTransportPort,
     ModelEndpointReplicaSet,
     ModelEndpointPort,
     ModelEndpointRoute,
@@ -16,6 +17,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
     NativeModelProviderEndpoint,
     PooledModelHttpTransport,
+    VllmRuntimePressureObserver,
 )
 
 
@@ -116,10 +118,26 @@ def build_adaptive_model_endpoint_pool(
                 owns_transport=owned_transport,
             )
 
+    pressure_observer = None
+    if (
+        replica_set.qualified
+        and transport is not None
+        and isinstance(transport, AsyncTextHttpTransportPort)
+        and all(
+            binding.model.engine.strip().lower() == "vllm"
+            for binding in replica_set.members
+        )
+    ):
+        pressure_observer = VllmRuntimePressureObserver(transport)
+
     return AdaptiveModelEndpointPool(
         replica_set,
         factory,
         selection_policy=selection_policy,
+        pressure_observer=pressure_observer,
+        pressure_task_group=(
+            task_group if pressure_observer is not None else None
+        ),
     )
 
 

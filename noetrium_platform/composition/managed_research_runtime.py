@@ -21,9 +21,21 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
     InterprocessFileLock,
 )
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
+from noetrium_platform.infrastructure.resources.lease.api import (
+    DEFAULT_RESOURCE_LEASE_POLICY,
+    ResourceIdentity,
+    ResourceKind,
+    ResourceLease,
+    ResourceLeaseCardinality,
+    ResourceOwner,
+    ResourceOwnership,
+)
+from noetrium_platform.infrastructure.resources.lease.runtime import LeaseHeartbeatGuard
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
+from noetrium_platform.infrastructure.resources.directory.runtime import standard_local_directory_layout
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver
 from noetrium_platform.infrastructure.reliability.recovery.api import (
     RecoveryExecutionFactoryPort,
@@ -51,6 +63,7 @@ from .model_management import (
 )
 from .research_execution_pool import ResearchExecutionPool
 from .resource_lifecycle import ManagedResourceReconciler
+from .runtime_coordination import runtime_fabric_root
 from .shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
@@ -70,12 +83,15 @@ def _reconcile_startup_ownership(
     management: ManagementPlaneAuthorities,
     resources: ManagedResourceReconciler,
 ) -> None:
-    """Converge process owners before reclaiming their lower resource leases."""
+    """Observe durable physical realizations before targeted adoption.
 
-    management.models.fleet.remove_selected(
-        ModelDeploymentSelector(tags=("auto-managed",))
-    )
-    resources.recover_abandoned_owner_generation()
+    Generic resource reconciliation is deliberately deferred until required
+    model/environment realizations have had a chance to reacquire their exact
+    leases. Running it here would destroy warm state after an idle TTL gap.
+    """
+
+    del resources
+    management.models.fleet.status_all()
 
 
 @dataclass(slots=True)
@@ -100,6 +116,11 @@ class ManagedResearchRuntime:
     resources: ManagedResourceReconciler
     _runtime_lock: InterprocessFileLock
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
+    _fabric_consumer_resource: ResourceIdentity | None = None
+    _fabric_consumer_lease: ResourceLease | None = None
+    _fabric_consumer_guard: LeaseHeartbeatGuard | None = None
+    _fabric_coordination_lock_path: Path | None = None
+    _fabric_consumer_released: bool = False
     _model_controller: TaskHandlePort | None = None
     _resource_controller: TaskHandlePort | None = None
     _closing: bool = False
@@ -116,6 +137,173 @@ class ManagedResearchRuntime:
     _pool_closed: bool = False
     _lock_released: bool = False
     _closed: bool = False
+
+    def _attach_runtime_fabric_consumer(self, coordination_lock_path: Path) -> None:
+        """Publish this live runtime as one fenced Runtime Fabric consumer."""
+
+        if self._fabric_consumer_lease is not None:
+            raise RuntimeError("Runtime Fabric consumer is already attached")
+        lock_path = Path(coordination_lock_path).expanduser().absolute()
+        resource = ResourceIdentity(
+            ResourceKind.RUNTIME_FABRIC,
+            "host-runtime-fabric",
+        )
+        owner = ResourceOwner(
+            resource,
+            PLATFORM_SCOPE,
+            ResourceOwnership.SHARED,
+            ResourceLeaseCardinality.MULTI_ACTIVE,
+        )
+        lease = ResourceLease(
+            lease_id=f"runtime-fabric-consumer:{self.execution_pool.owner_generation_id}",
+            resource=resource,
+            holder_scope=PLATFORM_SCOPE,
+            purpose="runtime-fabric-consumer",
+        )
+        leases = self.management.platform_meta.resource_leases
+        ownership = self.management.platform_meta.resource_ownership
+        granted = None
+        with InterprocessFileLock(lock_path):
+            ownership.register_owner(owner)
+            try:
+                granted = leases.acquire(
+                    lease,
+                    ttl_seconds=DEFAULT_RESOURCE_LEASE_POLICY.ttl_seconds,
+                )
+            except BaseException:
+                raise
+        guard = self.execution_pool.resource_lease_guard_factory(
+            leases,
+            policy=DEFAULT_RESOURCE_LEASE_POLICY,
+        ).create((granted,))
+        try:
+            guard.start()
+        except BaseException:
+            with InterprocessFileLock(lock_path):
+                leases.release(
+                    granted.lease_id,
+                    fencing_token=granted.fencing_token,
+                )
+            raise
+        self._fabric_consumer_resource = resource
+        self._fabric_consumer_lease = granted
+        self._fabric_consumer_guard = guard
+        self._fabric_coordination_lock_path = lock_path
+        self._fabric_consumer_released = False
+
+    def _release_runtime_fabric_consumer(self, *, coordination_locked: bool = False) -> None:
+        if self._fabric_consumer_released:
+            return
+        resource = self._fabric_consumer_resource
+        lease = self._fabric_consumer_lease
+        guard = self._fabric_consumer_guard
+        lock_path = self._fabric_coordination_lock_path
+        if resource is None or lease is None or guard is None or lock_path is None:
+            self._fabric_consumer_released = True
+            return
+        guard.assert_healthy()
+        current_rows = guard.rows
+        if len(current_rows) != 1:
+            raise RuntimeError("Runtime Fabric consumer heartbeat cardinality drifted")
+        current = current_rows[0]
+        guard.close()
+
+        def release() -> None:
+            released = self.management.platform_meta.resource_leases.release(
+                current.lease_id,
+                fencing_token=current.fencing_token,
+            )
+            if released.state.value != "released":
+                raise RuntimeError("Runtime Fabric consumer lease did not release")
+
+        if coordination_locked:
+            release()
+        else:
+            with InterprocessFileLock(lock_path):
+                release()
+        self._fabric_consumer_lease = current
+        self._fabric_consumer_released = True
+
+    def retire_runtime_fabric(self) -> None:
+        """Terminally retire shared physical realizations after a global zero-consumer proof."""
+
+        if self._closed:
+            raise RuntimeError("managed research runtime is closed")
+        if self._closing:
+            raise RuntimeError("managed research runtime is already closing")
+        lock_path = self._fabric_coordination_lock_path
+        if lock_path is None:
+            raise RuntimeError("Runtime Fabric terminal retirement requires consumer fencing")
+
+        # Admission and terminal retirement share this host-visible fence. A
+        # failed zero-consumer proof is side-effect free; once the proof passes
+        # the fence stays held until physical teardown and our own consumer
+        # release converge, so no new project can race into the teardown.
+        with InterprocessFileLock(lock_path):
+            resource = self._fabric_consumer_resource
+            if resource is None:
+                raise RuntimeError("Runtime Fabric terminal retirement lost resource identity")
+            active = self.management.platform_meta.resource_leases.active_for(resource)
+            own_ids = {
+                row.lease_id
+                for row in (
+                    ()
+                    if self._fabric_consumer_guard is None
+                    else self._fabric_consumer_guard.rows
+                )
+            }
+            foreign = tuple(row for row in active if row.lease_id not in own_ids)
+            if foreign:
+                raise RuntimeError(
+                    "Runtime Fabric terminal retirement refused with active consumers: "
+                    + ",".join(row.lease_id for row in foreign)
+                )
+
+            self._closing = True
+            if not self._controllers_quiesced:
+                self.quiesce_background_controllers()
+                self._controllers_quiesced = True
+            if not self._workloads_quiesced:
+                self.execution_pool.quiesce_workloads()
+                self._workloads_quiesced = True
+
+            if not self._auto_model_leases_closed:
+                if self.model_replica_pool is not None:
+                    self.model_replica_pool.close_all()
+                self._auto_model_leases_closed = True
+            if not self._auto_models_removed:
+                self.management.models.fleet.remove_selected(
+                    ModelDeploymentSelector(tags=("auto-managed",))
+                )
+                self._auto_models_removed = True
+            if not self._models_stopped:
+                statuses = self.management.models.fleet.shutdown_all()
+                failed = tuple(
+                    row
+                    for row in statuses
+                    if row.runtime_state
+                    not in {ModelRuntimeState.STOPPED, ModelRuntimeState.MISSING}
+                )
+                if failed:
+                    raise RuntimeError(
+                        "model processes survived Runtime Fabric retirement: "
+                        + ",".join(
+                            f"{row.deployment_id}:{row.runtime_state.value}"
+                            for row in failed
+                        )
+                    )
+                self._models_stopped = True
+            if not self._resources_cleaned:
+                self.resources.shutdown_cleanup()
+                self._resources_cleaned = True
+            self._release_runtime_fabric_consumer(coordination_locked=True)
+            remaining = self.management.platform_meta.resource_leases.active_for(resource)
+            if remaining:
+                raise RuntimeError(
+                    "Runtime Fabric consumer leases appeared during terminal retirement"
+                )
+
+        self.close()
 
     def start_background_controllers(
         self,
@@ -211,6 +399,8 @@ class ManagedResearchRuntime:
         for controller in (self._model_controller, self._resource_controller):
             if controller is not None and controller.done():
                 controller.result()
+        if self._fabric_consumer_guard is not None and not self._fabric_consumer_released:
+            self._fabric_consumer_guard.assert_healthy()
 
     @staticmethod
     def _close_stage_error(stage: str, error: BaseException) -> ExceptionGroup:
@@ -251,7 +441,7 @@ class ManagedResearchRuntime:
         if not self._auto_model_leases_closed:
             try:
                 if self.model_replica_pool is not None:
-                    self.model_replica_pool.close_all()
+                    self.model_replica_pool.detach_all()
             except BaseException as exc:
                 raise self._close_stage_error(
                     "auto-managed replica lease retirement",
@@ -259,55 +449,20 @@ class ManagedResearchRuntime:
                 )
             self._auto_model_leases_closed = True
 
-        # Automatically placed replicas own ephemeral resource claims for this
-        # runtime lifetime.  Their desired specs must not survive past the
-        # lease/heartbeat owner generation: a later process must place them
-        # again and obtain fresh endpoint/compute fencing.  This catches
-        # generations recovered from a prior crash that have no live lease
-        # object in this process.
-        if not self._auto_models_removed:
+        if not self._fabric_consumer_released:
             try:
-                self.management.models.fleet.remove_selected(
-                    ModelDeploymentSelector(tags=("auto-managed",))
-                )
+                self._release_runtime_fabric_consumer()
             except BaseException as exc:
-                raise self._close_stage_error(
-                    "auto-managed model retirement",
-                    exc,
-                )
-            self._auto_models_removed = True
+                raise self._close_stage_error("Runtime Fabric consumer release", exc)
 
-        # Remaining explicit durable model deployments may keep desired state,
-        # but their physical processes still sit above resource cleanup.
-        # Releasing lower resources before every service is physically gone
-        # would permit split ownership after restart.
-        if not self._models_stopped:
-            try:
-                statuses = self.management.models.fleet.shutdown_all()
-                failed = tuple(
-                    row
-                    for row in statuses
-                    if row.runtime_state
-                    not in {ModelRuntimeState.STOPPED, ModelRuntimeState.MISSING}
-                )
-                if failed:
-                    raise RuntimeError(
-                        "model processes survived runtime shutdown: "
-                        + ",".join(
-                            f"{row.deployment_id}:{row.runtime_state.value}"
-                            for row in failed
-                        )
-                    )
-            except BaseException as exc:
-                raise self._close_stage_error("model shutdown", exc)
-            self._models_stopped = True
+        # This runtime owns consumers, not durable physical realizations.
+        self._auto_models_removed = True
+        self._models_stopped = True
 
-        if not self._resources_cleaned:
-            try:
-                self.resources.shutdown_cleanup()
-            except BaseException as exc:
-                raise self._close_stage_error("resource cleanup", exc)
-            self._resources_cleaned = True
+        # Normal run shutdown detaches consumers; it must not run generic
+        # resource GC here. Required realizations stay warm across runs and are
+        # targeted-adopted before the next background reconciliation cycle.
+        self._resources_cleaned = True
 
         if not self._operation_runtime_closed:
             try:
@@ -389,6 +544,7 @@ def build_local_managed_research_runtime(
     model_reconcile_interval_seconds: float = 10.0,
     resource_reconcile_interval_seconds: float = 30.0,
     resource_competition_policy: ResourceCompetitionPolicy | None = None,
+    runtime_fabric_root_path: Path | None = None,
 ) -> ManagedResearchRuntime:
     runtime_lock = InterprocessFileLock(
         layout.locks / "managed-research-runtime.lock",
@@ -397,10 +553,26 @@ def build_local_managed_research_runtime(
     runtime_lock.__enter__()
     pool: ResearchExecutionPool | None = None
     operation_runtime: ManagedOperationRuntime | None = None
+    runtime: ManagedResearchRuntime | None = None
     try:
+        fabric_root = (
+            runtime_fabric_root()
+            if runtime_fabric_root_path is None
+            else runtime_fabric_root_path.expanduser().absolute()
+        )
+        fabric_layout = standard_local_directory_layout(fabric_root / "runtime")
+        durable_fabric_layout = standard_local_directory_layout(
+            fabric_root / "content"
+        )
         host_pressure_observer = LocalHostRuntimeObserver()
         storage_pressure_observer = LocalSharedStoragePressureObserver(
-            tuple(path for _kind, path in layout.entries())
+            tuple(
+                dict.fromkeys(
+                    path
+                    for authority_layout in (layout, fabric_layout, durable_fabric_layout)
+                    for _kind, path in authority_layout.entries()
+                )
+            )
         )
         network_pressure_observer = LocalSharedNetworkPressureObserver()
         pool = ResearchExecutionPool(
@@ -431,6 +603,8 @@ def build_local_managed_research_runtime(
         try:
             management = build_local_management_plane(
                 layout,
+                durable_layout=durable_fabric_layout,
+                physical_layout=fabric_layout,
                 base_service_environment=base_service_environment,
                 model_source_environment=model_source_environment,
                 huggingface_cli=huggingface_cli,
@@ -491,18 +665,42 @@ def build_local_managed_research_runtime(
             _runtime_lock=runtime_lock,
             model_replica_pool=model_replica_pool,
         )
+        runtime._attach_runtime_fabric_consumer(
+            fabric_layout.locks / "runtime-fabric-consumers.lock"
+        )
         if start_background_controllers:
             runtime.start_background_controllers(
                 model_reconcile_interval_seconds=model_reconcile_interval_seconds,
                 resource_reconcile_interval_seconds=resource_reconcile_interval_seconds,
             )
         return runtime
-    except BaseException:
-        if operation_runtime is not None:
-            operation_runtime.close()
-        if pool is not None:
-            pool.close()
-        runtime_lock.__exit__(None, None, None)
+    except BaseException as primary:
+        errors: list[BaseException] = [primary]
+        if runtime is not None:
+            try:
+                runtime.close()
+            except BaseException as cleanup:
+                errors.append(cleanup)
+        else:
+            if operation_runtime is not None:
+                try:
+                    operation_runtime.close()
+                except BaseException as cleanup:
+                    errors.append(cleanup)
+            if pool is not None:
+                try:
+                    pool.close()
+                except BaseException as cleanup:
+                    errors.append(cleanup)
+            try:
+                runtime_lock.__exit__(None, None, None)
+            except BaseException as cleanup:
+                errors.append(cleanup)
+        if len(errors) > 1:
+            raise BaseExceptionGroup(
+                "managed research runtime construction and cleanup failed",
+                errors,
+            ) from primary
         raise
 
 

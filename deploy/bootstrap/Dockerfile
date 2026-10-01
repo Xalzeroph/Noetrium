@@ -3,10 +3,13 @@
 # Docker CLI image.
 ARG DOCKER_CLI_IMAGE=docker:27-cli
 ARG PYTHON_RUNTIME_IMAGE=python:3.12-slim-bookworm
+ARG NOETRIUM_BOOTSTRAP_INPUT_DIGEST
 
 FROM ${DOCKER_CLI_IMAGE} AS docker-cli
 
 FROM ${PYTHON_RUNTIME_IMAGE}
+
+ARG NOETRIUM_BOOTSTRAP_INPUT_DIGEST
 
 RUN test -r /etc/ssl/certs/ca-certificates.crt
 
@@ -17,8 +20,7 @@ COPY --from=docker-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr
 COPY pyproject.toml /tmp/noetrium-pyproject.toml
 RUN python3 -c 'import pathlib, subprocess, sys, tomllib; p=tomllib.loads(pathlib.Path("/tmp/noetrium-pyproject.toml").read_text()); build=p.get("build-system", {}).get("requires", []); project=p["project"]; deps=project.get("dependencies", []); release=project.get("optional-dependencies", {}).get("release", []); subprocess.check_call([sys.executable, "-m", "pip", "install", *build, *deps, *release])'     && rm -f /tmp/noetrium-pyproject.toml
 
-COPY . /tmp/noetrium-source
-RUN python3 -m pip install --no-deps --no-build-isolation /tmp/noetrium-source     && rm -rf /tmp/noetrium-source
+LABEL io.noetrium.bootstrap.input-sha256="${NOETRIUM_BOOTSTRAP_INPUT_DIGEST}"
 
 ENV PYTHONUNBUFFERED=1     PIP_DISABLE_PIP_VERSION_CHECK=1     PIP_NO_CACHE_DIR=1
 

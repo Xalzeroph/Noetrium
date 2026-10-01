@@ -781,8 +781,9 @@ def main() -> int:
     if args.execute:
         with open_local_research_execution_context(
             args.state_root,
-            start_background_controllers=True,
+            start_background_controllers=False,
             authority_inputs=authority_inputs,
+            terminal_retirement_on_success=True,
         ) as context:
             materialized = _execution_source(args, parser, context)
             authorities = materialized.execution_authorities
@@ -818,6 +819,11 @@ def main() -> int:
                     args.output.write_text(rendered, encoding="utf-8")
                 print(rendered, end="")
                 return 0
+            # Required model/environment realizations have now had their exact
+            # targeted-adoption opportunity. Generic background orphan GC may
+            # start only after this barrier, otherwise it can destroy warm state
+            # between process generations before the required owner reattaches.
+            context.runtime.start_background_controllers()
             receipt = execute_materialized_reproduction_fleet(
                 runnable_fleet,
                 state_root=args.state_root,
@@ -828,6 +834,7 @@ def main() -> int:
                 authority_manifest_digest=authorities.authority_manifest_digest,
                 execution_id=args.execution_id,
                 execution_pool=context.execution_pool,
+                operation_dispatcher=context.runtime.operation_runtime.dispatcher,
                 content_authorities=context.content,
             )
             context.runtime.assert_healthy()

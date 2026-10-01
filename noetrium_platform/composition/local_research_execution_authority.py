@@ -44,6 +44,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     thaw_json,
 )
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity
+from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentJournal
+from noetrium_platform.infrastructure.resources.directory.api import ManagedDirectoryKind
 from noetrium_platform.foundation.portfolio.api import (
     ProjectCapabilityRequirement,
     ProjectManifest,
@@ -104,6 +106,7 @@ from .method_runtime import (
     standard_method_evidence_factory,
     standard_method_runtime_binder,
 )
+from .method_agent_panel import PooledMethodAgentPanelExecution
 from .model_requests import build_model_request_recorder
 from .research_child_machine_runtime import compose_program_method_runtime_inventory
 from .participant_workload import (
@@ -627,6 +630,10 @@ class PortfolioQualifiedModelResolver:
             context.state_root / "model-requests" / closure.closure_digest
         )
         context.execution_pool.register_model_io_resource(recorder)
+        panel_execution = PooledMethodAgentPanelExecution(
+            context.execution_pool,
+            execution_tenant_id=context.execution_tenant_id,
+        )
         loops = {}
         for requirement in study.binding_requirements.model_roles:
             if not requirement.usage.affects_execution:
@@ -753,6 +760,7 @@ class PortfolioQualifiedModelResolver:
                 loops[requirement.role] = MethodAgentPanelLoop(
                     requirement.role,
                     tuple(member_loops),
+                    execution=panel_execution,
                 )
         if not loops:
             return None
@@ -760,12 +768,33 @@ class PortfolioQualifiedModelResolver:
 
 
 class CanonicalWorkloadExperimentReconciliation:
-    def __init__(self, protocol_digest: str) -> None:
+    """Recover only when lower effect authority proves no external effect began."""
+
+    def __init__(
+        self,
+        protocol_digest: str,
+        effect_journal: EffectIntentJournal | None,
+    ) -> None:
+        if type(protocol_digest) is not str or len(protocol_digest) != 64:
+            raise TypeError(
+                "canonical workload reconciliation requires protocol digest"
+            )
+        if effect_journal is not None and not isinstance(
+            effect_journal, EffectIntentJournal
+        ):
+            raise TypeError(
+                "canonical workload reconciliation requires EffectIntentJournal"
+            )
         self.protocol_digest = protocol_digest
+        self.effect_journal = effect_journal
         self.identity_digest = canonical_digest(
             {
-                "schema": "noetrium.canonical-workload-reconciliation.v1",
+                "schema": "noetrium.canonical-workload-reconciliation.v3",
                 "protocol_digest": protocol_digest,
+                "effect_journal_durability": (
+                    None if effect_journal is None else effect_journal.durability
+                ),
+                "effect_boundary": "prepared-is-may-have-happened",
             }
         )
 
@@ -780,11 +809,50 @@ class CanonicalWorkloadExperimentReconciliation:
         lowering_digest,
         attempt_id,
     ):
-        raise ResearchOSReconciliationIndeterminate(
-            "automatic workload Experiment has no terminal lower Machine commit "
-            "or independent Trial/Method/Effect proof establishing a safe disposition"
+        del machine_id
+        observed_protocol = closure.research_plan.trial_protocol_identity.digest()
+        if observed_protocol != self.protocol_digest:
+            raise ValueError(
+                "canonical workload reconciliation protocol identity drifted"
+            )
+        if self.effect_journal is None:
+            raise ResearchOSReconciliationIndeterminate(
+                "automatic workload Experiment has no effect authority proving "
+                "whether its uncertain attempt crossed the external-effect boundary"
+            )
+        execution_attempt_id = canonical_digest(
+            {
+                "schema": "noetrium.research-node-attempt.v1",
+                "execution_cut_id": execution_cut_id,
+                "graph_node_id": graph_node_id,
+                "attempt_id": attempt_id,
+            }
         )
-
+        effect_records = self.effect_journal.records_for_run(execution_attempt_id)
+        if effect_records:
+            raise ResearchOSReconciliationIndeterminate(
+                "automatic workload Experiment crossed the durable effect-intent "
+                "boundary; reconcile lower Effect authority before retry: "
+                f"count={len(effect_records)}"
+            )
+        empty_effect_proof = canonical_digest(
+            {
+                "schema": "noetrium.effect-intent-run-empty-proof.v1",
+                "run_id": execution_attempt_id,
+                "journal_durability": self.effect_journal.durability,
+                "effect_intent_digests": (),
+            }
+        )
+        return ResearchOSNodeReconciliationProof(
+            execution_cut_id=execution_cut_id,
+            graph_node_id=graph_node_id,
+            semantic_digest=semantic_digest,
+            lowering_digest=lowering_digest,
+            attempt_id=attempt_id,
+            disposition=ResearchGraphReconciliationDisposition.RETRY,
+            authority_id="canonical-workload-effect-boundary",
+            evidence_digests=(empty_effect_proof, self.identity_digest),
+        )
 
 def _exact_program_definition(program, definition_id: str, kind: ResearchDefinitionKind):
     matches = tuple(
@@ -905,6 +973,7 @@ class PortfolioAutomaticTrialProviderResolver:
     model_resolver: PortfolioQualifiedModelResolver
     definition_bindings: ResearchDefinitionBindingRegistry
     lifetime_releaser: object | None = None
+    program_journal: DirectoryMachineJournal | None = None
 
     def resolve(self, closure) -> ResearchOSExperimentTrialProviderBinding:
         provider_ids = {
@@ -937,9 +1006,11 @@ class PortfolioAutomaticTrialProviderResolver:
             child_machines=self.runtime_inventory.child_machines,
             schemas=self.runtime_inventory.schemas,
         )
-        program_journal = DirectoryMachineJournal(
-            self.context.state_root / "machine-state" / "program-journal"
-        )
+        program_journal = self.program_journal
+        if program_journal is None:
+            raise RuntimeError(
+                "automatic Trial provider requires canonical program journal authority"
+            )
         participant_runtimes = []
         method_inventories: dict[str, MethodRuntimePortInventory] = {}
         for requirement in requirements:
@@ -1393,8 +1464,13 @@ class LocalResearchExecutionAuthorityMaterializer:
                 ),
                 model_resources=self.context.management.models.resources,
                 state_root=(
-                    self.context.management.directories.layout.layout.state
+                    self.context.management.durable_directories.layout.root(ManagedDirectoryKind.STATE)
                     / "model"
+                ),
+                runtime_workdir=(
+                    self.context.management.physical_directories.layout.root(ManagedDirectoryKind.STATE)
+                    / "model"
+                    / "runtime-workdir"
                 ),
                 model_replica_pool=replica_pool,
                 deployment_runtime=(
@@ -1421,6 +1497,14 @@ class LocalResearchExecutionAuthorityMaterializer:
             portfolio,
             self.context,
         )
+        environment_effect_journals = (
+            {}
+            if environment_runtime is None
+            else {
+                program_id: runtime.effect_journal
+                for program_id, runtime in environment_runtime.runtimes
+            }
+        )
         runtime_inventory = MethodRuntimePortInventory(
             capabilities=(
                 None if environment_runtime is None else environment_runtime.port
@@ -1433,6 +1517,9 @@ class LocalResearchExecutionAuthorityMaterializer:
             research_bindings=research_bindings,
             environment_runtime=environment_runtime,
         )
+        program_journal = DirectoryMachineJournal(
+            self.context.state_root / "machine-state" / "program-journal"
+        )
         trial_providers = PortfolioAutomaticTrialProviderResolver(
             manifests,
             self.context,
@@ -1440,6 +1527,7 @@ class LocalResearchExecutionAuthorityMaterializer:
             model_resolver,
             definition_bindings,
             None if environment_runtime is None else environment_runtime.lifetime,
+            program_journal,
         )
         reconciliation_registrations = []
         seen_protocols = set()
@@ -1458,7 +1546,10 @@ class LocalResearchExecutionAuthorityMaterializer:
                         ResearchOSExperimentReconciliationRegistration(
                             _AUTO_WORKLOAD_PROVIDER,
                             protocol_digest,
-                            CanonicalWorkloadExperimentReconciliation(protocol_digest),
+                            CanonicalWorkloadExperimentReconciliation(
+                                protocol_digest,
+                                environment_effect_journals.get(program.program_id),
+                            ),
                         )
                     )
         runtime_components = ResearchOSExperimentRuntimeComponents(
@@ -1490,6 +1581,9 @@ class LocalResearchExecutionAuthorityMaterializer:
             experiment_runtime_components=runtime_components,
             method_runtime_inventory=runtime_inventory,
             definition_bindings=definition_bindings,
+            owned_runtime_resources=(
+                () if environment_runtime is None else (environment_runtime,)
+            ),
         )
 
 

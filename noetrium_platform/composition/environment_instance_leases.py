@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+from functools import wraps
 import math
+from pathlib import Path
+import threading
 from time import time
 
 from noetrium_platform.capabilities.environment.catalog.api import (
@@ -13,6 +17,9 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     ExecutionEnvironmentCatalogPort,
 )
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+)
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceIdentity,
@@ -85,6 +92,15 @@ def _lease_id(instance: EnvironmentInstance) -> str:
     return f"environment-instance:{instance.instance_id}:generation:{instance.generation}"
 
 
+def _coordinated(method):
+    @wraps(method)
+    def invoke(self, *args, **kwargs):
+        with self._coordination_fence():
+            return method(self, *args, **kwargs)
+
+    return invoke
+
+
 class EnvironmentInstanceLeaseAuthority:
     """Cross-authority coordinator for reusable environment checkout leases.
 
@@ -103,13 +119,52 @@ class EnvironmentInstanceLeaseAuthority:
         leases: ResourceLeasePort,
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
         reconcile_on_start: bool = True,
+        coordination_lock_path: str | Path | None = None,
     ) -> None:
         self.catalog = catalog
         self.ownership = ownership
         self.leases = leases
         self.policy = policy
+        self._coordination_thread_lock = threading.RLock()
+        self._coordination_depth = 0
+        self._coordination_lock_path = (
+            None
+            if coordination_lock_path is None
+            else Path(coordination_lock_path).resolve()
+        )
+        if self._coordination_lock_path is not None:
+            self._coordination_lock_path.parent.mkdir(parents=True, exist_ok=True)
         if reconcile_on_start:
             self.reconcile()
+
+    @contextmanager
+    def _coordination_fence(self):
+        """Fence catalog/lease cross-authority mutations as one admission unit.
+
+        Durable environment state and durable resource leases intentionally live
+        in separate authorities. Their composite transition therefore needs one
+        host-visible fence so reconciliation cannot observe the valid midpoint
+        where a catalog generation is IN_USE but its lease is not committed yet.
+        The thread RLock also makes the same guarantee inside one process.
+        """
+
+        with self._coordination_thread_lock:
+            if self._coordination_depth:
+                self._coordination_depth += 1
+                try:
+                    yield
+                finally:
+                    self._coordination_depth -= 1
+                return
+            self._coordination_depth = 1
+            try:
+                if self._coordination_lock_path is None:
+                    yield
+                else:
+                    with InterprocessFileLock(self._coordination_lock_path):
+                        yield
+            finally:
+                self._coordination_depth = 0
 
     def _binding_rows(self, instance_id: str) -> tuple[EnvironmentBinding, ...]:
         return tuple(
@@ -158,6 +213,7 @@ class EnvironmentInstanceLeaseAuthority:
             raise
         return EnvironmentInstanceLeaseHandle(acquisition, lease)
 
+    @_coordinated
     def acquire_reusable_instance(
         self,
         profile_id: str,
@@ -181,6 +237,24 @@ class EnvironmentInstanceLeaseAuthority:
         )
         return self._acquire_lease(acquisition)
 
+    @_coordinated
+    def provision_reusable_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceLeaseHandle:
+        acquisition = self.catalog.provision_reusable_instance(
+            instance,
+            binding_id=binding_id,
+            role=role,
+            scope=scope,
+        )
+        return self._acquire_lease(acquisition)
+
+    @_coordinated
     def recover_reusable_instance(
         self,
         profile_id: str,
@@ -211,6 +285,7 @@ class EnvironmentInstanceLeaseAuthority:
         _ = old_instance
         return handle
 
+    @_coordinated
     def renew(
         self,
         handle: EnvironmentInstanceLeaseHandle,
@@ -230,12 +305,44 @@ class EnvironmentInstanceLeaseAuthority:
         )
         return EnvironmentInstanceLeaseHandle(handle.acquisition, renewed)
 
+    @_coordinated
     def renew_many(
         self,
         handles: tuple[EnvironmentInstanceLeaseHandle, ...],
     ) -> tuple[EnvironmentInstanceLeaseHandle, ...]:
-        return tuple(self.renew(handle) for handle in handles)
+        if type(handles) is not tuple:
+            raise TypeError("environment instance batch renewal requires a tuple")
+        if not handles:
+            return ()
+        instances = {
+            row.instance_id: row
+            for row in self.catalog.instances()
+        }
+        for handle in handles:
+            current = instances.get(handle.instance.instance_id)
+            if current is None:
+                raise KeyError(handle.instance.instance_id)
+            if (
+                current.state is not EnvironmentInstanceState.IN_USE
+                or current.generation != handle.instance.generation
+            ):
+                raise RuntimeError(
+                    "environment instance generation is no longer authoritative"
+                )
+        renewed = self.leases.renew_many(
+            tuple(handle.lease for handle in handles),
+            ttl_seconds=self.policy.ttl_seconds,
+        )
+        if len(renewed) != len(handles):
+            raise RuntimeError(
+                "environment instance batch renewal cardinality drifted"
+            )
+        return tuple(
+            EnvironmentInstanceLeaseHandle(handle.acquisition, lease)
+            for handle, lease in zip(handles, renewed, strict=True)
+        )
 
+    @_coordinated
     def release(
         self,
         handle: EnvironmentInstanceLeaseHandle,
@@ -270,7 +377,7 @@ class EnvironmentInstanceLeaseAuthority:
         # may partially succeed before a crash/failure, so retries accept the
         # exact same DIRTY generation with zero or fewer remaining bindings.
         for row in rows:
-            self.catalog.unbind(row.role, row.scope)
+            self.catalog.unbind_if_bound(row.role, row.scope)
 
         try:
             self.leases.release(
@@ -300,6 +407,7 @@ class EnvironmentInstanceLeaseAuthority:
             cleanliness=cleanliness,
         )
 
+    @_coordinated
     def shutdown_cleanup(
         self,
         *,
@@ -317,7 +425,7 @@ class EnvironmentInstanceLeaseAuthority:
 
         bindings = self.catalog.bindings()
         for row in bindings:
-            self.catalog.unbind(row.role, row.scope)
+            self.catalog.unbind_if_bound(row.role, row.scope)
 
         released: list[str] = []
         for lease in self.leases.active_leases(
@@ -337,6 +445,7 @@ class EnvironmentInstanceLeaseAuthority:
             tuple(sorted(set(released))),
         )
 
+    @_coordinated
     def reconcile(
         self,
         *,
@@ -345,9 +454,21 @@ class EnvironmentInstanceLeaseAuthority:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("environment lease reconciliation time must be finite")
+        lease_now = None if now is None else now_epoch_s
         self.leases.reconcile_expired(
             resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+            now=lease_now,
         )
+        active_by_instance: dict[str, list[ResourceLease]] = {}
+        for lease in self.leases.active_leases(
+            resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+            now=lease_now,
+        ):
+            active_by_instance.setdefault(
+                lease.resource.resource_id,
+                [],
+            ).append(lease)
+
         dirtied: list[str] = []
         released: list[str] = []
 
@@ -357,8 +478,7 @@ class EnvironmentInstanceLeaseAuthority:
             by_instance.setdefault(binding.instance_id, []).append(binding)
 
         for instance in self.catalog.instances():
-            resource = _instance_resource(instance.instance_id)
-            active = self.leases.active_for(resource)
+            active = tuple(active_by_instance.get(instance.instance_id, ()))
             rows = tuple(by_instance.get(instance.instance_id, ()))
             if instance.state is EnvironmentInstanceState.IN_USE:
                 expected_id = _lease_id(instance)
@@ -372,7 +492,7 @@ class EnvironmentInstanceLeaseAuthority:
                 if valid:
                     continue
                 for row in rows:
-                    self.catalog.unbind(row.role, row.scope)
+                    self.catalog.unbind_if_bound(row.role, row.scope)
                 # Ordinary reconciliation has no provider/process convergence
                 # proof. Quarantine the generation by preserving any still-live
                 # Resource lease; its holder can no longer renew successfully
@@ -387,7 +507,7 @@ class EnvironmentInstanceLeaseAuthority:
             # Remove stale bindings, but keep the lease fence. Only TTL expiry or
             # shutdown_cleanup() after global workload convergence may release it.
             for row in rows:
-                self.catalog.unbind(row.role, row.scope)
+                self.catalog.unbind_if_bound(row.role, row.scope)
 
         return EnvironmentInstanceReconciliation(
             tuple(sorted(set(dirtied))),

@@ -11,7 +11,10 @@ from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionPolicy,
     ResourceCompetitionReservationLedger,
     _default_resource_competition_directory,
-    _resource_competition_runtime_root,
+)
+from noetrium_platform.composition.runtime_coordination import (
+    runtime_coordination_root,
+    runtime_fabric_root,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind
 from noetrium_platform.infrastructure.resources.compute.api import (
@@ -49,13 +52,30 @@ def test_reservation_authority_uses_xdg_runtime_when_unbound(
     runtime_root.mkdir()
     monkeypatch.delenv("NOETRIUM_RUNTIME_COORDINATION_ROOT", raising=False)
     monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_root))
-    assert _resource_competition_runtime_root() == runtime_root / "noetrium"
+    assert runtime_coordination_root() == runtime_root / "noetrium"
+
+
+def test_runtime_fabric_and_ephemeral_coordination_use_distinct_authority_roots(
+    monkeypatch, tmp_path: Path
+) -> None:
+    coordination_root = tmp_path / "runtime"
+    fabric_root = tmp_path / "fabric"
+    monkeypatch.setenv(
+        "NOETRIUM_RUNTIME_COORDINATION_ROOT",
+        str(coordination_root),
+    )
+    monkeypatch.setenv("NOETRIUM_RUNTIME_FABRIC_ROOT", str(fabric_root))
+
+    assert runtime_fabric_root().is_relative_to(fabric_root)
+    assert _default_resource_competition_directory().is_relative_to(
+        coordination_root / "resource-competition"
+    )
 
 
 def test_reservation_authority_rejects_relative_explicit_root(monkeypatch) -> None:
     monkeypatch.setenv("NOETRIUM_RUNTIME_COORDINATION_ROOT", "relative/runtime")
     try:
-        _resource_competition_runtime_root()
+        runtime_coordination_root()
     except ValueError as exc:
         assert "absolute path" in str(exc)
     else:

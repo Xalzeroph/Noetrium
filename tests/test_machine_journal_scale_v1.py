@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 import pytest
 
@@ -51,6 +52,24 @@ def _commit(
         state={"revision": revision},
         previous_commit_id=previous_commit_id,
     )
+
+
+def test_small_hot_path_states_use_patch_after_initial_snapshot(tmp_path: Path) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    previous = None
+    for revision in range(1, 4):
+        commit = _commit(revision, previous_commit_id=previous)
+        journal.append(commit)
+        previous = commit.commit_id
+
+    path = next((tmp_path / "machines").glob("*.journal"))
+    rows = tuple(json.loads(line) for line in path.read_text("utf-8").splitlines())
+    assert tuple(row["state_encoding"] for row in rows) == (
+        "snapshot",
+        "patch",
+        "patch",
+    )
+    assert DirectoryMachineJournal(tmp_path).latest("scale-machine").revision == 3
 
 
 def test_single_writer_200_appends_do_not_redecode_committed_prefix(

@@ -16,8 +16,12 @@ from noetrium_platform.capabilities.model.serving.api import (
     ServiceHeartbeat,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchResult,
+    ModelEndpointReplicaSet,
+    ModelEndpointRequest,
     ModelEndpointResponse,
     ModelEndpointRoute,
+    OperationalModelEndpointReplica,
 )
 from noetrium_platform.capabilities.model.serving.runtime import run_runtime_canary
 from noetrium_platform.capabilities.model.stack.api import ModelArtifactClosure, ModelStackSpec, RuntimeBuildIdentity
@@ -78,19 +82,41 @@ def _heartbeat(deployment: QualifiedDeploymentManifest, *, marker: str = "start-
 class _Endpoint:
     def __init__(self, route: ModelEndpointRoute, *, text: str = '{"ok": true}', finish_reason: str | None = 'stop') -> None:
         self.route = route
+        self.replica_set = ModelEndpointReplicaSet((
+            OperationalModelEndpointReplica(route, 1),
+        ))
         self.text = text
         self.finish_reason = finish_reason
         self.requests = []
 
-    def complete(self, request):
+    def _dispatch(self, envelope, body, response):
+        request = ModelEndpointRequest(
+            request=envelope,
+            deployment_id=self.route.deployment_id,
+            deployment_generation=self.route.deployment_generation,
+            body=body,
+        )
         self.requests.append(request)
-        return ModelEndpointResponse(
-            request_id=request.request.request_id,
-            deployment_id=request.deployment_id,
-            text=self.text,
-            finish_reason=self.finish_reason,
-            input_tokens=4,
-            output_tokens=2,
+        return ModelEndpointDispatchResult(
+            request=request,
+            response=response,
+            replica_set_digest=self.replica_set.replica_set_digest,
+            selection_policy_digest=_digest("e"),
+            selection_sequence=len(self.requests),
+        )
+
+    def complete(self, envelope, body):
+        return self._dispatch(
+            envelope,
+            body,
+            ModelEndpointResponse(
+                request_id=envelope.request_id,
+                deployment_id=self.route.deployment_id,
+                text=self.text,
+                finish_reason=self.finish_reason,
+                input_tokens=4,
+                output_tokens=2,
+            ),
         )
 
 
@@ -293,8 +319,7 @@ def test_runtime_canary_reasoning_requires_canonical_reasoning_block() -> None:
         def __init__(self, route, with_reasoning):
             super().__init__(route,text="answer",finish_reason="stop")
             self.with_reasoning=with_reasoning
-        def complete(self, request):
-            self.requests.append(request)
+        def complete(self, envelope, body):
             blocks=(
                 {
                     "kind":"reasoning",
@@ -316,12 +341,14 @@ def test_runtime_canary_reasoning_requires_canonical_reasoning_block() -> None:
                     "text":"<think>reason</think> answer",
                 },
             )
-            return ModelEndpointResponse(
-                request_id=request.request.request_id,
-                deployment_id=request.deployment_id,
-                text="answer",
-                content_blocks=blocks,
-                finish_reason="stop",
+            return self._dispatch(
+                envelope, body, ModelEndpointResponse(
+                    request_id=envelope.request_id,
+                    deployment_id=self.route.deployment_id,
+                    text="answer",
+                    content_blocks=blocks,
+                    finish_reason="stop",
+                ),
             )
 
     proved=run_runtime_canary(
@@ -366,18 +393,19 @@ def test_runtime_canary_tool_capability_requires_expected_tool_call() -> None:
     )
 
     class Endpoint(_Endpoint):
-        def complete(self, request):
-            self.requests.append(request)
-            return ModelEndpointResponse(
-                request_id=request.request.request_id,
-                deployment_id=request.deployment_id,
-                text="",
-                tool_calls=({
+        def complete(self, envelope, body):
+            return self._dispatch(
+                envelope, body, ModelEndpointResponse(
+                    request_id=envelope.request_id,
+                    deployment_id=self.route.deployment_id,
+                    text="",
+                    tool_calls=({
                     "id":"call-1",
                     "type":"function",
                     "function":{"name":"probe_tool","arguments":{}},
-                },),
-                finish_reason="tool_calls",
+                    },),
+                    finish_reason="tool_calls",
+                ),
             )
 
     evidence=run_runtime_canary(
@@ -416,8 +444,8 @@ def test_runtime_canary_streaming_requires_real_stream_events_and_binds_digest()
     )
 
     class Endpoint(_Endpoint):
-        def stream(self, request, on_event):
-            self.requests.append(request)
+        def stream(self, envelope, body, on_event, *, stream_idle_timeout_s=30.0):
+            del stream_idle_timeout_s
             on_event(ModelStreamEvent(
                 kind=ModelStreamEventKind.TEXT_DELTA,
                 sequence=1,
@@ -433,11 +461,13 @@ def test_runtime_canary_streaming_requires_real_stream_events_and_binds_digest()
                 content={"response":{"status":"completed"}},
                 terminal=True,
             ))
-            return ModelEndpointResponse(
-                request_id=request.request.request_id,
-                deployment_id=request.deployment_id,
-                text="ok",
-                finish_reason="stop",
+            return self._dispatch(
+                envelope, body, ModelEndpointResponse(
+                    request_id=envelope.request_id,
+                    deployment_id=self.route.deployment_id,
+                    text="ok",
+                    finish_reason="stop",
+                ),
             )
 
     evidence=run_runtime_canary(

@@ -29,13 +29,41 @@ bootstrap_owner_alive() {
   [ -n "$current_start" ] && [ "$current_start" = "$start" ]
 }
 
+bootstrap_container_absent_once() {
+  id="$1"
+  if inspect_output="$(docker inspect "$id" 2>&1)"; then
+    return 1
+  fi
+  case "$inspect_output" in
+    *"No such object"*|*"No such container"*)
+      return 0
+      ;;
+  esac
+  if ! remaining="$(docker ps -aq --no-trunc --filter "id=$id" 2>/dev/null)"; then
+    return 2
+  fi
+  [ -z "$remaining" ] && return 0
+  return 1
+}
+
 bootstrap_container_absent() {
   id="$1"
-  remaining="$(docker ps -aq --no-trunc --filter "id=$id")" || {
+  attempt=1
+  last_status=2
+  while [ "$attempt" -le 5 ]; do
+    if bootstrap_container_absent_once "$id"; then
+      return 0
+    else
+      last_status=$?
+    fi
+    [ "$attempt" -eq 5 ] && break
+    sleep 0.05
+    attempt=$((attempt + 1))
+  done
+  if [ "$last_status" -eq 2 ]; then
     echo "Unable to prove bootstrap container absence: $id" >&2
-    return 2
-  }
-  [ -z "$remaining" ]
+  fi
+  return "$last_status"
 }
 
 remove_bootstrap_container_exact() {
@@ -235,8 +263,14 @@ command -v docker >/dev/null 2>&1 || {
   exit 127
 }
 
-docker info >/dev/null 2>&1 || {
+DOCKER_DAEMON_CAPABILITY_IDENTITY="$(
+  docker info --format '{{.ID}}|{{.ServerVersion}}|{{.Driver}}|{{.DefaultRuntime}}|{{json .Runtimes}}|{{json .CDISpecDirs}}' 2>/dev/null
+)" || {
   echo "Noetrium environment bootstrap cannot reach the active Docker daemon." >&2
+  exit 1
+}
+[ -n "$DOCKER_DAEMON_CAPABILITY_IDENTITY" ] || {
+  echo "Docker daemon did not publish a stable capability identity." >&2
   exit 1
 }
 
@@ -288,31 +322,70 @@ case "$DAEMON_HOST" in
     ;;
 esac
 
+# One host-visible coordination namespace is shared by standalone environment
+# builds and project-control runs. Durable content stays under WORK_ROOT; only
+# ephemeral single-flight/liveness state belongs here.
+HOST_UID="$(id -u)"
+HOST_GID="$(id -g)"
+HOST_RUNTIME_BASE="${XDG_RUNTIME_DIR:-/run/user/$HOST_UID}"
+if [ -d "$HOST_RUNTIME_BASE" ] && [ -w "$HOST_RUNTIME_BASE" ]; then
+  CONTROL_COORDINATION_ROOT="$HOST_RUNTIME_BASE/noetrium"
+elif [ -d /dev/shm ] && [ -w /dev/shm ]; then
+  CONTROL_COORDINATION_ROOT="/dev/shm/noetrium-uid-$HOST_UID"
+else
+  echo "No writable host runtime coordination filesystem is available." >&2
+  exit 1
+fi
+mkdir -p "$CONTROL_COORDINATION_ROOT"
+chmod 0700 "$CONTROL_COORDINATION_ROOT"
+test -w "$CONTROL_COORDINATION_ROOT" || {
+  echo "Noetrium host runtime coordination root is not writable: $CONTROL_COORDINATION_ROOT" >&2
+  exit 1
+}
+mkdir -p "$CONTROL_COORDINATION_ROOT/environment-build-locks"
+chmod 0700 "$CONTROL_COORDINATION_ROOT/environment-build-locks"
+
 mkdir -p "$WORK_ROOT"
 WORK_ROOT="$(CDPATH= cd -- "$WORK_ROOT" && pwd)"
 
-# Product bootstrap is VCS-neutral. The source checkout is mounted read-only and
-# release tooling derives a content-addressed filesystem snapshot directly from
-# those bytes; repository metadata is neither mounted nor interpreted.
-
-if [ "${NOETRIUM_BOOTSTRAP_REUSE:-0}" = "1" ]; then
-  docker image inspect "$BOOTSTRAP_IMAGE" >/dev/null 2>&1 || {
-    echo "Requested bootstrap reuse but image is missing: $BOOTSTRAP_IMAGE" >&2
-    exit 1
-  }
-else
+# Product bootstrap is a stable dependency/tooling capsule. Current Noetrium
+# source is never baked into it: source is mounted read-only at execution time.
+# Rebuild only when the bootstrap recipe, dependency declaration or concrete
+# parent image identities change.
+for bootstrap_parent in "$DOCKER_CLI_IMAGE" "$PYTHON_RUNTIME_IMAGE"; do
+  docker image inspect "$bootstrap_parent" >/dev/null 2>&1 || docker pull "$bootstrap_parent"
+done
+DOCKER_CLI_IMAGE_ID="$(docker_image_id "$DOCKER_CLI_IMAGE")"
+PYTHON_RUNTIME_IMAGE_ID="$(docker_image_id "$PYTHON_RUNTIME_IMAGE")"
+BOOTSTRAP_INPUT_DIGEST="$(
+  {
+    (CDPATH= cd -- "$ROOT" && sha256sum deploy/bootstrap/Dockerfile pyproject.toml)
+    printf '%s\n' "$DOCKER_CLI_IMAGE_ID" "$PYTHON_RUNTIME_IMAGE_ID"
+  } | sha256sum | awk '{print $1}'
+)"
+BOOTSTRAP_CACHED_DIGEST="$(
+  docker image inspect "$BOOTSTRAP_IMAGE" \
+    --format '{{index .Config.Labels "io.noetrium.bootstrap.input-sha256"}}' \
+    2>/dev/null || true
+)"
+if [ "$BOOTSTRAP_CACHED_DIGEST" != "$BOOTSTRAP_INPUT_DIGEST" ]; then
+  BOOTSTRAP_CONTEXT="$WORK_ROOT/bootstrap-context/$BOOTSTRAP_INPUT_DIGEST"
+  mkdir -p "$BOOTSTRAP_CONTEXT"
+  cp "$ROOT/deploy/bootstrap/Dockerfile" "$BOOTSTRAP_CONTEXT/Dockerfile"
+  cp "$ROOT/pyproject.toml" "$BOOTSTRAP_CONTEXT/pyproject.toml"
   docker build \
     --build-arg "DOCKER_CLI_IMAGE=$DOCKER_CLI_IMAGE" \
+    --build-arg "PYTHON_RUNTIME_IMAGE=$PYTHON_RUNTIME_IMAGE" \
+    --build-arg "NOETRIUM_BOOTSTRAP_INPUT_DIGEST=$BOOTSTRAP_INPUT_DIGEST" \
     --tag "$BOOTSTRAP_IMAGE" \
-    --file "$ROOT/deploy/bootstrap/Dockerfile" \
-    "$ROOT"
+    "$BOOTSTRAP_CONTEXT"
 fi
 
 # The bootstrap talks to the host Docker daemon. Preserve host absolute paths
 # inside the control-plane container so daemon-side build contexts and Compose
 # bind mounts resolve to the same files. Source stays read-only; only the
 # dedicated build/runtime root is writable.
-COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e BUILDX_GIT_INFO=false -e BUILDX_GIT_LABELS=false -e BUILDX_GIT_CHECK_DIRTY=false -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START"
+COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT -w $ROOT -e PYTHONPATH=$ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT -e NOETRIUM_DOCKER_CAPABILITY_VERIFIED=${NOETRIUM_DOCKER_CAPABILITY_VERIFIED:-0} -e BUILDX_GIT_INFO=false -e BUILDX_GIT_LABELS=false -e BUILDX_GIT_CHECK_DIRTY=false -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START"
 
 DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"
 if [ -z "$DEPLOYMENT_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
@@ -339,6 +412,16 @@ if [ "${1:-}" = "control" ]; then
   CONTROL_STATE_ROOT="${NOETRIUM_CONTROL_STATE_ROOT:-$WORK_ROOT/control}"
   mkdir -p "$CONTROL_STATE_ROOT"
   CONTROL_STATE_ROOT="$(CDPATH= cd -- "$CONTROL_STATE_ROOT" && pwd)"
+  CONTROL_RUNTIME_FABRIC_ROOT="${NOETRIUM_RUNTIME_FABRIC_ROOT:-$CONTROL_STATE_ROOT/runtime-fabric}"
+  case "$CONTROL_RUNTIME_FABRIC_ROOT" in
+    /*) ;;
+    *)
+      echo "NOETRIUM_RUNTIME_FABRIC_ROOT must be an absolute path." >&2
+      exit 2
+      ;;
+  esac
+  mkdir -p "$CONTROL_RUNTIME_FABRIC_ROOT"
+  CONTROL_RUNTIME_FABRIC_ROOT="$(CDPATH= cd -- "$CONTROL_RUNTIME_FABRIC_ROOT" && pwd -P)"
   PROJECT_RESEARCH_STATE_ROOT="$CONTROL_STATE_ROOT/research-os"
   mkdir -p "$PROJECT_RESEARCH_STATE_ROOT"
   CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"
@@ -364,43 +447,87 @@ if [ "${1:-}" = "control" ]; then
     CONTROL_HOME="$CONTROL_STATE_ROOT/home"
     mkdir -p "$CONTROL_HOME"
 
-    HOST_UID="$(id -u)"
-    HOST_GID="$(id -g)"
-    HOST_RUNTIME_BASE="${XDG_RUNTIME_DIR:-/run/user/$HOST_UID}"
-    if [ -d "$HOST_RUNTIME_BASE" ] && [ -w "$HOST_RUNTIME_BASE" ]; then
-      CONTROL_COORDINATION_ROOT="$HOST_RUNTIME_BASE/noetrium"
-    elif [ -d /dev/shm ] && [ -w /dev/shm ]; then
-      CONTROL_COORDINATION_ROOT="/dev/shm/noetrium-uid-$HOST_UID"
-    else
-      echo "No writable host runtime coordination filesystem is available." >&2
-      exit 1
-    fi
-    mkdir -p "$CONTROL_COORDINATION_ROOT"
-    chmod 0700 "$CONTROL_COORDINATION_ROOT"
-    test -w "$CONTROL_COORDINATION_ROOT" || {
-      echo "Noetrium host runtime coordination root is not writable: $CONTROL_COORDINATION_ROOT" >&2
-      exit 1
-    }
     CONTROL_IMAGE="$BOOTSTRAP_IMAGE"
     BOOTSTRAP_IMAGE_ID="$(docker_image_id "$BOOTSTRAP_IMAGE")"
-    PROJECT_RUNTIME_KEY="$(
-      docker run --rm --init --restart no \
-        --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777 \
-        --user "$HOST_UID:$HOST_GID" \
-        --entrypoint python3 \
-        -e HOME=/tmp \
-        -e PIP_DISABLE_PIP_VERSION_CHECK=1 \
-        -e PIP_NO_CACHE_DIR=1 \
-        -v "$ROOT:$ROOT:ro" \
-        -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT" \
-        -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
-        "$BOOTSTRAP_IMAGE" \
-        "$ROOT/scripts/materialize_project_runtime.py" \
-        --project-root "$CONTROL_PROJECT_ROOT" \
-        --platform-root "$ROOT" \
-        --state-root "$CONTROL_STATE_ROOT" \
-        --base-image-id "$BOOTSTRAP_IMAGE_ID"
+
+    HOST_IDENTITY_ARGS=""
+    HOST_IDENTITY_SOURCE=""
+    if [ -s /etc/machine-id ]; then
+      HOST_IDENTITY_SOURCE="/etc/machine-id"
+      HOST_IDENTITY_ARGS="-v /etc/machine-id:/etc/machine-id:ro"
+    elif [ -s /sys/class/dmi/id/product_uuid ]; then
+      HOST_IDENTITY_SOURCE="/sys/class/dmi/id/product_uuid"
+      HOST_IDENTITY_ARGS="-v /sys/class/dmi/id/product_uuid:/sys/class/dmi/id/product_uuid:ro"
+    else
+      echo "Noetrium controller attachment requires stable physical-host identity." >&2
+      exit 1
+    fi
+
+    CONTROL_FABRIC_NAMESPACE_FILE="$CONTROL_STATE_ROOT/runtime-fabric.namespace"
+    PROJECT_RUNTIME_INPUT_DIGEST="$(
+      {
+        sha256sum \
+          "$CONTROL_PROJECT_ROOT/pyproject.toml" \
+          "$ROOT/pyproject.toml" \
+          "$ROOT/deploy/bootstrap/ProjectRuntime.Dockerfile" \
+          "$ROOT/scripts/materialize_project_runtime.py" \
+          "$ROOT/noetrium_platform/composition/runtime_coordination.py" \
+          "$ROOT/noetrium_platform/infrastructure/resources/lease/runtime/clock.py" \
+          "$ROOT/noetrium_platform/foundation/kernel/kernel/lease_clock.py" \
+          | awk '{print $1}'
+        sha256sum "$HOST_IDENTITY_SOURCE" | awk '{print $1}'
+        if [ -e "$CONTROL_PROJECT_ROOT/project.dependencies.lock.json" ]; then
+          test -f "$CONTROL_PROJECT_ROOT/project.dependencies.lock.json" \
+            && test ! -L "$CONTROL_PROJECT_ROOT/project.dependencies.lock.json" || {
+              echo "Project dependency lock must be a real regular file." >&2
+              exit 1
+            }
+          sha256sum "$CONTROL_PROJECT_ROOT/project.dependencies.lock.json" | awk '{print $1}'
+        else
+          printf '%s\n' 'project.dependencies.lock.json:absent'
+        fi
+        printf '%s\n' "$BOOTSTRAP_IMAGE_ID" "$CONTROL_RUNTIME_FABRIC_ROOT" "uid=$HOST_UID"
+      } | sha256sum | awk '{print $1}'
     )"
+    PROJECT_RUNTIME_RESULT_ROOT="$CONTROL_STATE_ROOT/project-runtime/materializer-results"
+    PROJECT_RUNTIME_RESULT="$PROJECT_RUNTIME_RESULT_ROOT/$PROJECT_RUNTIME_INPUT_DIGEST.json"
+    PROJECT_RUNTIME_KEY=""
+    CONTROL_FABRIC_NAMESPACE_ROOT=""
+    if [ -f "$PROJECT_RUNTIME_RESULT" ] && [ ! -L "$PROJECT_RUNTIME_RESULT" ] \
+      && grep -Fq "\"materialization_input_digest\":\"$PROJECT_RUNTIME_INPUT_DIGEST\"" "$PROJECT_RUNTIME_RESULT" \
+      && grep -Fq "\"base_image_id\":\"$BOOTSTRAP_IMAGE_ID\"" "$PROJECT_RUNTIME_RESULT"; then
+      PROJECT_RUNTIME_KEY="$(
+        sed -n 's/.*"runtime_key":"\([^"]*\)".*/\1/p' "$PROJECT_RUNTIME_RESULT"
+      )"
+      CONTROL_FABRIC_NAMESPACE_ROOT="$(
+        sed -n 's/.*"fabric_namespace_root":"\([^"]*\)".*/\1/p' "$PROJECT_RUNTIME_RESULT"
+      )"
+    fi
+    if [ -z "$PROJECT_RUNTIME_KEY" ]; then
+      mkdir -p "$PROJECT_RUNTIME_RESULT_ROOT"
+      # shellcheck disable=SC2086
+      PROJECT_RUNTIME_KEY="$(
+        docker run --rm --init --restart no           --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777           --user "$HOST_UID:$HOST_GID"           --entrypoint python3           -e HOME=/tmp           -e PIP_DISABLE_PIP_VERSION_CHECK=1           -e PIP_NO_CACHE_DIR=1           -e PYTHONPATH="$ROOT"           -e NOETRIUM_RUNTIME_FABRIC_ROOT="$CONTROL_RUNTIME_FABRIC_ROOT"           $HOST_IDENTITY_ARGS           -v "$ROOT:$ROOT:ro"           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT"           -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT"           "$BOOTSTRAP_IMAGE"           "$ROOT/scripts/materialize_project_runtime.py"           --project-root "$CONTROL_PROJECT_ROOT"           --platform-root "$ROOT"           --state-root "$CONTROL_STATE_ROOT"           --base-image-id "$BOOTSTRAP_IMAGE_ID"           --runtime-fabric-root-output "$CONTROL_FABRIC_NAMESPACE_FILE"           --result-output "$PROJECT_RUNTIME_RESULT"           --materialization-input-digest "$PROJECT_RUNTIME_INPUT_DIGEST"
+      )"
+    fi
+    test -f "$CONTROL_FABRIC_NAMESPACE_FILE" && test ! -L "$CONTROL_FABRIC_NAMESPACE_FILE" || {
+      echo "Project runtime materializer did not publish Runtime Fabric namespace." >&2
+      exit 1
+    }
+    MATERIALIZED_FABRIC_NAMESPACE_ROOT="$(cat "$CONTROL_FABRIC_NAMESPACE_FILE")"
+    if [ -z "$CONTROL_FABRIC_NAMESPACE_ROOT" ]; then
+      CONTROL_FABRIC_NAMESPACE_ROOT="$MATERIALIZED_FABRIC_NAMESPACE_ROOT"
+    elif [ "$CONTROL_FABRIC_NAMESPACE_ROOT" != "$MATERIALIZED_FABRIC_NAMESPACE_ROOT" ]; then
+      echo "Runtime Fabric namespace receipt/sidecar drifted." >&2
+      exit 1
+    fi
+    case "$CONTROL_FABRIC_NAMESPACE_ROOT" in
+      "$CONTROL_RUNTIME_FABRIC_ROOT"/*) ;;
+      *)
+        echo "Resolved Runtime Fabric namespace escaped configured root: $CONTROL_FABRIC_NAMESPACE_ROOT" >&2
+        exit 2
+        ;;
+    esac
     if [ "$PROJECT_RUNTIME_KEY" != "base" ]; then
       [ "${#PROJECT_RUNTIME_KEY}" -eq 64 ] || {
         echo "Project runtime materializer returned invalid identity: $PROJECT_RUNTIME_KEY" >&2
@@ -439,30 +566,70 @@ if [ "${1:-}" = "control" ]; then
     fi
     CONTROL_IMAGE_ID="$(docker_image_id "$CONTROL_IMAGE")"
 
-    HOST_IDENTITY_ARGS=""
-    if [ -s /etc/machine-id ]; then
-      HOST_IDENTITY_ARGS="-v /etc/machine-id:/etc/machine-id:ro"
-    elif [ -s /sys/class/dmi/id/product_uuid ]; then
-      HOST_IDENTITY_ARGS="-v /sys/class/dmi/id/product_uuid:/sys/class/dmi/id/product_uuid:ro"
-    else
-      echo "Noetrium controller attachment requires stable physical-host identity." >&2
-      exit 1
-    fi
-
-    CONTROL_RUNTIME_ARGS="--user $HOST_UID:$HOST_GID --network host $HOST_IDENTITY_ARGS -v $CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT -v $CONTROL_HOME:$CONTROL_HOME -v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT -w $CONTROL_PROJECT_ROOT -e HOME=$CONTROL_HOME -e PYTHONPATH=$ROOT:$CONTROL_PROJECT_ROOT/src -e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT -e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT -e NOETRIUM_CONTROL_IMAGE_ID=$CONTROL_IMAGE_ID -e NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"
+    CONTROL_RUNTIME_ARGS="--user $HOST_UID:$HOST_GID --network host $HOST_IDENTITY_ARGS -v $CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT -v $CONTROL_HOME:$CONTROL_HOME -w $CONTROL_PROJECT_ROOT -e HOME=$CONTROL_HOME -e PYTHONPATH=$ROOT:$CONTROL_PROJECT_ROOT/src -e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT -e NOETRIUM_CONTROL_IMAGE_ID=$CONTROL_IMAGE_ID -e NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"
+    CONTROL_GPU_MODE="none"
     if [ -n "$DAEMON_SOCKET_GID" ]; then
       CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --group-add $DAEMON_SOCKET_GID"
     fi
     if command -v nvidia-smi >/dev/null 2>&1; then
-      if docker run --rm --init --restart no --gpus all \
-        --entrypoint nvidia-smi "$CONTROL_IMAGE" -L >/dev/null 2>&1; then
-        CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+      NVIDIA_HOST_TOPOLOGY="$(nvidia-smi -L 2>/dev/null || true)"
+      if [ -n "$NVIDIA_HOST_TOPOLOGY" ]; then
+        GPU_CAPABILITY_ROOT="$CONTROL_COORDINATION_ROOT/gpu-capability"
+        mkdir -p "$GPU_CAPABILITY_ROOT"
+        chmod 0700 "$GPU_CAPABILITY_ROOT"
+        GPU_CAPABILITY_DIGEST="$(
+          {
+            printf '%s\n' "$DOCKER_DAEMON_CAPABILITY_IDENTITY"
+            printf '%s\n' "$BOOT_ID"
+            printf '%s\n' "$CONTROL_IMAGE_ID"
+            printf '%s\n' "$NVIDIA_HOST_TOPOLOGY"
+            for capability_path in \
+              /etc/docker/daemon.json \
+              /etc/nvidia-container-runtime/config.toml \
+              /etc/cdi/nvidia.yaml \
+              /var/run/cdi/nvidia.yaml
+            do
+              if [ -f "$capability_path" ] && [ ! -L "$capability_path" ]; then
+                sha256sum "$capability_path"
+              fi
+            done
+          } | sha256sum | awk '{print $1}'
+        )"
+        GPU_CAPABILITY_PASS="$GPU_CAPABILITY_ROOT/$GPU_CAPABILITY_DIGEST.pass"
+        GPU_CAPABILITY_FAIL="$GPU_CAPABILITY_ROOT/$GPU_CAPABILITY_DIGEST.fail"
+        if [ -f "$GPU_CAPABILITY_PASS" ] && [ ! -L "$GPU_CAPABILITY_PASS" ]; then
+          CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+          CONTROL_GPU_MODE="all"
+        elif [ -f "$GPU_CAPABILITY_FAIL" ] && [ ! -L "$GPU_CAPABILITY_FAIL" ]; then
+          :
+        elif docker run --rm --init --restart no --gpus all \
+          --entrypoint nvidia-smi "$CONTROL_IMAGE" -L >/dev/null 2>&1; then
+          GPU_CAPABILITY_TMP="$GPU_CAPABILITY_PASS.tmp-$$"
+          printf '%s\n' "$GPU_CAPABILITY_DIGEST" > "$GPU_CAPABILITY_TMP"
+          mv -f "$GPU_CAPABILITY_TMP" "$GPU_CAPABILITY_PASS"
+          rm -f "$GPU_CAPABILITY_FAIL"
+          CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+          CONTROL_GPU_MODE="all"
+        else
+          GPU_CAPABILITY_TMP="$GPU_CAPABILITY_FAIL.tmp-$$"
+          printf '%s\n' "$GPU_CAPABILITY_DIGEST" > "$GPU_CAPABILITY_TMP"
+          mv -f "$GPU_CAPABILITY_TMP" "$GPU_CAPABILITY_FAIL"
+          rm -f "$GPU_CAPABILITY_PASS"
+        fi
       fi
     fi
   elif [ "$CONTROL_HOST_RUNTIME" != "0" ]; then
     echo "NOETRIUM_CONTROL_HOST_RUNTIME must be 0 or 1." >&2
     exit 2
   fi
+
+  CONTROL_RUNTIME_FABRIC_ROOT="${NOETRIUM_RUNTIME_FABRIC_ROOT:-}"
+  if [ -n "$CONTROL_RUNTIME_FABRIC_ROOT" ]; then
+    mkdir -p "$CONTROL_RUNTIME_FABRIC_ROOT"
+    CONTROL_RUNTIME_FABRIC_ROOT="$(CDPATH= cd -- "$CONTROL_RUNTIME_FABRIC_ROOT" && pwd -P)"
+    CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS -v $CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT -e NOETRIUM_RUNTIME_FABRIC_ROOT=$CONTROL_RUNTIME_FABRIC_ROOT"
+  fi
+
   if [ -n "$CONTROL_ENV_FILE" ]; then
     test -f "$CONTROL_ENV_FILE" || {
       echo "Noetrium control env file does not exist: $CONTROL_ENV_FILE" >&2
@@ -472,10 +639,10 @@ if [ "${1:-}" = "control" ]; then
 
   CONTROL_INPUT_ROOT="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
   if [ -z "$CONTROL_INPUT_ROOT" ] && [ "$CONTROL_HOST_RUNTIME" = "1" ]; then
-    CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"
+    CONTROL_ASSET_REGISTRY="$CONTROL_FABRIC_NAMESPACE_ROOT/content/state/model/assets"
     if [ -d "$CONTROL_ASSET_REGISTRY" ]; then
       CONTROL_INPUT_ROOT="$(
-        docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
+        docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT:ro"           -v "$CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
 root=pathlib.Path(sys.argv[1])
 refs=[]
 for path in sorted(root.glob("*.json")):
@@ -508,6 +675,81 @@ if refs:
     CONTROL_INPUT_ROOT="$(CDPATH= cd -- "$CONTROL_INPUT_ROOT" && pwd -P)"
   fi
 
+  if [ "$CONTROL_HOST_RUNTIME" = "1" ]; then
+    CONTROL_ENV_DIGEST="none"
+    if [ -n "$CONTROL_ENV_FILE" ]; then
+      CONTROL_ENV_DIGEST="$(sha256sum "$CONTROL_ENV_FILE" | awk '{print $1}')"
+    fi
+    CONTROL_HOST_IDENTITY_DIGEST="$(sha256sum "$HOST_IDENTITY_SOURCE" | awk '{print $1}')"
+    CONTROL_WORKER_PROJECT_KEY="$(
+      printf '%s\n' "$CONTROL_PROJECT_ROOT" "$CONTROL_STATE_ROOT" "$CONTROL_RUNTIME_FABRIC_ROOT"         | sha256sum | awk '{print $1}'
+    )"
+    CONTROL_WORKER_GENERATION="$(
+      {
+        printf '%s\n'           "schema=noetrium.project-control-worker.v1"           "daemon=$DOCKER_DAEMON_CAPABILITY_IDENTITY"           "boot=$BOOT_ID"           "image=$CONTROL_IMAGE_ID"           "runtime=$PROJECT_RUNTIME_KEY"           "project=$CONTROL_PROJECT_ROOT"           "state=$CONTROL_STATE_ROOT"           "fabric=$CONTROL_RUNTIME_FABRIC_ROOT"           "input=$CONTROL_INPUT_ROOT"           "env=$CONTROL_ENV_DIGEST"           "gpu=$CONTROL_GPU_MODE"           "uid=$HOST_UID"           "gid=$HOST_GID"           "host=$CONTROL_HOST_IDENTITY_DIGEST"           "daemon_host=$DAEMON_HOST"           "daemon_gid=$DAEMON_SOCKET_GID"           "coordination=$CONTROL_COORDINATION_ROOT"           "platform=$ROOT"
+      } | sha256sum | awk '{print $1}'
+    )"
+    CONTROL_WORKER_NAME="noetrium-control-$(printf '%s' "$CONTROL_WORKER_GENERATION" | cut -c1-24)"
+    CONTROL_WORKER_LABEL="io.noetrium.control-worker"
+    CONTROL_WORKER_VALUE="project-v1"
+    CONTROL_WORKER_PROJECT_LABEL="io.noetrium.control-worker-project"
+    CONTROL_WORKER_GENERATION_LABEL="io.noetrium.control-worker-generation"
+
+    STALE_CONTROL_WORKERS="$(docker ps -aq --no-trunc       --filter "label=$CONTROL_WORKER_LABEL=$CONTROL_WORKER_VALUE"       --filter "label=$CONTROL_WORKER_PROJECT_LABEL=$CONTROL_WORKER_PROJECT_KEY" 2>/dev/null || true)"
+    for worker_id in $STALE_CONTROL_WORKERS; do
+      worker_generation="$(docker inspect --format '{{index .Config.Labels "io.noetrium.control-worker-generation"}}' "$worker_id" 2>/dev/null || true)"
+      [ "$worker_generation" = "$CONTROL_WORKER_GENERATION" ] && continue
+      worker_exec_count="$(docker inspect --format '{{len .ExecIDs}}' "$worker_id" 2>/dev/null || printf '1')"
+      case "$worker_exec_count" in
+        ''|*[!0-9]*) worker_exec_count=1 ;;
+      esac
+      if [ "$worker_exec_count" -eq 0 ]; then
+        remove_bootstrap_container_exact "$worker_id"
+      fi
+    done
+
+    CONTROL_WORKER_METADATA="$(docker inspect --format '{{index .Config.Labels "io.noetrium.control-worker-generation"}}|{{.State.Running}}|{{.Image}}' "$CONTROL_WORKER_NAME" 2>/dev/null || true)"
+    if [ -z "$CONTROL_WORKER_METADATA" ]; then
+      CONTROL_WORKER_EXTRA_ARGS="-v $WORK_ROOT:$WORK_ROOT -v $CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT -v $CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT -e NOETRIUM_CONTROL_STATE_ROOT=$CONTROL_STATE_ROOT -e NOETRIUM_RUNTIME_FABRIC_ROOT=$CONTROL_RUNTIME_FABRIC_ROOT"
+      if [ -n "$CONTROL_INPUT_ROOT" ]; then
+        CONTROL_WORKER_EXTRA_ARGS="$CONTROL_WORKER_EXTRA_ARGS -v $CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro -e NOETRIUM_CONTROL_INPUT_ROOT=$CONTROL_INPUT_ROOT"
+      fi
+      CONTROL_WORKER_ENV_ARGS=""
+      if [ -n "$CONTROL_ENV_FILE" ]; then
+        CONTROL_WORKER_ENV_ARGS="--env-file $CONTROL_ENV_FILE"
+      fi
+      # shellcheck disable=SC2086
+      if ! docker run -d --init --restart unless-stopped         --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777         --name "$CONTROL_WORKER_NAME"         --label "$CONTROL_WORKER_LABEL=$CONTROL_WORKER_VALUE"         --label "$CONTROL_WORKER_PROJECT_LABEL=$CONTROL_WORKER_PROJECT_KEY"         --label "$CONTROL_WORKER_GENERATION_LABEL=$CONTROL_WORKER_GENERATION"         --entrypoint sleep         $COMMON_ARGS $CONTROL_RUNTIME_ARGS $CONTROL_WORKER_ENV_ARGS $CONTROL_WORKER_EXTRA_ARGS         "$CONTROL_IMAGE" infinity >/dev/null; then
+        docker inspect "$CONTROL_WORKER_NAME" >/dev/null 2>&1 || {
+          echo "Failed to realize project control worker: $CONTROL_WORKER_NAME" >&2
+          exit 1
+        }
+      fi
+      CONTROL_WORKER_METADATA="$(docker inspect --format '{{index .Config.Labels "io.noetrium.control-worker-generation"}}|{{.State.Running}}|{{.Image}}' "$CONTROL_WORKER_NAME")"
+    fi
+
+    CONTROL_WORKER_ACTUAL_GENERATION="$(printf '%s' "$CONTROL_WORKER_METADATA" | cut -d'|' -f1)"
+    CONTROL_WORKER_RUNNING="$(printf '%s' "$CONTROL_WORKER_METADATA" | cut -d'|' -f2)"
+    CONTROL_WORKER_IMAGE="$(printf '%s' "$CONTROL_WORKER_METADATA" | cut -d'|' -f3)"
+    [ "$CONTROL_WORKER_ACTUAL_GENERATION" = "$CONTROL_WORKER_GENERATION" ] || {
+      echo "Project control worker generation drifted: $CONTROL_WORKER_NAME" >&2
+      exit 1
+    }
+    [ "$CONTROL_WORKER_IMAGE" = "$CONTROL_IMAGE_ID" ] || {
+      echo "Project control worker image drifted: $CONTROL_WORKER_NAME" >&2
+      exit 1
+    }
+    if [ "$CONTROL_WORKER_RUNNING" != "true" ]; then
+      docker start "$CONTROL_WORKER_NAME" >/dev/null
+    fi
+
+    if docker exec       -e NOETRIUM_BOOTSTRAP_OWNER_PID="$$"       -e NOETRIUM_BOOTSTRAP_OWNER_BOOT="$BOOT_ID"       -e NOETRIUM_BOOTSTRAP_OWNER_START="$OWNER_START"       "$CONTROL_WORKER_NAME" python3 "$@"; then
+      exit 0
+    else
+      exit $?
+    fi
+  fi
+
   if [ -n "$CONTROL_ENV_FILE" ]; then
     if [ -n "$CONTROL_INPUT_ROOT" ]; then
       # shellcheck disable=SC2086
@@ -515,8 +757,10 @@ if refs:
         --env-file "$CONTROL_ENV_FILE" \
         -v "$WORK_ROOT:$WORK_ROOT" \
         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -v "$CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT" \
         -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
         -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_RUNTIME_FABRIC_ROOT="$CONTROL_RUNTIME_FABRIC_ROOT" \
         -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
         "$CONTROL_IMAGE" "$@"
     else
@@ -525,7 +769,9 @@ if refs:
         --env-file "$CONTROL_ENV_FILE" \
         -v "$WORK_ROOT:$WORK_ROOT" \
         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -v "$CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT" \
         -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_RUNTIME_FABRIC_ROOT="$CONTROL_RUNTIME_FABRIC_ROOT" \
         "$CONTROL_IMAGE" "$@"
     fi
     exit $?
@@ -536,8 +782,10 @@ if refs:
     run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -v "$CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT" \
       -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_RUNTIME_FABRIC_ROOT="$CONTROL_RUNTIME_FABRIC_ROOT" \
       -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
       "$CONTROL_IMAGE" "$@"
   else
@@ -545,7 +793,9 @@ if refs:
     run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -v "$CONTROL_RUNTIME_FABRIC_ROOT:$CONTROL_RUNTIME_FABRIC_ROOT" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_RUNTIME_FABRIC_ROOT="$CONTROL_RUNTIME_FABRIC_ROOT" \
       "$CONTROL_IMAGE" "$@"
   fi
   exit $?

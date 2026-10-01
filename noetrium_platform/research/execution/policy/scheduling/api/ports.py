@@ -1,18 +1,35 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Mapping
 from typing import Protocol
 
 from .contracts import SchedulingCandidate
 
 
 class AdmissionSchedulingPolicyPort(Protocol):
-    """Select one admissible ticket without owning resource/admission state."""
+    """Own the total admission ordering without owning capacity state."""
+
+    def ordering_key(
+        self,
+        candidate: SchedulingCandidate,
+        *,
+        group_last_grant: Mapping[str, int],
+        tenant_last_grant: Mapping[str, int],
+        now_monotonic: float,
+    ) -> tuple[int, ...]: ...
+
+    def next_order_change_at(
+        self,
+        candidate: SchedulingCandidate,
+        *,
+        now_monotonic: float,
+    ) -> float | None: ...
 
     def select(
         self,
-        candidates: Sequence[SchedulingCandidate],
+        candidates: Iterable[SchedulingCandidate],
         *,
-        group_last_grant: dict[str, int],
+        group_last_grant: Mapping[str, int],
+        tenant_last_grant: Mapping[str, int],
         now_monotonic: float,
     ) -> int: ...

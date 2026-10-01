@@ -28,6 +28,8 @@ class MinecraftEntityState:
     """Typed bounded entity row used by the Minecraft state projection."""
 
     entity_id: str
+    runtime_id: int | None = None
+    username: str | None = None
     name: MinecraftJsonValue = None
     mob_type: MinecraftJsonValue = None
     entity_type: MinecraftJsonValue = None
@@ -62,8 +64,22 @@ class MinecraftEntityState:
             ):
                 raise ValueError("Minecraft entity observation distance is invalid")
             distance_value = float(distance_value)
+        runtime_id_raw = payload.get("id")
+        runtime_id = (
+            runtime_id_raw
+            if isinstance(runtime_id_raw, int) and not isinstance(runtime_id_raw, bool)
+            else None
+        )
+        username_raw = payload.get("username")
+        username = (
+            username_raw.strip()
+            if isinstance(username_raw, str) and username_raw.strip()
+            else None
+        )
         return cls(
             entity_id=entity_id,
+            runtime_id=runtime_id,
+            username=username,
             name=payload.get("name"),
             mob_type=payload.get("mob_type"),
             entity_type=payload.get("type"),
@@ -74,6 +90,8 @@ class MinecraftEntityState:
     def compact(self) -> dict[str, MinecraftJsonValue]:
         return {
             "id": self.entity_id,
+            "runtime_id": self.runtime_id,
+            "username": self.username,
             "name": self.name,
             "mob_type": self.mob_type,
             "type": self.entity_type,
@@ -101,8 +119,20 @@ class MinecraftEntityState:
             ):
                 raise ValueError("Minecraft state checkpoint entity distance is invalid")
             distance_value = float(distance_value)
+        runtime_id_raw = row.get("runtime_id")
+        if runtime_id_raw is not None and (
+            isinstance(runtime_id_raw, bool) or not isinstance(runtime_id_raw, int)
+        ):
+            raise ValueError("Minecraft state checkpoint entity runtime_id is invalid")
+        username_raw = row.get("username")
+        if username_raw is not None and (
+            not isinstance(username_raw, str) or not username_raw.strip()
+        ):
+            raise ValueError("Minecraft state checkpoint entity username is invalid")
         return cls(
             entity_id=entity_id,
+            runtime_id=runtime_id_raw,
+            username=username_raw,
             name=row.get("name"),
             mob_type=row.get("mob_type"),
             entity_type=row.get("type"),

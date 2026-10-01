@@ -58,6 +58,12 @@ class ContextProgram:
     max_chars: int
     blocks: tuple[ContextBlockProgram, ...]
     program_digest: str = field(init=False)
+    _ordered_blocks: tuple[ContextBlockProgram, ...] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "program_id", _text(self.program_id, "context program_id"))
@@ -71,6 +77,14 @@ class ContextProgram:
         ids = tuple(block.block_id for block in self.blocks)
         if len(ids) != len(set(ids)):
             raise ValueError("context program block ids must be unique")
+        object.__setattr__(
+            self,
+            "_ordered_blocks",
+            tuple(sorted(
+                self.blocks,
+                key=lambda block: (-block.priority, block.block_id),
+            )),
+        )
         object.__setattr__(
             self,
             "program_digest",
@@ -90,7 +104,7 @@ class ContextProgram:
 
     @property
     def ordered_blocks(self) -> tuple[ContextBlockProgram, ...]:
-        return tuple(sorted(self.blocks, key=lambda block: (-block.priority, block.block_id)))
+        return self._ordered_blocks
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +153,7 @@ class ContextRendererRegistryPort(Protocol):
 class ContextRendererRegistry(ContextRendererRegistryPort):
     def __init__(self) -> None:
         self._renderers: dict[str, tuple[ContextRenderer, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -161,6 +176,7 @@ class ContextRendererRegistry(ContextRendererRegistryPort):
             if current is not None and current != value:
                 raise ValueError(f"context renderer already registered: {renderer}")
             self._renderers[renderer] = value
+            self._identity_digest_cache = None
 
     def resolve(self, renderer: str) -> ContextRenderer:
         renderer = _text(renderer, "context renderer")
@@ -185,11 +201,15 @@ class ContextRendererRegistry(ContextRendererRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (renderer, implementation_digest)
-                for renderer, (_, implementation_digest)
-                in sorted(self._renderers.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (renderer, implementation_digest)
+                    for renderer, (_, implementation_digest)
+                    in sorted(self._renderers.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 def context_renderer_binding_digest(

@@ -31,6 +31,7 @@ class _RecurringRecord:
     lane_id: str
     deadline: Deadline | None
     deadline_owner: _DeadlineOwner
+    failure_scope: TaskFailureScope
     cancellation: _CancellationState = field(default_factory=_CancellationState)
     state: TaskState = TaskState.PENDING
     failure: BaseException | None = None

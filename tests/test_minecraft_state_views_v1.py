@@ -18,6 +18,8 @@ def _state_with_entity() -> MinecraftStateProjection:
             "entity_observation",
             {
                 "uuid": "entity-1",
+                "id": 42,
+                "username": "zed",
                 "name": "zombie",
                 "mob_type": "zombie",
                 "type": "mob",
@@ -86,6 +88,8 @@ def test_entity_state_is_frozen_and_projection_owns_typed_rows() -> None:
 
     assert isinstance(entity, MinecraftEntityState)
     assert entity.entity_id == "entity-1"
+    assert entity.runtime_id == 42
+    assert entity.username == "zed"
     assert entity.name == "zombie"
     with pytest.raises(FrozenInstanceError):
         entity.name = "mutated"  # type: ignore[misc]
@@ -97,6 +101,8 @@ def test_entity_compact_preserves_public_json_shape() -> None:
     assert state.compact()["nearby_entities"] == [
         {
             "id": "entity-1",
+            "runtime_id": 42,
+            "username": "zed",
             "name": "zombie",
             "mob_type": "zombie",
             "type": "mob",
@@ -104,6 +110,32 @@ def test_entity_compact_preserves_public_json_shape() -> None:
             "distance": 3.5,
         }
     ]
+
+
+def test_decision_view_is_columnar_actionable_and_omits_evidence_only_sequence() -> None:
+    state = _state_with_entity()
+    view = state.decision_view()
+
+    assert "last_event_sequence" not in view
+    entities = view["nearby_entities"]
+    assert entities["mode"] == "summary"
+    assert entities["columns"] == [
+        "runtime_id",
+        "username",
+        "name",
+        "mob_type",
+        "type",
+        "distance",
+        "x",
+        "y",
+        "z",
+    ]
+    assert entities["rows"] == [
+        [42, "zed", "zombie", "zombie", "mob", 3.5, 1.0, 64.0, -2.0]
+    ]
+    assert entities["counts"] == {"zombie": 1}
+    assert state.compact()["nearby_entities"][0]["id"] == "entity-1"
+    assert "entity-1" not in repr(entities["rows"])
 
 
 def test_compact_round_trip_restores_typed_entity_and_digest() -> None:

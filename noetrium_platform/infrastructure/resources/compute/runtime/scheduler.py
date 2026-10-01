@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
+import heapq
 import json
 import math
 from pathlib import Path
@@ -87,64 +88,39 @@ class _HostUsage:
     gpu_memory_reservation_bytes: dict[str, int] = field(default_factory=dict)
 
 
-def _increment_count(values: dict[str, int], key: str) -> dict[str, int]:
-    updated = dict(values)
-    updated[key] = updated.get(key, 0) + 1
-    return updated
+def _usage_index(
+    rows: tuple[ComputeAllocation, ...],
+) -> dict[str, _HostUsage]:
+    """Build the complete host-capacity index in one pass over allocations."""
 
-
-def _decrement_count(values: dict[str, int], key: str) -> dict[str, int]:
-    updated = dict(values)
-    current = updated.get(key, 0)
-    if current <= 0:
-        raise RuntimeError(f"compute GPU usage index underflow: {key}")
-    if current == 1:
-        updated.pop(key, None)
-    else:
-        updated[key] = current - 1
-    return updated
-
-
-def _add_allocation_usage(
-    usage: _HostUsage,
-    allocation: ComputeAllocation,
-) -> _HostUsage:
-    allocation_counts = dict(usage.gpu_allocation_counts)
-    exclusive_counts = dict(usage.gpu_exclusive_counts)
-    gpu_memory_reservations = dict(usage.gpu_memory_reservation_bytes)
-    for index, gpu_id in enumerate(allocation.gpu_ids):
-        allocation_counts = _increment_count(allocation_counts, gpu_id)
-        if allocation.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
-            exclusive_counts = _increment_count(exclusive_counts, gpu_id)
-        reserved = (
-            0
-            if not allocation.gpu_memory_reservation_bytes
-            else allocation.gpu_memory_reservation_bytes[index]
-        )
-        gpu_memory_reservations[gpu_id] = (
-            gpu_memory_reservations.get(gpu_id, 0) + reserved
-        )
-    return _HostUsage(
-        cpu_cores=usage.cpu_cores + allocation.cpu_cores,
-        memory_bytes=usage.memory_bytes + allocation.memory_bytes,
-        unbound_cpu_cores=(
-            usage.unbound_cpu_cores
-            + (0 if allocation.is_bound else allocation.cpu_cores)
-        ),
-        unbound_memory_bytes=(
-            usage.unbound_memory_bytes
-            + (0 if allocation.is_bound else allocation.memory_bytes)
-        ),
-        gpu_allocation_counts=allocation_counts,
-        gpu_exclusive_counts=exclusive_counts,
-        gpu_memory_reservation_bytes=gpu_memory_reservations,
-    )
-
-
-
-
-
-
+    index: dict[str, _HostUsage] = {}
+    for allocation in rows:
+        usage = index.get(allocation.host_id)
+        if usage is None:
+            usage = _HostUsage()
+            index[allocation.host_id] = usage
+        usage.cpu_cores += allocation.cpu_cores
+        usage.memory_bytes += allocation.memory_bytes
+        if not allocation.is_bound:
+            usage.unbound_cpu_cores += allocation.cpu_cores
+            usage.unbound_memory_bytes += allocation.memory_bytes
+        for gpu_index, gpu_id in enumerate(allocation.gpu_ids):
+            usage.gpu_allocation_counts[gpu_id] = (
+                usage.gpu_allocation_counts.get(gpu_id, 0) + 1
+            )
+            if allocation.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
+                usage.gpu_exclusive_counts[gpu_id] = (
+                    usage.gpu_exclusive_counts.get(gpu_id, 0) + 1
+                )
+            reserved = (
+                0
+                if not allocation.gpu_memory_reservation_bytes
+                else allocation.gpu_memory_reservation_bytes[gpu_index]
+            )
+            usage.gpu_memory_reservation_bytes[gpu_id] = (
+                usage.gpu_memory_reservation_bytes.get(gpu_id, 0) + reserved
+            )
+    return index
 
 
 def _observe_gpu_runtime(observer: GpuRuntimeObserverPort | None) -> GpuRuntimeSnapshot | None:
@@ -335,7 +311,6 @@ def _eligible_gpus(
         if rank is None:
             continue
         rows.append((rank, gpu))
-    rows.sort(key=lambda item: item[0])
     return tuple(rows)
 
 def _placement_score(
@@ -394,6 +369,16 @@ def _placement_score(
             1.0, live.available_memory_bytes / max(1, host.memory_bytes)
         )
         runtime_rank = (0, cpu_load_ratio, memory_pressure)
+    if requirement.gpu_count == 0:
+        accelerator_penalty = 0 if not host.gpus else 1
+        accelerator_bytes = sum(gpu.memory_bytes for gpu in host.gpus)
+        score = (
+            runtime_rank, accelerator_penalty, accelerator_bytes,
+            cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
+            cpu_after, memory_after, host.host_id,
+        )
+        return score, ()
+
     eligible = _eligible_gpus(
         host,
         usage,
@@ -403,30 +388,33 @@ def _placement_score(
     )
     if len(eligible) < requirement.gpu_count:
         return None
-    selected_rows = eligible[: requirement.gpu_count]
+    selected_rows = heapq.nsmallest(
+        requirement.gpu_count,
+        eligible,
+        key=lambda item: item[0],
+    )
     selected = tuple(gpu for _rank, gpu in selected_rows)
-    if requirement.gpu_count == 0:
-        accelerator_penalty = 0 if not host.gpus else 1
-        accelerator_bytes = sum(gpu.memory_bytes for gpu in host.gpus)
-        score = (
-            runtime_rank, accelerator_penalty, accelerator_bytes,
-            cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
-            cpu_after, memory_after, host.host_id,
-        )
-    else:
-        shared_count = sum(rank[0] for rank, _gpu in selected_rows)
-        utilization = sum(rank[1] for rank, _gpu in selected_rows)
-        free_excess = sum(rank[2] for rank, _gpu in selected_rows)
-        gpu_excess = sum(
-            gpu.memory_bytes - requirement.minimum_gpu_memory_bytes for gpu in selected
-        )
-        remaining = eligible[requirement.gpu_count :]
-        score = (
-            shared_count, utilization, runtime_rank, free_excess, gpu_excess, len(remaining),
-            sum(gpu.memory_bytes for _rank, gpu in remaining),
-            cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
-            cpu_after, memory_after, host.host_id,
-        )
+    shared_count = sum(rank[0] for rank, _gpu in selected_rows)
+    utilization = sum(rank[1] for rank, _gpu in selected_rows)
+    free_excess = sum(rank[2] for rank, _gpu in selected_rows)
+    gpu_excess = sum(
+        gpu.memory_bytes - requirement.minimum_gpu_memory_bytes for gpu in selected
+    )
+    selected_memory = sum(gpu.memory_bytes for gpu in selected)
+    eligible_memory = sum(gpu.memory_bytes for _rank, gpu in eligible)
+    score = (
+        shared_count,
+        utilization,
+        runtime_rank,
+        free_excess,
+        gpu_excess,
+        len(eligible) - requirement.gpu_count,
+        eligible_memory - selected_memory,
+        cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
+        cpu_after,
+        memory_after,
+        host.host_id,
+    )
     return score, tuple(gpu.gpu_id for gpu in selected)
 
 
@@ -436,6 +424,7 @@ def _ordered_placements(
     host_runtime_snapshot: HostRuntimeSnapshot | None,
     *,
     quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
+    max_results: int | None = None,
 ):
     if (
         requirement.gpu_count > 0
@@ -449,6 +438,29 @@ def _ordered_placements(
         )
     runtime_index = _gpu_runtime_index(runtime_snapshot)
     host_runtime_index = _host_runtime_index(host_runtime_snapshot)
+    if max_results is not None and (
+        type(max_results) is not int or max_results <= 0
+    ):
+        raise ValueError("compute placement max_results must be positive or None")
+    if max_results == 1:
+        best = None
+        for host in hosts:
+            placement = _placement_score(
+                host,
+                usage_for(host.host_id),
+                requirement,
+                runtime_index,
+                host_runtime_index,
+                quarantined_gpus=quarantined_gpus,
+            )
+            if placement is None:
+                continue
+            score, gpu_ids = placement
+            candidate = (score, host, gpu_ids)
+            if best is None or score < best[0]:
+                best = candidate
+        return () if best is None else (best,)
+
     rows = []
     for host in hosts:
         placement = _placement_score(
@@ -462,8 +474,16 @@ def _ordered_placements(
         if placement is not None:
             score, gpu_ids = placement
             rows.append((score, host, gpu_ids))
-    rows.sort(key=lambda item: item[0])
-    return tuple(rows)
+    if max_results is None:
+        rows.sort(key=lambda item: item[0])
+        return tuple(rows)
+    return tuple(
+        heapq.nsmallest(
+            max_results,
+            rows,
+            key=lambda item: item[0],
+        )
+    )
 
 
 def _gpu_memory_reservations(
@@ -509,11 +529,13 @@ def _allocation_request_digest(
     scope: ScopeIdentity,
     placement_scope: ScopeIdentity | None,
     requirement: ComputeRequirement,
+    excluded_gpus: frozenset[tuple[str, str]] = frozenset(),
 ) -> str:
     return canonical_digest({
         "scope": scope,
         "placement_scope": placement_scope,
         "requirement": requirement,
+        "excluded_gpus": tuple(sorted(excluded_gpus)),
     })
 
 
@@ -745,17 +767,6 @@ class ComputeScheduler:
         # fence capacity. Only recover_release(), called after upper physical
         # owners converge, may remove them.
         return (), pending
-    @staticmethod
-    def _usage(
-        rows: tuple[ComputeAllocation, ...],
-        host_id: str,
-    ) -> _HostUsage:
-        usage = _HostUsage()
-        for row in rows:
-            if row.host_id == host_id:
-                usage = _add_allocation_usage(usage, row)
-        return usage
-
     def _placements(
         self,
         rows: tuple[ComputeAllocation, ...],
@@ -765,6 +776,7 @@ class ComputeScheduler:
         host_runtime_snapshot: HostRuntimeSnapshot | None,
         *,
         quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
+        max_results: int | None = None,
     ):
         required_labels = dict(requirement.required_labels)
         hosts = tuple(
@@ -775,13 +787,16 @@ class ComputeScheduler:
                 for key, value in required_labels.items()
             )
         )
+        usage_by_host = _usage_index(rows)
+        empty_usage = _HostUsage()
         return _ordered_placements(
             hosts,
-            lambda host_id: self._usage(rows, host_id),
+            lambda host_id: usage_by_host.get(host_id, empty_usage),
             requirement,
             runtime_snapshot,
             host_runtime_snapshot,
             quarantined_gpus=quarantined_gpus,
+            max_results=max_results,
         )
 
     def candidates(
@@ -830,6 +845,97 @@ class ComputeScheduler:
             )
         )
 
+    def unbound_placement_satisfies(
+        self,
+        allocation: ComputeAllocation,
+        requirement: ComputeRequirement,
+    ) -> bool:
+        """Revalidate one exact unbound allocation against live capacity.
+
+        The allocation's own durable reservation is excluded from logical usage
+        so it is not double-counted. Other Noetrium reservations remain fenced,
+        while current external GPU/host usage is observed again. This is the
+        authority used to distinguish physical placement drift from model/runtime
+        failures before binding a service generation.
+        """
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute placement revalidation requires ComputeAllocation")
+        if not isinstance(requirement, ComputeRequirement):
+            raise TypeError("compute placement revalidation requires ComputeRequirement")
+        if allocation.is_bound:
+            raise ValueError("compute placement revalidation requires an unbound allocation")
+
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
+        host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+            try:
+                now_epoch_s = self._authority_now(conn, None)
+                _converged, pending = self._cleanup_expired(
+                    conn, now_epoch_s, runtime_snapshot
+                )
+                current = self._active_row(
+                    conn, allocation.allocation_id, now_epoch_s
+                )
+                if current is None:
+                    conn.commit()
+                    return False
+                _require_compute_generation(current, allocation)
+                rows = tuple(
+                    row
+                    for row in self._capacity_rows(conn)
+                    if row.allocation_id != current.allocation_id
+                )
+                conn.commit()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn, primary, label="compute placement revalidation"
+                )
+                raise
+
+        try:
+            host = self._inventory.host(current.host_id)
+        except KeyError:
+            return False
+        if not host.enabled:
+            return False
+        required_labels = dict(requirement.required_labels)
+        if any(
+            dict(host.labels).get(key) != value
+            for key, value in required_labels.items()
+        ):
+            return False
+
+        usage = _usage_index(rows).get(current.host_id, _HostUsage())
+        quarantined_gpus = frozenset(
+            (row.host_id, gpu_id)
+            for row in pending
+            for gpu_id in row.gpu_ids
+        )
+        host_projection = _placement_score(
+            host,
+            usage,
+            requirement,
+            _gpu_runtime_index(runtime_snapshot),
+            _host_runtime_index(host_runtime_snapshot),
+            quarantined_gpus=quarantined_gpus,
+        )
+        if host_projection is None:
+            return False
+        if requirement.gpu_count == 0:
+            return not current.gpu_ids
+        if len(current.gpu_ids) != requirement.gpu_count:
+            return False
+        eligible = _eligible_gpus(
+            host,
+            usage,
+            requirement,
+            _gpu_runtime_index(runtime_snapshot),
+            quarantined_gpus=quarantined_gpus,
+        )
+        eligible_ids = {gpu.gpu_id for _rank, gpu in eligible}
+        return all(gpu_id in eligible_ids for gpu_id in current.gpu_ids)
+
     def _ensure_identity(
         self,
         conn: sqlite3.Connection,
@@ -861,8 +967,20 @@ class ComputeScheduler:
         placement_scope: ScopeIdentity | None = None,
         ttl_seconds: float | None = None,
         now: float | None = None,
+        excluded_gpus: frozenset[tuple[str, str]] = frozenset(),
     ) -> ComputeAllocation:
-        request_digest = _allocation_request_digest(scope, placement_scope, requirement)
+        if not isinstance(excluded_gpus, frozenset) or any(
+            not isinstance(item, tuple)
+            or len(item) != 2
+            or not all(isinstance(value, str) and value for value in item)
+            for item in excluded_gpus
+        ):
+            raise TypeError(
+                "compute excluded_gpus must be a frozenset of (host_id, gpu_id) pairs"
+            )
+        request_digest = _allocation_request_digest(
+            scope, placement_scope, requirement, excluded_gpus
+        )
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         with self._connection() as conn:
@@ -888,7 +1006,7 @@ class ComputeScheduler:
                     (row.host_id, gpu_id)
                     for row in pending
                     for gpu_id in row.gpu_ids
-                )
+                ) | excluded_gpus
                 placements = self._placements(
                     rows,
                     requirement,
@@ -896,6 +1014,7 @@ class ComputeScheduler:
                     runtime_snapshot,
                     host_runtime_snapshot,
                     quarantined_gpus=quarantined_gpus,
+                    max_results=1,
                 )
                 if not placements:
                     required_labels = dict(requirement.required_labels)
@@ -925,6 +1044,7 @@ class ComputeScheduler:
                             placement_identity,
                             runtime_snapshot,
                             host_runtime_snapshot,
+                            max_results=1,
                         )
                         if without_quarantine:
                             raise ComputePhysicalConvergencePending(
@@ -1160,6 +1280,128 @@ class ComputeScheduler:
                     conn,
                     primary,
                     label="compute binding replacement",
+                )
+                raise
+
+    def reacquire(
+        self,
+        allocation: ComputeAllocation,
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> ComputeAllocation:
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute reacquisition requires ComputeAllocation")
+        if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
+            raise ValueError(
+                "compute reacquisition ttl_seconds must be finite and > 0"
+            )
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, now)
+                reconcile_expired_resource_leases(
+                    conn,
+                    now_epoch_s=now_epoch_s,
+                    resource_kind=ResourceKind.COMPUTE,
+                )
+                current = self._capacity_row(
+                    conn,
+                    allocation.allocation_id,
+                )
+                if current is None:
+                    raise KeyError(allocation.allocation_id)
+                immutable_match = (
+                    current.allocation_id == allocation.allocation_id
+                    and current.scope == allocation.scope
+                    and current.host_id == allocation.host_id
+                    and current.cpu_cores == allocation.cpu_cores
+                    and current.memory_bytes == allocation.memory_bytes
+                    and current.gpu_ids == allocation.gpu_ids
+                    and current.gpu_sharing_mode
+                    is allocation.gpu_sharing_mode
+                    and current.gpu_memory_reservation_bytes
+                    == allocation.gpu_memory_reservation_bytes
+                )
+                if not immutable_match:
+                    raise ResourceLeaseConflict(
+                        "compute reacquisition identity drift: "
+                        f"{allocation.allocation_id}"
+                    )
+                if (
+                    current.binding_binder_identity_digest
+                    != allocation.binding_binder_identity_digest
+                ):
+                    raise ResourceLeaseConflict(
+                        "compute reacquisition lost caller binding generation: "
+                        f"{allocation.allocation_id}"
+                    )
+                granted = acquire_resource_lease(
+                    conn,
+                    _allocation_lease(
+                        current.allocation_id,
+                        current.scope,
+                    ),
+                    ttl_seconds=ttl_seconds,
+                    now_epoch_s=now_epoch_s,
+                )
+                granted = renew_resource_lease(
+                    conn,
+                    granted.lease_id,
+                    fencing_token=granted.fencing_token,
+                    ttl_seconds=ttl_seconds,
+                    now_epoch_s=now_epoch_s,
+                )
+                fencing_changed = (
+                    granted.fencing_token
+                    != current.lease_fencing_token
+                )
+                if fencing_changed:
+                    conn.execute(
+                        "UPDATE compute_allocations SET "
+                        "binding_proof_digest=NULL,"
+                        "binding_binder_identity_digest=NULL,"
+                        "binding_evidence_ref=NULL,"
+                        "bound_at_epoch_s=NULL "
+                        "WHERE allocation_id=?",
+                        (current.allocation_id,),
+                    )
+                conn.commit()
+                return replace(
+                    current,
+                    lease_fencing_token=granted.fencing_token,
+                    lease_expires_at_epoch_s=(
+                        granted.expires_at_epoch_s
+                    ),
+                    binding_proof_digest=(
+                        None
+                        if fencing_changed
+                        else current.binding_proof_digest
+                    ),
+                    binding_binder_identity_digest=(
+                        None
+                        if fencing_changed
+                        else current.binding_binder_identity_digest
+                    ),
+                    binding_evidence_ref=(
+                        None
+                        if fencing_changed
+                        else current.binding_evidence_ref
+                    ),
+                    bound_at_epoch_s=(
+                        None
+                        if fencing_changed
+                        else current.bound_at_epoch_s
+                    ),
+                )
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute exact-allocation reacquisition",
                 )
                 raise
 

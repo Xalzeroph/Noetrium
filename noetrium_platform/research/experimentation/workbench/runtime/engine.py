@@ -446,6 +446,8 @@ class ScientificStatistics:
         baseline: Any,
         candidates: tuple[Any, ...] | None = None,
         missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+        correction: MultipleComparisonMethod = MultipleComparisonMethod.HOLM,
+        alpha: float = 0.05,
     ) -> tuple[GroupComparison, ...]:
         """Compare one declared baseline with every candidate under one policy."""
         if candidates is None:
@@ -471,7 +473,11 @@ class ScientificStatistics:
             for candidate in candidates
         )
         p_values = tuple(result.p_value if result.p_value is not None else 1.0 for result in results)
-        adjusted = self.adjust_p_values(p_values)
+        adjusted = self.adjust_p_values(
+            p_values,
+            method=correction,
+            alpha=alpha,
+        )
         return tuple(
             GroupComparison(
                 result.metric, result.group_column, result.baseline, result.candidate,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, replace
 import inspect
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 
 from noetrium_platform.capabilities.api import CapabilityRequest, CapabilityResult
 from noetrium_platform.foundation.kernel.kernel import (
@@ -16,6 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineKind,
     MachineStatus,
     canonical_digest,
+    thaw_json,
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 from noetrium_platform.research.execution.policy.api import (
@@ -41,7 +42,7 @@ from noetrium_platform.research.execution.workflow.api.method_machine import (
     MethodRuntimeContext,
 )
 
-METHOD_PROGRAM_ADAPTER_VERSION = 1
+METHOD_PROGRAM_ADAPTER_VERSION = 3
 METHOD_PROGRAM_TARGET = ComponentIdentity(
     "platform.workflow_runtime",
     "method_program_adapter",
@@ -143,6 +144,60 @@ def decode_effect_receipt(payload: Mapping[str, object]) -> EffectReceipt:
     )
 
 
+class _JournalEffectReceiptHistory(Sequence[EffectReceipt]):
+    """Lazy receipt projection over accepted Method Machine commits.
+
+    Receipt truth is the Machine Journal event stream. Nodes that never inspect
+    prior effects pay O(1); the first consumer materializes the exact accepted
+    history once for that node request.
+    """
+
+    __slots__ = ("_host", "_machine_id", "_rows")
+
+    def __init__(self, host, machine_id: str) -> None:
+        self._host = host
+        self._machine_id = machine_id
+        self._rows: tuple[EffectReceipt, ...] | None = None
+
+    def _materialize(self) -> tuple[EffectReceipt, ...]:
+        rows = self._rows
+        if rows is not None:
+            return rows
+        projected: list[EffectReceipt] = []
+        for commit in self._host.accepted_commits(self._machine_id):
+            for raw_event in commit.event_payloads:
+                event = thaw_json(raw_event)
+                if (
+                    isinstance(event, Mapping)
+                    and event.get("type") == "method.effect_receipt"
+                    and isinstance(event.get("receipt"), Mapping)
+                ):
+                    projected.append(
+                        decode_effect_receipt(event["receipt"])
+                    )
+        rows = tuple(projected)
+        self._rows = rows
+        return rows
+
+    def __len__(self) -> int:
+        return len(self._materialize())
+
+    def __getitem__(self, index):
+        return self._materialize()[index]
+
+
+def _effect_event_payloads(
+    receipts: Sequence[EffectReceipt],
+) -> tuple[dict[str, object], ...]:
+    return tuple(
+        {
+            "type": "method.effect_receipt",
+            "receipt": _effect_payload(receipt),
+        }
+        for receipt in receipts
+    )
+
+
 def _event_payload(event: MethodEvent) -> dict[str, object]:
     return {"kind": event.kind, "payload": event.payload}
 
@@ -174,30 +229,39 @@ def decode_method_interrupt(payload: object) -> MethodInterrupt | None:
 
 
 def _failure_payload(exc: BaseException, node_id: str) -> dict[str, object]:
-    description = describe_exception(exc)
+    outer_description = describe_exception(exc)
     failure_id = None
     seen: set[int] = set()
     current: BaseException | None = exc
+    primary: BaseException = exc
     while current is not None and id(current) not in seen:
         seen.add(id(current))
+        primary = current
         value = getattr(current, "failure_id", None)
-        if isinstance(value, str) and value.strip():
+        if failure_id is None and isinstance(value, str) and value.strip():
             failure_id = value.strip()
-            break
         result = getattr(current, "result", None)
         value = getattr(result, "failure_id", None)
-        if isinstance(value, str) and value.strip():
+        if failure_id is None and isinstance(value, str) and value.strip():
             failure_id = value.strip()
-            break
+        result_cause = getattr(result, "cause", None)
+        if isinstance(result_cause, BaseException) and id(result_cause) not in seen:
+            current = result_cause
+            continue
         current = current.__cause__ if current.__cause__ is not None else (
             None if current.__suppress_context__ else current.__context__
         )
+    primary_description = describe_exception(primary)
     return {
-        "failure": f"{description.qualified_type}: {description.safe_message}",
+        "failure": (
+            f"{primary_description.qualified_type}: "
+            f"{primary_description.safe_message}"
+        ),
         "failure_code": "method.node_execution_failed",
         "failure_phase": f"node:{node_id}:invoke",
         "failure_id": failure_id,
-        "error_digest": description.error_digest,
+        "error_digest": outer_description.error_digest,
+        "primary_error_digest": primary_description.error_digest,
     }
 
 
@@ -282,36 +346,28 @@ def _budget_usage(
             "working_seconds": usage.working_seconds,
             "cost_usd": usage.cost_usd,
         }
-    model_calls = 0
-    messages = 0
-    input_tokens = 0
-    output_tokens = 0
-    cost_usd = 0.0
-    cost_known = True
-    raw_events = request.semantic_state.get("method_events", ())
-    if not isinstance(raw_events, (tuple, list)):
-        raise TypeError("Method semantic events must be a sequence")
-    for row in raw_events:
-        if not isinstance(row, Mapping) or row.get("kind") != "model.invocation":
-            continue
-        payload = row.get("payload")
-        if not isinstance(payload, Mapping):
-            continue
-        model_calls += 1
-        value = payload.get("message_count")
-        if isinstance(value, int) and not isinstance(value, bool):
-            messages += value
-        value = payload.get("input_tokens")
-        if isinstance(value, int) and not isinstance(value, bool):
-            input_tokens += value
-        value = payload.get("output_tokens")
-        if isinstance(value, int) and not isinstance(value, bool):
-            output_tokens += value
-        value = payload.get("cost_usd")
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            cost_usd += float(value)
-        else:
-            cost_known = False
+    raw_usage = request.semantic_state.get("method_usage", {})
+    if not isinstance(raw_usage, Mapping):
+        raise TypeError("Method semantic usage must be an object")
+    def usage_int(name: str) -> int:
+        value = raw_usage.get(name, 0)
+        if type(value) is not int or value < 0:
+            raise TypeError(f"Method semantic usage {name} must be non-negative integer")
+        return value
+    model_calls = usage_int("model_calls")
+    messages = usage_int("messages")
+    input_tokens = usage_int("input_tokens")
+    output_tokens = usage_int("output_tokens")
+    cost_usd_value = raw_usage.get("cost_usd", 0.0)
+    if (
+        isinstance(cost_usd_value, bool)
+        or not isinstance(cost_usd_value, (int, float))
+    ):
+        raise TypeError("Method semantic usage cost_usd must be numeric")
+    cost_usd = float(cost_usd_value)
+    cost_known = raw_usage.get("cost_known", True)
+    if type(cost_known) is not bool:
+        raise TypeError("Method semantic usage cost_known must be boolean")
     return {
         "turns": model_calls,
         "model_calls": model_calls,
@@ -337,6 +393,12 @@ def _method_request(
         component_id=METHOD_PROGRAM_TARGET.component_id,
         budget_usage=_budget_usage(request, runtime),
     )
+    if runtime.program_host is None:
+        raise RuntimeError("Method receipt projection requires bound ResearchProgramHost")
+    effects = _JournalEffectReceiptHistory(
+        runtime.program_host,
+        request.snapshot.machine_id,
+    )
     return MethodNodeRequest(
         node_id=node.node_id,
         visit=visit,
@@ -344,6 +406,7 @@ def _method_request(
         input_value=request.payload,
         context=context,
         previous_value=request.previous_value,
+        effect_receipts=effects,
         capabilities=runtime.capabilities,
         child_machines=runtime.child_machines,
         visit_counts=request.visit_counts,
@@ -464,7 +527,27 @@ def _invoke_method_node(
         if not isinstance(result, CapabilityResult):
             raise TypeError("capability port must return CapabilityResult")
         effects = () if result.effect is None else (result.effect,)
-        return MethodNodeResult(value=result.payload, effect_receipts=effects)
+        evidence_events = (
+            ()
+            if result.evidence is None
+            else (
+                MethodEvent(
+                    "capability.evidence",
+                    {
+                        "capability_id": result.capability_id,
+                        "request_digest": result.request_digest,
+                        "generation": result.generation,
+                        "artifacts": result.artifacts,
+                        "evidence": result.evidence,
+                    },
+                ),
+            )
+        )
+        return MethodNodeResult(
+            value=result.payload,
+            events=evidence_events,
+            effect_receipts=effects,
+        )
     if node.kind is MethodNodeKind.CHECKPOINT:
         return MethodNodeResult(
             value=request.previous_value,
@@ -500,16 +583,48 @@ def _semantic_update(
     failure: dict[str, object] | None = None,
 ) -> dict[str, object]:
     current = dict(request.semantic_state)
-    events = list(current.get("method_events", ()))
-    effects = list(current.get("effect_receipts", ()))
+    # Method events are already authoritative Machine Journal event payloads.
+    # Keeping the entire event history inside hot semantic state made every
+    # node copy O(history) data. Maintain only the budget aggregate needed by
+    # the fallback accounting path; final MethodRunResult.events is projected
+    # once from the journal.
+    raw_usage = current.get("method_usage", {})
+    if not isinstance(raw_usage, Mapping):
+        raise TypeError("Method semantic usage must be an object")
+    usage = {
+        "model_calls": int(raw_usage.get("model_calls", 0)),
+        "messages": int(raw_usage.get("messages", 0)),
+        "input_tokens": int(raw_usage.get("input_tokens", 0)),
+        "output_tokens": int(raw_usage.get("output_tokens", 0)),
+        "cost_usd": float(raw_usage.get("cost_usd", 0.0)),
+        "cost_known": bool(raw_usage.get("cost_known", True)),
+    }
     if result is not None:
         for event in result.events:
-            events.append(_event_payload(event))
-        events.append(_event_payload(MethodEvent(f"node:{node_id}", result.value)))
-        effects.extend(_effect_payload(receipt) for receipt in result.effect_receipts)
+            if event.kind != "model.invocation":
+                continue
+            payload = event.payload
+            if not isinstance(payload, Mapping):
+                continue
+            usage["model_calls"] += 1
+            value = payload.get("message_count")
+            if isinstance(value, int) and not isinstance(value, bool):
+                usage["messages"] += value
+            value = payload.get("input_tokens")
+            if isinstance(value, int) and not isinstance(value, bool):
+                usage["input_tokens"] += value
+            value = payload.get("output_tokens")
+            if isinstance(value, int) and not isinstance(value, bool):
+                usage["output_tokens"] += value
+            value = payload.get("cost_usd")
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                usage["cost_usd"] += float(value)
+            else:
+                usage["cost_known"] = False
         current["interrupt"] = _interrupt_payload(result.interrupt)
-    current["method_events"] = events
-    current["effect_receipts"] = effects
+    current.pop("method_events", None)
+    current.pop("effect_receipts", None)
+    current["method_usage"] = usage
     if failure is not None:
         current["failure"] = failure
     return current
@@ -660,18 +775,22 @@ def _method_operation(
                     result,
                     failure=failure,
                 ),
-                events=tuple(
-                    {
-                        "type": "method.event",
-                        "event": _event_payload(event),
-                    }
-                    for event in method_events
-                ) + (
-                    {
-                        "type": "method_budget_failed",
-                        "node_id": node.node_id,
-                        **failure,
-                    },
+                events=(
+                    tuple(
+                        {
+                            "type": "method.event",
+                            "event": _event_payload(event),
+                        }
+                        for event in method_events
+                    )
+                    + _effect_event_payloads(result.effect_receipts)
+                    + (
+                        {
+                            "type": "method_budget_failed",
+                            "node_id": node.node_id,
+                            **failure,
+                        },
+                    )
                 ),
                 effect_intent_refs=tuple(
                     receipt.effect_id for receipt in result.effect_receipts
@@ -702,21 +821,25 @@ def _method_operation(
                 node.node_id,
                 result,
             ),
-            events=tuple(
-                {
-                    "type": "method.event",
-                    "event": _event_payload(event),
-                }
-                for event in method_events
-            ) + (
-                (
+            events=(
+                tuple(
                     {
-                        "type": "method.interrupt",
-                        "interrupt": _interrupt_payload(result.interrupt),
-                    },
+                        "type": "method.event",
+                        "event": _event_payload(event),
+                    }
+                    for event in method_events
                 )
-                if result.interrupt is not None
-                else ()
+                + _effect_event_payloads(result.effect_receipts)
+                + (
+                    (
+                        {
+                            "type": "method.interrupt",
+                            "interrupt": _interrupt_payload(result.interrupt),
+                        },
+                    )
+                    if result.interrupt is not None
+                    else ()
+                )
             ),
             effect_intent_refs=tuple(
                 receipt.effect_id for receipt in result.effect_receipts

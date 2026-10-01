@@ -110,7 +110,10 @@ class _LazyProjectResearchOS:
         return self._execution_delegate().checkpoint(target, payload)
 
     def reconcile(self, target, payload=None):
-        return self._execution_delegate().reconcile(target, payload)
+        # Reconciliation is a control-plane proof operation.  It may consume
+        # durable graph/Machine/effect evidence, but it must never bootstrap
+        # model/environment/resource realizations merely to inspect recovery.
+        return self._delegate.reconcile(target, payload)
 
     def migrate(self, target, payload=None):
         return self._execution_delegate().migrate(target, payload)
@@ -121,6 +124,7 @@ class LoadedProjectResearchOS:
     """Project control plane with one lazily-owned physical execution plane."""
 
     project_root: Path
+    state_root: Path
     manifest: ProjectManifest
     portfolio: ResearchPortfolio
     revision: ResearchGraphRevision
@@ -129,7 +133,9 @@ class LoadedProjectResearchOS:
     execution_pool: ResearchExecutionPool
     _composition: LocalResearchOSComposition
     _execution_config: ProjectExecutionAuthorityConfig
+    _shared_runtime: ManagedResearchRuntime | None = None
     _managed_runtime: ManagedResearchRuntime | None = None
+    _owns_managed_runtime: bool = False
     _execution_authorities: ResearchExecutionAuthorities | None = None
     _closed: bool = False
     _execution_lock: RLock = field(default_factory=RLock, repr=False)
@@ -142,7 +148,11 @@ class LoadedProjectResearchOS:
     def execution_plane_ready(self) -> bool:
         return self._managed_runtime is not None
 
-    def ensure_execution_plane(self) -> None:
+    def ensure_execution_plane(
+        self,
+        *,
+        start_background_controllers: bool | None = None,
+    ) -> None:
         """Materialize the one physical execution plane at first execution intent."""
         if self._closed:
             raise RuntimeError("project Research OS is closed")
@@ -151,16 +161,21 @@ class LoadedProjectResearchOS:
         with self._execution_lock:
             if self._managed_runtime is not None:
                 return
-            state_root = _project_state_root(self.project_root)
-            managed_runtime = build_local_managed_research_runtime(
-                standard_local_directory_layout(state_root / "platform-runtime"),
-                # Initial execution-authority materialization is the sole owner
-                # of model/resource convergence. Background reconcilers attach
-                # only after that synchronous closure is complete, otherwise
-                # they can race the bootstrap fleet over the same desired
-                # deployment generation.
-                start_background_controllers=False,
-            )
+            state_root = self.state_root
+            owns_managed_runtime = self._shared_runtime is None
+            managed_runtime = self._shared_runtime
+            if managed_runtime is None:
+                managed_runtime = build_local_managed_research_runtime(
+                    standard_local_directory_layout(state_root / "platform-runtime"),
+                    # Initial execution-authority materialization is the sole owner
+                    # of model/resource convergence. Background reconcilers attach
+                    # only after that synchronous closure is complete, otherwise
+                    # they can race the bootstrap fleet over the same desired
+                    # deployment generation.
+                    start_background_controllers=False,
+                )
+            else:
+                managed_runtime.assert_healthy()
             replacement: LocalResearchOSComposition | None = None
             authorities: ResearchExecutionAuthorities | None = None
             try:
@@ -168,6 +183,7 @@ class LoadedProjectResearchOS:
                     state_root,
                     managed_runtime,
                     content=self._composition.content,
+                    execution_tenant_id=self.portfolio.portfolio_id,
                 )
                 authorities = materialize_project_execution_authorities(
                     context,
@@ -188,7 +204,12 @@ class LoadedProjectResearchOS:
                     ),
                     content_authorities=context.content,
                 )
-                if self._execution_config.start_background_controllers:
+                should_start_controllers = (
+                    self._execution_config.start_background_controllers
+                    if start_background_controllers is None
+                    else start_background_controllers
+                )
+                if should_start_controllers:
                     managed_runtime.start_background_controllers()
             except BaseException as primary:
                 cleanup_errors: list[BaseException] = []
@@ -197,10 +218,11 @@ class LoadedProjectResearchOS:
                         authorities.close()
                     except BaseException as exc:
                         cleanup_errors.append(exc)
-                try:
-                    managed_runtime.close()
-                except BaseException as exc:
-                    cleanup_errors.append(exc)
+                if owns_managed_runtime:
+                    try:
+                        managed_runtime.close()
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
                 if cleanup_errors:
                     raise ExceptionGroup(
                         "project execution-plane materialization failed with cleanup error",
@@ -222,10 +244,11 @@ class LoadedProjectResearchOS:
                         authorities.close()
                     except BaseException as exc:
                         cleanup_errors.append(exc)
-                try:
-                    managed_runtime.close()
-                except BaseException as exc:
-                    cleanup_errors.append(exc)
+                if owns_managed_runtime:
+                    try:
+                        managed_runtime.close()
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
                 if cleanup_errors:
                     raise ExceptionGroup(
                         "project control-plane replacement failed with cleanup errors",
@@ -236,12 +259,51 @@ class LoadedProjectResearchOS:
             self._composition = replacement
             self.execution_pool = replacement.execution_pool
             self._managed_runtime = managed_runtime
+            self._owns_managed_runtime = owns_managed_runtime
             self._execution_authorities = authorities
             proxy = self.research_os
             if isinstance(proxy, _LazyProjectResearchOS):
                 proxy._replace_delegate(replacement.research_os)
             else:
                 self.research_os = replacement.research_os
+
+    def retire_runtime_fabric(self) -> None:
+        """Terminally retire the host Runtime Fabric for this project state root.
+
+        Normal project close only detaches consumers so exact model/environment
+        realizations stay warm across runs. This explicit operator action is the
+        terminal lifecycle boundary: it reuses ManagedResearchRuntime's single
+        retirement authority and never materializes project execution
+        authorities merely to clean physical state.
+        """
+
+        if self._closed:
+            raise RuntimeError("project Research OS is closed")
+        if self._shared_runtime is not None:
+            raise RuntimeError(
+                "project cannot terminally retire a shared ManagedResearchRuntime"
+            )
+        with self._execution_lock:
+            if self._execution_authorities is not None:
+                raise RuntimeError(
+                    "terminal Runtime Fabric retirement requires a fresh "
+                    "control-plane project handle"
+                )
+            runtime = self._managed_runtime
+            if runtime is None:
+                runtime = build_local_managed_research_runtime(
+                    standard_local_directory_layout(
+                        self.state_root / "platform-runtime"
+                    ),
+                    start_background_controllers=False,
+                )
+                self._managed_runtime = runtime
+                self._owns_managed_runtime = True
+            elif not self._owns_managed_runtime:
+                raise RuntimeError(
+                    "project does not own the ManagedResearchRuntime"
+                )
+            runtime.retire_runtime_fabric()
 
     def close(self) -> None:
         if self._closed:
@@ -256,7 +318,7 @@ class LoadedProjectResearchOS:
                 self._execution_authorities.close()
             except BaseException as exc:
                 errors.append(exc)
-        if self._managed_runtime is not None:
+        if self._managed_runtime is not None and self._owns_managed_runtime:
             try:
                 self._managed_runtime.close()
             except BaseException as exc:
@@ -361,6 +423,8 @@ def load_project_research_os(
     project_root: Path,
     *,
     config_path: Path | None = None,
+    shared_runtime: ManagedResearchRuntime | None = None,
+    state_root: Path | None = None,
 ) -> LoadedProjectResearchOS:
     """Load one project directly into the canonical Research OS.
 
@@ -370,9 +434,20 @@ def load_project_research_os(
     when execution intent first reaches the control boundary.
     """
 
+    if shared_runtime is not None and not isinstance(
+        shared_runtime,
+        ManagedResearchRuntime,
+    ):
+        raise TypeError("shared project runtime must be ManagedResearchRuntime")
     root, manifest, portfolio = _load_project_source(project_root)
-    state_root = _project_state_root(root)
-    state_root.mkdir(parents=True, exist_ok=True)
+    resolved_state_root = (
+        _project_state_root(root)
+        if state_root is None
+        else state_root.expanduser().absolute()
+    )
+    if resolved_state_root.is_symlink():
+        raise ValueError("project Research OS state root must not be a symlink")
+    resolved_state_root.mkdir(parents=True, exist_ok=True)
 
     config = (
         ProjectExecutionAuthorityConfig()
@@ -383,7 +458,7 @@ def load_project_research_os(
     # Project opening is control-plane only. Physical runtime ownership,
     # Docker/model/resource reconciliation and execution authorities attach at
     # the first execution intent.
-    composition = compose_local_research_os(state_root)
+    composition = compose_local_research_os(resolved_state_root)
     research_os = composition.research_os
     revisions = composition.revision_store
     graph = composition.graph_store
@@ -414,6 +489,7 @@ def load_project_research_os(
 
     loaded = LoadedProjectResearchOS(
         root,
+        resolved_state_root,
         manifest,
         portfolio,
         revision,
@@ -422,6 +498,7 @@ def load_project_research_os(
         pool,
         composition,
         config,
+        _shared_runtime=shared_runtime,
     )
     loaded.research_os = _LazyProjectResearchOS(loaded, research_os)
     return loaded

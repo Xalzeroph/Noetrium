@@ -19,10 +19,10 @@ from noetrium_platform.capabilities.model.serving.api.runtime_canary import (
     evaluate_runtime_canary_contract,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
-    ModelEndpointPort,
-    ModelEndpointRequest,
+    AdaptiveModelEndpointPoolPort,
     ModelEndpointResponse,
     ModelEndpointRoute,
+    OperationalModelEndpointReplica,
 )
 from noetrium_platform.substrate.api import ServiceHeartbeat
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_bytes, canonical_digest
@@ -72,7 +72,7 @@ def _request(
 
 
 def run_runtime_canary(
-    endpoint: ModelEndpointPort,
+    endpoint: AdaptiveModelEndpointPoolPort,
     deployment: QualifiedDeploymentManifest,
     route: ModelEndpointRoute,
     heartbeat: ServiceHeartbeat,
@@ -84,10 +84,13 @@ def run_runtime_canary(
     generation = deployment.digest()
     if route.deployment_id != deployment.deployment_id or route.deployment_generation != generation:
         raise ValueError("runtime canary route does not match frozen deployment")
-    endpoint_route = getattr(endpoint, "route", None)
-    if not isinstance(endpoint_route, ModelEndpointRoute):
-        raise ValueError("runtime canary endpoint does not expose authoritative route")
-    if canonical_digest(endpoint_route) != canonical_digest(route):
+    replica_set = endpoint.replica_set
+    if len(replica_set.members) != 1:
+        raise ValueError("runtime canary requires exactly one pre-closure replica")
+    replica = replica_set.members[0]
+    if not isinstance(replica, OperationalModelEndpointReplica):
+        raise ValueError("runtime canary requires operational pre-closure authority")
+    if canonical_digest(replica.route) != canonical_digest(route):
         raise ValueError("runtime canary endpoint route authority drift")
     if heartbeat.deployment_id != deployment.deployment_id:
         raise ValueError("runtime canary heartbeat deployment drift")
@@ -116,25 +119,17 @@ def run_runtime_canary(
     materialized_body = json.loads(canonical_bytes(probe.request_body))
     if type(materialized_body) is not dict:
         raise RuntimeError("runtime canary request body materialization drift")
-    request = ModelEndpointRequest(
-        request=envelope,
-        deployment_id=deployment.deployment_id,
-        deployment_generation=generation,
-        body=materialized_body,
-    )
     stream_events = []
     if probe.execution_mode == "stream":
-        stream = getattr(endpoint,"stream",None)
-        if not callable(stream):
-            raise ValueError(
-                "stream runtime canary requires streaming endpoint authority"
-            )
-        response: ModelEndpointResponse = stream(
-            request,
+        dispatch = endpoint.stream(
+            envelope,
+            materialized_body,
             stream_events.append,
         )
     else:
-        response = endpoint.complete(request)
+        dispatch = endpoint.complete(envelope, materialized_body)
+    request = dispatch.request
+    response: ModelEndpointResponse = dispatch.response
     observed_at = time.time() if now is None else started_at
     if observed_at - heartbeat.timestamp > max_age:
         raise ValueError("runtime canary heartbeat expired during canary execution")

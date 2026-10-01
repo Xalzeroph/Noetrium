@@ -18,6 +18,7 @@ from ..api.budget import (
     ExecutionBudgetExceeded,
     ExecutionBudgetPolicy,
     ExecutionBudgetReservation,
+    ExecutionBudgetReservationRequest,
     ExecutionBudgetSnapshot,
 )
 
@@ -469,25 +470,51 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
         charge_id: str,
         requested: ExecutionBudgetDelta,
     ) -> ExecutionBudgetReservation:
+        return self.reserve_batch(
+            scope_id,
+            (ExecutionBudgetReservationRequest(charge_id, requested),),
+        )[0]
+
+    def reserve_batch(
+        self,
+        scope_id: str,
+        requests: tuple[ExecutionBudgetReservationRequest, ...],
+    ) -> tuple[ExecutionBudgetReservation, ...]:
         if type(scope_id) is not str or not scope_id.strip():
             raise ValueError("execution budget scope_id is required")
-        if type(charge_id) is not str or not charge_id.strip():
-            raise ValueError("execution budget charge_id is required")
-        if not isinstance(requested, ExecutionBudgetDelta):
-            raise TypeError("execution budget reservation requires typed delta")
-        reservation_digest = canonical_digest(
-            {
-                "schema": "noetrium.execution-budget-reservation.v1",
-                "scope_id": scope_id,
-                "charge_id": charge_id,
-                "requested": requested,
-            }
+        if type(requests) is not tuple or not requests:
+            raise ValueError(
+                "execution budget reservation batch requires non-empty tuple"
+            )
+        if any(
+            not isinstance(item, ExecutionBudgetReservationRequest)
+            for item in requests
+        ):
+            raise TypeError(
+                "execution budget reservation batch requires typed requests"
+            )
+        charge_ids = tuple(item.charge_id for item in requests)
+        if len(set(charge_ids)) != len(charge_ids):
+            raise ValueError(
+                "execution budget reservation batch charge_ids must be unique"
+            )
+        reservation_digests = tuple(
+            canonical_digest(
+                {
+                    "schema": "noetrium.execution-budget-reservation.v1",
+                    "scope_id": scope_id,
+                    "charge_id": item.charge_id,
+                    "requested": item.requested,
+                }
+            )
+            for item in requests
         )
+
         with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self._TIMEOUT,
-                label="execution budget reserve",
+                label="execution budget reserve batch",
             ):
                 scope = self._scope_policy_row(db, scope_id)
                 time_violation = self._time_violation(scope)
@@ -495,58 +522,108 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
                     raise ExecutionBudgetExceeded(
                         "TrialBudget exhausted: " + time_violation
                     )
-                current = db.execute(
-                    """
-                    SELECT reservation_digest,
-                           requested_steps,requested_turns,requested_messages,
-                           requested_model_calls,requested_tokens,
-                           requested_working_seconds,requested_cost_usd
-                    FROM execution_budget_charges
-                    WHERE scope_id=? AND charge_id=?
-                    """,
-                    (scope_id, charge_id),
-                ).fetchone()
-                if current is not None:
-                    if str(current[0]) != reservation_digest:
+
+                existing_rows: list[
+                    tuple[str, ExecutionBudgetDelta] | None
+                ] = []
+                additional = ExecutionBudgetDelta()
+                for item, reservation_digest in zip(
+                    requests, reservation_digests, strict=True
+                ):
+                    row = db.execute(
+                        """
+                        SELECT reservation_digest,state,
+                               requested_steps,requested_turns,
+                               requested_messages,requested_model_calls,
+                               requested_tokens,requested_working_seconds,
+                               requested_cost_usd
+                        FROM execution_budget_charges
+                        WHERE scope_id=? AND charge_id=?
+                        """,
+                        (scope_id, item.charge_id),
+                    ).fetchone()
+                    if row is None:
+                        existing_rows.append(None)
+                        additional = _add(additional, item.requested)
+                        continue
+                    if str(row[0]) != reservation_digest:
                         raise RuntimeError(
-                            "execution budget charge_id reused with different reservation"
+                            "execution budget charge_id reused with "
+                            "different reservation"
                         )
-                    return ExecutionBudgetReservation(
-                        scope_id,
-                        charge_id,
-                        _delta_from_row(tuple(current[1:])),
-                        reservation_digest,
-                    )
+                    state = str(row[1])
+                    requested_existing = _delta_from_row(tuple(row[2:]))
+                    if requested_existing != item.requested:
+                        raise RuntimeError(
+                            "execution budget reservation payload drifted"
+                        )
+                    if state == "aborted":
+                        additional = _add(additional, requested_existing)
+                    elif state not in {"reserved", "committed"}:
+                        raise RuntimeError(
+                            "execution budget charge has unknown state: "
+                            + state
+                        )
+                    existing_rows.append((state, requested_existing))
+
                 usage, reserved = self._usage_and_reserved(db, scope_id)
-                projected = _add(_add(usage, reserved), requested)
+                projected = _add(_add(usage, reserved), additional)
                 violations = self._violations(scope, projected)
                 if violations:
                     raise ExecutionBudgetExceeded(
-                        "TrialBudget reservation rejected: " + ", ".join(violations)
+                        "TrialBudget reservation rejected: "
+                        + ", ".join(violations)
                     )
-                db.execute(
-                    """
-                    INSERT INTO execution_budget_charges(
-                        scope_id,charge_id,reservation_digest,state,
-                        requested_steps,requested_turns,requested_messages,
-                        requested_model_calls,requested_tokens,
-                        requested_working_seconds,requested_cost_usd
-                    ) VALUES(?,?,?,?,?,?,?,?,?,?,?)
-                    """,
-                    (
-                        scope_id,
-                        charge_id,
-                        reservation_digest,
-                        "reserved",
-                        *_delta_values(requested),
-                    ),
-                )
-        return ExecutionBudgetReservation(
-            scope_id,
-            charge_id,
-            requested,
-            reservation_digest,
-        )
+
+                reservations: list[ExecutionBudgetReservation] = []
+                for item, reservation_digest, existing in zip(
+                    requests,
+                    reservation_digests,
+                    existing_rows,
+                    strict=True,
+                ):
+                    if existing is None:
+                        db.execute(
+                            """
+                            INSERT INTO execution_budget_charges(
+                                scope_id,charge_id,reservation_digest,state,
+                                requested_steps,requested_turns,
+                                requested_messages,requested_model_calls,
+                                requested_tokens,requested_working_seconds,
+                                requested_cost_usd
+                            ) VALUES(?,?,?,?,?,?,?,?,?,?,?)
+                            """,
+                            (
+                                scope_id,
+                                item.charge_id,
+                                reservation_digest,
+                                "reserved",
+                                *_delta_values(item.requested),
+                            ),
+                        )
+                    elif existing[0] == "aborted":
+                        db.execute(
+                            """
+                            UPDATE execution_budget_charges
+                            SET state='reserved',
+                                actual_steps=NULL,actual_turns=NULL,
+                                actual_messages=NULL,
+                                actual_model_calls=NULL,actual_tokens=NULL,
+                                actual_working_seconds=NULL,
+                                actual_cost_usd=NULL
+                            WHERE scope_id=? AND charge_id=?
+                            """,
+                            (scope_id, item.charge_id),
+                        )
+                    reservations.append(
+                        ExecutionBudgetReservation(
+                            scope_id,
+                            item.charge_id,
+                            item.requested,
+                            reservation_digest,
+                        )
+                    )
+        return tuple(reservations)
 
     def commit(
         self,
@@ -581,7 +658,8 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
                     )
                 if str(row[0]) != reservation.reservation_digest:
                     raise RuntimeError("execution budget reservation identity drifted")
-                if str(row[1]) == "committed":
+                state = str(row[1])
+                if state == "committed":
                     existing = _delta_from_row(tuple(row[2:]))
                     if existing != actual:
                         raise RuntimeError(
@@ -590,6 +668,14 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
                     return self._snapshot_from_db(
                         db, reservation.scope_id
                     ), ()
+                if state == "aborted":
+                    raise RuntimeError(
+                        "execution budget aborted reservation cannot be committed"
+                    )
+                if state != "reserved":
+                    raise RuntimeError(
+                        "execution budget charge has unknown state: " + state
+                    )
                 db.execute(
                     """
                     UPDATE execution_budget_charges
@@ -614,6 +700,56 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
                     violations.append(time_violation)
                 snapshot = self._snapshot_from_db(db, reservation.scope_id)
         return snapshot, tuple(violations)
+
+    def abort(
+        self,
+        reservation: ExecutionBudgetReservation,
+    ) -> ExecutionBudgetSnapshot:
+        if not isinstance(reservation, ExecutionBudgetReservation):
+            raise TypeError("execution budget abort requires reservation")
+        with self._writers.session() as db:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self._TIMEOUT,
+                label="execution budget abort",
+            ):
+                self._scope_policy_row(db, reservation.scope_id)
+                row = db.execute(
+                    """
+                    SELECT reservation_digest,state
+                    FROM execution_budget_charges
+                    WHERE scope_id=? AND charge_id=?
+                    """,
+                    (reservation.scope_id, reservation.charge_id),
+                ).fetchone()
+                if row is None:
+                    raise KeyError(
+                        "execution budget reservation disappeared before abort"
+                    )
+                if str(row[0]) != reservation.reservation_digest:
+                    raise RuntimeError(
+                        "execution budget reservation identity drifted"
+                    )
+                state = str(row[1])
+                if state == "aborted":
+                    return self._snapshot_from_db(db, reservation.scope_id)
+                if state == "committed":
+                    raise RuntimeError(
+                        "execution budget committed reservation cannot be aborted"
+                    )
+                if state != "reserved":
+                    raise RuntimeError(
+                        "execution budget charge has unknown state: " + state
+                    )
+                db.execute(
+                    """
+                    UPDATE execution_budget_charges
+                    SET state='aborted'
+                    WHERE scope_id=? AND charge_id=?
+                    """,
+                    (reservation.scope_id, reservation.charge_id),
+                )
+                return self._snapshot_from_db(db, reservation.scope_id)
 
     def consume(
         self,

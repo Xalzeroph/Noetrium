@@ -215,6 +215,22 @@ class StructuredConcurrencyRuntime:
             heartbeats=self._heartbeat_scheduler.snapshot(),
         )
 
+    def assert_healthy(self) -> None:
+        errors: list[BaseException] = []
+        try:
+            self._heartbeat_scheduler.assert_healthy()
+        except BaseException as exc:
+            errors.append(exc)
+        with self._lock:
+            groups = tuple(self._groups.values())
+        for group in groups:
+            try:
+                group.assert_healthy()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise ExceptionGroup("concurrency runtime unhealthy", errors)
+
     @staticmethod
     def _contains_timeout(error: BaseException) -> bool:
         if isinstance(error, TimeoutError):
@@ -259,6 +275,14 @@ class StructuredConcurrencyRuntime:
         timer_joined = False
         providers_joined = False
         try:
+            # CALLER-scoped heartbeat failures deliberately do not poison the
+            # shared owner TaskGroup. Capture them from the process-wide
+            # heartbeat authority before shutdown cancellation converges the
+            # underlying recurring tasks.
+            try:
+                self._heartbeat_scheduler.assert_healthy()
+            except BaseException as exc:
+                errors.append(exc)
             for group in reversed(groups):
                 snapshot = group.snapshot()
                 if snapshot.converged:

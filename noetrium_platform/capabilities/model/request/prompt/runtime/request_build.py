@@ -115,11 +115,14 @@ class PromptRequestBuildTransaction:
             source_state_refs=source_state_refs,
         )
         model_requests.verify_visible_request(model_request, body)
-        durable_body = freeze_json(model_requests.reconstruct_request_body(model_request))
+        # body is already frozen and the recorder durably published the exact
+        # canonical bytes referenced by model_request. Re-reading and reparsing
+        # that blob here adds disk I/O and JSON decode to every model turn;
+        # replay still reconstructs from the durable reference when required.
         return PromptBoundRequest(
             resolution=resolution,
             compilation=compilation,
-            request_body=durable_body,
+            request_body=body,
             request_contract=request_contract,
             execution_contract=execution_contract,
             model_request=model_request,

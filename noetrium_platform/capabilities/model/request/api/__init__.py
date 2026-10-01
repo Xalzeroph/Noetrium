@@ -10,6 +10,7 @@ from .contracts import (
     ModelRequestLedgerPort,
     ModelRequestRecorderPort,
     ReconstructedModelRequest,
+    model_request_owner_id,
 )
 
 from ..prompt.api import PromptSelectionPort
@@ -23,5 +24,6 @@ __all__ = [
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",
     "ReconstructedModelRequest",
+    "model_request_owner_id",
     "PromptSelectionPort",
 ]

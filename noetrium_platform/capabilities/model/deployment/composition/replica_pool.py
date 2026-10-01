@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from threading import RLock
+from threading import Condition, RLock
 from typing import Callable
 from time import time
 from uuid import uuid4
@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
     ModelDeploymentGeneration,
     ModelDeploymentRuntimePort,
+    ModelDeploymentSelector,
     ModelDeploymentSpec,
     ModelDeploymentStatus,
     ModelDesiredState,
@@ -28,7 +29,16 @@ from noetrium_platform.capabilities.model.stack.api import ModelStackSpec
 from noetrium_platform.capabilities.model.stack.runtime import (
     model_stack_launch_settings,
 )
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ContentAddressedSingleFlight,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel.durability import InterprocessFileLock
+from noetrium_platform.infrastructure.resources.lease.api import (
+    ResourceIdentity,
+    ResourceKind,
+    ResourceLeasePort,
+)
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.substrate.api import (
     EndpointAllocation,
@@ -48,6 +58,26 @@ from noetrium_platform.substrate.api import ResourceOwnership
 
 
 _BINDING_CONVERGENCE_ATTEMPTS = 4
+
+
+class _ModelPlacementCapacityDrift(RuntimeError):
+    """A frozen unbound placement lost physical capacity before service binding."""
+
+    def __init__(
+        self,
+        deployment_id: str,
+        compute: ComputeAllocation,
+        status: ModelDeploymentStatus,
+    ) -> None:
+        self.deployment_id = deployment_id
+        self.compute = compute
+        self.status = status
+        super().__init__(
+            "model replica placement capacity drifted before binding: "
+            f"{deployment_id}: host={compute.host_id} "
+            f"gpus={','.join(compute.gpu_ids)} "
+            f"status={status.runtime_state.value}:{status.detail}"
+        )
 
 
 def _exception_leaves(error: BaseException) -> tuple[BaseException, ...]:
@@ -263,6 +293,23 @@ class ModelReplicaPoolRequest:
             self.compute,
         )
 
+    @property
+    def runtime_identity_digest(self) -> str:
+        """Physical serving identity; paper/run labels never split a warm runtime."""
+        return canonical_digest(
+            {
+                "schema": "noetrium.model-replica-runtime-identity.v1",
+                "scope": self.scope,
+                "model_id": self.model_id,
+                "engine": self.engine,
+                "cwd": str(self.cwd.expanduser().resolve()),
+                "compute": self.effective_compute,
+                "model_stack_digest": self.model_stack.digest(),
+                "replica_count": self.replica_count,
+                "endpoint_host": self.endpoint_host,
+            }
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class ModelReplicaPlacement:
@@ -315,13 +362,8 @@ class ModelReplicaPoolReport:
         )
 
 
-class ModelReplicaPoolLease:
-    """Own model services and both resource-lease families for one pool.
-
-    Cleanup is dependency ordered and retryable. Serving processes must be
-    proven gone before lease heartbeats stop, and each resource family is
-    released only after its own renewal guard has converged.
-    """
+class _ModelReplicaPoolOwner:
+    """Own one warm physical model realization and all resource heartbeats."""
 
     def __init__(
         self,
@@ -332,7 +374,6 @@ class ModelReplicaPoolLease:
         endpoint_allocations: EndpointAllocationPort,
         compute_guard,
         endpoint_guard,
-        on_closed: Callable[["ModelReplicaPoolLease"], None] | None = None,
     ) -> None:
         self.report = report
         self._deployment_runtime = deployment_runtime
@@ -346,20 +387,21 @@ class ModelReplicaPoolLease:
         self._released_endpoint_ids: set[str] = set()
         self._released_compute_ids: set[str] = set()
         self._current_generations = {
-            row.deployment_id: row.generation
-            for row in report.placements
+            row.deployment_id: row.generation for row in report.placements
         }
         self._current_compute = {
-            row.compute.allocation_id: row.compute
-            for row in report.placements
+            row.compute.allocation_id: row.compute for row in report.placements
         }
         self._current_endpoints = {
-            row.endpoint.allocation_id: row.endpoint
-            for row in report.placements
+            row.endpoint.allocation_id: row.endpoint for row in report.placements
         }
         self._closed = False
-        self._on_closed = on_closed
         self._lifecycle_lock = RLock()
+
+    @property
+    def closed(self) -> bool:
+        with self._lifecycle_lock:
+            return self._closed
 
     def _current_generation(
         self,
@@ -395,11 +437,38 @@ class ModelReplicaPoolLease:
     def assert_healthy(self) -> None:
         with self._lifecycle_lock:
             if self._closed:
-                raise RuntimeError("model replica pool lease is closed")
+                raise RuntimeError("model replica physical owner is closed")
             self._compute_guard.assert_healthy()
             self._endpoint_guard.assert_healthy()
             for row in self.report.placements:
                 self._converge_running_generation(row)
+
+    def detach(self) -> None:
+        """Stop this controller's heartbeats without retiring the realization."""
+        with self._lifecycle_lock:
+            if self._closed:
+                return
+            errors: list[BaseException] = []
+            if not self._endpoint_guard_closed:
+                try:
+                    self._endpoint_guard.close()
+                except BaseException as exc:
+                    errors.extend(_exception_leaves(exc))
+                else:
+                    self._endpoint_guard_closed = True
+            if not self._compute_guard_closed:
+                try:
+                    self._compute_guard.close()
+                except BaseException as exc:
+                    errors.extend(_exception_leaves(exc))
+                else:
+                    self._compute_guard_closed = True
+            if errors:
+                raise BaseExceptionGroup(
+                    "model replica physical owner detach failed",
+                    errors,
+                )
+            self._closed = True
 
     def close(self) -> None:
         with self._lifecycle_lock:
@@ -408,7 +477,6 @@ class ModelReplicaPoolLease:
     def _close_locked(self) -> None:
         if self._closed:
             return
-
         errors: list[BaseException] = []
         for row in reversed(self.report.placements):
             if row.deployment_id in self._removed_deployment_ids:
@@ -421,10 +489,8 @@ class ModelReplicaPoolLease:
             else:
                 self._current_generations[row.deployment_id] = generation
                 self._removed_deployment_ids.add(row.deployment_id)
-
         if len(self._removed_deployment_ids) != len(self.report.placements):
             raise BaseExceptionGroup("model replica pool cleanup failed", errors)
-
         if not self._endpoint_guard_closed:
             try:
                 self._endpoint_guard.close()
@@ -439,7 +505,6 @@ class ModelReplicaPoolLease:
                 errors.extend(_exception_leaves(exc))
             else:
                 self._compute_guard_closed = True
-
         if self._endpoint_guard_closed:
             for row in reversed(self.report.placements):
                 allocation_id = row.endpoint.allocation_id
@@ -453,7 +518,6 @@ class ModelReplicaPoolLease:
                     errors.extend(_exception_leaves(exc))
                 else:
                     self._released_endpoint_ids.add(allocation_id)
-
         if self._compute_guard_closed:
             for row in reversed(self.report.placements):
                 allocation_id = row.compute.allocation_id
@@ -467,10 +531,8 @@ class ModelReplicaPoolLease:
                     errors.extend(_exception_leaves(exc))
                 else:
                     self._released_compute_ids.add(allocation_id)
-
         if errors:
             raise BaseExceptionGroup("model replica pool cleanup failed", errors)
-
         self._closed = (
             self._endpoint_guard_closed
             and self._compute_guard_closed
@@ -479,8 +541,44 @@ class ModelReplicaPoolLease:
         )
         if not self._closed:
             raise RuntimeError("model replica pool cleanup did not converge")
-        if self._on_closed is not None:
-            self._on_closed(self)
+
+
+class ModelReplicaPoolLease:
+    """Lightweight consumer lease for one warm physical model realization."""
+
+    def __init__(
+        self,
+        owner: _ModelReplicaPoolOwner,
+        *,
+        consumer_lease_id: str,
+        on_closed: Callable[["ModelReplicaPoolLease"], None],
+    ) -> None:
+        if not consumer_lease_id:
+            raise ValueError("model replica consumer lease id is required")
+        self.report = owner.report
+        self.consumer_lease_id = consumer_lease_id
+        self._owner = owner
+        self._on_closed = on_closed
+        self._closed = False
+        self._lifecycle_lock = RLock()
+
+    @property
+    def closed(self) -> bool:
+        with self._lifecycle_lock:
+            return self._closed
+
+    def assert_healthy(self) -> None:
+        with self._lifecycle_lock:
+            if self._closed:
+                raise RuntimeError("model replica consumer lease is closed")
+            self._owner.assert_healthy()
+
+    def close(self) -> None:
+        with self._lifecycle_lock:
+            if self._closed:
+                return
+            self._closed = True
+        self._on_closed(self)
 
     def __enter__(self) -> "ModelReplicaPoolLease":
         return self
@@ -621,7 +719,7 @@ class _PendingModelReplicaCleanup:
 
 
 class LocalModelReplicaPoolRuntime:
-    """Automatically place, expose, start and lease one local model fleet."""
+    """One warm physical model fabric with lightweight consumer leases."""
 
     def __init__(
         self,
@@ -633,6 +731,10 @@ class LocalModelReplicaPoolRuntime:
         endpoint_allocations: EndpointAllocationPort,
         compute_lease_guards: ComputeLeaseGuardFactoryPort,
         endpoint_lease_guards: EndpointLeaseGuardFactoryPort,
+        realization_singleflight: ContentAddressedSingleFlight | None = None,
+        runtime_fabric_leases: ResourceLeasePort | None = None,
+        runtime_fabric_consumer_lease_id: str | None = None,
+        runtime_fabric_consumer_lock_path: Path | None = None,
     ) -> None:
         self._catalog = deployment_catalog
         self._deployment_runtime = deployment_runtime
@@ -641,7 +743,31 @@ class LocalModelReplicaPoolRuntime:
         self._endpoint_allocations = endpoint_allocations
         self._compute_lease_guards = compute_lease_guards
         self._endpoint_lease_guards = endpoint_lease_guards
+        self._realization_singleflight = realization_singleflight
+        pressure_authority = (
+            runtime_fabric_leases,
+            runtime_fabric_consumer_lease_id,
+            runtime_fabric_consumer_lock_path,
+        )
+        if any(value is not None for value in pressure_authority) and any(
+            value is None for value in pressure_authority
+        ):
+            raise ValueError(
+                "model pressure reclaim requires leases, consumer identity and coordination lock"
+            )
+        if (
+            runtime_fabric_consumer_lease_id is not None
+            and not runtime_fabric_consumer_lease_id.strip()
+        ):
+            raise ValueError("runtime fabric consumer lease id must be non-empty")
+        self._runtime_fabric_leases = runtime_fabric_leases
+        self._runtime_fabric_consumer_lease_id = runtime_fabric_consumer_lease_id
+        self._runtime_fabric_consumer_lock_path = runtime_fabric_consumer_lock_path
         self._lifecycle_lock = RLock()
+        self._lifecycle_changed = Condition(self._lifecycle_lock)
+        self._realization_locks: dict[str, RLock] = {}
+        self._materializations_in_flight = 0
+        self._owners_by_runtime_identity: dict[str, _ModelReplicaPoolOwner] = {}
         self._active_leases: dict[str, ModelReplicaPoolLease] = {}
         self._pending_cleanups: dict[str, _PendingModelReplicaCleanup] = {}
         self._closing = False
@@ -651,6 +777,11 @@ class LocalModelReplicaPoolRuntime:
     def active_lease_count(self) -> int:
         with self._lifecycle_lock:
             return len(self._active_leases)
+
+    @property
+    def warm_owner_count(self) -> int:
+        with self._lifecycle_lock:
+            return len(self._owners_by_runtime_identity)
 
     @property
     def pending_cleanup_count(self) -> int:
@@ -674,22 +805,94 @@ class LocalModelReplicaPoolRuntime:
 
     def _lease_closed(self, lease: ModelReplicaPoolLease) -> None:
         with self._lifecycle_lock:
-            digest = lease.report.report_digest
-            current = self._active_leases.get(digest)
+            current = self._active_leases.get(lease.consumer_lease_id)
             if current is lease:
-                self._active_leases.pop(digest, None)
+                self._active_leases.pop(lease.consumer_lease_id, None)
 
-    def close_all(self) -> None:
+    def _realization_lock(self, identity: str) -> RLock:
+        with self._lifecycle_lock:
+            lock = self._realization_locks.get(identity)
+            if lock is None:
+                lock = RLock()
+                self._realization_locks[identity] = lock
+            return lock
+
+    def _wait_for_materializations_locked(self) -> None:
+        while self._materializations_in_flight:
+            self._lifecycle_changed.wait()
+
+    def _consumer_locked(
+        self,
+        owner: _ModelReplicaPoolOwner,
+    ) -> ModelReplicaPoolLease:
+        consumer_lease_id = uuid4().hex
+        lease = ModelReplicaPoolLease(
+            owner,
+            consumer_lease_id=consumer_lease_id,
+            on_closed=self._lease_closed,
+        )
+        self._active_leases[consumer_lease_id] = lease
+        return lease
+
+    def detach_all(self) -> None:
+        """Detach this controller while preserving durable warm realizations."""
         with self._lifecycle_lock:
             if self._closed:
                 return
             self._closing = True
+            self._wait_for_materializations_locked()
             errors: list[BaseException] = []
             for lease in tuple(self._active_leases.values()):
                 try:
                     lease.close()
                 except BaseException as exc:
                     errors.extend(_exception_leaves(exc))
+            for identity, owner in tuple(
+                self._owners_by_runtime_identity.items()
+            ):
+                try:
+                    owner.detach()
+                except BaseException as exc:
+                    errors.extend(_exception_leaves(exc))
+                else:
+                    self._owners_by_runtime_identity.pop(identity, None)
+            try:
+                self._retry_pending_cleanups_locked()
+            except BaseException as exc:
+                errors.extend(_exception_leaves(exc))
+            if errors:
+                raise BaseExceptionGroup(
+                    "model replica pool runtime detach failed",
+                    errors,
+                )
+            if self._active_leases or self._owners_by_runtime_identity:
+                raise RuntimeError(
+                    "model replica pool detach did not release controller ownership"
+                )
+            self._closed = True
+
+    def close_all(self) -> None:
+        """Retire consumers first, then the physical runtime fabric."""
+        with self._lifecycle_lock:
+            if self._closed:
+                return
+            self._closing = True
+            self._wait_for_materializations_locked()
+            errors: list[BaseException] = []
+            for lease in tuple(self._active_leases.values()):
+                try:
+                    lease.close()
+                except BaseException as exc:
+                    errors.extend(_exception_leaves(exc))
+            for identity, owner in tuple(
+                self._owners_by_runtime_identity.items()
+            ):
+                try:
+                    owner.close()
+                except BaseException as exc:
+                    errors.extend(_exception_leaves(exc))
+                else:
+                    self._owners_by_runtime_identity.pop(identity, None)
             try:
                 self._retry_pending_cleanups_locked()
             except BaseException as exc:
@@ -699,11 +902,273 @@ class LocalModelReplicaPoolRuntime:
                     "model replica pool runtime cleanup failed",
                     errors,
                 )
-            if self._active_leases or self._pending_cleanups:
+            if (
+                self._active_leases
+                or self._owners_by_runtime_identity
+                or self._pending_cleanups
+            ):
                 raise RuntimeError(
                     "model replica pool runtime cleanup did not retire all ownership"
                 )
             self._closed = True
+
+    def retire(self, request: ModelReplicaPoolRequest) -> bool:
+        """Retire one exact warm realization when it has no active consumers."""
+        if not isinstance(request, ModelReplicaPoolRequest):
+            raise TypeError("model replica retirement requires ModelReplicaPoolRequest")
+        identity = request.runtime_identity_digest
+        realization_lock = self._realization_lock(identity)
+        with realization_lock:
+            with self._lifecycle_lock:
+                if self._closed:
+                    raise RuntimeError("model replica pool runtime is closed")
+                if self._closing:
+                    raise RuntimeError("model replica pool runtime is closing")
+                self._retry_pending_cleanups_locked()
+                owner = self._owners_by_runtime_identity.get(identity)
+                if owner is None:
+                    return False
+                consumers = tuple(
+                    lease.consumer_lease_id
+                    for lease in self._active_leases.values()
+                    if lease._owner is owner and not lease.closed
+                )
+                if consumers:
+                    raise RuntimeError(
+                        "cannot retire model realization with active consumers: "
+                        + ",".join(sorted(consumers))
+                    )
+                owner.close()
+                current = self._owners_by_runtime_identity.get(identity)
+                if current is not owner:
+                    raise RuntimeError(
+                        "model realization owner changed during retirement"
+                    )
+                self._owners_by_runtime_identity.pop(identity, None)
+                return True
+
+    def _pressure_reclaim_has_exclusive_runtime_fabric_consumer(self) -> bool:
+        leases = self._runtime_fabric_leases
+        own_lease_id = self._runtime_fabric_consumer_lease_id
+        if leases is None or own_lease_id is None:
+            return False
+        active = leases.active_for(
+            ResourceIdentity(ResourceKind.RUNTIME_FABRIC, "host-runtime-fabric")
+        )
+        own = tuple(row for row in active if row.lease_id == own_lease_id)
+        if len(own) != 1:
+            return False
+        return all(row.lease_id == own_lease_id for row in active)
+
+    def reclaim_one_stale_warm_realization(
+        self,
+        *,
+        protected_runtime_identities: frozenset[str] = frozenset(),
+    ) -> str | None:
+        """Pressure-evict one globally idle durable realization.
+
+        The host Runtime Fabric consumer lock makes the zero-foreign-consumer
+        proof atomic with physical retirement. Per-realization single-flight
+        then excludes concurrent adoption of the exact warm model while its
+        expired compute/endpoint generations are stopped and recovered.
+        """
+        if type(protected_runtime_identities) is not frozenset or any(
+            type(value) is not str for value in protected_runtime_identities
+        ):
+            raise TypeError("protected model runtime identities must be frozenset[str]")
+        lock_path = self._runtime_fabric_consumer_lock_path
+        if (
+            lock_path is None
+            or self._runtime_fabric_leases is None
+            or self._runtime_fabric_consumer_lease_id is None
+        ):
+            return None
+        singleflight = self._realization_singleflight
+        if singleflight is None:
+            raise RuntimeError(
+                "model pressure reclaim requires global realization single-flight"
+            )
+
+        with InterprocessFileLock(lock_path):
+            if not self._pressure_reclaim_has_exclusive_runtime_fabric_consumer():
+                return None
+            with self._lifecycle_lock:
+                if self._closed:
+                    raise RuntimeError("model replica pool runtime is closed")
+                if self._closing:
+                    raise RuntimeError("model replica pool runtime is closing")
+                locally_owned = frozenset(self._owners_by_runtime_identity)
+
+            now_epoch_s = time()
+            compute_by_id = {
+                row.allocation_id: row
+                for row in self._compute_scheduler.allocations()
+            }
+            groups: dict[str, list[ModelDeploymentSpec]] = {}
+            for spec in self._catalog.select(
+                ModelDeploymentSelector(tags=("auto-managed",))
+            ):
+                identity = self._runtime_identity(spec)
+                if identity in protected_runtime_identities or identity in locally_owned:
+                    continue
+                groups.setdefault(identity, []).append(spec)
+
+            candidates: list[
+                tuple[
+                    float,
+                    int,
+                    str,
+                    tuple[ModelDeploymentSpec, ...],
+                    tuple[ComputeAllocation, ...],
+                ]
+            ] = []
+            for identity, raw_specs in groups.items():
+                specs = tuple(sorted(raw_specs, key=lambda row: row.deployment_id))
+                generation_ids = {
+                    self._placement_generation_id(spec) for spec in specs
+                }
+                if len(generation_ids) != 1:
+                    continue
+                placement_generation_id = next(iter(generation_ids))
+                compute_rows: list[ComputeAllocation] = []
+                valid = True
+                for spec in specs:
+                    index = self._replica_index(spec)
+                    allocation_id = (
+                        f"model-realization:{identity}:"
+                        f"{placement_generation_id}:{index}:compute"
+                    )
+                    row = compute_by_id.get(allocation_id)
+                    if (
+                        row is None
+                        or row.lease_expires_at_epoch_s is None
+                        or row.lease_expires_at_epoch_s > now_epoch_s
+                    ):
+                        valid = False
+                        break
+                    compute_rows.append(row)
+                if not valid or not compute_rows:
+                    continue
+                last_owned_at = max(
+                    float(row.lease_expires_at_epoch_s or 0.0)
+                    for row in compute_rows
+                )
+                reserved_vram = sum(
+                    sum(row.gpu_memory_reservation_bytes) for row in compute_rows
+                )
+                candidates.append(
+                    (
+                        last_owned_at,
+                        -reserved_vram,
+                        identity,
+                        specs,
+                        tuple(compute_rows),
+                    )
+                )
+
+            if not candidates:
+                return None
+            _expired_at, _negative_vram, identity, _specs, _compute = min(
+                candidates
+            )
+            realization_lock = self._realization_lock(identity)
+            with realization_lock, singleflight.producer("model-realization", identity):
+                # A local consumer may have appeared while this realization
+                # waited for its cross-process producer fence.
+                with self._lifecycle_lock:
+                    owner = self._owners_by_runtime_identity.get(identity)
+                    if owner is not None:
+                        if any(
+                            lease._owner is owner and not lease.closed
+                            for lease in self._active_leases.values()
+                        ):
+                            return None
+                        owner.close()
+                        self._owners_by_runtime_identity.pop(identity, None)
+                        return identity
+
+                # Re-read every durable authority after acquiring both fences.
+                specs = tuple(
+                    sorted(
+                        self._catalog.select(
+                            ModelDeploymentSelector(
+                                tags=(f"runtime-identity:{identity}",),
+                            )
+                        ),
+                        key=lambda row: row.deployment_id,
+                    )
+                )
+                if not specs:
+                    return None
+                generation_ids = {
+                    self._placement_generation_id(spec) for spec in specs
+                }
+                if len(generation_ids) != 1:
+                    raise RuntimeError(
+                        "stale warm realization spans multiple placement generations: "
+                        + identity
+                    )
+                placement_generation_id = next(iter(generation_ids))
+                current_compute = {
+                    row.allocation_id: row
+                    for row in self._compute_scheduler.allocations()
+                }
+                compute_rows: list[ComputeAllocation] = []
+                endpoint_rows: list[EndpointAllocation] = []
+                generations: list[ModelDeploymentGeneration] = []
+                for spec in specs:
+                    index = self._replica_index(spec)
+                    compute_id = (
+                        f"model-realization:{identity}:"
+                        f"{placement_generation_id}:{index}:compute"
+                    )
+                    endpoint_id = (
+                        f"model-realization:{identity}:"
+                        f"{placement_generation_id}:{index}:endpoint"
+                    )
+                    compute = current_compute.get(compute_id)
+                    endpoint = self._endpoint_allocations.get(endpoint_id)
+                    if compute is None or endpoint is None:
+                        raise RuntimeError(
+                            "stale warm realization lost deterministic allocation: "
+                            + spec.deployment_id
+                        )
+                    if (
+                        compute.lease_expires_at_epoch_s is None
+                        or compute.lease_expires_at_epoch_s > now_epoch_s
+                        or endpoint.lease_expires_at_epoch_s is None
+                        or endpoint.lease_expires_at_epoch_s > now_epoch_s
+                    ):
+                        return None
+                    compute_rows.append(compute)
+                    endpoint_rows.append(endpoint)
+                    generations.append(
+                        self._deployment_runtime.generation(spec.deployment_id)
+                    )
+
+                # Stop physical binders before retiring their lower resource
+                # generations. Recovery release is valid only after that proof.
+                for generation in reversed(generations):
+                    self._deployment_runtime.remove_deployment(generation)
+                errors: list[BaseException] = []
+                for endpoint in reversed(endpoint_rows):
+                    try:
+                        self._endpoint_allocations.recover_release(
+                            endpoint, now=now_epoch_s
+                        )
+                    except BaseException as exc:
+                        errors.extend(_exception_leaves(exc))
+                for compute in reversed(compute_rows):
+                    try:
+                        self._compute_scheduler.recover_release(compute)
+                    except BaseException as exc:
+                        errors.extend(_exception_leaves(exc))
+                if errors:
+                    raise BaseExceptionGroup(
+                        "stale warm model pressure reclaim failed",
+                        errors,
+                    )
+                return identity
 
     def _target_count(self, request: ModelReplicaPoolRequest) -> int | None:
         if request.replica_count is not None:
@@ -731,7 +1196,8 @@ class LocalModelReplicaPoolRuntime:
         compute: ComputeAllocation,
     ) -> ModelDeploymentSpec:
         deployment_id = (
-            f"{request.pool_id}-generation-{placement_generation_id[:16]}"
+            f"model-realization-{request.runtime_identity_digest[:24]}"
+            f"-generation-{placement_generation_id[:16]}"
             f"-replica-{replica_index:03d}"
         )
         stack = request.model_stack
@@ -763,11 +1229,11 @@ class LocalModelReplicaPoolRuntime:
         else:
             raise AssertionError(request.engine)
         tags = tuple(sorted({
-            *request.tags,
             "auto-managed",
-            f"replica-pool:{request.pool_id}",
             f"placement-generation:{placement_generation_id}",
+            f"replica-index:{replica_index:03d}",
             f"model-stack:{stack.digest()}",
+            f"runtime-identity:{request.runtime_identity_digest}",
         }))
         from dataclasses import replace
         return replace(
@@ -777,106 +1243,255 @@ class LocalModelReplicaPoolRuntime:
             tags=tags,
         )
 
-    def ensure(self, request: ModelReplicaPoolRequest) -> ModelReplicaPoolLease:
-        with self._lifecycle_lock:
-            if self._closed:
-                raise RuntimeError("model replica pool runtime is closed")
-            if self._closing:
-                raise RuntimeError("model replica pool runtime is closing")
-            self._retry_pending_cleanups_locked()
-            return self._ensure_locked(request)
+    @staticmethod
+    def _runtime_identity(spec: ModelDeploymentSpec) -> str:
+        values = tuple(
+            tag.removeprefix("runtime-identity:")
+            for tag in spec.tags
+            if tag.startswith("runtime-identity:")
+        )
+        if len(values) != 1:
+            raise RuntimeError(
+                "model realization requires one runtime-identity tag: "
+                f"{spec.deployment_id}"
+            )
+        value = values[0]
+        if (
+            len(value) != 64
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise RuntimeError(
+                "model realization runtime identity is invalid: "
+                f"{spec.deployment_id}"
+            )
+        return value
 
-    def _ensure_locked(
+    @staticmethod
+    def _replica_index(spec: ModelDeploymentSpec) -> int:
+        values = tuple(
+            tag.removeprefix("replica-index:")
+            for tag in spec.tags
+            if tag.startswith("replica-index:")
+        )
+        if len(values) != 1 or not values[0].isdigit():
+            raise RuntimeError(
+                "model realization requires one canonical replica-index tag: "
+                f"{spec.deployment_id}"
+            )
+        value = int(values[0])
+        if values[0] != f"{value:03d}":
+            raise RuntimeError(
+                "model realization replica index is not canonical: "
+                f"{spec.deployment_id}"
+            )
+        return value
+
+    @staticmethod
+    def _placement_generation_id(spec: ModelDeploymentSpec) -> str:
+        values = tuple(
+            tag.removeprefix("placement-generation:")
+            for tag in spec.tags
+            if tag.startswith("placement-generation:")
+        )
+        if len(values) != 1:
+            raise RuntimeError(
+                "model realization requires one placement-generation tag: "
+                f"{spec.deployment_id}"
+            )
+        value = values[0]
+        if (
+            len(value) != 32
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise RuntimeError(
+                "model realization placement generation is invalid: "
+                f"{spec.deployment_id}"
+            )
+        return value
+
+    def _adopt_durable_owner_locked(
         self,
         request: ModelReplicaPoolRequest,
-    ) -> ModelReplicaPoolLease:
-        if not isinstance(request, ModelReplicaPoolRequest):
-            raise TypeError("model replica pool requires ModelReplicaPoolRequest")
-        request_digest = canonical_digest(request)
-        placement_generation_id = uuid4().hex
-        compute_requirement = request.effective_compute
-        target_count = self._target_count(request)
-        compute_rows: list[ComputeAllocation] = []
-        endpoint_rows: list[EndpointAllocation] = []
-        specs: list[ModelDeploymentSpec] = []
-        compute_guard = None
-        endpoint_guard = None
-        try:
-            index = 0
-            while target_count is None or index < target_count:
-                allocation_id = (
-                    f"model-pool:{request.pool_id}:{placement_generation_id}:"
-                    f"{index}:compute"
-                )
-                try:
-                    compute = self._compute_scheduler.allocate(
-                        allocation_id,
-                        request.scope,
-                        compute_requirement,
-                        placement_scope=request.scope,
-                        ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
+    ) -> _ModelReplicaPoolOwner | None:
+        identity = request.runtime_identity_digest
+        specs = tuple(
+            sorted(
+                self._catalog.select(
+                    ModelDeploymentSelector(
+                        tags=(f"runtime-identity:{identity}",),
                     )
-                except ComputePlacementUnavailable:
-                    if target_count is None and compute_rows:
-                        break
-                    raise
-                compute_rows.append(compute)
-                endpoint = self._endpoint_allocations.allocate_auto(
-                    allocation_id=(
-                        f"model-pool:{request.pool_id}:{placement_generation_id}:"
-                        f"{index}:endpoint"
-                    ),
-                    holder_scope=request.scope,
-                    owner_scope=PLATFORM_SCOPE,
-                    ownership=ResourceOwnership.PLATFORM_MANAGED,
-                    purpose=f"model-replica:{request.pool_id}",
-                    host=request.endpoint_host,
-                    candidate_count=request.endpoint_candidate_count,
-                )
-                endpoint_rows.append(endpoint)
-                spec = self._deployment(
-                    request,
-                    replica_index=index,
-                    placement_generation_id=placement_generation_id,
-                    endpoint=endpoint,
-                    compute=compute,
-                )
-                specs.append(self._catalog.put_deployment(spec))
-                index += 1
-
-            if not specs:
-                raise RuntimeError("automatic model replica pool produced no deployment")
-
-            compute_guard = self._compute_lease_guards.create(
-                tuple(compute_rows)
+                ),
+                key=lambda row: row.deployment_id,
             )
-            endpoint_guard = self._endpoint_lease_guards.create(
-                tuple(endpoint_rows)
+        )
+        if not specs:
+            return None
+        if request.replica_count is not None and len(specs) != request.replica_count:
+            raise RuntimeError(
+                "durable model realization replica count drifted: "
+                f"{identity}"
             )
-            compute_guard.start()
-            endpoint_guard.start()
+        generation_ids = {
+            self._placement_generation_id(spec)
+            for spec in specs
+        }
+        if len(generation_ids) != 1:
+            raise RuntimeError(
+                "durable model realization spans multiple placement generations: "
+                f"{identity}"
+            )
+        placement_generation_id = next(iter(generation_ids))
 
-            status_by_id = {
-                row.deployment_id: row
-                for row in self._fleet.reconcile()
-                if row.deployment_id in {spec.deployment_id for spec in specs}
-            }
-            placements: list[ModelReplicaPlacement] = []
-            for index, (compute, endpoint, spec) in enumerate(
-                zip(compute_rows, endpoint_rows, specs, strict=True)
-            ):
-                try:
-                    status = status_by_id[spec.deployment_id]
-                except KeyError as exc:
+        compute_by_id = {
+            row.allocation_id: row
+            for row in self._compute_scheduler.allocations(scope=request.scope)
+        }
+        adopted_compute: list[ComputeAllocation] = []
+        adopted_endpoints: list[EndpointAllocation] = []
+        adopted_generations: list[ModelDeploymentGeneration] = []
+        replacement_required = False
+
+        for spec in specs:
+            generation = self._deployment_runtime.generation(spec.deployment_id)
+            applied = generation.applied_runtime_digest
+            if applied is None:
+                # The active applied pointer is the sole authority that a warm
+                # physical generation remains adoptable. Terminal clear
+                # tombstones may still identify a stale process left by a crash
+                # window, but that generation must be stopped and retired rather
+                # than reconstructed from current launch-time host conditions.
+                replacement_required = True
+            index = self._replica_index(spec)
+            compute_id = (
+                f"model-realization:{identity}:"
+                f"{placement_generation_id}:{index}:compute"
+            )
+            endpoint_id = (
+                f"model-realization:{identity}:"
+                f"{placement_generation_id}:{index}:endpoint"
+            )
+            try:
+                compute_seed = compute_by_id[compute_id]
+            except KeyError as exc:
+                raise RuntimeError(
+                    "durable model realization lost deterministic compute allocation: "
+                    f"{spec.deployment_id}:{compute_id}"
+                ) from exc
+            endpoint_seed = self._endpoint_allocations.get(endpoint_id)
+            if endpoint_seed is None:
+                raise RuntimeError(
+                    "durable model realization lost deterministic endpoint allocation: "
+                    f"{spec.deployment_id}:{endpoint_id}"
+                )
+            if applied is not None:
+                if compute_seed.binding_binder_identity_digest not in {None, applied}:
                     raise RuntimeError(
-                        f"model fleet omitted deployment status: {spec.deployment_id}"
-                    ) from exc
+                        "durable model compute generation is bound to another runtime: "
+                        f"{spec.deployment_id}"
+                    )
+                if endpoint_seed.binding_binder_identity_digest not in {None, applied}:
+                    raise RuntimeError(
+                        "durable model endpoint generation is bound to another runtime: "
+                        f"{spec.deployment_id}"
+                    )
+            if (
+                compute_seed.gpu_ids != spec.gpu_devices
+                or endpoint_seed.endpoint.host != request.endpoint_host
+            ):
+                raise RuntimeError(
+                    "durable model realization physical allocation identity drifted: "
+                    f"{spec.deployment_id}"
+                )
+            compute = self._compute_scheduler.reacquire(
+                compute_seed,
+                ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
+            )
+            endpoint = self._endpoint_allocations.reacquire(endpoint_seed)
+            adopted_compute.append(compute)
+            adopted_endpoints.append(endpoint)
+            adopted_generations.append(generation)
+
+        if replacement_required:
+            cleanup = _PendingModelReplicaCleanup(
+                cleanup_id=placement_generation_id,
+                specs=specs,
+                compute_rows=tuple(adopted_compute),
+                endpoint_rows=tuple(adopted_endpoints),
+                deployment_runtime=self._deployment_runtime,
+                compute_scheduler=self._compute_scheduler,
+                endpoint_allocations=self._endpoint_allocations,
+                compute_guard=None,
+                endpoint_guard=None,
+            )
+            try:
+                cleanup.close()
+            except BaseException:
+                self._pending_cleanups[placement_generation_id] = cleanup
+                raise
+            return None
+
+        compute_guard = self._compute_lease_guards.create(tuple(adopted_compute))
+        endpoint_guard = self._endpoint_lease_guards.create(
+            tuple(adopted_endpoints)
+        )
+        compute_guard.start()
+        endpoint_guard.start()
+        try:
+            placements: list[ModelReplicaPlacement] = []
+            for index, (spec, compute, endpoint, generation) in enumerate(
+                zip(
+                    specs,
+                    adopted_compute,
+                    adopted_endpoints,
+                    adopted_generations,
+                    strict=True,
+                )
+            ):
+                status = self._deployment_runtime.status(spec.deployment_id)
+                if status.runtime_state is ModelRuntimeState.STOPPED:
+                    # Durable identity does not imply durable physical capacity.
+                    # A stopped warm generation may have outlived the free VRAM
+                    # that originally admitted it. Re-prove the exact placement
+                    # after fencing reacquisition and before asking the service
+                    # layer to restart on that GPU. A still-bound stopped row is
+                    # itself stale ownership evidence and must be re-placed.
+                    if (
+                        compute.is_bound
+                        or not self._compute_scheduler.unbound_placement_satisfies(
+                            compute,
+                            request.effective_compute,
+                        )
+                    ):
+                        raise _ModelPlacementCapacityDrift(
+                            spec.deployment_id, compute, status
+                        )
+                    try:
+                        status = self._deployment_runtime.start(
+                            self._deployment_runtime.generation(spec.deployment_id)
+                        )
+                    except BaseException as start_error:
+                        # Capacity can drift again between the pre-start proof and
+                        # launch materialization. Re-observe before classifying the
+                        # start failure; only proven capacity loss authorizes
+                        # placement replacement. Other service failures fail closed.
+                        if (
+                            not compute.is_bound
+                            and not self._compute_scheduler.unbound_placement_satisfies(
+                                compute,
+                                request.effective_compute,
+                            )
+                        ):
+                            raise _ModelPlacementCapacityDrift(
+                                spec.deployment_id, compute, status
+                            ) from start_error
+                        raise
                 if status.runtime_state is not ModelRuntimeState.RUNNING:
                     raise RuntimeError(
-                        f"automatic model replica failed: {spec.deployment_id}: "
+                        "durable model realization is not reusable: "
+                        f"{spec.deployment_id}:"
                         f"{status.runtime_state.value}:{status.detail}"
                     )
-                bound_compute, bound, generation, status = (
+                compute, endpoint, generation, status = (
                     _converge_running_replica_bindings(
                         deployment_runtime=self._deployment_runtime,
                         compute_scheduler=self._compute_scheduler,
@@ -891,41 +1506,33 @@ class LocalModelReplicaPoolRuntime:
                     ModelReplicaPlacement(
                         index,
                         spec.deployment_id,
-                        bound_compute,
-                        bound,
+                        compute,
+                        endpoint,
                         spec,
                         generation,
                         status,
                     )
                 )
-
-            report = ModelReplicaPoolReport(
-                request_digest,
-                placement_generation_id,
-                tuple(placements),
-            )
-            lease = ModelReplicaPoolLease(
-                report,
+            owner = _ModelReplicaPoolOwner(
+                ModelReplicaPoolReport(
+                    canonical_digest(request),
+                    placement_generation_id,
+                    tuple(placements),
+                ),
                 deployment_runtime=self._deployment_runtime,
                 compute_scheduler=self._compute_scheduler,
                 endpoint_allocations=self._endpoint_allocations,
                 compute_guard=compute_guard,
                 endpoint_guard=endpoint_guard,
-                on_closed=self._lease_closed,
             )
-            lease.assert_healthy()
-            if report.report_digest in self._active_leases:
-                raise RuntimeError(
-                    "model replica pool report identity was already registered"
-                )
-            self._active_leases[report.report_digest] = lease
-            return lease
-        except BaseException as primary:
+            owner.assert_healthy()
+            return owner
+        except _ModelPlacementCapacityDrift as primary:
             cleanup = _PendingModelReplicaCleanup(
                 cleanup_id=placement_generation_id,
-                specs=tuple(specs),
-                compute_rows=tuple(compute_rows),
-                endpoint_rows=tuple(endpoint_rows),
+                specs=specs,
+                compute_rows=tuple(adopted_compute),
+                endpoint_rows=tuple(adopted_endpoints),
                 deployment_runtime=self._deployment_runtime,
                 compute_scheduler=self._compute_scheduler,
                 endpoint_allocations=self._endpoint_allocations,
@@ -937,13 +1544,306 @@ class LocalModelReplicaPoolRuntime:
             except BaseException as cleanup_error:
                 self._pending_cleanups[placement_generation_id] = cleanup
                 raise BaseExceptionGroup(
-                    "model replica pool creation failed with pending cleanup",
+                    "durable model placement drift cleanup failed",
                     [
                         *_exception_leaves(primary),
                         *_exception_leaves(cleanup_error),
                     ],
                 ) from primary
+            # Exact durable identity remains valid; only its old physical
+            # placement was invalidated. Returning no owner makes ensure()
+            # materialize the same request through the canonical scheduler.
+            return None
+        except BaseException:
+            try:
+                endpoint_guard.close()
+            finally:
+                compute_guard.close()
             raise
+
+    def ensure(self, request: ModelReplicaPoolRequest) -> ModelReplicaPoolLease:
+        if not isinstance(request, ModelReplicaPoolRequest):
+            raise TypeError("model replica pool requires ModelReplicaPoolRequest")
+        identity = request.runtime_identity_digest
+        realization_lock = self._realization_lock(identity)
+
+        # Same realization is single-flight in-process. Different realizations
+        # never hold the global lifecycle lock while doing physical work.
+        with realization_lock:
+            with self._lifecycle_lock:
+                if self._closed:
+                    raise RuntimeError("model replica pool runtime is closed")
+                if self._closing:
+                    raise RuntimeError("model replica pool runtime is closing")
+                self._retry_pending_cleanups_locked()
+                owner = self._owners_by_runtime_identity.get(identity)
+                if owner is not None:
+                    owner.assert_healthy()
+                    return self._consumer_locked(owner)
+                self._materializations_in_flight += 1
+
+            owner = None
+            try:
+                singleflight = self._realization_singleflight
+                if singleflight is None:
+                    singleflight = ContentAddressedSingleFlight(
+                        request.cwd.expanduser().resolve().parent
+                        / "runtime-fabric"
+                        / "single-flight"
+                    )
+                with singleflight.producer("model-realization", identity):
+                    owner = self._adopt_durable_owner_locked(request)
+                    if owner is None:
+                        owner = self._materialize_owner_locked(request)
+            finally:
+                with self._lifecycle_lock:
+                    self._materializations_in_flight -= 1
+                    self._lifecycle_changed.notify_all()
+
+            with self._lifecycle_lock:
+                if self._closed or self._closing:
+                    # This controller is shutting down. Preserve the durable
+                    # realization but relinquish this process's heartbeat guards.
+                    assert owner is not None
+                    owner.detach()
+                    raise RuntimeError(
+                        "model replica pool runtime closed during realization materialization"
+                    )
+                if identity in self._owners_by_runtime_identity:
+                    # The per-identity lock makes this impossible within one
+                    # process; keep the assertion as a corruption fence.
+                    owner.detach()
+                    raise RuntimeError("model runtime identity was materialized twice")
+                assert owner is not None
+                self._owners_by_runtime_identity[identity] = owner
+                return self._consumer_locked(owner)
+
+    def _materialize_owner_locked(
+        self,
+        request: ModelReplicaPoolRequest,
+    ) -> _ModelReplicaPoolOwner:
+        if not isinstance(request, ModelReplicaPoolRequest):
+            raise TypeError("model replica pool requires ModelReplicaPoolRequest")
+        request_digest = canonical_digest(request)
+        compute_requirement = request.effective_compute
+        target_count = self._target_count(request)
+        excluded_gpus: frozenset[tuple[str, str]] = frozenset()
+
+        # A shared host can change underneath us between placement and a long
+        # model load. Every capacity-drift retry excludes at least one additional
+        # physical GPU for this realization attempt, so retries are bounded by
+        # physical device cardinality without a magic attempt count.
+        while True:
+            placement_generation_id = uuid4().hex
+            compute_rows: list[ComputeAllocation] = []
+            endpoint_rows: list[EndpointAllocation] = []
+            specs: list[ModelDeploymentSpec] = []
+            compute_guard = None
+            endpoint_guard = None
+            try:
+                index = 0
+                while target_count is None or index < target_count:
+                    allocation_id = (
+                        f"model-realization:{request.runtime_identity_digest}:"
+                        f"{placement_generation_id}:{index}:compute"
+                    )
+                    try:
+                        compute = self._compute_scheduler.allocate(
+                            allocation_id,
+                            request.scope,
+                            compute_requirement,
+                            placement_scope=request.scope,
+                            ttl_seconds=(
+                                self._compute_lease_guards.policy.ttl_seconds
+                            ),
+                            excluded_gpus=excluded_gpus,
+                        )
+                    except ComputePlacementUnavailable:
+                        if target_count is None and compute_rows:
+                            break
+                        raise
+                    compute_rows.append(compute)
+                    endpoint = self._endpoint_allocations.allocate_auto(
+                        allocation_id=(
+                            f"model-realization:{request.runtime_identity_digest}:"
+                            f"{placement_generation_id}:{index}:endpoint"
+                        ),
+                        holder_scope=request.scope,
+                        owner_scope=PLATFORM_SCOPE,
+                        ownership=ResourceOwnership.PLATFORM_MANAGED,
+                        purpose=(
+                            f"model-realization:{request.runtime_identity_digest}"
+                        ),
+                        host=request.endpoint_host,
+                        candidate_count=request.endpoint_candidate_count,
+                    )
+                    endpoint_rows.append(endpoint)
+                    spec = self._deployment(
+                        request,
+                        replica_index=index,
+                        placement_generation_id=placement_generation_id,
+                        endpoint=endpoint,
+                        compute=compute,
+                    )
+                    specs.append(self._catalog.put_deployment(spec))
+                    index += 1
+
+                if not specs:
+                    raise RuntimeError(
+                        "automatic model replica pool produced no deployment"
+                    )
+
+                compute_guard = self._compute_lease_guards.create(
+                    tuple(compute_rows)
+                )
+                endpoint_guard = self._endpoint_lease_guards.create(
+                    tuple(endpoint_rows)
+                )
+                compute_guard.start()
+                endpoint_guard.start()
+
+                try:
+                    reconciled = self._fleet.reconcile()
+                except BaseException as reconcile_error:
+                    # Launch materialization can fail before Fleet has a status
+                    # row to return. Do not classify by engine/CUDA error text.
+                    # Re-observe each still-unbound allocation using the same
+                    # compute requirement that admitted it; proven physical
+                    # capacity loss enters the canonical placement-drift retry.
+                    for compute, spec in zip(
+                        compute_rows, specs, strict=True
+                    ):
+                        if (
+                            not compute.is_bound
+                            and not self._compute_scheduler.unbound_placement_satisfies(
+                                compute,
+                                compute_requirement,
+                            )
+                        ):
+                            status = ModelDeploymentStatus(
+                                spec.deployment_id,
+                                spec.service_id,
+                                spec.desired_state,
+                                ModelRuntimeState.ERROR,
+                                None,
+                                (
+                                    "fleet reconcile failed before service binding: "
+                                    + type(reconcile_error).__name__
+                                ),
+                            )
+                            raise _ModelPlacementCapacityDrift(
+                                spec.deployment_id, compute, status
+                            ) from reconcile_error
+                    raise
+                status_by_id = {
+                    row.deployment_id: row
+                    for row in reconciled
+                    if row.deployment_id
+                    in {spec.deployment_id for spec in specs}
+                }
+                placements: list[ModelReplicaPlacement] = []
+                for index, (compute, endpoint, spec) in enumerate(
+                    zip(compute_rows, endpoint_rows, specs, strict=True)
+                ):
+                    try:
+                        status = status_by_id[spec.deployment_id]
+                    except KeyError as exc:
+                        raise RuntimeError(
+                            "model fleet omitted deployment status: "
+                            f"{spec.deployment_id}"
+                        ) from exc
+                    if status.runtime_state is not ModelRuntimeState.RUNNING:
+                        # Do not classify by CUDA/OOM strings. The compute
+                        # authority re-observes this exact still-unbound placement
+                        # using the same hard requirement that admitted it. Only
+                        # proven physical drift authorizes re-placement.
+                        if not self._compute_scheduler.unbound_placement_satisfies(
+                            compute,
+                            compute_requirement,
+                        ):
+                            raise _ModelPlacementCapacityDrift(
+                                spec.deployment_id, compute, status
+                            )
+                        raise RuntimeError(
+                            "automatic model replica failed: "
+                            f"{spec.deployment_id}: "
+                            f"{status.runtime_state.value}:{status.detail}"
+                        )
+                    bound_compute, bound, generation, status = (
+                        _converge_running_replica_bindings(
+                            deployment_runtime=self._deployment_runtime,
+                            compute_scheduler=self._compute_scheduler,
+                            endpoint_allocations=self._endpoint_allocations,
+                            deployment_id=spec.deployment_id,
+                            expected_desired_spec_digest=canonical_digest(spec),
+                            compute=compute,
+                            endpoint=endpoint,
+                        )
+                    )
+                    placements.append(
+                        ModelReplicaPlacement(
+                            index,
+                            spec.deployment_id,
+                            bound_compute,
+                            bound,
+                            spec,
+                            generation,
+                            status,
+                        )
+                    )
+
+                report = ModelReplicaPoolReport(
+                    request_digest,
+                    placement_generation_id,
+                    tuple(placements),
+                )
+                owner = _ModelReplicaPoolOwner(
+                    report,
+                    deployment_runtime=self._deployment_runtime,
+                    compute_scheduler=self._compute_scheduler,
+                    endpoint_allocations=self._endpoint_allocations,
+                    compute_guard=compute_guard,
+                    endpoint_guard=endpoint_guard,
+                )
+                owner.assert_healthy()
+                return owner
+            except BaseException as primary:
+                cleanup = _PendingModelReplicaCleanup(
+                    cleanup_id=placement_generation_id,
+                    specs=tuple(specs),
+                    compute_rows=tuple(compute_rows),
+                    endpoint_rows=tuple(endpoint_rows),
+                    deployment_runtime=self._deployment_runtime,
+                    compute_scheduler=self._compute_scheduler,
+                    endpoint_allocations=self._endpoint_allocations,
+                    compute_guard=compute_guard,
+                    endpoint_guard=endpoint_guard,
+                )
+                try:
+                    cleanup.close()
+                except BaseException as cleanup_error:
+                    self._pending_cleanups[placement_generation_id] = cleanup
+                    raise BaseExceptionGroup(
+                        "model replica pool creation failed with pending cleanup",
+                        [
+                            *_exception_leaves(primary),
+                            *_exception_leaves(cleanup_error),
+                        ],
+                    ) from primary
+
+                if isinstance(primary, _ModelPlacementCapacityDrift):
+                    new_exclusions = excluded_gpus | frozenset(
+                        (primary.compute.host_id, gpu_id)
+                        for gpu_id in primary.compute.gpu_ids
+                    )
+                    if new_exclusions == excluded_gpus:
+                        raise RuntimeError(
+                            "model placement drift recovery made no physical "
+                            "progress"
+                        ) from primary
+                    excluded_gpus = new_exclusions
+                    continue
+                raise
 
 
 __all__ = [

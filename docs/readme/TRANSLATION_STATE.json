@@ -1,11 +1,11 @@
 {
   "schema": "agent-noetrium.readme-translation-state.v1",
   "source_locale": "en",
-  "source_semantic_sha256": "f2c5b71f9b11346b6a23dada556ecd804029ccd876c058910c5ed5ad637cbd64",
+  "source_semantic_sha256": "e4ac697d165fedf70f3d0e02e15570ece04e987707d79ce090c61e27d72a944f",
   "translations": {
     "en": {
       "status": "source",
-      "source_semantic_sha256": "f2c5b71f9b11346b6a23dada556ecd804029ccd876c058910c5ed5ad637cbd64"
+      "source_semantic_sha256": "e4ac697d165fedf70f3d0e02e15570ece04e987707d79ce090c61e27d72a944f"
     },
     "zh-CN": {
       "status": "stale",

@@ -100,6 +100,17 @@ def test_installed_artifact_verifier_rejects_missing_file(tmp_path: Path):
         verify_installed_artifact(tmp_path / "missing-role06.whl")
 
 
+def test_installed_artifact_verifier_reuses_qualified_dependency_environment() -> None:
+    source = (
+        installed_artifact.Path(installed_artifact.__file__).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "system_site_packages=True" in source
+    assert '"--no-deps"' in source
+    assert '"--no-build-isolation"' in source
+
+
 def test_installed_artifact_verifier_fails_closed_when_venv_is_unavailable(
     tmp_path: Path, monkeypatch
 ):
@@ -148,6 +159,13 @@ def test_distribution_build_runs_from_external_content_snapshot(
         )
         (destination / "deploy" / "container-entrypoint.sh").write_text(
             "#!/bin/sh\n", encoding="utf-8"
+        )
+        (destination / "pyproject.toml").write_text(
+            "[project]\n"
+            "name='noetrium'\n"
+            "version='1.0'\n"
+            "dependencies=['httpx>=0.28,<0.29']\n",
+            encoding="utf-8",
         )
         return "b" * 64, 123, authority
 

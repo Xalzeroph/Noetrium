@@ -43,6 +43,7 @@ def test_refresh_materializes_missing_authority_root(
         compute_scheduler=None,
         model_resources=None,
         state_root=tmp_path / "model",
+        runtime_workdir=(tmp_path / "model") / "physical-runtime-workdir",
         model_replica_pool=object(),
         deployment_runtime=None,
         compute_inventory=None,
@@ -72,6 +73,7 @@ def test_refresh_rejects_symlink_authority_root(
             compute_scheduler=None,
             model_resources=None,
             state_root=tmp_path / "model",
+            runtime_workdir=(tmp_path / "model") / "physical-runtime-workdir",
             model_replica_pool=object(),
             deployment_runtime=None,
             compute_inventory=None,
@@ -152,6 +154,22 @@ def test_unplaceable_refresh_rematerializes_current_model(
         "ModelReplicaPoolRequest",
         lambda **kwargs: SimpleNamespace(**kwargs),
     )
+    monkeypatch.setattr(
+        model_runtime_refresh,
+        "_desired_stack_materializations",
+        lambda model_topologies, **kwargs: {
+            topology: SimpleNamespace(
+                stack=SimpleNamespace(digest=lambda: "a" * 64),
+                compute=model_runtime_refresh._refresh_compute_requirement(source),
+            )
+            for topology in model_topologies
+        },
+    )
+    monkeypatch.setattr(
+        model_runtime_refresh,
+        "qualification_source_stack_digest",
+        lambda stack: stack.digest(),
+    )
 
     captured = []
 
@@ -159,6 +177,9 @@ def test_unplaceable_refresh_rematerializes_current_model(
         def ensure(self, request):
             captured.append(request)
             raise ComputePlacementUnavailable(request.compute)
+
+        def reclaim_one_stale_warm_realization(self):
+            return None
 
     class Inventory:
         def host(self, host_id: str):
@@ -185,6 +206,7 @@ def test_unplaceable_refresh_rematerializes_current_model(
         compute_scheduler=object(),
         model_resources=object(),
         state_root=tmp_path / "model",
+        runtime_workdir=(tmp_path / "model") / "physical-runtime-workdir",
         model_replica_pool=Pool(),
         deployment_runtime=object(),
         compute_inventory=Inventory(),

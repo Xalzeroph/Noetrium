@@ -37,6 +37,7 @@ class PooledChildResearchBatchMechanics(
         executor: ChildResearchMachineExecutor,
         *,
         execution_pool: ResearchExecutionPool,
+        execution_tenant_id: str | None = None,
     ) -> None:
         if not isinstance(executor, ChildResearchMachineExecutor):
             raise TypeError(
@@ -46,8 +47,20 @@ class PooledChildResearchBatchMechanics(
             raise TypeError(
                 "pooled child batch mechanics requires explicit ResearchExecutionPool"
             )
+        if execution_tenant_id is not None and (
+            type(execution_tenant_id) is not str
+            or not execution_tenant_id.strip()
+        ):
+            raise ValueError(
+                "pooled child batch execution_tenant_id must be non-empty text or None"
+            )
         self._executor = executor
         self._pool = execution_pool
+        self._execution_tenant_id = (
+            None
+            if execution_tenant_id is None
+            else execution_tenant_id.strip()
+        )
         self._identity_digest = canonical_digest({
             "mechanics": "pooled-child-research-batch",
             "resource_authority": "research-execution-pool/machine",
@@ -85,6 +98,7 @@ class PooledChildResearchBatchMechanics(
         item_count = len(request.items)
         group = self._pool.open_machine_group(
             f"child-batch:{request.request_digest}",
+            tenant_id=self._execution_tenant_id,
             resource_id=f"child-machine-parent:{request.parent_machine_id}",
         )
         rows = []

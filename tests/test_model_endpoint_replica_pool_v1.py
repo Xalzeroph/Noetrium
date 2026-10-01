@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from threading import Event, Lock
 import time
 
@@ -13,16 +14,21 @@ from noetrium_platform.capabilities.model.api import (
 from noetrium_platform.capabilities.model.providers.project import QualifiedModelProjectProvider
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointError,
     ModelEndpointResponse,
     ModelEndpointRoute,
     OperationalModelEndpointReplica,
     ModelEndpointReplicaSet,
     QualifiedModelEndpointBinding,
     ModelEndpointReplicaSet,
+    ModelRuntimePressureSnapshot,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     AdaptiveModelEndpointPool,
     PinnedReplicaSelectionPolicy,
+)
+from noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool import (
+    _request_prefix_affinity_keys,
 )
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import (
@@ -117,6 +123,81 @@ class _GateEndpoint:
         )
 
 
+def _owned_envelope(owner_id: str, index: int) -> ModelRequestEnvelope:
+    body = canonical_bytes(
+        {"model": "qwen", "messages": [{"role": "user", "content": "x"}]}
+    )
+    return ModelRequestEnvelope(
+        schema_version="model-request.v1",
+        request_id=f"owned-request-{owner_id}-{index}",
+        context=ExecutionContext(
+            f"run-{owner_id}-{index}",
+            f"trace-{owner_id}-{index}",
+            f"span-{owner_id}-{index}",
+            study_id=owner_id,
+        ),
+        role="reasoner",
+        model=_model(),
+        prompt_generation_id="prompt-v1",
+        prompt_id="prompt",
+        prompt_digest="1" * 64,
+        request_body=ArtifactBlobRef(
+            canonical_digest({"owner": owner_id, "body": index}),
+            len(body),
+            "application/json",
+        ),
+    )
+
+
+class _OwnerGateEndpoint:
+    def __init__(self, binding, gate: Event, entered: list[str], lock: Lock) -> None:
+        self._route = ModelEndpointRoute(
+            binding.deployment_id,
+            binding.deployment_generation,
+            binding.base_url,
+        )
+        self._gate = gate
+        self._entered = entered
+        self._lock = lock
+
+    @property
+    def route(self):
+        return self._route
+
+    def complete(self, request):
+        owner = request.request.context.study_id or request.request.context.run_id
+        with self._lock:
+            self._entered.append(owner)
+        if not self._gate.wait(5):
+            raise TimeoutError("owner fairness test gate did not open")
+        return ModelEndpointResponse(
+            request_id=request.request.request_id,
+            deployment_id=request.deployment_id,
+            text="ok",
+        )
+
+
+class _CapacityEndpoint:
+    def __init__(self, binding) -> None:
+        self._route = ModelEndpointRoute(
+            binding.deployment_id,
+            binding.deployment_generation,
+            binding.base_url,
+        )
+
+    @property
+    def route(self):
+        return self._route
+
+    def complete(self, request):
+        raise ModelEndpointError(
+            "replica is overloaded",
+            failure_kind="capacity",
+            retryable=True,
+            affects_replica_health=False,
+        )
+
+
 class _FailingEndpoint:
     def __init__(self, binding, fail: bool) -> None:
         self._route = (
@@ -146,6 +227,29 @@ class _FailingEndpoint:
         )
 
 
+def test_single_replica_skips_prefix_affinity_bookkeeping() -> None:
+    binding = _binding(0, capacity=2)
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((binding,)),
+        lambda row: _FailingEndpoint(row, False),
+    )
+    body = {
+        "model": "qwen",
+        "messages": [
+            {"role": "system", "content": "stable system prefix"},
+            *(
+                {"role": "user", "content": f"turn-{index}"}
+                for index in range(40)
+            ),
+        ],
+    }
+    result = pool.complete(_envelope(0), body)
+    assert result.response.text == "ok"
+    snapshot = pool.snapshot()
+    assert snapshot.replicas[0].prefix_affinity_entries == 0
+    assert snapshot.replicas[0].prefix_affinity_selections == 0
+
+
 def test_replica_set_rejects_scientific_model_drift() -> None:
     first = _binding(0)
     second = _binding(1)
@@ -173,6 +277,59 @@ def test_replica_set_rejects_scientific_model_drift() -> None:
     )
     with pytest.raises(ValueError, match="same immutable model"):
         ModelEndpointReplicaSet((first, drifted))
+
+
+def test_stale_runtime_pressure_cannot_permanently_starve_replica() -> None:
+    clock = [0.0]
+    bindings = (_binding(0, capacity=2), _binding(1, capacity=2))
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet(bindings),
+        _CapacityEndpoint,
+        pressure_probe_interval_seconds=1.0,
+        clock=lambda: clock[0],
+    )
+    pool._runtimes["replica-0"].pressure_snapshot = ModelRuntimePressureSnapshot(
+        deployment_id="replica-0",
+        observed_monotonic=0.0,
+        requests_running=1,
+        requests_waiting=4,
+        gpu_kv_cache_usage=0.99,
+        preemptions_total=0,
+    )
+
+    with pool._cv:
+        _now, fresh_binding, _runtime, _depth, _cooling = (
+            pool._selection_candidate_locked((), frozenset())
+        )
+    assert fresh_binding.deployment_id == "replica-1"
+
+    clock[0] = 4.0
+    with pool._cv:
+        _now, stale_binding, _runtime, _depth, _cooling = (
+            pool._selection_candidate_locked((), frozenset())
+        )
+    assert stale_binding.deployment_id == "replica-0"
+
+
+def test_owner_head_lazy_heap_is_amortized_bounded() -> None:
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((_binding(0, capacity=1),)),
+        _CapacityEndpoint,
+    )
+    with pool._cv:
+        waiter = pool._waiters_by_ticket.get(0)
+        if waiter is not None:
+            raise AssertionError("unexpected preexisting waiter")
+        from noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool import _PoolWaiter
+        waiter = _PoolWaiter(0, "paper-a")
+        pool._enqueue_waiter_locked(waiter)
+        for sequence in range(2000):
+            pool._active_by_owner["paper-a"] = sequence % 3
+            pool._owner_last_grant["paper-a"] = sequence
+            pool._push_owner_head_locked("paper-a")
+
+        assert len(pool._waiter_owner_heap) <= 64
+        assert pool._selected_waiter_locked() is waiter
 
 
 def test_pool_spreads_parallel_pressure_across_all_qualified_replicas() -> None:
@@ -413,6 +570,87 @@ def test_explicit_pinned_replica_policy_never_falls_back() -> None:
         "operational-1"
     ).identity_digest
 
+def test_prefix_affinity_uses_content_addressed_tool_bundle_identity() -> None:
+    bundle = ArtifactBlobRef("9" * 64, 4096, "application/json")
+    request = replace(_envelope(200), tool_schema_bundle=bundle, envelope_digest="")
+    common = {
+        "model": "qwen",
+        "messages": ({"role": "user", "content": "same"},),
+    }
+    first = {
+        **common,
+        "tools": ({"type": "function", "function": {"name": "first"}},),
+    }
+    second = {
+        **common,
+        "tools": ({"type": "function", "function": {"name": "second"}},),
+    }
+    assert _request_prefix_affinity_keys(request, first, max_keys=32) == (
+        _request_prefix_affinity_keys(request, second, max_keys=32)
+    )
+    without_bundle = _envelope(200)
+    assert _request_prefix_affinity_keys(
+        without_bundle, first, max_keys=32
+    ) != _request_prefix_affinity_keys(
+        without_bundle, second, max_keys=32
+    )
+
+
+def test_waiter_dispatch_avoids_broadcast_thundering_herd() -> None:
+    binding = _binding(0, capacity=1)
+
+    class SlowEndpoint:
+        def __init__(self) -> None:
+            self._route = ModelEndpointRoute(
+                binding.deployment_id,
+                binding.deployment_generation,
+                binding.base_url,
+            )
+
+        @property
+        def route(self):
+            return self._route
+
+        def complete(self, request):
+            time.sleep(0.001)
+            return ModelEndpointResponse(
+                request_id=request.request.request_id,
+                deployment_id=request.deployment_id,
+                text="ok",
+            )
+
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((binding,)),
+        lambda _binding: SlowEndpoint(),
+    )
+    selection_calls = 0
+    original = pool._selected_waiter_locked
+
+    def counted():
+        nonlocal selection_calls
+        selection_calls += 1
+        return original()
+
+    pool._selected_waiter_locked = counted
+    request_count = 64
+    body = {
+        "model": "qwen",
+        "messages": ({"role": "user", "content": "x"},),
+    }
+    with ThreadPoolExecutor(max_workers=request_count) as executor:
+        futures = [
+            executor.submit(pool.complete, _envelope(index + 400), body)
+            for index in range(request_count)
+        ]
+        for future in futures:
+            future.result(timeout=5.0)
+
+    # Targeted waiter signaling keeps scheduling work linear in queued
+    # requests. The old global notify_all path grows quadratically and exceeds
+    # this bound by a wide margin even at this modest queue depth.
+    assert selection_calls <= request_count * 10
+
+
 def test_pool_reuses_successful_generation_prefix_affinity_when_pressure_is_equal() -> None:
     bindings = tuple(_binding(index, capacity=2) for index in range(2))
     replica_set = ModelEndpointReplicaSet(bindings)
@@ -517,6 +755,30 @@ def test_project_provider_single_flights_concurrent_first_binding() -> None:
     assert all(client is clients[0] for client in clients)
     assert materialized == [replica_set]
 
+def test_capacity_rejection_reduces_adaptive_window_immediately() -> None:
+    binding = _binding(0, capacity=8)
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((binding,)),
+        lambda row: _CapacityEndpoint(row),
+    )
+    before = pool.snapshot().replicas[0]
+    assert before.adaptive_limit == 4
+
+    with pytest.raises(ModelEndpointError, match="overloaded"):
+        pool.complete(
+            _envelope(390),
+            {
+                "model": "qwen",
+                "messages": ({"role": "user", "content": "pressure"},),
+            },
+        )
+
+    after = pool.snapshot().replicas[0]
+    assert after.adaptive_limit == 3
+    assert after.request_rejections == 1
+    assert after.failures == 0
+
+
 def test_pool_backpressures_when_all_healthy_replicas_are_temporarily_saturated() -> None:
     replica_set = ModelEndpointReplicaSet((_binding(0, capacity=1),))
     gate = Event()
@@ -587,3 +849,42 @@ def test_pinned_replica_backpressures_instead_of_falling_back_when_saturated() -
         row.completed == (2 if row.deployment_id == "operational-1" else 0)
         for row in pool.snapshot().replicas
     )
+
+
+def test_pool_backpressure_is_owner_fair_under_asymmetric_fanout() -> None:
+    replica_set = ModelEndpointReplicaSet((_binding(0, capacity=1),))
+    gate = Event()
+    lock = Lock()
+    entered: list[str] = []
+    pool = AdaptiveModelEndpointPool(
+        replica_set,
+        lambda binding: _OwnerGateEndpoint(binding, gate, entered, lock),
+    )
+    body = {
+        "model": "qwen",
+        "messages": ({"role": "user", "content": "queued"},),
+    }
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        first = executor.submit(pool.complete, _owned_envelope("paper-A", 0), body)
+        deadline = time.monotonic() + 3
+        while len(entered) < 1 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert entered == ["paper-A"]
+
+        queued = (
+            executor.submit(pool.complete, _owned_envelope("paper-A", 1), body),
+            executor.submit(pool.complete, _owned_envelope("paper-A", 2), body),
+            executor.submit(pool.complete, _owned_envelope("paper-B", 0), body),
+        )
+        time.sleep(0.1)
+        assert entered == ["paper-A"]
+
+        gate.set()
+        first.result(timeout=3)
+        for future in queued:
+            future.result(timeout=3)
+
+    assert entered[1] == "paper-B"
+    assert entered.count("paper-A") == 3
+    assert entered.count("paper-B") == 1

@@ -61,20 +61,19 @@ def test_managed_research_services_supply_workload_and_evaluation_binding(
         meta=meta,
     )
 
-    class Machine:
-        def run(self, *args, **kwargs):
-            raise AssertionError("not executed in binding test")
-
     class Compiler:
+        digest = "c" * 64
+
         def compile(self, *args, **kwargs):
             raise AssertionError("not executed in binding test")
 
     class ResultAdapter:
+        digest = "d" * 64
+
         def evaluate(self, *args, **kwargs):
             raise AssertionError("not executed in binding test")
 
     workload = services.bind_workload(
-        machine=Machine(),
         compiler=Compiler(),
         result_adapter=ResultAdapter(),
     )

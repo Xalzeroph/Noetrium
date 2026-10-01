@@ -44,6 +44,12 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointLeaseGuardFactoryPort,
     EndpointLeasePolicy,
 )
+from noetrium_platform.infrastructure.resources.lease.api import (
+    DEFAULT_RESOURCE_LEASE_POLICY,
+    ResourceLease,
+    ResourceLeasePolicy,
+    ResourceLeasePort,
+)
 from noetrium_platform.infrastructure.resources.lease.runtime import LeaseHeartbeatFactory
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -99,6 +105,41 @@ def _default_experiment_concurrency_budget() -> ConcurrencyBudget:
     )
 
 
+def _default_model_io_concurrency_budget() -> ConcurrencyBudget:
+    """Size async model I/O from the process file-descriptor budget."""
+
+    base = ConcurrencyBudget()
+    async_limit = base.max_async_io_in_flight
+    try:
+        import resource
+
+        soft_limit, _hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if soft_limit == resource.RLIM_INFINITY:
+            fd_budget = base.default_queue_capacity
+        else:
+            fd_budget = max(1, int(soft_limit) // 2)
+        # Model HTTP sockets are the scarce physical resource here.  Do not
+        # re-cap the FD-derived authority at the generic task-queue default;
+        # that silently serialized capable inference servers at 256 requests.
+        async_limit = max(async_limit, fd_budget)
+    except (ImportError, OSError, ValueError):
+        pass
+
+    return ConcurrencyBudget(
+        max_blocking_io_workers=base.max_blocking_io_workers,
+        max_serial_workers=base.max_serial_workers,
+        max_cpu_workers=base.max_cpu_workers,
+        max_blocking_io_in_flight=base.max_blocking_io_in_flight,
+        max_async_io_in_flight=async_limit,
+        max_cpu_in_flight=base.max_cpu_in_flight,
+        default_queue_capacity=max(
+            base.default_queue_capacity,
+            async_limit,
+        ),
+        shutdown_timeout_seconds=base.shutdown_timeout_seconds,
+    )
+
+
 def _shared_workload_cpu_budget(
     budgets: tuple[ConcurrencyBudget, ...],
 ) -> ConcurrencyBudget:
@@ -115,7 +156,7 @@ class ResearchExecutionPool:
 
     The dependency order is explicit:
 
-        orchestration -> experiment scheduling -> machine execution -> {model I/O, capability I/O}
+        fleet -> orchestration -> experiment scheduling -> machine execution -> {model I/O, capability I/O}
 
     A synchronous parent may wait only on work in a downstream domain. Keeping
     the workload admission/concurrency domains independent prevents nested-admission
@@ -127,6 +168,8 @@ class ResearchExecutionPool:
     def __init__(
         self,
         *,
+        fleet_concurrency_budget: ConcurrencyBudget | None = None,
+        fleet_admission_budget: AdmissionBudget | None = None,
         orchestration_concurrency_budget: ConcurrencyBudget | None = None,
         orchestration_admission_budget: AdmissionBudget | None = None,
         control_concurrency_budget: ConcurrencyBudget | None = None,
@@ -155,6 +198,9 @@ class ResearchExecutionPool:
         resolved_orchestration_budget = (
             orchestration_concurrency_budget or ConcurrencyBudget()
         )
+        resolved_fleet_budget = (
+            fleet_concurrency_budget or resolved_orchestration_budget
+        )
         resolved_experiment_budget = (
             experiment_concurrency_budget or _default_experiment_concurrency_budget()
         )
@@ -165,7 +211,8 @@ class ResearchExecutionPool:
             capability_io_concurrency_budget or ConcurrencyBudget()
         )
         resolved_model_io_budget = (
-            model_io_concurrency_budget or ConcurrencyBudget()
+            model_io_concurrency_budget
+            or _default_model_io_concurrency_budget()
         )
         resolved_resource_competition_policy = (
             resource_competition_policy or ResourceCompetitionPolicy()
@@ -176,6 +223,7 @@ class ResearchExecutionPool:
         self._resource_competition_policy = resolved_resource_competition_policy
         shared_cpu_budget = _shared_workload_cpu_budget(
             (
+                resolved_fleet_budget,
                 resolved_orchestration_budget,
                 resolved_experiment_budget,
                 resolved_machine_budget,
@@ -199,6 +247,19 @@ class ResearchExecutionPool:
         try:
             self._shared_workload_cpu = build_cpu_worker_pool_provider(
                 shared_cpu_budget
+            )
+            self._fleet = build_execution_concurrency_runtime(
+                concurrency_budget=resolved_fleet_budget,
+                admission_budget=fleet_admission_budget,
+                priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=resolved_host_runtime_observer,
+                storage_pressure_observer=storage_pressure_observer,
+                network_pressure_observer=network_pressure_observer,
+                resource_competition_policy=resolved_resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
+                blocking_io_thread_name_prefix="research-fleet-io",
+                timer_name="research-fleet-timer",
+                cpu_provider=self._shared_workload_cpu,
             )
             self._orchestration = build_execution_concurrency_runtime(
                 concurrency_budget=resolved_orchestration_budget,
@@ -288,7 +349,7 @@ class ResearchExecutionPool:
             )
         except BaseException as exc:
             errors: list[BaseException] = [exc]
-            for name in ("_model_io", "_capability_io", "_machines", "_experiments", "_orchestration"):
+            for name in ("_model_io", "_capability_io", "_machines", "_experiments", "_orchestration", "_fleet"):
                 runtime = getattr(self, name, None)
                 if runtime is None:
                     continue
@@ -315,8 +376,16 @@ class ResearchExecutionPool:
                 errors,
             ) from exc
         self._workload_cpu_workers = shared_cpu_budget.max_cpu_workers
+        # Mechanical submission window for one workload DAG. This is not a
+        # scientific concurrency policy: admission/fairness/resource gates
+        # remain authoritative. It prevents one ready set from pre-queuing
+        # more blocking work than the Machine provider can execute at once.
+        self._workload_frontier_capacity = int(
+            resolved_machine_budget.max_blocking_io_workers
+        )
         self._owner_generation_id = uuid4().hex
         self._exclusive_owner_generation = exclusive_owner_generation
+        self._resource_lease_group: TaskGroupPort | None = None
         self._compute_lease_group: TaskGroupPort | None = None
         self._endpoint_lease_group: TaskGroupPort | None = None
         self._environment_lease_group: TaskGroupPort | None = None
@@ -333,6 +402,11 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool is closing")
         if self._workloads_quiescing or self._workloads_quiesced:
             raise RuntimeError("research execution pool workloads are quiescing")
+
+    @property
+    def model_http_max_connections(self) -> int:
+        """Maximum concurrent model HTTP requests owned by this execution pool."""
+        return self._model_http_max_connections
 
     @property
     def resource_competition_policy(self) -> ResourceCompetitionPolicy:
@@ -364,6 +438,10 @@ class ResearchExecutionPool:
         """Physical CPU workers shared by all workload execution domains."""
 
         return self._workload_cpu_workers
+
+    @property
+    def workload_frontier_capacity(self) -> int:
+        return self._workload_frontier_capacity
 
     @property
     def owner_generation_id(self) -> str:
@@ -559,6 +637,30 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool is closing")
         return self._control.heartbeats
 
+    def open_fleet_group(
+        self,
+        group_id: str,
+        *,
+        tenant_id: str | None = None,
+        resource_id: str | None = None,
+        priority: ExecutionPriority = ExecutionPriority.NORMAL,
+        admission_queue_wait_timeout_seconds: float | None = None,
+        resource_demand: ResourceCompetitionDemand | None = None,
+        deadline: Deadline | None = None,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+    ) -> TaskGroupPort:
+        self._require_workloads_open()
+        return self._fleet.open_task_group(
+            group_id,
+            tenant_id=tenant_id,
+            resource_id=resource_id,
+            priority=priority,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
+            resource_demand=resource_demand,
+            deadline=deadline,
+            failure_policy=failure_policy,
+        )
+
     def open_control_group(
         self,
         group_id: str,
@@ -637,6 +739,48 @@ class ResearchExecutionPool:
             resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
+        )
+
+    def resource_lease_guard_factory(
+        self,
+        leases: ResourceLeasePort,
+        *,
+        policy: ResourceLeasePolicy = DEFAULT_RESOURCE_LEASE_POLICY,
+        lane_capacity: int | None = 1,
+    ) -> LeaseHeartbeatFactory:
+        """Bind generic durable resource leases to the universal heartbeat machine."""
+        self._require_workloads_open()
+        if not isinstance(policy, ResourceLeasePolicy):
+            raise TypeError("generic resource lease heartbeat requires ResourceLeasePolicy")
+
+        if self._resource_lease_group is None:
+            self._resource_lease_group = self._control.open_task_group(
+                f"research-resource-leases:{uuid4().hex}",
+                resource_id="generic-resource-lease-heartbeats",
+                priority=ExecutionPriority.CRITICAL,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+
+        def renew(rows: tuple[ResourceLease, ...]) -> tuple[ResourceLease, ...]:
+            return tuple(
+                leases.renew(
+                    row.lease_id,
+                    fencing_token=row.fencing_token,
+                    ttl_seconds=policy.ttl_seconds,
+                )
+                for row in rows
+            )
+
+        return LeaseHeartbeatFactory(
+            renew=renew,
+            row_identity=lambda row: row.lease_id,
+            heartbeat_namespace="resource-lease",
+            task_group=self._resource_lease_group,
+            heartbeat_scheduler=self._control.heartbeats,
+            lane_id="research-generic-resource-lease-renewal",
+            interval_seconds=policy.renewal_interval_seconds,
+            lane_capacity=lane_capacity,
+            policy=policy,
         )
 
     def compute_lease_guard_factory(
@@ -871,6 +1015,19 @@ class ResearchExecutionPool:
             failure_policy=failure_policy,
         )
 
+    def close_fleet_group(
+        self,
+        group: TaskGroupPort,
+        *,
+        cancel_pending: bool = False,
+        deadline: Deadline | None = None,
+    ) -> None:
+        self._fleet.close_task_group(
+            group,
+            cancel_pending=cancel_pending,
+            deadline=deadline,
+        )
+
     def close_orchestration_group(
         self,
         group: TaskGroupPort,
@@ -978,9 +1135,10 @@ class ResearchExecutionPool:
         *,
         deadline: Deadline | None = None,
     ) -> None:
-        """Seal and physically join experiment/downstream work, keeping control alive.
+        """Seal and physically join fleet/downstream work, keeping control alive.
 
-        Experiment scheduling is closed first because it may synchronously wait
+        Fleet dispatch is closed first because it may synchronously wait on
+        Research OS orchestration. Experiment scheduling is closed next because it may synchronously wait
         on Machine execution; Machine execution is closed next because it may
         synchronously wait on model-I/O or capability-I/O. Resource and
         durable-ownership heartbeats live in the
@@ -993,6 +1151,12 @@ class ResearchExecutionPool:
             return
         self._workloads_quiescing = True
         errors: list[BaseException] = []
+        fleet_error = self._close_domain_for_physical_convergence(
+            self._fleet,
+            deadline=deadline,
+        )
+        if fleet_error is not None:
+            errors.append(fleet_error)
         experiment_error = self._close_domain_for_physical_convergence(
             self._experiments,
             deadline=deadline,
@@ -1034,6 +1198,9 @@ class ResearchExecutionPool:
             )
         self._workloads_quiesced = True
 
+    def fleet_admission_snapshot(self):
+        return self._fleet.admission_snapshot()
+
     def orchestration_admission_snapshot(self):
         return self._orchestration.admission_snapshot()
 
@@ -1061,6 +1228,12 @@ class ResearchExecutionPool:
         # still make progress after a bounded close failure.
         self._closing = True
         errors: list[BaseException] = []
+        fleet_error = self._close_domain_for_physical_convergence(
+            self._fleet,
+            deadline=deadline,
+        )
+        if fleet_error is not None:
+            errors.append(fleet_error)
         pre_model_runtimes = (
             self._experiments,
             self._machines,
@@ -1088,15 +1261,20 @@ class ResearchExecutionPool:
         lifecycle_error = self._close_model_lifecycle_resources()
         if lifecycle_error is not None:
             errors.append(lifecycle_error)
-        else:
-            orchestration_error = self._close_domain_for_physical_convergence(
-                self._orchestration,
-                deadline=deadline,
-            )
-            if orchestration_error is not None:
-                errors.append(orchestration_error)
+
+        # A physical lifecycle closer may fail and still leave no executing
+        # workload. Preserve that error for retry/forensics, but never strand the
+        # orchestration/control runtimes as non-daemon process owners. Terminal
+        # convergence is best-effort across every independent owner boundary.
+        orchestration_error = self._close_domain_for_physical_convergence(
+            self._orchestration,
+            deadline=deadline,
+        )
+        if orchestration_error is not None:
+            errors.append(orchestration_error)
 
         workload_runtimes = (
+            self._fleet,
             self._experiments,
             self._machines,
             self._capability_io,

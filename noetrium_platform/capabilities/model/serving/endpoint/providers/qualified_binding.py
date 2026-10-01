@@ -172,6 +172,10 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             host_identity_digest=deployment.host_identity_digest,
             prompt_generation=prompt_generation,
             max_admitted_concurrency=deployment.certificate.resource_envelope.max_qualified_concurrency,
+            preferred_admitted_concurrency=(
+                deployment.certificate.resource_envelope
+                .preferred_operating_concurrency
+            ),
             runtime_canary_evidence_digests=tuple(item.evidence_digest for item in canaries),
             tokenizer_sha256=deployment.stack.artifacts.tokenizer_sha256,
             chat_template_sha256=deployment.stack.artifacts.chat_template_sha256,

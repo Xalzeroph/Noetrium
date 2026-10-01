@@ -86,6 +86,26 @@ def _observation_payload(observation: Observation | None) -> JsonValue:
     }
 
 
+def _semantic_observation_payload(observation: Observation | None) -> JsonValue:
+    if observation is None:
+        return None
+    if not isinstance(observation, Observation):
+        raise TypeError("environment capability observation must be Observation")
+    payload = observation.payload
+    decision = (
+        payload.get("decision_view")
+        if isinstance(payload, Mapping)
+        else None
+    )
+    semantic_payload = decision if isinstance(decision, Mapping) else payload
+    return {
+        "observation_id": observation.observation_id,
+        "generation": observation.generation,
+        "payload": semantic_payload,
+        "artifact_refs": observation.artifact_refs,
+    }
+
+
 def _effect_lineage(effect: EffectReceipt | None) -> dict[str, JsonValue]:
     if effect is None:
         return {}
@@ -348,9 +368,11 @@ class EnvironmentSessionCapabilityAdapter:
 
     def _capability_result(self, request: CapabilityRequest, result: ActionResult) -> CapabilityResult:
         observation = result.observation
+        raw_observation = _observation_payload(observation)
+        semantic_observation = _semantic_observation_payload(observation)
         return CapabilityResult(
             capability_id=self._descriptor.capability_id,
-            payload={"accepted": result.accepted, "observation": _observation_payload(observation)},
+            payload={"accepted": result.accepted, "observation": semantic_observation},
             generation=None if observation is None else observation.generation,
             artifacts=() if observation is None else observation.artifact_refs,
             diagnostics={
@@ -361,6 +383,14 @@ class EnvironmentSessionCapabilityAdapter:
             },
             effect=self._outer_effect(request, result.effect),
             request_digest=capability_request_digest(request),
+            evidence=(
+                None
+                if raw_observation is None
+                else {
+                    "schema": "noetrium.environment.action-evidence.v1",
+                    "observation": raw_observation,
+                }
+            ),
         )
 
     def _require_outer_handle(self, request: CapabilityRequest, handle: PreparedEffectHandle) -> None:

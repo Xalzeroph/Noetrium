@@ -7,7 +7,7 @@ operation envelopes, capabilities, checkpoints, interrupts, and evidence.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 import inspect
@@ -164,6 +164,7 @@ class MethodNodeRequest:
     input_value: JsonValue
     context: ExecutionContext
     previous_value: JsonValue = None
+    effect_receipts: Sequence[EffectReceipt] = ()
     capabilities: CapabilityPort | None = None
     child_machines: MethodChildMachinePort | None = None
     visit_counts: Mapping[str, int] = field(default_factory=dict)
@@ -179,6 +180,10 @@ class MethodNodeRequest:
             raise TypeError("method node request state must be a mapping")
         if not isinstance(self.context, ExecutionContext):
             raise TypeError("method node request context must be ExecutionContext")
+        if not isinstance(self.effect_receipts, Sequence):
+            raise TypeError(
+                "method node request effect_receipts must be an EffectReceipt sequence"
+            )
         if self.parent_machine_id is not None and (
             type(self.parent_machine_id) is not str
             or not self.parent_machine_id.strip()

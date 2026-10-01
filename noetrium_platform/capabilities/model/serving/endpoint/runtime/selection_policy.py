@@ -23,6 +23,8 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
             "signals": (
                 "retry_diversity",
                 "saturation",
+                "runtime_waiting",
+                "runtime_kv_pressure",
                 "normalized_in_flight",
                 "consecutive_failures",
                 "prefix_affinity",
@@ -41,6 +43,16 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
         def score(candidate: ModelEndpointReplicaSelectionCandidate):
             saturated = 1 if candidate.in_flight >= candidate.capacity else 0
             normalized_load = candidate.in_flight / candidate.capacity
+            runtime_waiting = (
+                candidate.runtime_requests_waiting
+                if candidate.runtime_pressure_observed
+                else 0
+            )
+            runtime_kv_pressure = (
+                candidate.runtime_gpu_kv_cache_usage
+                if runtime_waiting > 0
+                else 0.0
+            )
             latency_rank = (
                 -1.0
                 if candidate.ewma_latency_seconds is None
@@ -56,6 +68,9 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
             return (
                 1 if candidate.attempted_in_dispatch else 0,
                 saturated,
+                1 if runtime_waiting > 0 else 0,
+                runtime_waiting,
+                runtime_kv_pressure,
                 normalized_load,
                 candidate.consecutive_failures,
                 -candidate.prefix_affinity_score,

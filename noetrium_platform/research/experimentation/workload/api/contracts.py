@@ -19,6 +19,7 @@ from noetrium_platform.research.execution.api import (
     ScopeIdentity,
     ScopeKind,
 )
+from noetrium_platform.foundation.kernel.concurrency.api import SingleFlightCache
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
     JsonValue,
@@ -79,7 +80,7 @@ def _freeze_mapping(value: Mapping[str, JsonValue], *, field_name: str) -> Mappi
         raise TypeError(f"{field_name} must be a mapping")
     if any(type(key) is not str for key in value):
         raise TypeError(f"{field_name} keys must be strings")
-    frozen = freeze_json(dict(value))
+    frozen = freeze_json(value)
     if not isinstance(frozen, Mapping):
         raise TypeError(f"{field_name} must freeze to a mapping")
     return frozen
@@ -146,6 +147,13 @@ class WorkloadTaskResult:
     failure_scope: str = FailureScope.TASK.value
     diagnostics: Mapping[str, JsonValue] = field(default_factory=dict)
     exports: Mapping[str, JsonValue] = field(default_factory=dict)
+    _payload_cache: JsonObject | None = field(
+        init=False,
+        default=None,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
     def __post_init__(self) -> None:
         if any(type(v) is not str or not v.strip() for v in (self.task_id, self.family, self.lineage_id, self.failure_scope)):
             raise ValueError("workload task result identity/scope fields are required")
@@ -204,7 +212,12 @@ class WorkloadGraphResult:
         object.__setattr__(
             self,
             "result_digest",
-            canonical_digest({"task_results": self.task_results}),
+            canonical_digest({
+                "task_results": tuple(
+                    workload_task_result_payload(row)
+                    for row in self.task_results
+                ),
+            }),
         )
 
     @property
@@ -223,6 +236,13 @@ class WorkloadGraphResult:
 @dataclass(frozen=True, slots=True)
 class TaskDefinitionExperimentTaskProjection:
     """Project canonical Study TaskDefinition content into ExperimentTaskSpec."""
+
+    _cache: SingleFlightCache[ExperimentTaskSpec] = field(
+        default_factory=lambda: SingleFlightCache(max_entries=16384),
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     @property
     def identity_digest(self) -> str:
@@ -251,41 +271,49 @@ class TaskDefinitionExperimentTaskProjection:
             raise ValueError(
                 "task-definition projection definition identity drift"
             )
-        content = definition.content
-        if not isinstance(content, Mapping):
-            raise ValueError(
-                "task-definition projection requires inline immutable task content"
+        cache_key = canonical_digest({
+            "task_digest": definition.task_digest,
+            "workload_digest": workload.workload_digest,
+        })
+
+        def build() -> ExperimentTaskSpec:
+            content = definition.content
+            if not isinstance(content, Mapping):
+                raise ValueError(
+                    "task-definition projection requires inline immutable task content"
+                )
+            objective = content.get("objective", content.get("goal"))
+            if type(objective) is not str or not objective.strip():
+                raise ValueError(
+                    f"task {definition.task_id!r} content requires objective or goal"
+                )
+            context = content.get("context", "")
+            if type(context) is not str:
+                raise TypeError("task-definition projection context must be text")
+            depends_on = workload.prerequisites_for(definition.task_id)
+            retry_edges = workload.retry_sources_for(definition.task_id)
+            if len(retry_edges) > 1:
+                raise ValueError(
+                    "task-definition projection admits at most one retry source"
+                )
+            return ExperimentTaskSpec(
+                task_id=definition.task_id,
+                family=definition.family,
+                objective=objective.strip(),
+                context=context,
+                lineage_id=(
+                    definition.lineage_refs[0]
+                    if definition.lineage_refs
+                    else definition.task_id
+                ),
+                depends_on_task_ids=depends_on,
+                retry_of_task_id=(retry_edges[0] if retry_edges else None),
+                max_steps=content.get("max_steps", 12),
+                max_seconds=content.get("max_seconds", 180.0),
+                payload=content,
             )
-        objective = content.get("objective", content.get("goal"))
-        if type(objective) is not str or not objective.strip():
-            raise ValueError(
-                f"task {definition.task_id!r} content requires objective or goal"
-            )
-        context = content.get("context", "")
-        if type(context) is not str:
-            raise TypeError("task-definition projection context must be text")
-        depends_on = workload.prerequisites_for(definition.task_id)
-        retry_edges = workload.retry_sources_for(definition.task_id)
-        if len(retry_edges) > 1:
-            raise ValueError("task-definition projection admits at most one retry source")
-        max_steps = content.get("max_steps", 12)
-        max_seconds = content.get("max_seconds", 180.0)
-        return ExperimentTaskSpec(
-            task_id=definition.task_id,
-            family=definition.family,
-            objective=objective.strip(),
-            context=context,
-            lineage_id=(
-                definition.lineage_refs[0]
-                if definition.lineage_refs
-                else definition.task_id
-            ),
-            depends_on_task_ids=depends_on,
-            retry_of_task_id=(retry_edges[0] if retry_edges else None),
-            max_steps=max_steps,
-            max_seconds=max_seconds,
-            payload=content,
-        )
+
+        return self._cache.get_or_create(cache_key, build)
 
 
 @dataclass(frozen=True, slots=True)
@@ -431,6 +459,9 @@ def workload_method_receipt_from_payload(
 def workload_task_result_payload(result: WorkloadTaskResult) -> JsonObject:
     if not isinstance(result, WorkloadTaskResult):
         raise TypeError("workload result payload requires WorkloadTaskResult")
+    cached = result._payload_cache
+    if cached is not None:
+        return cached
     completion = result.completion_receipt
     payload = {
         "task_id": result.task_id,
@@ -443,8 +474,8 @@ def workload_task_result_payload(result: WorkloadTaskResult) -> JsonObject:
         "failure_reason": result.failure_reason,
         "blocked": result.blocked,
         "failure_scope": result.failure_scope,
-        "diagnostics": dict(result.diagnostics),
-        "exports": dict(result.exports),
+        "diagnostics": result.diagnostics,
+        "exports": result.exports,
         "participant_receipts": tuple(
             {
                 "role": role,
@@ -465,6 +496,7 @@ def workload_task_result_payload(result: WorkloadTaskResult) -> JsonObject:
     frozen = freeze_json(payload)
     if not isinstance(frozen, Mapping):
         raise TypeError("workload task payload must freeze to object")
+    object.__setattr__(result, "_payload_cache", frozen)
     return frozen
 
 

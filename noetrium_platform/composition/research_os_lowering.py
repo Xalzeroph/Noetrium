@@ -58,6 +58,12 @@ from .research_os_graph import (
     CompiledResearchOSGraph,
 )
 
+from .research_os_scientific_analysis import (
+    compile_declarative_analysis_program,
+    compile_declarative_metric_program,
+    compile_declarative_study_measurement_program,
+)
+
 
 class ResearchOSLoweringTarget(StrEnum):
     """Existing authority family selected for one top-level research node.
@@ -916,6 +922,60 @@ class ResearchOSLoweringCompiler:
                         definition.definition_id,
                         resolved_method.method.program,
                         resolved_method.method.components,
+                    )
+                )
+                continue
+            config = definition.config if isinstance(definition.config, Mapping) else {}
+            if (
+                definition.kind is ResearchDefinitionKind.METRIC
+                and target is ResearchOSLoweringTarget.EVALUATION_MACHINE
+                and config.get("metric_engine") == "universal_raw"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_metric_program(definition)
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
+                    )
+                )
+                continue
+            if (
+                definition.kind is ResearchDefinitionKind.METRIC
+                and target is ResearchOSLoweringTarget.EVALUATION_MACHINE
+                and config.get("metric_engine") == "study_measurement"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_study_measurement_program(
+                    definition
+                )
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
+                    )
+                )
+                continue
+            if (
+                definition.kind is ResearchDefinitionKind.ANALYSIS
+                and target is ResearchOSLoweringTarget.ANALYSIS_MACHINE
+                and config.get("analysis_engine") == "workbench"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_analysis_program(definition)
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
                     )
                 )
                 continue

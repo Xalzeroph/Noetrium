@@ -10,7 +10,13 @@ from noetrium_platform.evidence.artifact.lineage.relation.api import (
     ArtifactLineageEdge,
     ArtifactLineageRelationPort,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    Deadline,
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskContextPort,
+    TaskFailureScope,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonObject,
@@ -530,6 +536,7 @@ class PreparedResearchOSNodeExecutor:
             span_id=node.graph_node_id,
             task_id=task_context.task_id,
             component_id=node.graph_node_id,
+            execution_tenant_id=self._prepared.target.portfolio_id,
         )
         input_references = lookup_research_os_node_input_references(
             self._prepared.cut.cut_id,
@@ -1439,6 +1446,7 @@ class StrictResearchOSControl(
             prepared.compilation,
             executor,
             execution_pool=self._pool,
+            tenant_id=prepared.target.portfolio_id,
             execution_store=self._store,
             execution_id=prepared.cut.cut_id,
             task_group_id=(
@@ -1447,9 +1455,36 @@ class StrictResearchOSControl(
             ),
             selected_node_ids=prepared.selected_node_ids,
         )
+        fleet_group = self._pool.open_fleet_group(
+            (
+                "research-os-fleet:"
+                f"{prepared.target.portfolio_id}:"
+                f"{prepared.target.execution_id}:{prepared.cut.cut_id}"
+            ),
+            tenant_id=prepared.target.portfolio_id,
+            resource_id=f"research-os-fleet:{prepared.target.execution_id}",
+        )
+
+        def run_portfolio(task_context: TaskContextPort):
+            task_context.checkpoint()
+            value = scheduler.execute()
+            task_context.checkpoint()
+            return value
+
         try:
             try:
-                report = scheduler.execute()
+                fleet_handle = fleet_group.submit(
+                    ExecutionSpec(
+                        task_id=(
+                            "research-os-fleet-run:"
+                            f"{prepared.target.execution_id}:{prepared.cut.cut_id}"
+                        ),
+                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                        failure_scope=TaskFailureScope.CALLER,
+                    ),
+                    run_portfolio,
+                )
+                report = fleet_handle.result()
             except ResearchGraphControlHalt:
                 observed = self._store.active_execution_snapshot(
                     request.target.execution_id
@@ -1508,7 +1543,23 @@ class StrictResearchOSControl(
                     },
                 )
         finally:
-            scheduler.close()
+            close_errors: list[BaseException] = []
+            try:
+                scheduler.close()
+            except BaseException as exc:
+                close_errors.append(exc)
+            try:
+                self._pool.close_fleet_group(
+                    fleet_group,
+                    cancel_pending=False,
+                )
+            except BaseException as exc:
+                close_errors.append(exc)
+            if close_errors:
+                raise ExceptionGroup(
+                    "Research OS fleet execution shutdown failed",
+                    close_errors,
+                )
         return self._execution_receipt(
             request,
             prepared,

@@ -176,22 +176,29 @@ def project_method_host_execution(
     lowered = lower_method_program(program)
     status = _method_status(execution)
     semantic = execution.semantic_state
-    raw_events = semantic.get("method_events", ())
-    if not isinstance(raw_events, (tuple, list)):
-        raise TypeError("Method semantic events must be a sequence")
-    events = tuple(
-        decode_method_event(row)
-        for row in raw_events
-        if isinstance(row, Mapping)
-    )
-    raw_effects = semantic.get("effect_receipts", ())
-    if not isinstance(raw_effects, (tuple, list)):
-        raise TypeError("Method semantic effect receipts must be a sequence")
-    effects = tuple(
-        decode_effect_receipt(row)
-        for row in raw_effects
-        if isinstance(row, Mapping)
-    )
+    if runtime.program_host is None:
+        raise RuntimeError("Method event projection requires bound ResearchProgramHost")
+    event_rows = []
+    effects_list = []
+    for commit in runtime.program_host.accepted_commits(execution.machine_id):
+        for raw_event in commit.event_payloads:
+            event_value = thaw_json(raw_event)
+            if not isinstance(event_value, Mapping):
+                continue
+            if (
+                event_value.get("type") == "method.event"
+                and isinstance(event_value.get("event"), Mapping)
+            ):
+                event_rows.append(event_value["event"])
+            elif (
+                event_value.get("type") == "method.effect_receipt"
+                and isinstance(event_value.get("receipt"), Mapping)
+            ):
+                effects_list.append(
+                    decode_effect_receipt(event_value["receipt"])
+                )
+    events = tuple(decode_method_event(row) for row in event_rows)
+    effects = tuple(effects_list)
     interrupt = decode_method_interrupt(semantic.get("interrupt"))
     checkpoint = _checkpoint_from_execution(
         program,

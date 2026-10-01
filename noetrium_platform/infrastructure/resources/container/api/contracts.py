@@ -89,6 +89,7 @@ class ManagedDockerContainerLease:
     owner_generation_id: str
     container_name: str
     lease: ResourceLease
+    physical_fencing_token: int | None = None
 
     def __post_init__(self) -> None:
         if not self.allocation_id.strip() or not self.image.strip():
@@ -113,6 +114,21 @@ class ManagedDockerContainerLease:
             raise ValueError("managed Docker holder scope drifted")
         if self.lease.state is not LeaseState.ACTIVE:
             raise ValueError("managed Docker lease must be active")
+        if self.physical_fencing_token is not None and (
+            type(self.physical_fencing_token) is not int
+            or self.physical_fencing_token < 1
+        ):
+            raise ValueError(
+                "managed Docker physical fencing token must be positive when present"
+            )
+
+    @property
+    def physical_generation_fencing_token(self) -> int:
+        return (
+            self.lease.fencing_token
+            if self.physical_fencing_token is None
+            else self.physical_fencing_token
+        )
 
     @property
     def labels(self) -> tuple[tuple[str, str], ...]:
@@ -122,7 +138,7 @@ class ManagedDockerContainerLease:
             (LABEL_OWNER_GENERATION, self.owner_generation_id),
             (LABEL_ALLOCATION, self.allocation_id),
             (LABEL_LEASE, self.lease.lease_id),
-            (LABEL_FENCING, str(self.lease.fencing_token)),
+            (LABEL_FENCING, str(self.physical_generation_fencing_token)),
             (LABEL_RUNTIME, self.runtime_identity_digest),
             (LABEL_HOLDER, self.holder_scope.key),
         )

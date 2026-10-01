@@ -34,7 +34,12 @@ from noetrium_platform.capabilities.environment.minecraft.composition.environmen
 )
 from noetrium_platform.capabilities.environment.minecraft.composition.server_service import MinecraftTcpReadinessProbe
 from noetrium_platform.capabilities.environment.minecraft.providers.server_files import prepare_server_files
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ContentAddressedSingleFlight,
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskGroupPort,
+)
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandRunnerPort
@@ -54,10 +59,7 @@ from noetrium_platform.composition.environment_instance_leases import (
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 from .lifetime import EnvironmentLifetimeSessionAuthorityPort
 
-_BRIDGE_ROOT = (
-    "/usr/local/lib/python3.12/site-packages/noetrium_platform/"
-    "capabilities/environment/minecraft/providers/assets/mineflayer_bridge"
-)
+_BRIDGE_ROOT = "/opt/noetrium-environments/minecraft/bridge"
 _NODE = "/usr/local/bin/node"
 _JAVA = "/opt/java/openjdk/bin/java"
 
@@ -76,7 +78,8 @@ class _DockerMinecraftCapsule:
         instances_root: Path,
         asset_root: Path,
         recovery_root: Path,
-        owner_generation_id: str,
+        realization_singleflight: ContentAddressedSingleFlight,
+        runtime_identity_digest: str,
     ) -> None:
         self.authority = authority
         self.lease_guard_factory = lease_guard_factory
@@ -86,21 +89,30 @@ class _DockerMinecraftCapsule:
         self.instances_root = instances_root.resolve()
         self.asset_root = asset_root.resolve()
         self.recovery_root = recovery_root.resolve()
-        self.owner_generation_id = owner_generation_id
+        if not isinstance(realization_singleflight, ContentAddressedSingleFlight):
+            raise TypeError("Minecraft capsule requires ContentAddressedSingleFlight")
+        if (
+            type(runtime_identity_digest) is not str
+            or len(runtime_identity_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in runtime_identity_digest)
+        ):
+            raise ValueError("Minecraft capsule runtime identity must be lowercase sha256")
+        self.realization_singleflight = realization_singleflight
+        self.runtime_identity_digest = runtime_identity_digest
         self.handle = None
         self.guard = None
         self.lock = threading.RLock()
         self.allocation_id = "minecraft-capsule:" + canonical_digest({
-            "owner_generation_id": owner_generation_id,
-            "image_digest": image_digest,
+            "schema": "noetrium.minecraft-warm-capsule-allocation.v3",
+            "runtime_identity_digest": runtime_identity_digest,
             "instances_root": str(self.instances_root),
+            "asset_root": str(self.asset_root),
             "recovery_root": str(self.recovery_root),
         })[:28]
         self.generation_digest = canonical_digest({
-            "schema": "noetrium.minecraft-warm-capsule.v1",
+            "schema": "noetrium.minecraft-warm-capsule.v3",
             "allocation_id": self.allocation_id,
-            "image_digest": image_digest,
-            "owner_generation_id": owner_generation_id,
+            "runtime_identity_digest": runtime_identity_digest,
         })
 
     @property
@@ -119,80 +131,118 @@ class _DockerMinecraftCapsule:
             if observed is None or not observed.running:
                 raise RuntimeError("Minecraft warm capsule is not running")
 
+    def _attach_existing_locked(self) -> bool:
+        handle = self.authority.recover(
+            allocation_id=self.allocation_id,
+            image=self.image,
+            runtime_identity_digest=self.runtime_identity_digest,
+        )
+        if handle is None:
+            return False
+        observed = self.authority.observe_exact(handle)
+        if observed is None or not observed.running:
+            # A logical generation without a physical realization is not warm
+            # state. Converge it before a producer creates the replacement.
+            self.authority.release(handle)
+            return False
+        guard = self.lease_guard_factory.create((handle,))
+        try:
+            guard.start()
+        except BaseException:
+            # The recovered durable lease remains fenced; a later controller
+            # can retry exact adoption after this process relinquishes control.
+            guard.close()
+            raise
+        self.handle = handle
+        self.guard = guard
+        return True
+
+    def attach_existing(self) -> bool:
+        """Reattach only an already-running capsule; never create/start one."""
+
+        with self.lock:
+            if self.handle is not None:
+                self.assert_healthy()
+                return True
+            with self.realization_singleflight.producer(
+                "environment-runtime",
+                self.runtime_identity_digest,
+            ):
+                return self._attach_existing_locked()
+
     def start(self) -> None:
         with self.lock:
             if self.handle is not None:
                 self.assert_healthy()
                 return
-            handle = self.authority.reserve(
-                allocation_id=self.allocation_id,
-                holder_scope=PLATFORM_SCOPE,
-                image=self.image,
-                runtime_identity_digest=self.image_digest,
-            )
-            try:
-                argv = (
-                    *self.authority.docker_run_prefix(handle),
-                    "-d",
-                    "--user",
-                    f"{os.getuid()}:{os.getgid()}",
-                    "--network",
-                    "host",
-                    "--entrypoint",
-                    "/bin/sh",
-                    "-v",
-                    f"{self.instances_root}:{self.instances_root}",
-                    "-v",
-                    f"{self.asset_root}:{self.asset_root}:ro",
-                    "-v",
-                    f"{self.recovery_root}:{self.recovery_root}",
-                    self.image,
-                    "-c",
-                    "while :; do sleep 3600; done",
+            # Cross-process producer fence: after another producer exits we
+            # re-read durable Docker/lease authority and adopt before creating.
+            with self.realization_singleflight.producer(
+                "environment-runtime",
+                self.runtime_identity_digest,
+            ):
+                if self._attach_existing_locked():
+                    return
+                handle = self.authority.reserve(
+                    allocation_id=self.allocation_id,
+                    holder_scope=PLATFORM_SCOPE,
+                    image=self.image,
+                    runtime_identity_digest=self.runtime_identity_digest,
                 )
-                result = self.runner.run(argv, timeout_seconds=60.0)
-                if result.returncode != 0:
-                    raise RuntimeError(
-                        "Minecraft warm capsule launch failed: "
-                        + result.stderr[-2000:]
-                    )
-                self.authority.confirm_running(handle, timeout_seconds=30.0)
-                guard = self.lease_guard_factory.create((handle,))
-                guard.start()
-                self.handle = handle
-                self.guard = guard
-            except BaseException:
                 try:
-                    self.authority.release(handle)
-                finally:
-                    self.handle = None
-                    self.guard = None
-                raise
+                    argv = (
+                        *self.authority.docker_run_prefix(handle),
+                        "-d",
+                        "--user",
+                        f"{os.getuid()}:{os.getgid()}",
+                        "--network",
+                        "host",
+                        "--entrypoint",
+                        "/bin/sh",
+                        "-v",
+                        f"{self.instances_root}:{self.instances_root}",
+                        "-v",
+                        f"{self.asset_root}:{self.asset_root}:ro",
+                        "-v",
+                        f"{self.recovery_root}:{self.recovery_root}",
+                        self.image,
+                        "-c",
+                        "while :; do sleep 3600; done",
+                    )
+                    result = self.runner.run(argv, timeout_seconds=60.0)
+                    if result.returncode != 0:
+                        raise RuntimeError(
+                            "Minecraft warm capsule launch failed: "
+                            + result.stderr[-2000:]
+                        )
+                    self.authority.confirm_running(handle, timeout_seconds=30.0)
+                    guard = self.lease_guard_factory.create((handle,))
+                    guard.start()
+                    self.handle = handle
+                    self.guard = guard
+                except BaseException:
+                    try:
+                        self.authority.release(handle)
+                    finally:
+                        self.handle = None
+                        self.guard = None
+                    raise
 
     def close(self) -> None:
+        """Detach this consumer while retaining the host-scoped warm capsule."""
+
         with self.lock:
             handle = self.handle
             guard = self.guard
             if handle is None:
                 return
-            errors: list[BaseException] = []
             if guard is not None:
-                try:
-                    guard.close()
-                except BaseException as exc:
-                    errors.append(exc)
-            try:
-                self.authority.release(handle)
-            except BaseException as exc:
-                errors.append(exc)
-            if not errors:
-                self.handle = None
-                self.guard = None
-            if errors:
-                raise ExceptionGroup(
-                    "Minecraft warm capsule cleanup failed",
-                    errors,
-                )
+                guard.close()
+            # Physical retirement is external authority/GC work. Normal run
+            # shutdown only relinquishes heartbeat ownership so a later run can
+            # targeted-recover the exact still-running capsule generation.
+            self.handle = None
+            self.guard = None
 
 
 class _DockerLiveness:
@@ -630,7 +680,9 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         operating_system,
         process_supervisor,
         task_group,
+        prewarm_task_group,
         owner_generation_id: str,
+        realization_singleflight: ContentAddressedSingleFlight,
     ) -> None:
         self.config = dict(environment_config)
         self.state_root = state_root.resolve()
@@ -649,10 +701,16 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         self.operating_system = operating_system
         self.process_supervisor = process_supervisor
         self.task_group = task_group
+        self.prewarm_task_group = prewarm_task_group
         self.owner_generation_id = owner_generation_id
         self.lock = threading.RLock()
         self.runtimes: dict[str, _LifetimeRuntime] = {}
         self._lifetime_locks: dict[str, threading.Lock] = {}
+        self._retirements: dict[str, object] = {}
+        self._preparations: dict[str, object] = {}
+        self._preparation_failures: dict[str, BaseException] = {}
+        self._retirement_failures: list[BaseException] = []
+        self._retirement_sequence = 0
         self._instance_sequence_lock = threading.Lock()
         self.asset = self.asset_root / "server.jar"
         if not self.asset.is_file():
@@ -692,8 +750,8 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             )
         )
         catalog.register_profile_materialization(self.profile_materialization)
-        self.instances_root = self.state_root / "environment-instances" / owner_generation_id
-        self.recovery_root = self.state_root / "environment-recovery" / owner_generation_id
+        self.instances_root = self.state_root / "environment-instances"
+        self.recovery_root = self.state_root / "environment-recovery"
         self.instances_root.mkdir(parents=True, exist_ok=True)
         self.recovery_root.mkdir(parents=True, exist_ok=True)
         self._capsule = _DockerMinecraftCapsule(
@@ -705,16 +763,21 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             instances_root=self.instances_root,
             asset_root=self.asset_root,
             recovery_root=self.recovery_root,
-            owner_generation_id=self.owner_generation_id,
+            realization_singleflight=realization_singleflight,
+            runtime_identity_digest=self.runtime_identity_digest,
         )
+        # Materialization is a pure control-plane adoption opportunity. It may
+        # reacquire an existing exact warm capsule generation, but never starts
+        # a new container. This protects required warm state before generic
+        # orphan reconciliation begins.
+        self._capsule.attach_existing()
         self._instance_sequence = 0
         self._identity_digest = canonical_digest(
             {
-                "schema": "noetrium.local-minecraft-lifetime-authority.v1",
+                "schema": "noetrium.local-minecraft-lifetime-authority.v2",
                 "config": self.config,
                 "image_digest": image_digest,
                 "asset_digest": self.asset_digest,
-                "owner_generation_id": owner_generation_id,
             }
         )
 
@@ -783,32 +846,26 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                 + ":slot:"
                 + f"{instance_sequence:08d}"
             )
-            catalog.register_instance(
-                EnvironmentInstance(
-                    instance_id=instance_id,
-                    resolved_spec_digest=canonical_digest({
-                        "implementation_id": "minecraft.mineflayer",
-                        "config": self.config,
-                    }),
-                    backend="minecraft.mineflayer",
-                    runtime_reference=(
-                        self.profile_materialization.runtime_reference
-                    ),
-                    runtime_identity_digest=self.runtime_identity_digest,
-                    materialization_digest=(
-                        self.profile_materialization.materialization_digest
-                    ),
-                    scope=PLATFORM_SCOPE,
-                    profile_id=self.profile_id,
-                    profile_revision=self.profile_revision,
-                )
-            )
             instance_handle = (
-                self.environment_instance_authority.acquire_reusable_instance(
-                    self.profile_id,
-                    self.profile_revision,
-                    self.runtime_identity_digest,
-                    self.profile_materialization.materialization_digest,
+                self.environment_instance_authority.provision_reusable_instance(
+                    EnvironmentInstance(
+                        instance_id=instance_id,
+                        resolved_spec_digest=canonical_digest({
+                            "implementation_id": "minecraft.mineflayer",
+                            "config": self.config,
+                        }),
+                        backend="minecraft.mineflayer",
+                        runtime_reference=(
+                            self.profile_materialization.runtime_reference
+                        ),
+                        runtime_identity_digest=self.runtime_identity_digest,
+                        materialization_digest=(
+                            self.profile_materialization.materialization_digest
+                        ),
+                        scope=PLATFORM_SCOPE,
+                        profile_id=self.profile_id,
+                        profile_revision=self.profile_revision,
+                    ),
                     binding_id=binding_id,
                     role=role,
                     scope=PLATFORM_SCOPE,
@@ -919,11 +976,114 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             instance_guard,
         )
 
+    def _reap_completed_retirements(self) -> None:
+        with self.lock:
+            completed = tuple(
+                (lifetime_id, handle)
+                for lifetime_id, handle in self._retirements.items()
+                if handle.done()
+            )
+        if not completed:
+            return
+
+        failures: list[BaseException] = []
+        for lifetime_id, handle in completed:
+            try:
+                handle.result()
+            except BaseException as exc:
+                exc.add_note(
+                    "Minecraft lifetime retirement failed: " + lifetime_id
+                )
+                failures.append(exc)
+
+        with self.lock:
+            for lifetime_id, handle in completed:
+                if self._retirements.get(lifetime_id) is handle:
+                    del self._retirements[lifetime_id]
+                    self._lifetime_locks.pop(lifetime_id, None)
+            self._retirement_failures.extend(failures)
+
+    def _reap_completed_preparations(self) -> None:
+        with self.lock:
+            completed = tuple(
+                (lifetime_id, handle)
+                for lifetime_id, handle in self._preparations.items()
+                if handle.done()
+            )
+        for lifetime_id, handle in completed:
+            failure = None
+            try:
+                handle.result()
+            except BaseException as exc:
+                failure = exc
+            with self.lock:
+                if self._preparations.get(lifetime_id) is handle:
+                    self._preparations.pop(lifetime_id, None)
+                    if failure is not None:
+                        self._preparation_failures[lifetime_id] = failure
+
+    def prepare(self, context: ExecutionContext) -> None:
+        self._reap_completed_preparations()
+        lifetime_id = context.lifetime_id
+        if type(lifetime_id) is not str or not lifetime_id.strip():
+            raise ValueError("Minecraft preparation requires lifetime_id")
+        with self.lock:
+            if lifetime_id in self.runtimes:
+                return
+            if lifetime_id in self._retirements:
+                raise RuntimeError(
+                    "Minecraft lifetime is already retiring or retired: "
+                    + lifetime_id
+                )
+            failure = self._preparation_failures.get(lifetime_id)
+            if failure is not None:
+                raise RuntimeError(
+                    "Minecraft lifetime preparation previously failed: "
+                    + lifetime_id
+                ) from failure
+            if lifetime_id in self._preparations:
+                return
+
+        def materialize(_context) -> None:
+            self.session_for(context)
+
+        handle = self.prewarm_task_group.submit(
+            ExecutionSpec(
+                task_id=(
+                    "minecraft-lifetime-prewarm:"
+                    + canonical_digest(
+                        {
+                            "lifetime_id": lifetime_id,
+                            "run_id": context.run_id,
+                            "owner_generation_id": self.owner_generation_id,
+                        }
+                    )[:32]
+                ),
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            materialize,
+        )
+        with self.lock:
+            existing = self._preparations.get(lifetime_id)
+            if existing is None:
+                self._preparations[lifetime_id] = handle
+            else:
+                # The per-lifetime submission race is harmless but must not
+                # leave an untracked task. Wait for the duplicate now.
+                handle.result()
+
     def session_for(self, context: ExecutionContext) -> EnvironmentSession:
+        self._reap_completed_retirements()
+        self._reap_completed_preparations()
         lifetime_id = context.lifetime_id
         if not lifetime_id:
             raise ValueError("Minecraft runtime requires lifetime_id")
         with self.lock:
+            failure = self._preparation_failures.pop(lifetime_id, None)
+            if failure is not None:
+                raise RuntimeError(
+                    "Minecraft lifetime preparation failed: " + lifetime_id
+                ) from failure
             lifetime_lock = self._lifetime_locks.get(lifetime_id)
             if lifetime_lock is None:
                 lifetime_lock = threading.Lock()
@@ -933,6 +1093,11 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         # assignments must not queue behind one global authority lock.
         with lifetime_lock:
             with self.lock:
+                if lifetime_id in self._retirements:
+                    raise RuntimeError(
+                        "Minecraft lifetime is already retiring or retired: "
+                        + lifetime_id
+                    )
                 row = self.runtimes.get(lifetime_id)
             if row is None:
                 opened = self._open(context)
@@ -952,7 +1117,70 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             row.instance_guard.assert_healthy()
             return row.session
 
+    def _retire_runtime(
+        self,
+        lifetime_id: str,
+        row: _LifetimeRuntime,
+    ) -> None:
+        physical_closed = False
+        try:
+            row.binding.close()
+            shutil.rmtree(row.workdir, ignore_errors=False)
+            recovery = (
+                self.recovery_root
+                / canonical_digest({"lifetime_id": lifetime_id})
+            ).resolve()
+            shutil.rmtree(recovery, ignore_errors=False)
+            physical_closed = True
+        finally:
+            row.instance_guard.close()
+            current_handle = row.instance_guard.handles[0]
+            if physical_closed:
+                proof = EnvironmentCleanlinessProof(
+                    instance_id=current_handle.instance.instance_id,
+                    profile_revision=current_handle.instance.profile_revision,
+                    runtime_identity_digest=(
+                        current_handle.instance.runtime_identity_digest
+                    ),
+                    materialization_digest=(
+                        current_handle.instance.materialization_digest
+                    ),
+                    generation=current_handle.instance.generation,
+                    kind=EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
+                    proof_digest=canonical_digest(
+                        {
+                            "schema": (
+                                "noetrium.minecraft-instance-cleanliness.v1"
+                            ),
+                            "instance_id": (
+                                current_handle.instance.instance_id
+                            ),
+                            "generation": current_handle.instance.generation,
+                            "workdir": str(row.workdir),
+                            "overlay_destroyed": True,
+                            "capsule_generation": (
+                                self._capsule.generation_digest
+                            ),
+                        }
+                    ),
+                )
+                self.environment_instance_authority.release(
+                    current_handle,
+                    cleanliness=proof,
+                )
+            else:
+                self.environment_instance_authority.release(current_handle)
+
     def release(self, lifetime_id: str) -> None:
+        self._reap_completed_retirements()
+        self._reap_completed_preparations()
+        with self.lock:
+            preparation = self._preparations.get(lifetime_id)
+        if preparation is not None:
+            try:
+                preparation.result()
+            finally:
+                self._reap_completed_preparations()
         with self.lock:
             lifetime_lock = self._lifetime_locks.get(lifetime_id)
             if lifetime_lock is None:
@@ -960,58 +1188,90 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                 self._lifetime_locks[lifetime_id] = lifetime_lock
         with lifetime_lock:
             with self.lock:
+                if lifetime_id in self._retirements:
+                    return
                 row = self.runtimes.pop(lifetime_id, None)
-            if row is None:
-                return
-            physical_closed = False
+                if row is None:
+                    return
+                self._retirement_sequence += 1
+                retirement_sequence = self._retirement_sequence
+
+            def retire(_context) -> None:
+                self._retire_runtime(lifetime_id, row)
+
             try:
-                row.binding.close()
-                shutil.rmtree(row.workdir, ignore_errors=False)
-                recovery = (
-                    self.recovery_root
-                    / canonical_digest({"lifetime_id": lifetime_id})
-                ).resolve()
-                shutil.rmtree(recovery, ignore_errors=False)
-                physical_closed = True
-            finally:
-                row.instance_guard.close()
-                current_handle = row.instance_guard.handles[0]
-                if physical_closed:
-                    proof = EnvironmentCleanlinessProof(
-                        instance_id=current_handle.instance.instance_id,
-                        profile_revision=current_handle.instance.profile_revision,
-                        runtime_identity_digest=current_handle.instance.runtime_identity_digest,
-                        materialization_digest=current_handle.instance.materialization_digest,
-                        generation=current_handle.instance.generation,
-                        kind=EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
-                        proof_digest=canonical_digest(
-                            {
-                                "schema": "noetrium.minecraft-instance-cleanliness.v1",
-                                "instance_id": current_handle.instance.instance_id,
-                                "generation": current_handle.instance.generation,
-                                "workdir": str(row.workdir),
-                                "overlay_destroyed": True,
-                                "capsule_generation": (
-                                    self._capsule.generation_digest
-                                ),
-                            }
+                handle = self.task_group.submit(
+                    ExecutionSpec(
+                        task_id=(
+                            "minecraft-lifetime-retire:"
+                            + canonical_digest(
+                                {
+                                    "lifetime_id": lifetime_id,
+                                    "sequence": retirement_sequence,
+                                    "owner_generation_id": (
+                                        self.owner_generation_id
+                                    ),
+                                }
+                            )[:32]
                         ),
-                    )
-                    self.environment_instance_authority.release(
-                        current_handle,
-                        cleanliness=proof,
-                    )
-                else:
-                    self.environment_instance_authority.release(current_handle)
+                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    ),
+                    retire,
+                )
+            except BaseException:
+                # Structured submission should be available while Trials are
+                # running. If the group is already converging, perform the
+                # retirement synchronously rather than leaking the lease.
+                self._retire_runtime(lifetime_id, row)
+                raise
+
+            with self.lock:
+                self._retirements[lifetime_id] = handle
+
     def close(self) -> None:
         with self.lock:
+            preparations = tuple(self._preparations.items())
+        preparation_errors: list[BaseException] = []
+        for lifetime_id, handle in preparations:
+            try:
+                handle.result()
+            except BaseException as exc:
+                exc.add_note(
+                    "Minecraft lifetime preparation failed during close: "
+                    + lifetime_id
+                )
+                preparation_errors.append(exc)
+        self._reap_completed_preparations()
+
+        with self.lock:
             lifetime_ids = tuple(self.runtimes)
-        errors = []
+        errors: list[BaseException] = list(preparation_errors)
         for lifetime_id in lifetime_ids:
             try:
                 self.release(lifetime_id)
             except BaseException as exc:
                 errors.append(exc)
+
+        # Physical retirements are allowed off the Trial critical path, but
+        # never outside structured lifetime ownership. Drain every retirement
+        # before closing the shared warm capsule.
+        with self.lock:
+            retirements = tuple(self._retirements.items())
+            errors.extend(self._retirement_failures)
+            self._retirement_failures.clear()
+        for lifetime_id, handle in retirements:
+            try:
+                handle.result()
+            except BaseException as exc:
+                exc.add_note(
+                    "Minecraft lifetime retirement failed: " + lifetime_id
+                )
+                errors.append(exc)
+        with self.lock:
+            for lifetime_id, _handle in retirements:
+                self._lifetime_locks.pop(lifetime_id, None)
+            self._retirements.clear()
+
         try:
             self._capsule.close()
         except BaseException as exc:

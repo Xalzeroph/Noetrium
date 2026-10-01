@@ -1,5 +1,5 @@
 from dataclasses import replace
-from threading import Lock
+from threading import Event, Lock, Thread
 import time
 from unittest.mock import patch
 
@@ -304,3 +304,197 @@ def test_experiment_program_rejects_incomplete_bound_provider_before_execution()
 
     with pytest.raises(TypeError, match="BoundStudyExecutionPort"):
         _execute(_plan(), IncompleteAdapter())
+
+
+def test_serial_repetition_scheduler_prepares_exactly_one_unit_ahead() -> None:
+    protocol = _protocol(repetitions=4)
+    plan = _plan(protocol)
+    prepared: list[int] = []
+    prepare_calls: list[int] = []
+    snapshots: list[tuple[int, ...]] = []
+
+    class PipelinedAdapter:
+        def prepare_bound(self, unit, bindings, plan_digest, *, execution_id):
+            del bindings, execution_id
+            assert plan_digest == plan.plan_digest
+            prepare_calls.append(unit.repetition)
+            if unit.repetition not in prepared:
+                prepared.append(unit.repetition)
+
+        def prepare_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            raise AssertionError(
+                "serial repetition execution must prepare grouped units"
+            )
+
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            del bindings, execution_id
+            assert plan_digest == plan.plan_digest
+            snapshots.append(tuple(prepared))
+            return tuple(
+                StudyMetricObservation(
+                    assignment,
+                    (("score", float(unit.repetition + 1)),),
+                )
+                for assignment in unit.assignments
+            )
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            raise AssertionError(
+                "serial repetition execution must use grouped units"
+            )
+
+    report = _execute(plan, PipelinedAdapter())
+
+    assert len(report.observations) == 8
+    assert prepare_calls == [0, 1, 2, 3]
+    assert snapshots == [
+        (0, 1),
+        (0, 1, 2),
+        (0, 1, 2, 3),
+        (0, 1, 2, 3),
+    ]
+
+
+def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() -> None:
+    variants = (
+        StudyVariantSpec("v0", VariantKind.CONTROL, "fixed", "0" * 64),
+        StudyVariantSpec("v1", VariantKind.TREATMENT, "one", "1" * 64),
+        StudyVariantSpec("v2", VariantKind.TREATMENT, "two", "2" * 64),
+        StudyVariantSpec("v3", VariantKind.TREATMENT, "three", "3" * 64),
+    )
+    policy = replace(
+        StudyConcurrencyPolicy.serial_shared_v1(
+            repetition_timeout_seconds=3600.0
+        ),
+        parallel_assignments=True,
+        max_parallel_assignments=2,
+    )
+    protocol = StudyProtocol(
+        "lookahead-study",
+        "lookahead-workload",
+        variants,
+        1,
+        "c" * 64,
+        ("score",),
+        "d" * 64,
+        (AssignmentWorkload(("task-1",)),),
+        ("standard",),
+        policy,
+    )
+    plan = _plan(protocol)
+    runtime = build_concurrency_runtime(
+        budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            default_queue_capacity=8,
+        )
+    )
+    group = runtime.open_task_group(
+        "lookahead-assignment-execution",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    gate = Event()
+    two_active = Event()
+    lock = Lock()
+    active = 0
+    prepared: list[str] = []
+    prepare_calls: list[str] = []
+    report_box: list[object] = []
+    failure_box: list[BaseException] = []
+
+    class PipelinedVariantAdapter:
+        def prepare_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError(
+                "parallel assignment execution must prepare variants"
+            )
+
+        def prepare_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            del execution_id
+            assert plan_digest == plan.plan_digest
+            assert binding.variant.variant_id == assignment.variant_id
+            with lock:
+                prepare_calls.append(assignment.variant_id)
+                if assignment.variant_id not in prepared:
+                    prepared.append(assignment.variant_id)
+
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError(
+                "parallel assignment execution must use variant entrypoint"
+            )
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            nonlocal active
+            del binding, execution_id
+            assert plan_digest == plan.plan_digest
+            with lock:
+                active += 1
+                if active == 2:
+                    two_active.set()
+            try:
+                assert gate.wait(3.0)
+                return StudyMetricObservation(
+                    assignment,
+                    (("score", 1.0),),
+                )
+            finally:
+                with lock:
+                    active -= 1
+
+    def run() -> None:
+        try:
+            report_box.append(
+                _execute(
+                    plan,
+                    PipelinedVariantAdapter(),
+                    task_group=group,
+                )
+            )
+        except BaseException as exc:
+            failure_box.append(exc)
+
+    thread = Thread(target=run)
+    thread.start()
+    try:
+        assert two_active.wait(2.0)
+        with lock:
+            assert prepared == ["v0", "v1", "v2", "v3"]
+            assert prepare_calls == ["v0", "v1", "v2", "v3"]
+        gate.set()
+        thread.join(5.0)
+        assert not thread.is_alive()
+        assert not failure_box
+        assert len(report_box) == 1
+        assert len(report_box[0].observations) == 4
+    finally:
+        gate.set()
+        thread.join(5.0)
+        group.close()
+        runtime.close()

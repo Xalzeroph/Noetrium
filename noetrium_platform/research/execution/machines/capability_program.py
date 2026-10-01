@@ -10,7 +10,9 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+import heapq
 from threading import RLock
+from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import (
@@ -103,6 +105,19 @@ class CapabilityProgram:
     version: str
     rules: tuple[CapabilityRuleProgram, ...]
     program_digest: str = field(init=False)
+    _rule_buckets: Mapping[
+        tuple[
+            CapabilityMediationStage,
+            str | None,
+            EffectClass | None,
+        ],
+        tuple[CapabilityRuleProgram, ...],
+    ] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -119,6 +134,46 @@ class CapabilityProgram:
         ids = tuple(rule.rule_id for rule in self.rules)
         if len(ids) != len(set(ids)):
             raise ValueError("capability program rule ids must be unique")
+        buckets: dict[
+            tuple[
+                CapabilityMediationStage,
+                str | None,
+                EffectClass | None,
+            ],
+            list[CapabilityRuleProgram],
+        ] = {}
+        for rule in self.rules:
+            capability_ids: tuple[str | None, ...] = (
+                rule.capability_ids
+                if rule.capability_ids
+                else (None,)
+            )
+            effect_classes: tuple[EffectClass | None, ...] = (
+                rule.effect_classes
+                if rule.effect_classes
+                else (None,)
+            )
+            for capability_id in capability_ids:
+                for effect_class in effect_classes:
+                    buckets.setdefault(
+                        (
+                            rule.stage,
+                            capability_id,
+                            effect_class,
+                        ),
+                        [],
+                    ).append(rule)
+        object.__setattr__(
+            self,
+            "_rule_buckets",
+            MappingProxyType({
+                key: tuple(sorted(
+                    rows,
+                    key=lambda rule: (-rule.priority, rule.rule_id),
+                ))
+                for key, rows in buckets.items()
+            }),
+        )
         object.__setattr__(
             self,
             "program_digest",
@@ -145,12 +200,24 @@ class CapabilityProgram:
     ) -> tuple[CapabilityRuleProgram, ...]:
         if not isinstance(stage, CapabilityMediationStage):
             raise TypeError("capability stage must be CapabilityMediationStage")
-        rows = tuple(
-            rule
-            for rule in self.rules
-            if rule.stage is stage and rule.matches(descriptor)
+        keys = (
+            (stage, None, None),
+            (stage, descriptor.capability_id, None),
+            (stage, None, descriptor.effect_class),
+            (
+                stage,
+                descriptor.capability_id,
+                descriptor.effect_class,
+            ),
         )
-        return tuple(sorted(rows, key=lambda rule: (-rule.priority, rule.rule_id)))
+        streams = tuple(
+            self._rule_buckets.get(key, ())
+            for key in keys
+        )
+        return tuple(heapq.merge(
+            *streams,
+            key=lambda rule: (-rule.priority, rule.rule_id),
+        ))
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,6 +274,7 @@ class CapabilityMediatorRegistryPort(Protocol):
 class CapabilityMediatorRegistry(CapabilityMediatorRegistryPort):
     def __init__(self) -> None:
         self._handlers: dict[str, tuple[CapabilityMediator, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -231,6 +299,7 @@ class CapabilityMediatorRegistry(CapabilityMediatorRegistryPort):
             if current is not None and current != value:
                 raise ValueError(f"capability mediator already registered: {mediator}")
             self._handlers[mediator] = value
+            self._identity_digest_cache = None
 
     def resolve(self, mediator: str) -> CapabilityMediator:
         if type(mediator) is not str or not mediator.strip():
@@ -257,11 +326,15 @@ class CapabilityMediatorRegistry(CapabilityMediatorRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (mediator, implementation_digest)
-                for mediator, (_, implementation_digest)
-                in sorted(self._handlers.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (mediator, implementation_digest)
+                    for mediator, (_, implementation_digest)
+                    in sorted(self._handlers.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 def capability_mediator_binding_digest(
@@ -613,11 +686,12 @@ def _apply_stage(
     return tuple(receipts)
 
 
-def _pre(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
+def _invoke(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
     if not isinstance(binding, CapabilityRuntimeBinding):
-        raise TypeError("runtime capability pre requires CapabilityRuntimeBinding")
+        raise TypeError("runtime capability invoke requires CapabilityRuntimeBinding")
+
     try:
-        receipts = _apply_stage(binding, CapabilityMediationStage.PRE)
+        pre_receipts = _apply_stage(binding, CapabilityMediationStage.PRE)
     except CapabilityMediationDenied as exc:
         return ProgramNodeResult(
             value={
@@ -641,6 +715,7 @@ def _pre(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
                 "execution_completed": False,
             },),
         )
+
     current = binding.current_request
     if current is None:
         raise RuntimeError("capability runtime lost current request")
@@ -650,57 +725,26 @@ def _pre(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
         "idempotency_key": current.idempotency_key,
         "context": current.context,
     })
-    return ProgramNodeResult(
-        value={"request_digest": request_digest},
-        state_update={
-            "capability_id": current.capability_id,
-            "request_digest": request_digest,
-            "pre_receipt_digests": receipts,
-        },
-        events=({
-            "type": "runtime_capability_prepared",
-            "capability_id": current.capability_id,
-            "request_digest": request_digest,
-            "rule_count": len(receipts),
-        },),
-    )
+    prepared_event = {
+        "type": "runtime_capability_prepared",
+        "capability_id": current.capability_id,
+        "request_digest": request_digest,
+        "rule_count": len(pre_receipts),
+    }
 
-
-def _execute(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
-    if not isinstance(binding, CapabilityRuntimeBinding):
-        raise TypeError("runtime capability execute requires CapabilityRuntimeBinding")
-    current = binding.current_request
-    if current is None:
-        raise RuntimeError("capability runtime has no current request")
     result = binding.execute(current)
     if not isinstance(result, CapabilityResult):
         raise TypeError("capability provider execution must return CapabilityResult")
     binding.result = result
-    return ProgramNodeResult(
-        value={
-            "result_digest": result.digest(),
-            "capability_id": result.capability_id,
-        },
-        state_update={
-            "result_digest": result.digest(),
-            "result_artifacts": result.artifacts,
-        },
-        events=({
-            "type": "runtime_capability_executed",
-            "capability_id": result.capability_id,
-            "result_digest": result.digest(),
-        },),
-        artifact_refs=result.artifacts,
-    )
+    result_digest = result.digest()
+    executed_event = {
+        "type": "runtime_capability_executed",
+        "capability_id": result.capability_id,
+        "result_digest": result_digest,
+    }
 
-
-def _post(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
-    if not isinstance(binding, CapabilityRuntimeBinding):
-        raise TypeError("runtime capability post requires CapabilityRuntimeBinding")
-    if binding.result is None:
-        raise RuntimeError("capability post mediation requires provider result")
     try:
-        receipts = _apply_stage(binding, CapabilityMediationStage.POST)
+        post_receipts = _apply_stage(binding, CapabilityMediationStage.POST)
     except CapabilityMediationDenied as exc:
         return ProgramNodeResult(
             value={
@@ -708,37 +752,60 @@ def _post(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult:
                 "rule_id": exc.rule_id,
                 "reason_code": exc.reason_code,
                 "stage": exc.stage.value,
+                "result_digest": result_digest,
             },
             state_update={
+                "capability_id": current.capability_id,
+                "request_digest": request_digest,
+                "pre_receipt_digests": pre_receipts,
+                "result_digest": result_digest,
+                "result_artifacts": result.artifacts,
                 "mediation_denied_rule": exc.rule_id,
                 "mediation_denied_reason": exc.reason_code,
                 "mediation_denied_stage": exc.stage.value,
                 "execution_completed": True,
             },
             status=MachineStatus.FAILED,
-            events=({
-                "type": "runtime_capability_denied",
-                "rule_id": exc.rule_id,
-                "reason_code": exc.reason_code,
-                "stage": exc.stage.value,
-                "execution_completed": True,
-            },),
-            artifact_refs=binding.result.artifacts,
+            events=(
+                prepared_event,
+                executed_event,
+                {
+                    "type": "runtime_capability_denied",
+                    "rule_id": exc.rule_id,
+                    "reason_code": exc.reason_code,
+                    "stage": exc.stage.value,
+                    "execution_completed": True,
+                },
+            ),
+            artifact_refs=result.artifacts,
         )
+
     return ProgramNodeResult(
         value={
-            "result_digest": binding.result.digest(),
-            "post_receipt_digests": receipts,
+            "result_digest": result_digest,
+            "capability_id": result.capability_id,
+            "post_receipt_digests": post_receipts,
         },
-        state_update={"post_receipt_digests": receipts},
-        events=({
-            "type": "runtime_capability_validated",
-            "capability_id": binding.result.capability_id,
-            "result_digest": binding.result.digest(),
-            "rule_count": len(receipts),
-        },),
+        state_update={
+            "capability_id": current.capability_id,
+            "request_digest": request_digest,
+            "pre_receipt_digests": pre_receipts,
+            "result_digest": result_digest,
+            "result_artifacts": result.artifacts,
+            "post_receipt_digests": post_receipts,
+        },
+        events=(
+            prepared_event,
+            executed_event,
+            {
+                "type": "runtime_capability_validated",
+                "capability_id": result.capability_id,
+                "result_digest": result_digest,
+                "rule_count": len(post_receipts),
+            },
+        ),
+        artifact_refs=result.artifacts,
     )
-
 
 def capability_runtime_module(
     program: CapabilityProgram,
@@ -748,22 +815,10 @@ def capability_runtime_module(
     if not isinstance(program, CapabilityProgram):
         raise TypeError("capability runtime module requires CapabilityProgram")
     return (
-        RuntimeModuleBuilder.capability(module_id=module_id, entrypoint="pre")
+        RuntimeModuleBuilder.capability(module_id=module_id, entrypoint="invoke")
         .node(
-            "pre",
-            "runtime.capability.pre",
-            configuration={"capability_program_digest": program.program_digest},
-            next_node="execute",
-        )
-        .node(
-            "execute",
-            "runtime.capability.execute",
-            configuration={"capability_program_digest": program.program_digest},
-            next_node="post",
-        )
-        .node(
-            "post",
-            "runtime.capability.post",
+            "invoke",
+            "runtime.capability.invoke",
             configuration={"capability_program_digest": program.program_digest},
         )
         .build()
@@ -773,26 +828,10 @@ def capability_runtime_module(
 def capability_runtime_operations() -> tuple[ResearchHostOperation, ...]:
     return (
         ResearchHostOperation(
-            "runtime.capability.pre",
-            _pre,
+            "runtime.capability.invoke",
+            _invoke,
             canonical_digest({
-                "operation": "runtime.capability.pre",
-                "implementation_revision": 1,
-            }),
-        ),
-        ResearchHostOperation(
-            "runtime.capability.execute",
-            _execute,
-            canonical_digest({
-                "operation": "runtime.capability.execute",
-                "implementation_revision": 1,
-            }),
-        ),
-        ResearchHostOperation(
-            "runtime.capability.post",
-            _post,
-            canonical_digest({
-                "operation": "runtime.capability.post",
+                "operation": "runtime.capability.invoke",
                 "implementation_revision": 1,
             }),
         ),

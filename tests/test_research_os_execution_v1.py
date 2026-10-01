@@ -166,12 +166,14 @@ class _Runtime:
         lowering,
         *,
         execution_cut_id,
+        attempt_id,
     ):
         commit_id = canonical_digest(
             {
                 "test-checkpoint": execution_cut_id,
                 "graph_node_id": node.graph_node_id,
                 "lowering_digest": lowering.lowering_digest,
+                "attempt_id": attempt_id,
             }
         )
         cut = MachineCut(
@@ -391,6 +393,50 @@ def test_public_run_closes_preflight_before_creating_durable_cut(tmp_path: Path)
             "paper::consume",
             "paper::source",
         )
+    finally:
+        pool.close()
+
+
+def test_public_run_is_admitted_through_fleet_domain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    observed: list[tuple[str, str | None, str | None]] = []
+    original = pool.open_fleet_group
+
+    def open_fleet_group(group_id: str, **kwargs):
+        observed.append(
+            (
+                group_id,
+                kwargs.get("tenant_id"),
+                kwargs.get("resource_id"),
+            )
+        )
+        return original(group_id, **kwargs)
+
+    monkeypatch.setattr(pool, "open_fleet_group", open_fleet_group)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="fleet-admission")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-fleet-admission",
+            revision,
+        )
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "succeeded"
+        assert len(observed) == 1
+        group_id, tenant_id, resource_id = observed[0]
+        assert group_id.startswith("research-os-fleet:suite:execution-fleet-admission:")
+        assert tenant_id == "suite"
+        assert resource_id == "research-os-fleet:execution-fleet-admission"
+        admission = pool.fleet_admission_snapshot()
+        assert admission.admitted_total == 1
+        assert admission.rejected_total == 0
     finally:
         pool.close()
 
@@ -741,7 +787,7 @@ def test_node_interrupt_claimed_before_start_can_resume_without_reconciliation(
             "paper::source",
             owner_id="worker-a",
             now_ns=2,
-            lease_expires_at_ns=10**30,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
         )
 
         interrupted = research_os.interrupt(target.for_node("paper", "source"))
@@ -779,7 +825,7 @@ def test_node_running_interrupt_reconciles_locally_then_remains_paused(
             "paper::source",
             owner_id="worker-a",
             now_ns=2,
-            lease_expires_at_ns=10**30,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
         )
         graph.mark_running(
             cut.cut_id,

@@ -311,6 +311,11 @@ class MethodRuntimeBindings:
     child_machines: MethodChildMachinePort | None = None
     execution_budget: ExecutionBudgetAuthorityPort | None = None
     runtime_binding_digest: str | None = None
+    _resolved_runtime_binding_digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
 
     def __post_init__(self) -> None:
         if not isinstance(self.runtime_binder, MethodRuntimeBinderPort):
@@ -329,33 +334,45 @@ class MethodRuntimeBindings:
                 "ExecutionBudgetAuthorityPort"
             )
         if self.runtime_binding_digest is not None:
-            require_sha256(self.runtime_binding_digest, "declarative workload runtime_binding_digest")
+            resolved = require_sha256(
+                self.runtime_binding_digest,
+                "declarative workload runtime_binding_digest",
+            )
+        else:
+            identities: dict[str, str] = {
+                "runtime_binder": _port_identity(
+                    self.runtime_binder,
+                    "runtime_binder",
+                ),
+            }
+            if self.evidence_factory is not None:
+                identities["evidence_factory"] = _port_identity(
+                    self.evidence_factory,
+                    "evidence_factory",
+                )
+            for name, value in (
+                ("capabilities", self.capabilities),
+                ("dispatcher", self.dispatcher),
+                ("observation", self.observation),
+                ("agent_loop", self.agent_loop),
+                ("schemas", self.schemas),
+                ("child_machines", self.child_machines),
+                ("execution_budget", self.execution_budget),
+            ):
+                if value is not None:
+                    identities[name] = _port_identity(value, name)
+            resolved = canonical_digest({
+                "bindings": "declarative-method-runtime.v1",
+                "ports": identities,
+            })
+        object.__setattr__(
+            self,
+            "_resolved_runtime_binding_digest",
+            resolved,
+        )
 
     def resolved_runtime_binding_digest(self) -> str:
-        if self.runtime_binding_digest is not None:
-            return self.runtime_binding_digest
-        identities: dict[str, str] = {
-            "runtime_binder": _port_identity(self.runtime_binder, "runtime_binder"),
-        }
-        if self.evidence_factory is not None:
-            identities["evidence_factory"] = _port_identity(
-                self.evidence_factory, "evidence_factory"
-            )
-        for name, value in (
-            ("capabilities", self.capabilities),
-            ("dispatcher", self.dispatcher),
-            ("observation", self.observation),
-            ("agent_loop", self.agent_loop),
-            ("schemas", self.schemas),
-            ("child_machines", self.child_machines),
-            ("execution_budget", self.execution_budget),
-        ):
-            if value is not None:
-                identities[name] = _port_identity(value, name)
-        return canonical_digest({
-            "bindings": "declarative-method-runtime.v1",
-            "ports": identities,
-        })
+        return self._resolved_runtime_binding_digest
 
     def materialize_context(
         self,

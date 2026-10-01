@@ -215,6 +215,7 @@ class LogicalSchedulingSelectorRegistryPort(Protocol):
 class LogicalSchedulingSelectorRegistry(LogicalSchedulingSelectorRegistryPort):
     def __init__(self) -> None:
         self._selectors: dict[str, tuple[LogicalSchedulingSelector, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -239,6 +240,7 @@ class LogicalSchedulingSelectorRegistry(LogicalSchedulingSelectorRegistryPort):
                     f"logical scheduling selector already registered: {selector}"
                 )
             self._selectors[selector] = value
+            self._identity_digest_cache = None
 
     def resolve(self, selector: str) -> LogicalSchedulingSelector:
         selector = _text(selector, "logical scheduling selector")
@@ -263,11 +265,15 @@ class LogicalSchedulingSelectorRegistry(LogicalSchedulingSelectorRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (selector, implementation_digest)
-                for selector, (_, implementation_digest)
-                in sorted(self._selectors.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (selector, implementation_digest)
+                    for selector, (_, implementation_digest)
+                    in sorted(self._selectors.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 @dataclass(slots=True)

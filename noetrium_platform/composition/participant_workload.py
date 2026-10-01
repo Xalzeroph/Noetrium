@@ -9,6 +9,7 @@ import time
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext, MachineJournalPort, MachineKind, MachineStatus, canonical_digest,
 )
+from noetrium_platform.foundation.kernel.concurrency.api import SingleFlightCache
 from noetrium_platform.research.execution.machines import (
     ChildFailurePolicy,
     ChildResearchHostRegistry,
@@ -186,6 +187,12 @@ class ScheduledParticipantWorkloadBinding:
         self._execution_pool = execution_pool
         self._input_projection = projection
         self._clock = clock
+        self._participant_host_cache: SingleFlightCache[
+            ResearchProgramHost
+        ] = SingleFlightCache()
+        self._task_input_cache: SingleFlightCache[object] = SingleFlightCache(
+            max_entries=16384
+        )
         self._program = self._build_program(schedule)
         self._host = ResearchProgramHost(
             host_id="workload:participant-schedule:" + schedule.schedule_digest[:24],
@@ -214,6 +221,16 @@ class ScheduledParticipantWorkloadBinding:
             "program_digest": self._program.program_digest,
             "input_projection_digest": projection.digest,
         })
+        self._binding_plan_digest_by_role = {
+            participant.role: canonical_digest({
+                "binding": "participant-method-invocation.v1",
+                "workload_binding": self.identity_digest,
+                "role": participant.role,
+                "program_digest": participant.program.program_digest,
+                "runtime_binding_digest": participant._runtime_binding_digest,
+            })
+            for participant in self._participants
+        }
 
     @staticmethod
     def _build_program(schedule: ParticipantSchedule) -> ResearchProgram:
@@ -235,6 +252,47 @@ class ScheduledParticipantWorkloadBinding:
             state_schema="noetrium.participant-schedule-state.v1",
             entrypoint="wave-0",
             nodes=tuple(nodes),
+        )
+
+    def _participant_host(
+        self,
+        participant: ParticipantMethodRuntime,
+        runtime_context,
+        *,
+        max_steps: int,
+    ) -> ResearchProgramHost:
+        dependency_identity = {
+            "schema": "noetrium.participant-method-child.v1",
+            "role": participant.role,
+            "participant_kind": participant.participant_kind,
+            "treatment_id": participant.treatment_id,
+            "method_program_digest": participant.program.program_digest,
+            "lowering_digest": participant._lowering_digest,
+            "binding_plan_digest": runtime_context.binding_plan_digest,
+            "runtime_binding_digest": runtime_context.effective_runtime_binding_digest,
+            "schema_digest": runtime_context.schema_digest,
+            "schedule_digest": self._schedule.schedule_digest,
+        }
+        host_id = (
+            f"participant:{participant.role}:"
+            f"{participant.program.program_identity.implementation.method_id}"
+        )
+        cache_key = canonical_digest({
+            "host_id": host_id,
+            "lowered_program_digest": participant._lowered_program.program_digest,
+            "max_steps": max_steps,
+            "dependency_identity": dependency_identity,
+        })
+        return self._participant_host_cache.get_or_create(
+            cache_key,
+            lambda: ResearchProgramHost(
+                host_id=host_id,
+                program=participant._lowered_program,
+                operations=participant._operations,
+                journal=self._journal,
+                max_steps=max_steps,
+                dependency_identity=dependency_identity,
+            ),
         )
 
     @staticmethod
@@ -348,17 +406,20 @@ class ScheduledParticipantWorkloadBinding:
     ) -> _TaskBinding:
         registry = ChildResearchHostRegistry()
         requests = []
-        task_input = self._input_projection.project(task)
+        task_input_key = canonical_digest({
+            "projection_digest": self._input_projection.digest,
+            "task": task,
+        })
+        task_input = self._task_input_cache.get_or_create(
+            task_input_key,
+            lambda: self._input_projection.project(task),
+        )
         max_steps = context.trial_budget.get("max_steps")
         resolved_max_steps = 10_000 if max_steps is None else int(max_steps)
         for participant in self._participants:
-            binding_plan_digest = canonical_digest({
-                "binding": "participant-method-invocation.v1",
-                "workload_binding": self.identity_digest,
-                "role": participant.role,
-                "program_digest": participant.program.program_digest,
-                "runtime_binding_digest": participant._runtime_binding_digest,
-            })
+            binding_plan_digest = self._binding_plan_digest_by_role[
+                participant.role
+            ]
             participant_context = replace(
                 context,
                 participant_context={
@@ -376,32 +437,19 @@ class ScheduledParticipantWorkloadBinding:
             )
             participant._runtime_requirements.require(runtime_context)
             lowered = participant._lowered_program
-            host_id = f"participant:{participant.role}:{participant.program.program_identity.implementation.method_id}"
-            host = ResearchProgramHost(
-                host_id=host_id,
-                program=lowered,
-                operations=participant._operations,
-                journal=self._journal,
+            host = self._participant_host(
+                participant,
+                runtime_context,
                 max_steps=resolved_max_steps,
-                dependency_identity={
-                    "schema": "noetrium.participant-method-child.v1",
-                    "role": participant.role,
-                    "participant_kind": participant.participant_kind,
-                    "treatment_id": participant.treatment_id,
-                    "method_program_digest": participant.program.program_digest,
-                    "lowering_digest": participant._lowering_digest,
-                    "binding_plan_digest": runtime_context.binding_plan_digest,
-                    "runtime_binding_digest": runtime_context.effective_runtime_binding_digest,
-                    "schema_digest": runtime_context.schema_digest,
-                    "schedule_digest": self._schedule.schedule_digest,
-                },
             )
+            host_id = host.host_id
             base_runtime_context = runtime_context
 
             def bind_participant_request(
                 child_request: ChildResearchMachineRequest,
                 *,
                 _base=base_runtime_context,
+                _host=host,
             ):
                 identity = child_request.instance_identity
                 if not isinstance(identity, Mapping):
@@ -417,6 +465,8 @@ class ScheduledParticipantWorkloadBinding:
                         _base.execution,
                         participant_context=dict(participant_context),
                     ),
+                    program_host=_host,
+                    machine_id=child_request.child_machine_id,
                 )
 
             registry.register(
@@ -431,13 +481,16 @@ class ScheduledParticipantWorkloadBinding:
                     "participant_context_semantics": "prior-schedule-waves",
                 }),
             )
-            child_machine_id = "participant:" + canonical_digest({
+            base_child_machine_id = "participant:" + canonical_digest({
                 "parent_machine_id": parent_machine_id,
                 "role": participant.role,
                 "task_id": task.task_id,
                 "program_digest": participant.program.program_digest,
                 "run_id": runtime_context.execution.run_id,
             })[:48]
+            child_machine_id = host.terminal_replay_machine_id(
+                base_child_machine_id
+            )
             requests.append((participant.role, ChildResearchMachineRequest(
                 host_id=host_id,
                 parent_machine_id=parent_machine_id,
@@ -465,7 +518,9 @@ class ScheduledParticipantWorkloadBinding:
             )))
         executor = registry.executor()
         mechanics = PooledChildResearchBatchMechanics(
-            executor, execution_pool=self._execution_pool
+            executor,
+            execution_pool=self._execution_pool,
+            execution_tenant_id=context.execution_tenant_id,
         )
         return _TaskBinding(
             task=task,
@@ -476,6 +531,10 @@ class ScheduledParticipantWorkloadBinding:
             mechanics=mechanics,
             requests=tuple(requests),
         )
+
+    @property
+    def task_frontier_capacity(self) -> int:
+        return self._execution_pool.workload_frontier_capacity
 
     @contextmanager
     def task_group_scope(self, context: ExecutionContext):
@@ -491,6 +550,7 @@ class ScheduledParticipantWorkloadBinding:
                 "span_id": context.span_id,
                 "schedule_digest": self._schedule.schedule_digest,
             })[:32],
+            tenant_id=context.execution_tenant_id,
             resource_id="workload-dag:" + self._schedule.schedule_digest[:24],
         )
         completed = False
@@ -509,13 +569,16 @@ class ScheduledParticipantWorkloadBinding:
         if not isinstance(context, ExecutionContext):
             raise TypeError("participant workload context must be ExecutionContext")
         started = self._clock()
-        parent_machine_id = "participant-workload:" + canonical_digest({
+        base_parent_machine_id = "participant-workload:" + canonical_digest({
             "run_id": context.run_id,
             "lifetime_id": context.lifetime_id,
             "task_id": task.task_id,
             "schedule_digest": self._schedule.schedule_digest,
             "binding_digest": self.identity_digest,
         })[:48]
+        parent_machine_id = self._host.terminal_replay_machine_id(
+            base_parent_machine_id
+        )
         binding = self._task_binding(task, context, parent_machine_id=parent_machine_id)
         execution = self._host.execute(
             machine_id=parent_machine_id,

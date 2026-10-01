@@ -252,12 +252,23 @@ def durable_publish_immutable_bytes_many(
             except BaseException as exc:
                 if cleanup_error is None:
                     cleanup_error = exc
-        for parent in sorted(touched_staging, key=lambda item: item.as_posix()):
-            try:
-                fsync_directory(parent)
-            except BaseException as exc:
-                if cleanup_error is None:
-                    cleanup_error = exc
+        # Once every target parent has been fsynced, the immutable authority is
+        # durable. A staging unlink is only garbage collection: if power loss
+        # resurrects an old staging directory entry, the next publication's
+        # existing _cleanup_staging() pass removes it. Do not add a second
+        # directory durability barrier to every successful immutable publish.
+        # On failed publication we still persist cleanup so a failed mutation
+        # converges eagerly instead of leaving ambiguous residue.
+        if primary is not None:
+            for parent in sorted(
+                touched_staging,
+                key=lambda item: item.as_posix(),
+            ):
+                try:
+                    fsync_directory(parent)
+                except BaseException as exc:
+                    if cleanup_error is None:
+                        cleanup_error = exc
         if cleanup_error is not None:
             if primary is None:
                 raise cleanup_error

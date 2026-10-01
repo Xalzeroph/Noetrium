@@ -17,7 +17,7 @@
     "runtime_root": "ResearchOS"
   },
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "1d7d60998cc61a124c31869489f861776cf3ee0633ec104359c4ff87b626d225",
+  "interface_digest": "d66c1e0d44fc31b8981aa191fca45c8c5399719558f64e3cfba964812b805f12",
   "interface_schema": {
     "description": "The single downstream Research Portfolio / Research OS API plus schema-only DSL types reachable from those roots.",
     "schema_id": "noetrium.interface-schema",
@@ -3108,7 +3108,7 @@
         },
         {
           "decorators": [],
-          "doc": null,
+          "doc": "Declare one downstream metric/measurement through the 4-root DSL.\n\nCapture semantics (value_kind/source_path/reducer) lower into the Study\nMeasurementProtocol. Raw-record semantics (aggregation/value_path/group_by)\nlower into the universal Metric engine. A custom implementation remains\navailable for paper-specific formulas.",
           "kind": "method",
           "name": "metric",
           "parameters": [
@@ -3129,12 +3129,140 @@
               "required": true
             },
             {
-              "annotation": "ResearchImplementation | Callable[..., object]",
-              "default": null,
+              "annotation": "ResearchImplementation | Callable[..., object] | None",
+              "default": "None",
               "kind": "keyword_only",
               "name": "implementation",
               "receiver": false,
-              "required": true
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "value_kind",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "schema_id",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "semantic_kind",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "unit",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "scale",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "domain",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "source_path",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "reducer",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "aggregation",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "record_types",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "schema_ids",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | tuple[str, ...] | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "value_path",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str | tuple[str, ...], ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "group_by",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[Mapping[str, object], ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "predicates",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'skip'",
+              "kind": "keyword_only",
+              "name": "missing",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "''",
+              "kind": "keyword_only",
+              "name": "description",
+              "receiver": false,
+              "required": false
             },
             {
               "annotation": "JsonInput",
@@ -3148,7 +3276,7 @@
           "return_annotation": "'ResearchProgramBuilder'",
           "schema_id": "noetrium.interface-schema",
           "schema_version": "1",
-          "signature": "def metric(self, definition_id: str, *, implementation: ResearchImplementation | Callable[..., object], config: JsonInput=None) -> 'ResearchProgramBuilder':"
+          "signature": "def metric(self, definition_id: str, *, implementation: ResearchImplementation | Callable[..., object] | None=None, value_kind: str | None=None, schema_id: str | None=None, semantic_kind: str | None=None, unit: str | None=None, scale: str | None=None, domain: str | None=None, source_path: str | None=None, reducer: str | None=None, aggregation: str | None=None, record_types: tuple[str, ...]=(), schema_ids: tuple[str, ...]=(), value_path: str | tuple[str, ...] | None=None, group_by: tuple[str | tuple[str, ...], ...]=(), predicates: tuple[Mapping[str, object], ...]=(), missing: str='skip', description: str='', config: JsonInput=None) -> 'ResearchProgramBuilder':"
         },
         {
           "decorators": [],
@@ -3852,7 +3980,7 @@
         },
         {
           "decorators": [],
-          "doc": null,
+          "doc": "Declare one analysis without exposing Workbench or Measurement internals.",
           "kind": "method",
           "name": "analysis",
           "parameters": [
@@ -3897,6 +4025,118 @@
               "required": false
             },
             {
+              "annotation": "ResearchImplementation | Callable[..., object] | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "implementation",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'value'",
+              "kind": "keyword_only",
+              "name": "value",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "group_by",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "comparison_group",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "JsonValue",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "baseline",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "JsonValue",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "candidate",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[JsonValue, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "candidates",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "pair_by",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'none'",
+              "kind": "keyword_only",
+              "name": "inference",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "int",
+              "default": "2000",
+              "kind": "keyword_only",
+              "name": "replicates",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "int",
+              "default": "0",
+              "kind": "keyword_only",
+              "name": "seed",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'holm'",
+              "kind": "keyword_only",
+              "name": "multiple_comparison",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "float",
+              "default": "0.05",
+              "kind": "keyword_only",
+              "name": "alpha",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'reject'",
+              "kind": "keyword_only",
+              "name": "missing",
+              "receiver": false,
+              "required": false
+            },
+            {
               "annotation": "JsonInput",
               "default": "None",
               "kind": "keyword_only",
@@ -3908,7 +4148,7 @@
           "return_annotation": "'ResearchProgramBuilder'",
           "schema_id": "noetrium.interface-schema",
           "schema_version": "1",
-          "signature": "def analysis(self, node_id: str, *, definitions: tuple[str, ...]=(), outputs: tuple[ResearchOutputSpec, ...]=(), depends_on: tuple[str, ...]=(), config: JsonInput=None) -> 'ResearchProgramBuilder':"
+          "signature": "def analysis(self, node_id: str, *, definitions: tuple[str, ...]=(), outputs: tuple[ResearchOutputSpec, ...]=(), depends_on: tuple[str, ...]=(), implementation: ResearchImplementation | Callable[..., object] | None=None, value: str='value', group_by: tuple[str, ...]=(), comparison_group: str | None=None, baseline: JsonValue=None, candidate: JsonValue=None, candidates: tuple[JsonValue, ...]=(), pair_by: str | None=None, inference: str='none', replicates: int=2000, seed: int=0, multiple_comparison: str='holm', alpha: float=0.05, missing: str='reject', config: JsonInput=None) -> 'ResearchProgramBuilder':"
         },
         {
           "decorators": [],

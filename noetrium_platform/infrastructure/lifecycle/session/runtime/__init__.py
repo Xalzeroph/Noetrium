@@ -4,6 +4,7 @@ from .backend_registry import (
     default_persistent_session_backend_registry,
 )
 from .controller_host import RuntimePersistentSessionHost
+from .docker_transport import DockerPersistentSessionControl
 from .binding import (
     DirectoryPersistentSessionBindingStore,
     PersistentSessionBinding,
@@ -25,6 +26,7 @@ __all__ = [
     "RuntimePersistentSessionHost",
     "PersistentSessionBackendRegistry",
     "DirectoryPersistentSessionBindingStore",
+    "DockerPersistentSessionControl",
     "PersistentSessionBinding",
     "PersistentSessionBindingCodec",
     "PersistentSessionBindingIntegrityError",

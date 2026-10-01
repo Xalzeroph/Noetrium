@@ -138,5 +138,11 @@ class EffectIntentJournalRuntime(EffectIntentJournal):
         )
         return tuple(self.codec.decode_record(row) for row in encoded)
 
+    def records_for_run(self, run_id: str) -> tuple[EffectIntentRecord, ...]:
+        if type(run_id) is not str or not run_id.strip():
+            raise ValueError("effect journal run_id must be non-empty text")
+        encoded = self.backend.scan_run(run_id=run_id)
+        return tuple(self.codec.decode_record(row) for row in encoded)
+
 
 __all__ = ["EffectJournalCodec", "EffectIntentJournalRuntime"]

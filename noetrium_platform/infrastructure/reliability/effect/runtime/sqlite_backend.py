@@ -216,6 +216,21 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
             ).fetchall()
         return tuple(_decode(row) for row in rows)
 
+    def scan_run(
+        self,
+        *,
+        run_id: str,
+    ) -> tuple[EncodedEffectIntentRecord, ...]:
+        if type(run_id) is not str or not run_id.strip():
+            raise ValueError("effect journal run_id must be non-empty text")
+        with self.connection() as conn:
+            rows = conn.execute(
+                f"SELECT {_COLUMNS} FROM {_TABLE} "
+                "WHERE run_id=? ORDER BY intent_id",
+                (run_id,),
+            ).fetchall()
+        return tuple(_decode(row) for row in rows)
+
     def write_session(self) -> SQLiteEffectJournalWriteSession:
         return SQLiteEffectJournalWriteSession(self)
 

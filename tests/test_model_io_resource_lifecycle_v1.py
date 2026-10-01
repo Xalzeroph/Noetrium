@@ -126,6 +126,26 @@ def test_quiesce_closes_request_model_io_resources_before_domain():
     assert resource.close_calls == 1
 
 
+def test_failed_physical_model_lifecycle_close_does_not_strand_process_domains():
+    pool = _pool()
+    resource = _ObservedResource(pool, fail_first=True)
+    pool.register_model_lifecycle_resource(resource)
+
+    with pytest.raises(ExceptionGroup, match="research execution pool close failed"):
+        pool.close()
+
+    assert resource.close_calls == 1
+    assert pool._orchestration.topology_snapshot().converged is True
+    assert pool._control.topology_snapshot().converged is True
+
+    # The lifecycle closer remains retryable even though process-owned execution
+    # domains already converged; a transient physical closer error cannot pin the
+    # interpreter on non-daemon workers.
+    pool.close()
+    assert resource.close_calls == 2
+    assert pool._closed is True
+
+
 def test_physical_model_lifecycle_resource_survives_quiesce_until_terminal_close():
     pool = _pool()
     resource = _ObservedResource(pool)
@@ -271,3 +291,37 @@ def test_research_execution_pool_reuses_structured_model_json_http_client():
     assert first._transport is transport
 
     pool.close()
+
+
+def test_lifecycle_close_failure_cannot_pin_interpreter_shutdown(tmp_path):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script = r"""
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+
+class FailingPhysicalCloser:
+    def close(self):
+        raise RuntimeError("synthetic terminal physical close failure")
+
+pool = ResearchExecutionPool()
+pool.register_model_lifecycle_resource(FailingPhysicalCloser())
+try:
+    pool.close()
+except BaseExceptionGroup:
+    pass
+else:
+    raise AssertionError("synthetic lifecycle failure was not surfaced")
+print("child-converged", flush=True)
+"""
+    completed = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=Path.cwd(),
+        capture_output=True,
+        text=True,
+        timeout=8.0,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "child-converged" in completed.stdout

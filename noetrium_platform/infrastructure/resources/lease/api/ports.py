@@ -27,6 +27,13 @@ class ResourceLeasePort(Protocol):
         ttl_seconds: float,
         now: float | None = None,
     ) -> ResourceLease: ...
+    def renew_many(
+        self,
+        leases: tuple[ResourceLease, ...],
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> tuple[ResourceLease, ...]: ...
     def release(
         self,
         lease_id: str,

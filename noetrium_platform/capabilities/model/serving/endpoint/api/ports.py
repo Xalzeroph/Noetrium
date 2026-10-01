@@ -40,6 +40,19 @@ class ModelJsonHttpClientPort(Protocol):
 
 
 @runtime_checkable
+class AsyncTextHttpTransportPort(Protocol):
+    """Read-only text HTTP seam sharing the model transport owner."""
+
+    async def get_text(
+        self,
+        url: str,
+        *,
+        timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
+    ) -> str: ...
+
+
+@runtime_checkable
 class AsyncJsonSseTransportPort(Protocol):
     """Streaming HTTP transport that emits exact SSE frames incrementally."""
 
@@ -76,4 +89,11 @@ class ModelEndpointFactoryPort(Protocol):
     def create(self, route: ModelEndpointRoute) -> ModelEndpointPort: ...
 
 
-__all__ = ["AsyncJsonHttpTransportPort", "AsyncJsonSseTransportPort", "ModelEndpointFactoryPort", "ModelEndpointPort", "ModelJsonHttpClientPort"]
+__all__ = [
+    "AsyncJsonHttpTransportPort",
+    "AsyncJsonSseTransportPort",
+    "AsyncTextHttpTransportPort",
+    "ModelEndpointFactoryPort",
+    "ModelEndpointPort",
+    "ModelJsonHttpClientPort",
+]

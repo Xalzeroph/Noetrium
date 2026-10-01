@@ -80,7 +80,14 @@ def _create_venv(root: Path) -> None:
         import venv
     except ModuleNotFoundError as exc:
         raise RuntimeError("Python venv module is unavailable") from exc
-    venv.EnvBuilder(with_pip=True, clear=True).create(root)
+    # Artifact smoke verification isolates the Noetrium installation itself
+    # while reusing the already-qualified controller dependency environment.
+    # Dependency resolution is a separate, content-addressed release concern.
+    venv.EnvBuilder(
+        with_pip=True,
+        clear=True,
+        system_site_packages=True,
+    ).create(root)
 
 
 def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
@@ -109,6 +116,8 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
                     "install",
                     "--disable-pip-version-check",
                     "--no-input",
+                    "--no-deps",
+                    "--no-build-isolation",
                     str(artifact),
                 ],
                 cwd=work,

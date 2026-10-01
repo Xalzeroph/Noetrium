@@ -55,6 +55,10 @@ class DockerContainerRuntimeError(RuntimeError):
 class DockerCliManagedContainerProvider(DockerManagedContainerPort):
     """Observe/remove only explicitly Noetrium-labelled Docker containers."""
 
+    # Bound argv size while amortizing Docker CLI/process startup across the
+    # entire managed-container set. Typical reconciliations need one batch.
+    _INSPECT_BATCH_SIZE = 256
+
     def __init__(
         self,
         control_runner: DockerCommandRunnerPort,
@@ -108,28 +112,50 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         return "no such object" in lowered or "no such container" in lowered
 
     @staticmethod
-    def _decode_inspect(stdout: str) -> DockerContainerObservation:
+    def _decode_inspect_rows(
+        stdout: str,
+    ) -> tuple[DockerContainerObservation, ...]:
         try:
             payload = json.loads(stdout)
-            row = payload[0]
-            config = row["Config"]
-            state = row["State"]
+            if not isinstance(payload, list):
+                raise TypeError("Docker inspect payload is not an array")
+            rows: list[DockerContainerObservation] = []
+            for row in payload:
+                if not isinstance(row, dict):
+                    raise TypeError("Docker inspect row is not an object")
+                config = row["Config"]
+                state = row["State"]
+                if not isinstance(config, dict) or not isinstance(state, dict):
+                    raise TypeError("Docker inspect row sections are invalid")
+                labels = config.get("Labels") or {}
+                if not isinstance(labels, dict):
+                    raise TypeError("Docker inspect labels are not an object")
+                rows.append(
+                    DockerContainerObservation(
+                        str(row["Id"]),
+                        str(row["Name"]).lstrip("/"),
+                        str(config["Image"]),
+                        bool(state["Running"]),
+                        {
+                            str(key): str(value)
+                            for key, value in labels.items()
+                        },
+                    )
+                )
         except (json.JSONDecodeError, IndexError, KeyError, TypeError) as exc:
             raise DockerContainerRuntimeError(
                 "Docker inspect returned malformed container state"
             ) from exc
-        labels = config.get("Labels") or {}
-        if not isinstance(labels, dict):
+        return tuple(rows)
+
+    @classmethod
+    def _decode_inspect(cls, stdout: str) -> DockerContainerObservation:
+        rows = cls._decode_inspect_rows(stdout)
+        if len(rows) != 1:
             raise DockerContainerRuntimeError(
-                "Docker inspect labels are not an object"
+                "Docker inspect returned unexpected container cardinality"
             )
-        return DockerContainerObservation(
-            str(row["Id"]),
-            str(row["Name"]).lstrip("/"),
-            str(config["Image"]),
-            bool(state["Running"]),
-            {str(key): str(value) for key, value in labels.items()},
-        )
+        return rows[0]
 
     def inspect(self, reference: str) -> DockerContainerObservation | None:
         if not reference.strip():
@@ -187,6 +213,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
                 self._docker,
                 "ps",
                 "-aq",
+                "--no-trunc",
                 "--filter",
                 f"label={MANAGED_CONTAINER_LABEL}={MANAGED_CONTAINER_LABEL_VALUE}",
                 "--filter",
@@ -199,15 +226,39 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
                 "Docker managed-container listing failed with exit code "
                 f"{result.returncode}"
             )
-        rows: list[DockerContainerObservation] = []
-        for container_id in (
+        container_ids = tuple(
             line.strip()
             for line in result.stdout.splitlines()
             if line.strip()
-        ):
-            observed = self.inspect(container_id)
-            if observed is not None:
-                rows.append(observed)
+        )
+        if not container_ids:
+            return ()
+
+        rows: list[DockerContainerObservation] = []
+        for offset in range(0, len(container_ids), self._INSPECT_BATCH_SIZE):
+            batch = container_ids[offset : offset + self._INSPECT_BATCH_SIZE]
+            inspected = self._control_runner.run(
+                (self._docker, "inspect", *batch),
+                timeout_seconds=self._timeout,
+            )
+            if inspected.returncode != 0:
+                raise DockerContainerRuntimeError(
+                    "Docker managed-container batch inspect failed with exit code "
+                    f"{inspected.returncode}"
+                )
+            decoded = self._decode_inspect_rows(inspected.stdout)
+            if len(decoded) != len(batch):
+                raise DockerContainerRuntimeError(
+                    "Docker managed-container batch inspect cardinality drifted"
+                )
+            rows.extend(decoded)
+
+        expected = set(container_ids)
+        observed_ids = {row.container_id for row in rows}
+        if len(rows) != len(observed_ids) or observed_ids != expected:
+            raise DockerContainerRuntimeError(
+                "Docker managed-container batch inspect identity drifted"
+            )
         return tuple(sorted(rows, key=lambda row: row.container_id))
 
     def wait_running(

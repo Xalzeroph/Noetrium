@@ -45,6 +45,53 @@ def test_model_compile_cache_ignores_dynamic_endpoint_but_topology_cache_tracks_
     assert other_topology != first_topology
 
 
+
+
+def test_single_gpu_vllm_topology_cache_reuses_across_device_placements() -> None:
+    first_compile, first_topology = _model_serving_cache_keys(
+        _spec(port=40001, gpu_devices=("GPU-a",))
+    )
+    second_compile, second_topology = _model_serving_cache_keys(
+        _spec(port=40002, gpu_devices=("GPU-z",))
+    )
+    assert first_compile == second_compile
+    assert first_topology == second_topology
+
+
+def test_model_compile_cache_reuses_kernel_artifacts_across_scheduler_concurrency() -> None:
+    first_compile, first_topology = _model_serving_cache_keys(
+        _spec(port=40001, gpu_devices=("GPU-a",))
+    )
+    second_compile, second_topology = _model_serving_cache_keys(
+        _spec(
+            port=40002,
+            gpu_devices=("GPU-a",),
+            extra=("--max-num-seqs", "352"),
+        )
+    )
+    assert first_compile == second_compile
+    assert first_topology == second_topology
+
+
+
+def test_model_compile_cache_ignores_cudagraph_bucket_and_http_logging_policy() -> None:
+    first = _model_serving_cache_keys(_spec(port=40001, gpu_devices=("GPU-a",)))[0]
+    changed_runtime_only = _model_serving_cache_keys(
+        _spec(
+            port=40002,
+            gpu_devices=("GPU-a",),
+            extra=(
+                "--disable-uvicorn-access-log",
+                "--generation-config",
+                "vllm",
+                "--compilation-config",
+                '{"cudagraph_capture_sizes":[1,2,4,8,16]}',
+            ),
+        )
+    )[0]
+    assert changed_runtime_only == first
+
+
 def test_model_compile_cache_invalidates_on_engine_semantics() -> None:
     first = _model_serving_cache_keys(_spec(port=40001))[0]
     changed = _model_serving_cache_keys(

@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+from dataclasses import replace
+
 from noetrium_platform.product.research_os import (
+    ResearchDefinition,
     ResearchDefinitionKind,
 )
 from noetrium_platform.research.experimentation.api import (
+    MeasurementDefinition,
+    MeasurementProtocol,
+    MeasurementValueKind,
     ResearchStudyDefinition,
     materialize_research_study_spec,
 )
@@ -57,6 +64,72 @@ def materialize_research_protocol_definition(
     raise TypeError("Research Study protocol factory must return a top-level Study mapping")
 
 
+def research_measurement_definitions(
+    definitions: tuple[ResearchDefinition, ...],
+) -> tuple[MeasurementDefinition, ...]:
+    """Project top-level METRIC definitions into Study measurement semantics."""
+
+    rows: list[MeasurementDefinition] = []
+    for definition in definitions:
+        if definition.kind is not ResearchDefinitionKind.METRIC:
+            continue
+        config = definition.config
+        if not isinstance(config, Mapping):
+            continue
+        raw = config.get("measurement")
+        if raw is None:
+            continue
+        if not isinstance(raw, Mapping):
+            raise TypeError("research metric measurement spec must be an object")
+        rows.append(
+            MeasurementDefinition(
+                measurement_id=str(raw["measurement_id"]),
+                schema_id=str(raw["schema_id"]),
+                value_kind=MeasurementValueKind(str(raw["value_kind"])),
+                unit=None if raw.get("unit") is None else str(raw["unit"]),
+                description=str(raw.get("description", "")),
+                semantic_kind=str(raw.get("semantic_kind", definition.definition_id)),
+                scale=None if raw.get("scale") is None else str(raw["scale"]),
+                domain=None if raw.get("domain") is None else str(raw["domain"]),
+                source_path=(
+                    None
+                    if raw.get("source_path") is None
+                    else str(raw["source_path"])
+                ),
+                reducer=None if raw.get("reducer") is None else str(raw["reducer"]),
+            )
+        )
+    ordered=tuple(sorted(rows,key=lambda row:row.measurement_id))
+    ids=tuple(row.measurement_id for row in ordered)
+    if len(ids)!=len(set(ids)):
+        raise ValueError("top-level metric declarations duplicate measurement ids")
+    return ordered
+
+
+def merge_research_measurements(
+    study: ResearchStudyDefinition,
+    definitions: tuple[ResearchDefinition, ...],
+) -> ResearchStudyDefinition:
+    declared=research_measurement_definitions(definitions)
+    if not declared:
+        return study
+    existing={row.measurement_id:row for row in study.measurement_protocol.definitions}
+    for row in declared:
+        current=existing.get(row.measurement_id)
+        if current is not None and current != row:
+            raise ValueError(
+                "top-level metric measurement conflicts with protocol measurement: "
+                f"{row.measurement_id}"
+            )
+        existing[row.measurement_id]=row
+    protocol=MeasurementProtocol(
+        study.measurement_protocol.protocol_id,
+        tuple(sorted(existing.values(),key=lambda row:row.measurement_id)),
+        study.measurement_protocol.schema_version,
+    )
+    return replace(study,measurement_protocol=protocol)
+
+
 class ResearchStudyProtocolClosureProvider:
     """Resolve generic Experiment nodes from one frozen Study protocol factory."""
 
@@ -102,11 +175,12 @@ class ResearchStudyProtocolClosureProvider:
                 "Experiment node requires exactly one PROTOCOL definition: "
                 f"node={node.graph_node_id} count={len(candidates)}"
             )
-        return materialize_research_protocol_definition(
+        study=materialize_research_protocol_definition(
             candidates[0],
             self._resolver,
             self._definition_bindings,
         )
+        return merge_research_measurements(study,node.definitions)
 
     def resolve(
         self,
@@ -145,4 +219,9 @@ class ResearchStudyProtocolClosureProvider:
         )
 
 
-__all__ = ["ResearchStudyProtocolClosureProvider", "materialize_research_protocol_definition"]
+__all__ = [
+    "ResearchStudyProtocolClosureProvider",
+    "materialize_research_protocol_definition",
+    "merge_research_measurements",
+    "research_measurement_definitions",
+]

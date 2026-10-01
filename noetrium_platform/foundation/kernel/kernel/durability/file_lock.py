@@ -105,7 +105,15 @@ class InterprocessFileLock:
             return self
 
         open_flags = os.O_RDWR | os.O_CREAT
-        fd = os.open(self.path, open_flags, 0o600)
+        try:
+            fd = os.open(self.path, open_flags, 0o600)
+        except PermissionError as exc:
+            try:
+                fd = os.open(self.path, os.O_RDONLY)
+            except OSError:
+                raise InterprocessLockUnavailable(
+                    f"interprocess lock failed: {self.path}"
+                ) from exc
         try:
             lock_flags = fcntl.LOCK_EX if self.blocking else (fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, lock_flags)

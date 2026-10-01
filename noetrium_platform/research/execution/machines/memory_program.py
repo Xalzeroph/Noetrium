@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+import heapq
 import re
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -358,8 +359,12 @@ def default_memory_operations() -> ProgramHandlerRegistry:
             score += min(record.ordinal, 100) // 10
             if score > 0 or not query:
                 scored.append((score, index, record))
-        scored.sort(key=lambda item: (-item[0], -item[1], item[2].record_id))
-        selected = scored[:limit]
+        rank_key = lambda item: (-item[0], -item[1], item[2].record_id)
+        selected = (
+            []
+            if limit == 0
+            else heapq.nsmallest(limit, scored, key=rank_key)
+        )
         rows = tuple(item[2] for item in selected)
         query_id = "memory-query:" + canonical_digest({
             "query_text": query_text,

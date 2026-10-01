@@ -18,6 +18,7 @@ from .qualified_closure_file import (
     QualifiedModelClosureReadError,
     load_qualified_model_deployment_closure,
 )
+from .vllm_pressure import VllmRuntimePressureObserver
 from .tokenization import (
     ExactModelTokenizationCache,
     OpenAICompatibleQualifiedTokenization,
@@ -39,4 +40,5 @@ __all__ = [
     "load_qualified_model_deployment_closure", "publish_qualified_model_deployment_closure",
     "ExactModelTokenizationCache", "OpenAICompatibleQualifiedTokenization",
     "QualifiedEndpointTokenizationProvider",
+    "VllmRuntimePressureObserver",
 ]

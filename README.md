@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:f2c5b71f9b11346b6a23dada556ecd804029ccd876c058910c5ed5ad637cbd64 -->
+<!-- readme-source-sha256:e4ac697d165fedf70f3d0e02e15570ece04e987707d79ce090c61e27d72a944f -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -80,9 +80,9 @@ The dependency direction is one-way:
 
 <strong>research intent -> explicit composition -> frozen identity -> admitted execution -> authoritative transition/effect/evidence -> recovery, replay, inspection and verification.</strong>
 
-Noetrium owns the reusable research substrate: canonical identities, revision/binding truth, durable machine transitions, recovery boundaries, resource admission, effect certainty, artifacts, evidence, provenance, observability and governance. Downstream projects own the scientific novelty: methods, prompts, benchmark semantics, task policies, experiment hypotheses, statistical interpretation and claims.
+Noetrium owns the reusable research substrate: canonical identities, revision/binding truth, durable machine transitions, recovery boundaries, resource admission, effect certainty, artifacts, evidence, provenance, observability and governance. Downstream projects own the scientific novelty and concrete paper content: MethodPrograms, prompts, memory semantics, benchmark builders/assets, task policies, experiment hypotheses, statistical interpretation and claims. Noetrium does not require a new upstream benchmark or method implementation when a new paper is added.
 
-A downstream paper should normally change only the top-level ResearchPortfolio/ResearchProgram declaration and its Method configuration, Study/Experiment specification, prompts, policies, or paper-owned handlers — <strong>not Noetrium internals</strong>. Lower execution, capability, runtime, resource, and infrastructure interfaces are consumed only by their adjacent Noetrium layer rather than by downstream research code.
+A downstream paper should normally change only its top-level ResearchPortfolio/ResearchProgram declaration, concrete MethodPrograms, benchmark builders/assets, Study/Experiment specification, prompts, policies and paper-owned handlers — <strong>not Noetrium internals</strong>. Lower execution, capability, runtime, resource and infrastructure interfaces are consumed only by their adjacent Noetrium layer rather than by downstream research code.
 
 <!-- readme-section:why -->
 
@@ -109,13 +109,13 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 ## Core capabilities
 
 - <strong>Four-root downstream API</strong> — <code>noetrium.api</code> exposes only <code>ResearchPortfolioBuilder</code>, <code>ResearchPortfolio</code>, <code>ResearchOS</code> and <code>open_project</code>. Program/Method/Memory DSL types are reached through those roots; provider, resource, Docker and lifecycle interfaces remain internal owner boundaries.
-- <strong>Research OS composition</strong> — one portfolio can describe multiple research programs, studies, experiments, methods, analyses, dependencies, revisions and control operations.
+- <strong>Research OS composition</strong> — one portfolio can describe multiple research programs, studies, experiments, concrete downstream MethodPrograms, concrete downstream Benchmarks, analyses, dependencies, revisions and control operations without adding paper-specific implementations to the platform.
 - <strong>One executable program model</strong> — Method (including memory semantics), Runtime, Participant, Environment, Evaluation, Optimization, Experiment and Run semantics converge on <code>ResearchProgram</code> and the same Machine execution kernel.
 - <strong>Durable scientific execution</strong> — <code>ProgrammableMachineInterpreter</code> proposes transitions; <code>MachineExecutor</code> commits accepted transitions to the Machine Journal. The journal is the execution truth.
 - <strong>Typed Method semantics without a second runtime</strong> — Method-specific authoring can use the internal typed Method facade, which lowers deterministically into <code>ResearchProgram(kind=METHOD)</code>. Method result facades do not own a separate cursor, scheduler, checkpoint engine or transition history.
 - <strong>Nested research Machines</strong> — child work runs through the same kernel and is linked to its parent by exact <code>ChildMachineLink</code> / Machine-cut identity rather than hidden callback stacks.
 - <strong>Participant and workload compilation</strong> — participant schedules and workload dependency DAGs compile into ordinary ResearchPrograms. Workloads execute through a bounded completion-driven dependency frontier: each completion can immediately unlock and refill eligible dependents while durable Machine state remains scheduling truth.
-- <strong>Exact definition binding</strong> — platform-resolved Model, Environment, Dataset, Benchmark, Protocol, Resource Policy and Verifier requirements resolve through owner-specific authorities and are frozen before execution. Unknown or ambiguous bindings fail closed.
+- <strong>Exact definition binding</strong> — downstream-owned scientific definitions such as Methods, Benchmarks, Metrics and project protocols may carry their concrete implementation directly in the frozen ResearchProgram. Infrastructure requirements such as Model, Environment, Resource and external data/assets resolve through their owning authorities and are frozen before execution. Unknown, ambiguous or drifted bindings fail closed.
 - <strong>Durable execution budgets</strong> — steps, wall/working time, turns, messages, model calls, tokens, cost, resource-policy identity and replay level share one crash-durable execution-budget authority.
 - <strong>Replay-aware admission</strong> — observational, checkpoint and exact replay claims require different proofs. Exact replay is never inferred from a seed or from a checkpoint alone.
 - <strong>Explicit effect certainty</strong> — external actions are mediated through effect intents, receipts and reconciliation. <code>UNKNOWN</code> remains unknown; transport success or failure is not silently converted into scientific certainty.
@@ -123,7 +123,53 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 - <strong>Typed research values</strong> — Artifact, Evidence, Checkpoint, Metric, Selection and Data values cannot be relabeled generic JSON. A value kind is accepted only when its owner authority is available.
 - <strong>One recovery truth</strong> — durable recovery is rooted in the Machine Journal and <code>MachineCut</code>. Checkpoint payloads and snapshots are acceleration artifacts tied to that cut, not independent restore authorities.
 - <strong>Resource and runtime lifecycle</strong> — admission, shared-host pressure, compute/GPU allocation, endpoints, processes, services, Docker generations, leases, heartbeats and abandoned-owner recovery remain in the physical owner systems below scientific Programs.
+- <strong>Content-addressed reuse and single-flight construction</strong> — immutable execution structures and runtime realizations are keyed by exact identity and reused instead of rebuilt. In-process workload/participant/task/model-endpoint/tokenization structures use one-producer single-flight construction; project runtime layers, environment images and other physical realizations reuse content-addressed owner-managed artifacts when their exact identities match.
+- <strong>Hierarchical fair scheduling</strong> — execution carries a non-scientific tenant identity through Research OS, Experiment, Workload, child-Machine, environment-capability and model-request paths. Admission prefers tenants and groups with lower active share before grant history, preventing high fan-out from monopolizing shared capacity while remaining work-conserving for a single active tenant.
+- <strong>Adaptive shared model serving</strong> — qualified deployments separate the measured safe concurrency ceiling from the preferred operating point. Qualification starts near a computed concurrency derived from model KV geometry and observed request footprint, then searches upward or downward. Runtime admission adapts using normalized service latency, rate-limit responses and vLLM pressure signals such as running/waiting requests, KV-cache usage and preemption.
 - <strong>Architecture governance</strong> — generated topology maps, public-contract gates, no-compatibility/no-degradation checks and authority rules reject shadow runtimes and ownership leaks.
+
+### Scientific measurements, derived metrics and analysis
+
+The four-root API carries the full scientific measurement path without exposing Study, MetricEngine or Workbench internals to downstream code. A downstream program declares semantics through the ResearchPortfolioBuilder object reached from noetrium.api:
+
+~~~python
+program.metric(
+    "task-success",
+    value_kind="boolean",
+    source_path="diagnostics.success",
+    reducer="last",
+)
+
+program.metric(
+    "latency-mean",
+    aggregation="mean",
+    record_types=("llm.usage",),
+    value_path="latency_ms",
+    group_by=("model",),
+    unit="ms",
+)
+
+program.analysis(
+    "latency-comparison",
+    depends_on=("derive-latency",),
+    value="value",
+    group_by=("model",),
+    comparison_group="model",
+    baseline="control",
+    candidate="candidate",
+    pair_by="seed",
+    inference="paired_compare",
+    multiple_comparison="holm",
+)
+~~~
+
+Capture is typed rather than scalar-only. Supported measurement values are scalar, boolean, categorical, structured, sequence, distribution, matrix, text judgement and artifact-backed content reference. Study measurement projection owns capture and provenance; nontrivial aggregation is deliberately kept out of the capture reducer.
+
+Derived raw-record metrics use the single Experimentation metric engine and support count, sum, mean, min, max, standard deviation, p50, p95, first, last and distinct count, with record/schema filters, predicates, grouping and explicit missing-value policy. Paper-specific formulas remain downstream implementations instead of becoming platform special cases.
+
+Declarative analyses lower through Composition into the standard Research Workbench. Built-in inference includes normal-mean inference, bootstrap mean, group comparison, paired comparison, permutation comparison and one-to-many comparison with Bonferroni, Holm, Benjamini-Hochberg or Benjamini-Yekutieli correction. Every declarative result is tied to an immutable MeasurementCut, frozen AnalysisDefinition, input cut digest, implementation/configuration digest and AnalysisResult digest, so post-hoc analysis can change without silently changing the underlying experiment evidence.
+
+The layer boundary remains strict: Product freezes JSON scientific intent; Experimentation owns capture and derived metrics; Workbench owns statistical inference; Composition performs only the adjacent translation between them. Downstream projects do not import those lower types.
 
 <!-- noetrium-interface-catalog:start -->
 ### Public interface catalog
@@ -254,13 +300,52 @@ Runtime concerns such as context projection, communication, model invocation, lo
 
 Physical runtime concerns remain below the scientific Machine: processes, services, containers, endpoints, GPU placement, ports and host lifecycle are infrastructure/resource/runtime authorities.
 
+### Runtime Fabric, reuse and performance isolation
+
+Performance optimizations follow the same ownership model rather than creating a second fast-path architecture.
+
+> **Share immutable realization; isolate mutable scientific state.**
+
+Content-addressed model assets/stacks, qualified deployment facts, project runtime layers, environment images, compiled workload/Method execution structures, tokenization results and other immutable closures may be reused when their exact identities match. Assignment, episode, participant, world, browser/session, effect and Machine state remain scoped to their declared scientific lifetime. A warm environment instance is reusable only after its owner proves the required cleanliness state.
+
+Reusable in-process construction uses the platform <code>SingleFlightCache</code> so one exact key has one producer and concurrent followers share the same result or failure. Physical resources remain protected by their durable owner authority, lease generation and fencing; caching never weakens ownership.
+
+Execution scheduling is hierarchical rather than flat:
+
+~~~text
+control
+  |
+  +--> fleet / top-level dispatch
+        |
+        +--> Research OS orchestration
+              |
+              +--> Experiment scheduling
+                    |
+                    +--> Machine / workload execution
+                          |
+                          +--> model I/O
+                          +--> capability / environment I/O
+~~~
+
+Domains that may synchronously wait on downstream work use physically independent worker/admission domains so nested execution cannot deadlock by consuming its own child capacity. The same execution tenant identity is propagated through the hierarchy for fair shared-capacity admission without becoming part of scientific identity.
+
+Model serving adds a feedback loop without adding a second batching engine. The qualified deployment records a measured maximum safe concurrency and a preferred operating concurrency. Cold qualification computes its initial probe from model KV-cache geometry, context and the observed request footprint, then searches in both directions rather than serially ramping from one. During execution, the admission window can grow or retreat inside the qualified ceiling. Rate-limit responses cause fast backoff; sustained normalized latency degradation, queued requests, high KV-cache pressure or vLLM preemption can reduce the window before a hard failure. Metrics collection is advisory and fail-open; the qualification certificate remains the hard authority boundary.
+
+Transient endpoint failure uses one circuit-breaker path rather than a separate recovery client. Healthy replicas remain eligible; a cooled single replica waits for the earliest cooldown boundary and admits one half-open recovery request. A successful request clears consecutive-failure state, while a genuinely unhealthy replica remains fail-closed and is recovered by the same lifecycle authority.
+
+Qualification-derived serving tuning is not confused with scientific model drift. Refresh revalidates the current model/runtime source against the topology recorded by the qualification certificate, while measured scheduler tuning such as the qualified vLLM concurrency setting remains derived runtime evidence. Dynamic host pressure therefore does not silently rewrite model identity or tensor topology. When an exact qualified realization can no longer be placed, stale warm realizations may be retired only under Runtime Fabric consumer fencing; the Compute authority then performs the new placement decision.
+
+Platform-materialized vLLM stacks enable prefix caching and chunked prefill through the typed serving policy. Noetrium owns request admission, tenant fairness, replica choice and runtime lifecycle; vLLM continues to own token-level continuous batching and engine-internal scheduling.
+
+Reusable EnvironmentInstances use the same ownership discipline. Provisioning publishes the reusable catalog generation and its binding atomically, while EnvironmentInstance catalog mutation and resource-lease admission/reconciliation share one host-visible coordination fence. A reconciler cannot quarantine the valid midpoint between `IN_USE` publication and lease creation. Physical convergence that is still pending remains fail-closed for that resource dependency but is retried by the long-lived controller instead of being promoted into a fatal controller failure that cancels unrelated research work.
+
 ### Binding and admission
 
 Noetrium separates a scientific declaration from the exact owner-system binding that satisfies it.
 
-A platform-resolved definition must resolve through <code>ResearchDefinitionBindingRegistry</code> to an exact owner identity before execution. The binding records the definition identity, owner system, provider identity and exact binding identity. Missing or drifted owner truth fails closed.
+Definitions have two canonical forms. A downstream scientific definition may carry its concrete implementation directly in the frozen ResearchProgram; this is the normal path for paper-specific Methods, Benchmarks, Metrics and other project-owned semantics. A platform-resolved infrastructure requirement instead resolves through <code>ResearchDefinitionBindingRegistry</code> to an exact owner identity before execution. The binding records the definition identity, owner system, provider identity and exact binding identity. Missing or drifted owner truth fails closed.
 
-The same principle applies to model-role selection, participant binding, capabilities, environments, benchmark/verifier materialization and resource policy.
+The owner-resolution path applies to model-role selection, participant binding, capabilities, environment instances, resource policy and external assets that require an infrastructure authority. The platform does not maintain a catalog of every paper's benchmark or comparison method.
 
 ### Execution budgets and replay
 
@@ -376,7 +461,7 @@ Regenerate them after architecture-changing edits. Historical design documents r
 
 ## Platform vs. downstream projects
 
-This repository is an independent upstream platform package. A downstream project should be able to replace its method, task suite, experiment matrix, providers, or deployment policy without editing platform internals.
+This repository is an independent upstream platform package. A downstream project should be able to replace or add concrete methods, comparison methods, benchmark suites, task assets, experiment matrices, scientific policies and project-specific integrations without editing platform internals.
 
 ```text
 noetrium
@@ -386,18 +471,18 @@ noetrium
                  │
                  ▼
        downstream research repository
-       ├── project-specific method
-       ├── experiment composition
-       ├── task/environment bindings
+       ├── project-specific MethodPrograms
+       ├── benchmark builders and frozen task assets
+       ├── experiment composition and scientific policies
        └── project evidence and results
 ```
 
 | You are changing... | Implement downstream... | Reuse from Noetrium... |
 | --- | --- | --- |
-| Research method | policy, method host, tools, memory, and prompts | reference components and lifecycle contracts |
-| Task or benchmark | task suite, dataset adapter, metrics, and scientific protocol | study/run identity, execution ports, artifacts, and evidence |
-| Provider or integration | typed model, environment, resource, process, or server provider | port contracts, composition, readiness, and recovery semantics |
-| Multi-agent behavior | topology, node policy, message delivery, and coordination rules | orchestration primitives and run authority |
+| Research or comparison method | concrete MethodProgram, policy, memory semantics, tools and prompts | Universal Method Machine, capability/effect path, lifecycle and evidence |
+| Task or benchmark | benchmark builder, frozen task assets, splits, verifier/metric semantics and scientific protocol | generic Benchmark definition, Study/Run identity, artifacts and evidence |
+| Project-specific integration | project-owned scientific adapter/handler declared through the public program surface | typed owner contracts, composition, readiness and recovery semantics |
+| Multi-agent behavior | topology, node policy, message delivery and coordination rules | participant/workload compilation and run authority |
 
 Use `noetrium.api` as the only supported downstream project-facing surface. Contract generation, reference components, orchestration, and platform composition remain internal aggregation layers behind that entrypoint. `noetrium_platform` is the internal semantic-plane implementation namespace, not a downstream extension API. The platform must not import a downstream project to decide scientific meaning or deployment policy.
 
@@ -466,6 +551,35 @@ def build_research() -> api.ResearchPortfolio:
 
 The example is intentionally semantics-neutral. Real projects add their Study/Experiment, method, participant, benchmark, model/environment requirements, measurement and evidence semantics through objects returned by the public authoring surface.
 
+Concrete paper methods and benchmarks stay downstream. The same program can directly freeze project-owned implementations without adding them to Noetrium:
+
+~~~python
+from noetrium import api
+
+def build_benchmark():
+    return {
+        "benchmark_id": "paper-benchmark",
+        "tasks": ({"task_id": "t1", "input": {"goal": "..."}, "expected": {}},),
+    }
+
+def configure_reference_method(method):
+    ...
+    return method
+def build_research() -> api.ResearchPortfolio:
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    program = portfolio.program("paper")
+    program.benchmark("benchmark.paper", implementation=build_benchmark)
+    program.method(
+        "method.reference",
+        configure_reference_method,
+        method_id="reference",
+        entrypoint="recall",
+    )
+    return portfolio.freeze()
+~~~
+
+Noetrium executes both through generic platform machinery. It does not need a Benchmark-specific engine, a Baseline engine, or a new upstream code path for each paper.
+
 ### 3. Understand where semantics belong
 
 | Concern | Canonical home |
@@ -481,7 +595,8 @@ The example is intentionally semantics-neutral. Real projects add their Study/Ex
 | environment interaction policy | scientific Program/Method; instances/sessions remain Environment authority |
 | external tools/actions | capability/effect authority |
 | budget/replay requirements | Trial/Study policy enforced by ExecutionBudgetAuthority |
-| datasets, benchmark/verifier definitions and resource policy | exact owner-system definition bindings |
+| concrete datasets/benchmarks/metrics used by a paper | downstream definitions/implementations frozen in the ResearchProgram |
+| model/environment/resource requirements and external assets | exact owner-system definition bindings |
 | artifacts/evidence/data | their canonical owner authorities |
 | CPU/GPU/process/port/container placement | resource/runtime infrastructure |
 
@@ -547,15 +662,17 @@ noetrium migrate    --project .
 On a Docker-first Linux server, use the repository launcher. It performs the host/Docker checks, starts the containerized control plane, projects host identity and the Docker daemon into that control plane, and delegates to the same Research OS lifecycle:
 
 ~~~bash
-./deploy/noetrium project run --project .
-./deploy/noetrium project inspect --project .
+./deploy/noetrium run --project .
 ~~~
 
 Node-scoped control supplies the program and node identity:
 
 ~~~bash
 noetrium pause --project . --program <program-id> --node <node-id>
+noetrium retry --project . --program <program-id> --node <node-id>
 ~~~
+
+Node-scoped retry reopens that failed graph node against the durable Research OS revision and recovery state. It does not require deleting checkpoints, clearing journals or rebuilding an unrelated project graph.
 
 Local project execution state lives under:
 
@@ -573,6 +690,7 @@ At a high level:
 portfolio / revision
     -> compile research graph
     -> materialize exact owner prerequisites
+    -> resolve content-addressed realizations / single-flight reusable closures
     -> resolve model assets and immutable runtime stack when required
     -> admit compute / endpoint / container resources
     -> bootstrap and qualify the current model runtime when no current proof exists
@@ -580,7 +698,8 @@ portfolio / revision
     -> freeze Study / Trial policy
     -> admit budget / replay / resources
     -> compile workload / participant / Method semantics to ResearchPrograms
-    -> execute through completion-driven experiment/workload frontiers and the shared Machine kernel
+    -> reuse exact compiled execution structures when identities match
+    -> execute through hierarchical fair admission, completion-driven frontiers and the shared Machine kernel
     -> publish effects / artifacts / evidence through owner authorities
     -> aggregate measurements
     -> return a Research OS report
@@ -597,6 +716,8 @@ Noetrium distinguishes execution failure from uncertain external effects.
 - Completed child Machines are identified by durable cuts and can be reused after parent recovery.
 - Machine recovery is tied to the exact program/binding identity.
 - Resource owners use leases/generations/fencing to prevent a stale process or container from silently reclaiming ownership.
+- Background resource reconciliation treats unresolved physical convergence as a retryable control-plane state while preserving dependency fences; it does not cancel scientific work merely because one cleanup cycle is incomplete.
+- Method failure projection retains the outer operation identity/digest while surfacing the deepest recorded underlying cause when available, so a platform cancellation or provider error is not reduced to an opaque generic failure.
 - A replay claim is admitted only at the level the bound authorities can prove.
 
 ### 8. Platform execution configuration
@@ -774,7 +895,7 @@ Static planning starts no work:
 ./deploy/noetrium plan
 ~~~
 
-The planner discovers reproduction definitions, compiles each ResearchProgram, resolves benchmark/study bindings and builds one top-level ResearchPortfolio/ResearchGraph. It reports compile failures, benchmark-authority gaps, reproduction-closure gaps, materialization readiness, study authority requirements and graph identities.
+The repository-fleet planner discovers the platform's reference/validation reproductions, compiles each ResearchProgram and builds one top-level ResearchPortfolio/ResearchGraph without starting work. It reports compile failures, unresolved external-asset requirements, reproduction-closure gaps, materialization readiness, Study requirements and graph identities. Concrete benchmark/method semantics for an independent downstream paper remain in that downstream repository.
 
 Having a directory below <code>research/reproductions/</code> does not by itself make a paper runnable. Execution requires exact closure.
 
@@ -790,7 +911,7 @@ The canonical repository path uses Noetrium's built-in owner-authority materiali
 
 For Model requirements, the current path is platform-owned end to end: resolve or materialize the declared model asset, freeze its content identity, resolve an engine OCI image and freeze its immutable image identity, materialize one `ModelStackSpec`, obtain compute/endpoint/container admission, start the replica through the shared service/container lifecycle, perform measured qualification plus requirement-aware runtime canaries, and publish the single current qualified-model closure. Downstream code does not select Docker images, GPU ids, ports, service processes or qualification files.
 
-Machine-local or external facts that cannot be inferred uniquely remain explicit repository-operator inputs, for example an exact benchmark asset cut or other external materialization:
+Machine-local or external facts that cannot be inferred uniquely remain explicit repository-operator inputs, for example an externally stored dataset/benchmark asset cut or other external materialization. This operator input closes an external asset requirement; it does not move the benchmark's scientific semantics into Noetrium:
 
 ~~~bash
 export NOETRIUM_CONTROL_INPUT_ROOT=/data/noetrium-authority-assets
@@ -800,7 +921,7 @@ export NOETRIUM_CONTROL_INPUT_ROOT=/data/noetrium-authority-assets
 
 When an authority input refers to host data that the Docker control plane must read, `NOETRIUM_CONTROL_INPUT_ROOT` is the allowed read-only host root. Benchmark/materialization code must verify source revision, content digest and task-cut identity; a path string is not authority proof. Stateful audit/runtime output remains under `$NOETRIUM_DEPLOYMENT_STATE_ROOT`, never inside a read-only source checkout.
 
-The automatic materializer never silently substitutes a model, environment, GPU, endpoint, verifier, benchmark or external asset. A lane whose owner authority cannot prove exact closure remains `BLOCKED`; unrelated authority-closed lanes may still run.
+The automatic materializer never silently substitutes a model, environment, GPU, endpoint, verifier or external asset. A lane whose required owner authority cannot prove exact closure remains `BLOCKED`; unrelated authority-closed lanes may still run. Downstream-owned Method and Benchmark implementations are already part of the frozen scientific definition and are not selected from an upstream paper catalog.
 
 The launcher still exposes `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory` as an advanced repository-operator hook in this source cut. It is **not** the canonical downstream project API and must not encode paper semantics or create shadow Model, Environment, Resource, Execution, Effect or Journal authorities. New platform composition should prefer the built-in owner path.
 
@@ -868,7 +989,11 @@ paper-owned binding names.
 
 Durable scheduling adds attempt identities, leases, retry timing, per-node control and reconciliation-required states.
 
-ResearchExecutionPool separates control, orchestration, experiment and model-I/O domains. This prevents nested admission deadlock. Workload domains share one CPU worker provider and one residual-capacity reservation ledger so separate gates cannot spend the same RAM/PID/FD/storage headroom concurrently.
+ResearchExecutionPool separates control, fleet/top-level dispatch, orchestration, experiment, Machine, model-I/O and capability-I/O concerns. Parent domains that synchronously wait on child work do not share the same blocking worker pool, preventing nested admission deadlock. Workload domains share one CPU worker provider and one residual-capacity reservation ledger so separate gates cannot spend the same RAM/PID/FD/storage headroom concurrently.
+
+Execution tenants propagate from the project/portfolio root through Experiment, Trial, Workload, child-Machine, environment-capability and model-request execution. Fair admission considers current tenant and group in-flight share before historical grant order. This prevents a paper with thousands of ready episodes from starving a paper with a small frontier, while a single active paper can still consume otherwise idle capacity.
+
+Model requests add an engine-pressure feedback loop on top of the same fair admission. Qualified deployments bind a hard safe concurrency ceiling and a preferred operating point derived from measured performance. The runtime window adapts within that envelope using completion behavior, rate-limit responses and normalized engine pressure. For vLLM, the pressure projection includes running/waiting requests, KV-cache usage, preemption and prefix-cache counters. Prefix affinity and pooled HTTP transport preserve locality and connection reuse; vLLM itself remains responsible for continuous token batching.
 
 Lease heartbeats run through the independent control domain. Compute/GPU, endpoint, EnvironmentInstance and Docker-container fencing can therefore continue while workloads are quiescing.
 
@@ -898,26 +1023,23 @@ Containerized model services use the shared exact service lifecycle and the same
 Docker-managed containers are generation-bound and reconciled against physical daemon state. A stopped exact-generation container may be parked and resumed through the container authority, but mutable scientific state is never inferred from container survival. Container convergence must be proven before dependent environment, endpoint or compute ownership is released.
 ### 12. Shutdown, crash and restart semantics
 
-Normal ManagedResearchRuntime shutdown is ordered:
+Normal ManagedResearchRuntime shutdown detaches the project consumer without treating reusable physical runtime as project-owned garbage:
 
 ~~~text
-quiesce background controllers
-  -> quiesce experiment work
-  -> quiesce model I/O
-  -> close exact replica leases
-  -> retire auto-managed model generations
-  -> stop model processes
-  -> reconcile/remove managed Docker containers
-  -> reconcile EnvironmentInstance generations
-  -> release endpoints
-  -> release compute/GPU allocations
-  -> close observability and pools
+quiesce project/background submission
+  -> quiesce experiment, capability and model I/O for this consumer
+  -> flush durable Machine / effect / evidence state
+  -> release project-scoped guards and heartbeat ownership
+  -> detach the Runtime Fabric consumer lease
+  -> close project-local observability and execution pools
   -> release managed-runtime interprocess lock LAST
 ~~~
 
-If a stage cannot prove convergence, later dependent resources remain fenced.
+Exact model services, qualified deployments, reusable environment realizations and their physical containers may remain warm when their durable owner state is still valid. Terminal retirement and pressure reclamation are separate owner-authority operations: they first prove exclusive Runtime Fabric consumer conditions, stop or retire the physical generation, and only then release dependent endpoint/compute ownership. A normal project close does not masquerade as terminal physical GC.
 
-After SIGKILL, SSH loss or a crashed prior controller, the next exclusive managed runtime performs startup reconciliation before admitting new work. It converges abandoned physical owners before reclaiming lower resources.
+If a retirement or reconciliation stage cannot prove convergence, later dependent resources remain fenced. `EndpointPhysicalConvergencePending` and equivalent physical-pending states therefore block unsafe lower-resource release, but the long-lived resource controller retries them rather than failing the whole controller task.
+
+After SIGKILL, SSH loss or a crashed prior controller, the next exclusive managed runtime performs startup reconciliation before admitting new work. A stopped durable realization is adopted only after its exact generation and current physical placement are re-proved; lost capacity, stale generations and expired ownership are fenced and replanned through the canonical resource authorities rather than revived blindly.
 
 Machine Journals, checkpoints, artifacts, evidence, immutable assets and recovery-required workspaces are durable recovery carriers, not ephemeral leaks. They follow retention/GC policy rather than crash cleanup.
 
@@ -931,7 +1053,7 @@ Bootstrap containers carry exact host owner identity: PID, boot id and process-s
 
 Keep reusable execution machinery upstream: Research OS/Machine substrate, resource admission and leases, process/service/container lifecycle, generic environment profiles/providers, model-serving mechanics, artifacts/evidence/data authorities, generic experiment/recovery mechanisms and deployment tooling.
 
-Keep scientific novelty downstream: paper method, memory semantics, prompts/policies, benchmark/task semantics, task success criteria, paper worlds/assets, paper model selection, experiment hypotheses/matrices and claim interpretation.
+Keep scientific novelty downstream: concrete MethodPrograms, comparison methods, memory semantics, prompts/policies, benchmark builders and task assets, task success criteria, paper worlds/assets, paper model selection, experiment hypotheses/matrices and claim interpretation.
 
 Move a mechanism upstream only when it is genuinely reusable across papers and can be expressed without importing one paper's scientific claim into Platform authority.
 
@@ -954,9 +1076,9 @@ The canonical source path uses one executable ResearchProgram/Machine model acro
 | Method execution | typed Method semantics lower deterministically to ResearchProgram(kind=METHOD); Method facades project typed results but own no second transition engine |
 | Participant execution | frozen participant schedules compile to parent ResearchPrograms; roles execute as child Machines with exact child-cut links |
 | Workload execution | dependency DAGs compile to journal-backed Run ResearchPrograms and execute through a bounded completion-driven frontier with immediate dependent refill; no process-local scheduler owns recovery truth |
-| Model runtime | declared model requirements resolve to exact assets and an immutable ModelStack; compute/endpoint/container placement, replica startup, measured qualification, capability-aware canaries, qualified closure, pooled HTTP transport and durable request/effect evidence are platform-owned |
+| Model runtime | declared model requirements resolve to exact assets and an immutable ModelStack; compute/endpoint/container placement, replica startup, measured safe/preferred concurrency qualification, topology-stable qualified refresh, circuit-breaker recovery, prefix-aware pooled transport, adaptive admission from latency/rate-limit/vLLM pressure, qualified closure and durable request/effect evidence are platform-owned |
 | Capability/effect runtime | one capability/effect intent/receipt/reconciliation path with explicit certainty |
-| Environment runtime | exact environment/session identity, assignment-scoped lifetime, deterministic seed derivation when required, and owner-managed provider mechanics |
+| Environment runtime | exact environment/session identity, assignment-scoped lifetime, atomic reusable-instance provisioning, catalog/lease admission fencing, deterministic seed derivation when required, and owner-managed provider mechanics |
 | Budget/replay | one durable assignment-lifetime authority for steps, time, calls, messages, tokens, cost, resource-policy identity and replay proof |
 | Artifact/evidence/data | canonical owner authorities; no run-local identity shadow store |
 | Resource/runtime lifecycle | shared-host admission, compute/GPU allocation, endpoints, Docker/process/service generations, leases, heartbeats, cleanup and abandoned-owner recovery |
@@ -1157,7 +1279,7 @@ Third-party components remain governed by their own licenses; see THIRD_PARTY_NO
 
 Noetrium 0.44.0 is the current package baseline.
 
-The platform already contains the core execution shape described in this README: Research OS authoring/control, portfolio and research-graph composition, the universal ResearchProgram/Machine execution path, Study/Experiment/Trial execution, completion-driven experiment/workload scheduling, participant compilation, exact owner binding, platform-owned model stack/deployment/qualification materialization, environment/capability integration, durable budget/replay admission, canonical artifact/evidence ownership, resource/runtime lifecycle management and Docker-first execution profiles.
+The platform already contains the core execution shape described in this README: Research OS authoring/control, portfolio and research-graph composition, the universal ResearchProgram/Machine execution path, Study/Experiment/Trial execution, completion-driven experiment/workload scheduling, participant compilation, exact owner binding, content-addressed single-flight reuse of immutable execution structures, hierarchical tenant-aware admission, platform-owned model stack/deployment/qualification materialization with adaptive shared serving, environment/capability integration, durable budget/replay admission, canonical artifact/evidence ownership, resource/runtime lifecycle management and Docker-first execution profiles.
 
 Noetrium remains under active development. APIs and internal package boundaries may evolve as real research workloads expose stronger general abstractions. The project intentionally does not preserve obsolete execution paths merely for compatibility; architectural changes are expected to converge toward a single stronger owner and a single executable semantics.
 

@@ -86,6 +86,14 @@ class LastObservationFactory(Protocol):
     def __call__(self) -> Observation | None: ...
 
 
+class DecisionViewFactory(Protocol):
+    def __call__(
+        self,
+        *,
+        detailed_entities: bool = False,
+    ) -> Mapping[str, JsonValue]: ...
+
+
 @dataclass(frozen=True, slots=True)
 class MinecraftActionCoordinatorBindings:
     event_log: EventLogger
@@ -94,6 +102,7 @@ class MinecraftActionCoordinatorBindings:
     observation: ObservationFactory
     state_payload: StatePayloadFactory
     last_observation: LastObservationFactory
+    decision_view: DecisionViewFactory | None = None
 
 
 class MinecraftActionCoordinator:
@@ -264,17 +273,22 @@ class MinecraftActionCoordinator:
             },
             correlation_refs=(request.action_id,),
         )
-        observation = self._bindings.observation(
-            payload={
-                "kind": "minecraft_action_result",
-                "action_id": request.action_id,
-                "action_type": request.action_type,
-                "verified": verified,
-                "events": minecraft_events_payload(result.events),
-                "bridge_diagnostics": dict(result.diagnostics),
-                **self._bindings.state_payload(),
-            }
-        )
+        observation_payload: dict[str, JsonValue] = {
+            "kind": "minecraft_action_result",
+            "action_id": request.action_id,
+            "action_type": request.action_type,
+            "verified": verified,
+            "events": minecraft_events_payload(result.events),
+            "bridge_diagnostics": dict(result.diagnostics),
+            **self._bindings.state_payload(),
+        }
+        if self._bindings.decision_view is not None:
+            observation_payload["decision_view"] = dict(
+                self._bindings.decision_view(
+                    detailed_entities=request.action_type == "observe_entities"
+                )
+            )
+        observation = self._bindings.observation(payload=observation_payload)
         return ActionResult(
             action_id=request.action_id,
             accepted=accepted,

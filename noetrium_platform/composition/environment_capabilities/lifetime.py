@@ -26,6 +26,8 @@ class EnvironmentLifetimeSessionAuthorityPort(Protocol):
 
     def capability_descriptors(self) -> tuple[EnvironmentCapabilityDescriptor, ...]: ...
 
+    def prepare(self, context: ExecutionContext) -> None: ...
+
     def session_for(self, context: ExecutionContext) -> EnvironmentSession: ...
 
     def release(self, lifetime_id: str) -> None: ...
@@ -89,6 +91,9 @@ class LifetimeRoutedEnvironmentCapability:
     @property
     def capabilities(self) -> tuple[CapabilityDescriptor, ...]:
         return (self._descriptor,)
+
+    def prepare(self, context: ExecutionContext) -> None:
+        self._sessions.prepare(context)
 
     def session_for(self, context: ExecutionContext) -> EnvironmentSessionCapabilityAdapter:
         lifetime_id = context.lifetime_id
