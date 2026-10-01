@@ -1,3 +1,4 @@
+from .interprocess_admission import InterprocessModelAdmissionController, InterprocessModelAdmissionRegistry
 from .admission import (
     AdmissionLease,
     AdmissionSnapshot,
@@ -25,6 +26,8 @@ from .runtime_qualification_service import RuntimeQualificationPublisher
 from .supervisor import ModelSupervisor
 
 __all__ = [
+    "InterprocessModelAdmissionRegistry",
+    "InterprocessModelAdmissionController",
     "AdmissionLease",
     "AdmissionSnapshot",
     "DurableExactRecoveryRunner",

@@ -231,10 +231,9 @@ def _definition(
         resolved_benchmark, benchmark_split_id, resolved_workloads, _binding_requirements(),
         ExperimentTrialProtocolIdentity("trial.agent", CFG),
         ResearchRevision("revision-1", "d" * 64),
-        StudyExecutionPolicy.serial_shared_v1(
+        StudyExecutionPolicy(
             trial_budget=budget or TrialBudget("standard", max_steps=12, max_seconds=180.0),
             replay_level=ReplayLevel.EXACT,
-            repetition_timeout_seconds=3600.0,
         ),
     )
 

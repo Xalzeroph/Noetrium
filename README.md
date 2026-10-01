@@ -115,8 +115,8 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 - <strong>Typed Method semantics without a second runtime</strong> — Method-specific authoring can use the internal typed Method facade, which lowers deterministically into <code>ResearchProgram(kind=METHOD)</code>. Method result facades do not own a separate cursor, scheduler, checkpoint engine or transition history.
 - <strong>Nested research Machines</strong> — child work runs through the same kernel and is linked to its parent by exact <code>ChildMachineLink</code> / Machine-cut identity rather than hidden callback stacks.
 - <strong>Participant and workload compilation</strong> — participant schedules and workload dependency DAGs compile into ordinary ResearchPrograms. Workloads execute through a bounded completion-driven dependency frontier: each completion can immediately unlock and refill eligible dependents while durable Machine state remains scheduling truth.
-- <strong>Exact definition binding</strong> — downstream-owned scientific definitions such as Methods, Benchmarks, Metrics and project protocols may carry their concrete implementation directly in the frozen ResearchProgram. Infrastructure requirements such as Model, Environment, Resource and external data/assets resolve through their owning authorities and are frozen before execution. Unknown, ambiguous or drifted bindings fail closed.
-- <strong>Durable execution budgets</strong> — steps, wall/working time, turns, messages, model calls, tokens, cost, resource-policy identity and replay level share one crash-durable execution-budget authority.
+- <strong>Exact definition binding</strong> — downstream-owned scientific definitions such as Methods, Benchmarks, Metrics and project protocols may carry their concrete implementation directly in the frozen ResearchProgram. Infrastructure requirements such as Model, Environment and external data/assets resolve through their owning authorities and are frozen before execution. Physical admission policy, placement and runtime realization remain platform-owned. Unknown, ambiguous or drifted bindings fail closed.
+- <strong>Durable execution budgets</strong> — steps, wall/working time, turns, messages, model calls, tokens, cost and replay level share one crash-durable execution-budget authority. Physical resource admission is enforced separately by the platform runtime.
 - <strong>Replay-aware admission</strong> — observational, checkpoint and exact replay claims require different proofs. Exact replay is never inferred from a seed or from a checkpoint alone.
 - <strong>Explicit effect certainty</strong> — external actions are mediated through effect intents, receipts and reconciliation. <code>UNKNOWN</code> remains unknown; transport success or failure is not silently converted into scientific certainty.
 - <strong>Canonical artifact and evidence ownership</strong> — blobs, artifact catalog entries, references, retention, evidence and provenance use their owning authorities instead of run-local shadow stores.
@@ -205,7 +205,7 @@ Author and control research through the same top-level API:
 
     from noetrium import api
     portfolio = api.ResearchPortfolioBuilder("paper")
-    program = portfolio.program("paper")
+    program = portfolio.programs.create("paper")
     research_os = api.open_project(".")
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
@@ -345,7 +345,7 @@ Noetrium separates a scientific declaration from the exact owner-system binding 
 
 Definitions have two canonical forms. A downstream scientific definition may carry its concrete implementation directly in the frozen ResearchProgram; this is the normal path for paper-specific Methods, Benchmarks, Metrics and other project-owned semantics. A platform-resolved infrastructure requirement instead resolves through <code>ResearchDefinitionBindingRegistry</code> to an exact owner identity before execution. The binding records the definition identity, owner system, provider identity and exact binding identity. Missing or drifted owner truth fails closed.
 
-The owner-resolution path applies to model-role selection, participant binding, capabilities, environment instances, resource policy and external assets that require an infrastructure authority. The platform does not maintain a catalog of every paper's benchmark or comparison method.
+The owner-resolution path applies to model-role selection, participant binding, capabilities, environment instances and external assets that require an infrastructure authority. Physical resource competition, placement, ports, containers, workers and serving concurrency are derived by the platform and are not downstream ResearchDefinitions. The platform does not maintain a catalog of every paper's benchmark or comparison method.
 
 ### Execution budgets and replay
 
@@ -360,7 +360,6 @@ Supported limits include:
 | turns / messages / model calls | reserved before model dispatch |
 | tokens | tokenized and reserved before dispatch; provider-observed usage is committed afterward |
 | cost | requires a cost-accounting authority; unverified cost fails closed |
-| resource policy | declared digest must match the active execution-pool policy |
 | replay level | observational, checkpoint and exact each require the corresponding proof |
 
 A model response that exceeds a hard budget is not silently accepted as a successful scientific step. The usage/effect evidence remains durable while the parent Machine fails according to the execution policy.
@@ -543,7 +542,7 @@ def _bootstrap():
 
 def build_research() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("my-paper")
-    program = portfolio.program("my-paper")
+    program = portfolio.programs.create("my-paper")
     program.custom_definition("bootstrap", implementation=_bootstrap)
     program.custom_node("root", definitions=("bootstrap",))
     return portfolio.freeze()
@@ -567,7 +566,7 @@ def configure_reference_method(method):
     return method
 def build_research() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("paper")
-    program = portfolio.program("paper")
+    program = portfolio.programs.create("paper")
     program.benchmark("benchmark.paper", implementation=build_benchmark)
     program.method(
         "method.reference",
@@ -720,35 +719,26 @@ Noetrium distinguishes execution failure from uncertain external effects.
 - Method failure projection retains the outer operation identity/digest while surfacing the deepest recorded underlying cause when available, so a platform cancellation or provider error is not reduced to an opaque generic failure.
 - A replay claim is admitted only at the level the bound authorities can prove.
 
-### 8. Platform execution configuration
+### 8. Platform-owned execution
 
-Project execution has a deliberately small operator-facing configuration surface. Scientific requirements belong in the frozen research definition; provider/resource mechanics are materialized by the platform owner systems.
+Downstream projects do not provide an execution-policy file. Scientific requirements live in the frozen Research Portfolio; physical concurrency, GPU/CPU placement, ports, Docker generations, model/environment providers, replica topology, queues, connection pools, watchdogs and lifecycle controllers are platform-owned. They are derived from host facts, qualified runtime evidence and online pressure feedback, then frozen into execution evidence.
 
-A minimal execution config is:
-
-~~~json
-{
-  "schema": "noetrium.project-execution-config.v1",
-  "start_background_controllers": true
-}
-~~~
-
-Use it with:
-
-~~~bash
-noetrium run --project . --config ./execution.json
-~~~
-
-or:
+The canonical Python entry is therefore intentionally parameter-free with respect to physical execution:
 
 ~~~python
 from noetrium import api
 
-with api.open_project(".", config_path="./execution.json") as research:
+with api.open_project(".") as research:
     report = research.run()
 ~~~
 
-Unknown or ambiguous owner truth fails closed rather than selecting a weaker provider implicitly.
+The CLI uses the same composition path:
+
+~~~bash
+noetrium run --project .
+~~~
+
+Opening a project is control-plane only. The first execution control materializes the required execution authorities and only then starts platform lifecycle controllers. Missing, ambiguous or drifted owner truth fails closed rather than selecting a weaker provider implicitly.
 
 <!-- readme-section:containers -->
 
@@ -1079,7 +1069,7 @@ The canonical source path uses one executable ResearchProgram/Machine model acro
 | Model runtime | declared model requirements resolve to exact assets and an immutable ModelStack; compute/endpoint/container placement, replica startup, measured safe/preferred concurrency qualification, topology-stable qualified refresh, circuit-breaker recovery, prefix-aware pooled transport, adaptive admission from latency/rate-limit/vLLM pressure, qualified closure and durable request/effect evidence are platform-owned |
 | Capability/effect runtime | one capability/effect intent/receipt/reconciliation path with explicit certainty |
 | Environment runtime | exact environment/session identity, assignment-scoped lifetime, atomic reusable-instance provisioning, catalog/lease admission fencing, deterministic seed derivation when required, and owner-managed provider mechanics |
-| Budget/replay | one durable assignment-lifetime authority for steps, time, calls, messages, tokens, cost, resource-policy identity and replay proof |
+| Budget/replay | one durable assignment-lifetime authority for scientific steps, time, calls, messages, tokens, cost and replay proof; physical admission remains platform-owned |
 | Artifact/evidence/data | canonical owner authorities; no run-local identity shadow store |
 | Resource/runtime lifecycle | shared-host admission, compute/GPU allocation, endpoints, Docker/process/service generations, leases, heartbeats, cleanup and abandoned-owner recovery |
 
@@ -1161,13 +1151,13 @@ The repository uses a hierarchical test taxonomy so every test belongs to an exp
 7. <strong>Machine Journal is execution truth.</strong> Snapshots and checkpoint payloads accelerate recovery; they do not outrank or replace accepted journal history.
 8. <strong>Effects are evidence-bearing.</strong> <code>UNKNOWN</code> remains unknown until the effect owner reconciles it; exceptions do not prove that an irreversible action was not applied.
 9. <strong>Bindings are exact and fail closed.</strong> Platform-resolved definitions require an owner-system binding identity before execution; runtime fallback is not scientific equivalence.
-10. <strong>Budgets are execution policy, not metadata.</strong> Steps, time, calls, tokens, cost, resource policy and replay level are enforced by a durable authority shared across parent and child execution.
+10. <strong>Budgets are execution policy, not metadata.</strong> Scientific limits such as steps, time, calls, tokens, cost and replay level are enforced by a durable authority shared across parent and child execution; physical resource admission is a separate platform authority.
 11. <strong>Research value kinds are real types.</strong> Artifact, Evidence, Checkpoint, Metric, Selection and Data require their actual owner authorities rather than a generic JSON fallback.
 12. <strong>Scientific lifetime is explicit.</strong> Assignment, task, participant, environment and operation lifetimes are frozen and propagated; state sharing and cleanup occur at those boundaries.
 13. <strong>Logical scheduling and physical scheduling are different.</strong> Research order, barriers and participant waves may be scientific semantics; CPU/GPU/process/endpoint/container placement is infrastructure.
 14. <strong>Observation is not authority.</strong> Logs, traces, metrics, caches, status projections and forensics are rebuildable views.
 15. <strong>No compatibility shadow path.</strong> When one stronger implementation replaces another, obsolete execution semantics are deleted rather than kept as a hidden fallback.
-16. <strong>Exact source and provider identity are part of reproducibility.</strong> Program, revision, binding, model, environment and resource-policy identity participate in admission and evidence.
+16. <strong>Exact scientific and realized identities are part of reproducibility.</strong> Program, revision, binding, model and environment identities are frozen together with the platform-resolved provider, deployment and physical-generation evidence; downstream code does not select those physical realizations.
 17. <strong>Downstream owns scientific novelty.</strong> The platform supplies reusable execution, evidence, resource and recovery mechanisms; it does not encode one paper's private claim.
 18. <strong>External projects are design inputs, not embedded architectures.</strong> Reuse libraries directly when appropriate, but absorb whole-project ideas into Noetrium's ownership model instead of importing a competing architecture behind adapters.
 19. <strong>Architecture invariants are executable.</strong> Source-derived maps, tests and gates must agree with the same source cut.

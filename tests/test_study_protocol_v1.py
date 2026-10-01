@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from noetrium_platform.research.experimentation.lifecycle.api import (
     AssignmentWorkload,
-    StudyConcurrencyPolicy,
     StudyAssignment,
     StudyMetricAggregate,
     StudyMetricObservation,
@@ -31,7 +30,6 @@ def _protocol() -> StudyProtocol:
         "d" * 64,
         (AssignmentWorkload(("task-1",)),),
         ("standard",),
-        StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
     )
 
 
@@ -113,7 +111,6 @@ def test_study_contracts_reject_bool_as_integer_identity() -> None:
             True, "b" * 64, ("score",), "c" * 64,
             (AssignmentWorkload(("task-1",)),),
             ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
         )
     with pytest.raises(TypeError, match="repetition must be an integer"):
         StudyAssignment(
@@ -122,12 +119,6 @@ def test_study_contracts_reject_bool_as_integer_identity() -> None:
             True,
             "seed",
             AssignmentWorkload(("task-1",)),
-        )
-    with pytest.raises(TypeError, match="max_parallel_repetitions must be an integer"):
-        StudyConcurrencyPolicy(
-            True, False, "shared", "shared", "shared",
-            "runtime-hierarchical-v1", "deterministic-priority-fair-v1",
-            3600.0, 1,
         )
 
 
@@ -161,7 +152,6 @@ def test_study_digest_fields_require_canonical_sha256() -> None:
             (StudyVariantSpec("control", VariantKind.CONTROL, "fixed", "a" * 64),),
             1, "bogus", (), "b" * 64,
             (AssignmentWorkload(("task-1",)),), ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
         )
     with pytest.raises(ValueError):
         StudyProtocol(
@@ -169,5 +159,4 @@ def test_study_digest_fields_require_canonical_sha256() -> None:
             (StudyVariantSpec("control", VariantKind.CONTROL, "fixed", "a" * 64),),
             1, "b" * 64, (), "bogus",
             (AssignmentWorkload(("task-1",)),), ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
         )

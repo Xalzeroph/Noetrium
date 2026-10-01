@@ -34,6 +34,10 @@ PROGRAMMABLE_MACHINE_KINDS = (
     MachineKind.ANALYSIS, MachineKind.PUBLICATION,
 )
 _PROGRAM_STATE_KEY = "_program"
+# Platform-owned livelock detection. These are operational safety thresholds,
+# not scientific budgets: they react only to explicit no-progress evidence.
+PROGRAM_SAME_NO_PROGRESS_LIMIT = 3
+PROGRAM_CONSECUTIVE_NO_PROGRESS_LIMIT = 8
 
 
 def _text(value: object, field_name: str) -> str:
@@ -265,6 +269,8 @@ class ProgramNodeResult:
     evidence_refs: tuple[str, ...] = ()
     artifact_refs: tuple[str, ...] = ()
     child_links: tuple[ChildMachineLink, ...] = ()
+    progress: bool | None = None
+    progress_fingerprint: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_update, Mapping):
@@ -283,6 +289,17 @@ class ProgramNodeResult:
             not isinstance(item, ChildMachineLink) for item in self.child_links
         ):
             raise TypeError("program child_links must be ChildMachineLink tuple")
+        if self.progress is not None and type(self.progress) is not bool:
+            raise TypeError("program progress must be boolean or None")
+        if self.progress_fingerprint is not None:
+            require_sha256(
+                self.progress_fingerprint,
+                "program progress_fingerprint",
+            )
+        if self.progress is None and self.progress_fingerprint is not None:
+            raise ValueError(
+                "program progress_fingerprint requires an explicit progress signal"
+            )
         object.__setattr__(self, "value", freeze_json(self.value))
         object.__setattr__(self, "state_update", freeze_json(self.state_update))
         object.__setattr__(self, "checkpoint_value", freeze_json(self.checkpoint_value))
@@ -590,6 +607,11 @@ class ProgrammableMachineInterpreter:
         cursor: str | None = None,
         visit: int | None = None,
         error_digest: str | None = None,
+        extra_events: tuple[JsonValue, ...] = (),
+        effect_intent_refs: tuple[str, ...] = (),
+        evidence_refs: tuple[str, ...] = (),
+        artifact_refs: tuple[str, ...] = (),
+        child_links: tuple[ChildMachineLink, ...] = (),
     ) -> TransitionProposal:
         failure = {
             "code": code,
@@ -620,8 +642,12 @@ class ProgrammableMachineInterpreter:
                 "type": "research_program_failed",
                 "program_id": self.program.program_id,
                 **failure,
-            },),
+            }, *extra_events),
+            effect_intent_refs=effect_intent_refs,
             accepted_status=MachineStatus.FAILED,
+            evidence_refs=evidence_refs,
+            artifact_refs=artifact_refs,
+            child_links=child_links,
         )
 
     def propose(self, command: MachineCommand, state: MachineSnapshot) -> TransitionProposal:
@@ -644,6 +670,11 @@ class ProgrammableMachineInterpreter:
                 "previous_value": None,
                 "checkpoint_value": None,
                 "semantic": {},
+                "progress_watchdog": {
+                    "consecutive_no_progress": 0,
+                    "same_fingerprint": 0,
+                    "last_fingerprint": None,
+                },
             }
             return TransitionProposal(
                 machine_id=state.machine_id, command_id=command.command_id,
@@ -754,6 +785,66 @@ class ProgrammableMachineInterpreter:
                 error_digest=description.error_digest,
             )
 
+        raw_watchdog = _mapping(
+            current.get("progress_watchdog", {}),
+            "program progress watchdog",
+        )
+        consecutive_no_progress = int(
+            raw_watchdog.get("consecutive_no_progress", 0)
+        )
+        same_fingerprint = int(raw_watchdog.get("same_fingerprint", 0))
+        last_fingerprint = raw_watchdog.get("last_fingerprint")
+        if last_fingerprint is not None and type(last_fingerprint) is not str:
+            raise TypeError("program progress watchdog fingerprint is invalid")
+        if result.progress is True:
+            progress_watchdog = {
+                "consecutive_no_progress": 0,
+                "same_fingerprint": 0,
+                "last_fingerprint": None,
+            }
+        elif result.progress is False:
+            fingerprint = result.progress_fingerprint or canonical_digest({
+                "program_digest": self.program.program_digest,
+                "node_id": cursor,
+                "operation": node.operation,
+                "effect_intent_refs": result.effect_intent_refs,
+                "value": result.value,
+            })
+            consecutive_no_progress += 1
+            same_fingerprint = (
+                same_fingerprint + 1
+                if fingerprint == last_fingerprint
+                else 1
+            )
+            progress_watchdog = {
+                "consecutive_no_progress": consecutive_no_progress,
+                "same_fingerprint": same_fingerprint,
+                "last_fingerprint": fingerprint,
+            }
+            if (
+                same_fingerprint >= PROGRAM_SAME_NO_PROGRESS_LIMIT
+                or consecutive_no_progress >= PROGRAM_CONSECUTIVE_NO_PROGRESS_LIMIT
+            ):
+                return self._failure_proposal(
+                    command,
+                    state,
+                    current,
+                    code="program.no_progress_livelock",
+                    message=(
+                        "research program made no verified progress across "
+                        "repeated effect attempts"
+                    ),
+                    cursor=node.node_id,
+                    visit=visit,
+                    extra_events=result.events,
+                    effect_intent_refs=result.effect_intent_refs,
+                    evidence_refs=result.evidence_refs,
+                    artifact_refs=result.artifact_refs,
+                    child_links=result.child_links,
+                )
+        else:
+            progress_watchdog = dict(raw_watchdog)
+
         state_update = _mapping(
             result.state_update,
             "program state_update",
@@ -821,6 +912,7 @@ class ProgrammableMachineInterpreter:
                     else current.get("checkpoint_value")
                 ),
                 "semantic": semantic,
+                "progress_watchdog": progress_watchdog,
             }
             state_delta = MachineStateDelta.set(
                 (_PROGRAM_STATE_KEY,),
@@ -858,6 +950,12 @@ class ProgrammableMachineInterpreter:
                     value,
                 )
                 for key, value in semantic_update.items()
+            )
+            granular_delta.append(
+                MachineStateMutation.set(
+                    (_PROGRAM_STATE_KEY, "progress_watchdog"),
+                    progress_watchdog,
+                )
             )
             if (
                 result.checkpoint_requested

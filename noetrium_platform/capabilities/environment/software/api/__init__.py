@@ -1,4 +1,4 @@
-from .contracts import SoftwareActionKind, SoftwareActionTimeoutError, SoftwareEnvironmentSpec
+from .contracts import SoftwareActionKind, SoftwareActionTimeoutError, SoftwareContextPolicy, SoftwareEnvironmentSpec
 from .ports import SoftwareWorldPort
 
-__all__ = ["SoftwareActionKind", "SoftwareActionTimeoutError", "SoftwareEnvironmentSpec", "SoftwareWorldPort"]
+__all__ = ["SoftwareActionKind", "SoftwareContextPolicy", "SoftwareActionTimeoutError", "SoftwareEnvironmentSpec", "SoftwareWorldPort"]

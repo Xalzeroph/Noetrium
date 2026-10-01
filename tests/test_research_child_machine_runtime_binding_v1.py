@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+import time
 
 from noetrium import api
 import noetrium_platform.research.execution.api as execution_api
@@ -10,6 +12,7 @@ from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.composition.research_os_local import compose_local_research_os
+from noetrium_platform.research.execution.machines.child_machine import ChildResearchHostRegistry
 
 
 _CHILD_CALLS: list[str] = []
@@ -179,3 +182,79 @@ def test_canonical_runtime_auto_binds_program_scoped_child_machine(
         assert "ping" in _CHILD_CALLS[0]
     finally:
         composition.close()
+
+
+class _SlowMachineJournal(kernel_api.InMemoryMachineJournal):
+    def append(self, commit):
+        # Widen the read-head -> append race that used to let two sessions
+        # propose from the same durable revision.
+        time.sleep(0.02)
+        return super().append(commit)
+
+
+def test_child_executor_serializes_same_machine_without_throttling_machine_identity() -> None:
+    journal = _SlowMachineJournal()
+    program = (
+        execution_api.MemoryProgramBuilder.create(
+            program_id="test.concurrent-child",
+            version="1",
+            state_schema="test.concurrent-child.state.v1",
+            entrypoint="dispatch",
+        )
+        .custom(
+            "dispatch",
+            "test.concurrent-child.dispatch",
+            next_node="dispatch",
+        )
+        .build()
+    )
+
+    def dispatch(request, binding):
+        del binding
+        return execution_api.ProgramNodeResult(
+            value=request.payload,
+            state_update={"last": request.payload},
+        )
+
+    host = execution_api.ResearchProgramHost(
+        host_id="test.concurrent-child",
+        program=program,
+        operations=(
+            execution_api.ResearchHostOperation(
+                "test.concurrent-child.dispatch",
+                dispatch,
+                kernel_api.canonical_digest(
+                    {
+                        "operation": "test.concurrent-child.dispatch",
+                        "implementation_revision": 1,
+                    }
+                ),
+            ),
+        ),
+        journal=journal,
+    )
+    registry = ChildResearchHostRegistry()
+    registry.register_static(host)
+    executor = registry.executor()
+    child_machine_id = "memory:shared-concurrent-child"
+
+    def invoke(index: int):
+        return executor.step_once(
+            execution_api.ChildResearchMachineRequest(
+                host_id="test.concurrent-child",
+                parent_machine_id=f"parent:{index}",
+                child_machine_id=child_machine_id,
+                instance_identity={"scope": "shared"},
+                initial_data={},
+                payload={"index": index},
+                command_id_prefix=f"concurrent:{index}",
+            )
+        )
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        executions = tuple(pool.map(invoke, range(8)))
+
+    assert len(executions) == 8
+    assert all(row.execution.machine_id == child_machine_id for row in executions)
+    assert journal.latest(child_machine_id).revision == 9
+    assert executor._machine_locks == {}

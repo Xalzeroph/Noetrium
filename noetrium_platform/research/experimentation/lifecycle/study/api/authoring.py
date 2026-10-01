@@ -38,7 +38,7 @@ from .design import (
     StudyExecutionPolicy,
     StudyFactorSpec,
 )
-from .contracts import AssignmentWorkload, StudyConcurrencyPolicy
+from .contracts import AssignmentWorkload
 from .measurement import MeasurementDefinition, MeasurementProtocol, MeasurementValueKind
 
 
@@ -158,7 +158,7 @@ class Study:
         trial: ExperimentTrialProtocolIdentity,
         repetitions: int,
         seeds: tuple[str, ...],
-        limits: TrialBudget,
+        limits: TrialBudget | None = None,
         benchmark_split_id: str | None = None,
         assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
         aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
@@ -166,8 +166,8 @@ class Study:
         workload_id: str = "method-program",
         trial_provider_requirement_id: str = "trial.method-program",
         replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL,
-        repetition_timeout_seconds: float = 3600.0,
-        concurrency_policy: StudyConcurrencyPolicy | None = None,
+        environment_session_scope: str = "assignment",
+        environment_seed_scope: str = "assignment",
         factors: tuple[StudyFactorSpec, ...] = (),
         participants: tuple[StudyParticipant, ...] = (),
         revision: ResearchRevision | None = None,
@@ -215,8 +215,8 @@ class Study:
                 "tuple of MeasurementDefinition"
             )
 
-        if type(limits) is not TrialBudget:
-            raise TypeError("Study limits must be TrialBudget")
+        if limits is not None and type(limits) is not TrialBudget:
+            raise TypeError("Study limits must be TrialBudget or None")
         if type(seeds) is not tuple or not seeds:
             raise TypeError("Study seeds must be a non-empty tuple")
         if any(type(seed) is not str or not seed.strip() for seed in seeds):
@@ -225,20 +225,19 @@ class Study:
             raise ValueError("Study seeds must be unique")
         if type(repetitions) is not int or repetitions <= 0:
             raise ValueError("Study repetitions must be positive")
+        if len(seeds) != repetitions:
+            raise ValueError(
+                "Study seeds must map one-to-one to repetitions; "
+                f"seeds={len(seeds)} repetitions={repetitions}"
+            )
         if not isinstance(replay_level, ReplayLevel):
             raise TypeError("Study replay_level must be ReplayLevel")
 
-        if concurrency_policy is not None and type(concurrency_policy) is not StudyConcurrencyPolicy:
-            raise TypeError("Study concurrency_policy must be StudyConcurrencyPolicy or None")
         policy = StudyExecutionPolicy(
             trial_budget=limits,
             replay_level=replay_level,
-            concurrency_policy=(
-                concurrency_policy
-                or StudyConcurrencyPolicy.serial_shared_v1(
-                    repetition_timeout_seconds=repetition_timeout_seconds
-                )
-            ),
+            environment_session_scope=environment_session_scope,
+            environment_seed_scope=environment_seed_scope,
         )
         requirements = ResearchBindingRequirements(
             trial_provider_requirement_id=trial_provider_requirement_id,
@@ -489,19 +488,23 @@ def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
         str(trial_row["protocol_id"]),
         str(trial_configuration_digest),
     )
-    limits_row = _study_spec_mapping(row["limits"], "research study limits")
-    limits = TrialBudget(
-        budget_id=str(limits_row["budget_id"]),
-        max_steps=limits_row.get("max_steps"),
-        max_seconds=limits_row.get("max_seconds"),
-        max_tokens=limits_row.get("max_tokens"),
-        resource_budget_digest=limits_row.get("resource_budget_digest"),
-        max_turns=limits_row.get("max_turns"),
-        max_messages=limits_row.get("max_messages"),
-        max_model_calls=limits_row.get("max_model_calls"),
-        max_working_seconds=limits_row.get("max_working_seconds"),
-        max_cost_usd=limits_row.get("max_cost_usd"),
-    )
+    limits_raw = row.get("limits")
+    if limits_raw is None:
+        limits = None
+    else:
+        limits_row = _study_spec_mapping(limits_raw, "research study limits")
+        limits = TrialBudget(
+            budget_id=str(limits_row["budget_id"]),
+            max_steps=limits_row.get("max_steps"),
+            max_seconds=limits_row.get("max_seconds"),
+            max_tokens=limits_row.get("max_tokens"),
+            resource_budget_digest=limits_row.get("resource_budget_digest"),
+            max_turns=limits_row.get("max_turns"),
+            max_messages=limits_row.get("max_messages"),
+            max_model_calls=limits_row.get("max_model_calls"),
+            max_working_seconds=limits_row.get("max_working_seconds"),
+            max_cost_usd=limits_row.get("max_cost_usd"),
+        )
 
     workloads_raw = row.get("assignment_workloads")
     if workloads_raw is None:
@@ -535,35 +538,16 @@ def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
             revision_row.get("parent_revision_digest"),
         )
 
-    concurrency_raw = row.get("concurrency_policy")
-    concurrency = None
-    if concurrency_raw is not None:
-        concurrency_row = _study_spec_mapping(
-            concurrency_raw,
-            "study concurrency policy spec",
+    if "concurrency_policy" in row:
+        raise ValueError(
+            "study concurrency_policy is platform-owned; downstream studies may "
+            "declare scientific dependencies and isolation requirements, not physical parallelism"
         )
-        concurrency = StudyConcurrencyPolicy(
-            max_parallel_repetitions=int(
-                concurrency_row["max_parallel_repetitions"]
-            ),
-            parallel_assignments=bool(
-                concurrency_row["parallel_assignments"]
-            ),
-            cpu_isolation=str(concurrency_row["cpu_isolation"]),
-            gpu_isolation=str(concurrency_row["gpu_isolation"]),
-            environment_isolation=str(
-                concurrency_row["environment_isolation"]
-            ),
-            model_admission_policy=str(
-                concurrency_row["model_admission_policy"]
-            ),
-            scheduler_policy=str(concurrency_row["scheduler_policy"]),
-            repetition_timeout_seconds=float(
-                concurrency_row["repetition_timeout_seconds"]
-            ),
-            max_parallel_assignments=int(
-                concurrency_row["max_parallel_assignments"]
-            ),
+
+    if "repetition_timeout_seconds" in row:
+        raise ValueError(
+            "study repetition_timeout_seconds is platform-owned; use TrialBudget.max_seconds "
+            "for a scientific time budget"
         )
 
     return Study(
@@ -596,10 +580,12 @@ def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
         replay_level=ReplayLevel(
             str(row.get("replay_level", ReplayLevel.OBSERVATIONAL.value))
         ),
-        repetition_timeout_seconds=float(
-            row.get("repetition_timeout_seconds", 3600.0)
+        environment_session_scope=str(
+            row.get("environment_session_scope", "assignment")
         ),
-        concurrency_policy=concurrency,
+        environment_seed_scope=str(
+            row.get("environment_seed_scope", "assignment")
+        ),
         factors=factors,
         participants=participants,
         revision=revision,
@@ -611,8 +597,9 @@ class AgentStudySpec:
     """Common-path authoring for one method-program study.
 
     This removes participant/model/seed boilerplate without hiding scientific
-    identities. Authors still supply the benchmark, trial protocol and budget;
-    multi-participant or otherwise non-standard studies use Study directly.
+    identities. Authors supply the benchmark and trial protocol; a TrialBudget is
+    optional and exists only when the scientific protocol explicitly requires one.
+    Multi-participant or otherwise non-standard studies use Study directly.
     """
 
     method_id: str
@@ -638,8 +625,8 @@ class AgentStudySpec:
     workload_id: str = "method-program"
     trial_provider_requirement_id: str = "trial.method-program"
     replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL
-    repetition_timeout_seconds: float = 3600.0
-    concurrency_policy: StudyConcurrencyPolicy | None = None
+    environment_session_scope: str = "assignment"
+    environment_seed_scope: str = "assignment"
     factors: tuple[StudyFactorSpec, ...] = ()
     revision: ResearchRevision | None = None
 
@@ -710,10 +697,21 @@ class AgentStudySpec:
         _text(self.trial_provider_requirement_id, "agent study trial_provider_requirement_id")
         if not isinstance(self.replay_level, ReplayLevel):
             raise TypeError("agent study replay_level must be ReplayLevel")
-        if isinstance(self.repetition_timeout_seconds, bool) or not isinstance(
-            self.repetition_timeout_seconds, (int, float)
-        ) or self.repetition_timeout_seconds <= 0:
-            raise ValueError("agent study repetition_timeout_seconds must be positive")
+        if self.environment_session_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "agent study environment_session_scope must be 'assignment' or 'task'"
+            )
+        if self.environment_seed_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "agent study environment_seed_scope must be 'assignment' or 'task'"
+            )
+        if (
+            self.environment_session_scope == "assignment"
+            and self.environment_seed_scope != "assignment"
+        ):
+            raise ValueError(
+                "assignment-scoped environment sessions require assignment-scoped seeds"
+            )
         if type(self.factors) is not tuple or any(
             not isinstance(row, StudyFactorSpec) for row in self.factors
         ):
@@ -753,8 +751,8 @@ class AgentStudySpec:
         workload_id: str | None = None,
         trial_provider_requirement_id: str | None = None,
         replay_level: ReplayLevel | None = None,
-        repetition_timeout_seconds: float | None = None,
-        concurrency_policy: StudyConcurrencyPolicy | None = None,
+        environment_session_scope: str | None = None,
+        environment_seed_scope: str | None = None,
         factors: tuple[StudyFactorSpec, ...] | None = None,
         revision: ResearchRevision | None = None,
     ) -> ResearchStudyDefinition:
@@ -769,10 +767,8 @@ class AgentStudySpec:
                 "agent study trial must be declared on the spec or supplied to build"
             )
         resolved_limits = self.limits if limits is None else limits
-        if not isinstance(resolved_limits, TrialBudget):
-            raise ValueError(
-                "agent study limits must be declared on the spec or supplied to build"
-            )
+        if resolved_limits is not None and not isinstance(resolved_limits, TrialBudget):
+            raise TypeError("agent study limits must be TrialBudget or None")
         resolved_model = self.model if model is None else model
         if resolved_model is None:
             raise ValueError("agent study model must be declared before build")
@@ -818,15 +814,15 @@ class AgentStudySpec:
             else trial_provider_requirement_id
         )
         resolved_replay = self.replay_level if replay_level is None else replay_level
-        resolved_timeout = (
-            self.repetition_timeout_seconds
-            if repetition_timeout_seconds is None
-            else repetition_timeout_seconds
+        resolved_environment_session_scope = (
+            self.environment_session_scope
+            if environment_session_scope is None
+            else environment_session_scope
         )
-        resolved_concurrency = (
-            self.concurrency_policy
-            if concurrency_policy is None
-            else concurrency_policy
+        resolved_environment_seed_scope = (
+            self.environment_seed_scope
+            if environment_seed_scope is None
+            else environment_seed_scope
         )
         resolved_factors = self.factors if factors is None else factors
         resolved_revision = self.revision if revision is None else revision
@@ -856,8 +852,8 @@ class AgentStudySpec:
             workload_id=resolved_workload_id,
             trial_provider_requirement_id=resolved_trial_requirement,
             replay_level=resolved_replay,
-            repetition_timeout_seconds=resolved_timeout,
-            concurrency_policy=resolved_concurrency,
+            environment_session_scope=resolved_environment_session_scope,
+            environment_seed_scope=resolved_environment_seed_scope,
             factors=resolved_factors,
             revision=resolved_revision,
         ).build()

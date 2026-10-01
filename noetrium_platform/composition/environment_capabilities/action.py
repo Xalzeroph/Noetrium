@@ -36,6 +36,12 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
     PreparedEffectHandle,
 )
 
+from .observation import (
+    observation_evidence,
+    raw_observation_payload,
+    semantic_observation_payload,
+)
+
 _REQUEST_SCHEMA = "noetrium.environment.action-capability.request.v1"
 _RESULT_SCHEMA = "noetrium.environment.action-capability.result.v1"
 _HANDLE_SCHEMA = "noetrium.environment.action-capability.handle.v1"
@@ -71,39 +77,6 @@ def _jsonable(value: JsonValue) -> JsonInput:
     if value is None or type(value) in {str, bool, int, float}:
         return value
     raise TypeError(f"environment capability handle cannot encode {type(value).__qualname__}")
-
-
-def _observation_payload(observation: Observation | None) -> JsonValue:
-    if observation is None:
-        return None
-    if not isinstance(observation, Observation):
-        raise TypeError("environment capability observation must be Observation")
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": observation.payload,
-        "artifact_refs": observation.artifact_refs,
-    }
-
-
-def _semantic_observation_payload(observation: Observation | None) -> JsonValue:
-    if observation is None:
-        return None
-    if not isinstance(observation, Observation):
-        raise TypeError("environment capability observation must be Observation")
-    payload = observation.payload
-    decision = (
-        payload.get("decision_view")
-        if isinstance(payload, Mapping)
-        else None
-    )
-    semantic_payload = decision if isinstance(decision, Mapping) else payload
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": semantic_payload,
-        "artifact_refs": observation.artifact_refs,
-    }
 
 
 def _effect_lineage(effect: EffectReceipt | None) -> dict[str, JsonValue]:
@@ -368,8 +341,8 @@ class EnvironmentSessionCapabilityAdapter:
 
     def _capability_result(self, request: CapabilityRequest, result: ActionResult) -> CapabilityResult:
         observation = result.observation
-        raw_observation = _observation_payload(observation)
-        semantic_observation = _semantic_observation_payload(observation)
+        raw_observation = raw_observation_payload(observation)
+        semantic_observation = semantic_observation_payload(observation)
         return CapabilityResult(
             capability_id=self._descriptor.capability_id,
             payload={"accepted": result.accepted, "observation": semantic_observation},

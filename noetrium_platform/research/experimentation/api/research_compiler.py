@@ -436,7 +436,11 @@ def _variant_for(
         VariantKind.CONTROL if intervention.control else VariantKind.TREATMENT,
         provider_id,
         intervention.intervention_digest,
-        definition.execution_policy.trial_budget.budget_id,
+        (
+            None
+            if definition.execution_policy.trial_budget is None
+            else definition.execution_policy.trial_budget.budget_id
+        ),
     )
 
 
@@ -454,10 +458,9 @@ def _assignments(
             seed,
             workload,
         )
-        for repetition, variant, seed, workload in product(
-            range(definition.repetitions),
+        for repetition, seed in enumerate(definition.seeds)
+        for variant, workload in product(
             variants,
-            definition.seeds,
             definition.assignment_workloads,
         )
     )
@@ -490,8 +493,11 @@ def _protocol(
         _scalar_measurement_names(definition.measurement_protocol),
         definition.benchmark.cut_digest,
         definition.assignment_workloads,
-        (definition.execution_policy.trial_budget.budget_id,),
-        definition.execution_policy.concurrency_policy,
+        (
+            ()
+            if definition.execution_policy.trial_budget is None
+            else (definition.execution_policy.trial_budget.budget_id,)
+        ),
     )
 
 

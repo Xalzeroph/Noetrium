@@ -24,7 +24,6 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     AssignmentWorkload,
     StudyExecutionPlan,
     StudyAssignment,
-    StudyConcurrencyPolicy,
     StudyProtocol,
     StudyVariantSpec,
     VariantBinding,
@@ -111,11 +110,6 @@ def _compiled():
             for i in range(6)
         ),
         budget_tiers=("standard",),
-        concurrency_policy=StudyConcurrencyPolicy.isolated_parallel_v1(
-            max_parallel_repetitions=6,
-            max_parallel_assignments=6,
-            repetition_timeout_seconds=60.0,
-        ),
     )
     binding = VariantBinding(
         variant=variant,

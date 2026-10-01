@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from noetrium_platform.capabilities.environment.api import ActionRequest, ActionResult, Observation
 from noetrium_platform.capabilities.environment.text_world.api import TextWorldPort
+from noetrium_platform.composition.environment_capabilities.observation import (
+    raw_observation_payload,
+    semantic_observation_payload,
+)
 from noetrium_platform.capabilities.participant.agent.api import (
     AgentActionStep,
     AgentObservation,
@@ -23,10 +29,15 @@ def _agent_effect_certainty(certainty: EffectCertainty | None) -> str:
 def text_world_agent_observation(observation: Observation) -> AgentObservation:
     if not isinstance(observation, Observation):
         raise TypeError("text-world agent bridge requires Observation")
-    state: JsonObject = {"environment_payload": observation.payload}
+    semantic = semantic_observation_payload(observation)
+    raw = raw_observation_payload(observation)
+    if not isinstance(semantic, Mapping) or not isinstance(raw, Mapping):
+        raise TypeError("text-world observation projection is invalid")
+    state: JsonObject = {"environment_payload": semantic["payload"]}
     evidence: JsonObject = {
         "environment_observation_id": observation.observation_id,
         "environment_generation": observation.generation,
+        "environment_observation": raw,
     }
     return AgentObservation(
         observation_id=observation.observation_id,

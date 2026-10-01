@@ -3,10 +3,13 @@ from __future__ import annotations
 from noetrium_platform.composition.method_telemetry_sink import RawLakeMethodObservationSink
 
 from dataclasses import dataclass, field
+import hashlib
 import importlib
 import os
 from pathlib import Path
+import shutil
 import sys
+import tempfile
 from threading import RLock
 
 from noetrium_platform.composition.managed_research_runtime import (
@@ -33,8 +36,6 @@ from noetrium_platform.product.research_os import (
 )
 
 from .project_execution_authority import (
-    ProjectExecutionAuthorityConfig,
-    load_project_execution_authority_config,
     materialize_project_execution_authorities,
 )
 from noetrium_platform.composition.research_portfolio_execution import (
@@ -45,11 +46,14 @@ from .project_layout import project_package_name
 
 
 _STATE_DIRECTORY = ".noetrium/research-os"
-_REVISION_MESSAGE_INITIAL = "project source"
-_REVISION_MESSAGE_UPDATE = "project source update"
+_SOURCE_SNAPSHOT_DIRECTORY = "source-snapshots"
+_SOURCE_SNAPSHOT_MESSAGE_PREFIX = "project source snapshot:"
+_SOURCE_SNAPSHOT_ATTEMPTS = 4
 
 
 _PROJECT_STATE_ROOT_ENV = "NOETRIUM_PROJECT_STATE_ROOT"
+_ACTIVE_PROJECT_SOURCE_LOCK = RLock()
+_ACTIVE_PROJECT_SOURCES: dict[str, tuple[str, int]] = {}
 
 
 def _project_state_root(project_root: Path) -> Path:
@@ -61,6 +65,192 @@ def _project_state_root(project_root: Path) -> Path:
         raise ValueError(f"{_PROJECT_STATE_ROOT_ENV} must be an absolute path")
     root.mkdir(parents=True, exist_ok=True)
     return root
+
+
+def _snapshot_digest(records: tuple[tuple[str, bytes], ...]) -> str:
+    digest = hashlib.sha256()
+    for relative, payload in records:
+        encoded = relative.encode("utf-8")
+        digest.update(len(encoded).to_bytes(8, "big"))
+        digest.update(encoded)
+        digest.update(len(payload).to_bytes(8, "big"))
+        digest.update(payload)
+    return digest.hexdigest()
+
+
+def _read_project_source_records(root: Path) -> tuple[tuple[str, bytes], ...]:
+    manifest_path = root / "project.manifest.json"
+    src = root / "src"
+    if manifest_path.is_symlink() or not manifest_path.is_file():
+        raise ValueError("project source snapshot requires canonical project.manifest.json")
+    if src.is_symlink() or not src.is_dir():
+        raise ValueError("project source snapshot requires a real src directory")
+
+    records: list[tuple[str, bytes]] = [
+        ("project.manifest.json", manifest_path.read_bytes())
+    ]
+    for current, directory_names, file_names in os.walk(
+        src,
+        topdown=True,
+        followlinks=False,
+    ):
+        current_path = Path(current)
+        kept_directories: list[str] = []
+        for name in sorted(directory_names):
+            path = current_path / name
+            if path.is_symlink():
+                raise ValueError(
+                    f"project source snapshot refuses symlink directory: "
+                    f"{path.relative_to(root).as_posix()}"
+                )
+            if name == "__pycache__":
+                continue
+            kept_directories.append(name)
+        directory_names[:] = kept_directories
+        for name in sorted(file_names):
+            if name.endswith(".pyc"):
+                continue
+            path = current_path / name
+            relative = path.relative_to(root).as_posix()
+            if path.is_symlink() or not path.is_file():
+                raise ValueError(
+                    f"project source snapshot requires regular files: {relative}"
+                )
+            before = path.stat()
+            payload = path.read_bytes()
+            after = path.stat()
+            if (
+                before.st_dev != after.st_dev
+                or before.st_ino != after.st_ino
+                or before.st_size != after.st_size
+                or before.st_mtime_ns != after.st_mtime_ns
+            ):
+                raise RuntimeError(
+                    f"project source changed while snapshotting: {relative}"
+                )
+            records.append((relative, payload))
+    return tuple(records)
+
+
+def _stable_project_source_records(
+    root: Path,
+) -> tuple[tuple[tuple[str, bytes], ...], str]:
+    previous: tuple[tuple[str, bytes], ...] | None = None
+    for _attempt in range(_SOURCE_SNAPSHOT_ATTEMPTS):
+        observed = _read_project_source_records(root)
+        if previous is not None and observed == previous:
+            return observed, _snapshot_digest(observed)
+        previous = observed
+    raise RuntimeError(
+        "project source remained mutable while an immutable revision snapshot "
+        "was being captured"
+    )
+
+
+def _verify_source_snapshot(snapshot_root: Path, expected_digest: str) -> None:
+    observed = _read_project_source_records(snapshot_root)
+    if _snapshot_digest(observed) != expected_digest:
+        raise RuntimeError("project source snapshot content-address identity drifted")
+
+
+def _materialize_project_source_snapshot(
+    project_root: Path,
+    state_root: Path,
+) -> tuple[Path, str]:
+    records, digest = _stable_project_source_records(project_root)
+    snapshots = state_root / _SOURCE_SNAPSHOT_DIRECTORY
+    if snapshots.is_symlink():
+        raise ValueError("project source snapshot root must not be a symlink")
+    snapshots.mkdir(parents=True, exist_ok=True)
+    target = snapshots / digest
+    if target.exists():
+        if target.is_symlink() or not target.is_dir():
+            raise RuntimeError("project source snapshot target has invalid identity")
+        _verify_source_snapshot(target, digest)
+        return target, digest
+
+    temporary = Path(
+        tempfile.mkdtemp(
+            prefix=f".{digest[:16]}-",
+            dir=snapshots,
+        )
+    )
+    try:
+        for relative, payload in records:
+            destination = temporary / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(payload)
+        _verify_source_snapshot(temporary, digest)
+        try:
+            temporary.rename(target)
+        except OSError:
+            if not target.is_dir() or target.is_symlink():
+                raise
+            _verify_source_snapshot(target, digest)
+        else:
+            temporary = target
+    finally:
+        if temporary != target and temporary.exists():
+            shutil.rmtree(temporary)
+    return target, digest
+
+
+def _source_revision_message(snapshot_digest: str) -> str:
+    if (
+        type(snapshot_digest) is not str
+        or len(snapshot_digest) != 64
+        or any(ch not in "0123456789abcdef" for ch in snapshot_digest)
+    ):
+        raise ValueError("project source snapshot digest must be SHA-256")
+    return f"{_SOURCE_SNAPSHOT_MESSAGE_PREFIX}{snapshot_digest}"
+
+
+def _source_snapshot_digest_from_message(message: str) -> str:
+    if type(message) is not str or not message.startswith(_SOURCE_SNAPSHOT_MESSAGE_PREFIX):
+        raise RuntimeError("active project revision has no immutable source snapshot identity")
+    digest = message[len(_SOURCE_SNAPSHOT_MESSAGE_PREFIX):]
+    if (
+        len(digest) != 64
+        or any(ch not in "0123456789abcdef" for ch in digest)
+        or message != _source_revision_message(digest)
+    ):
+        raise RuntimeError("active project revision source snapshot identity is invalid")
+    return digest
+
+
+def _retain_project_source(package: str, source_root: Path) -> None:
+    resolved = str(source_root.resolve())
+    with _ACTIVE_PROJECT_SOURCE_LOCK:
+        current = _ACTIVE_PROJECT_SOURCES.get(package)
+        if current is not None:
+            current_root, count = current
+            if current_root != resolved:
+                raise RuntimeError(
+                    "one process cannot bind two immutable source snapshots for "
+                    f"the same project package: {package}"
+                )
+            _ACTIVE_PROJECT_SOURCES[package] = (current_root, count + 1)
+            return
+        sys.path.insert(0, resolved)
+        _ACTIVE_PROJECT_SOURCES[package] = (resolved, 1)
+
+
+def _release_project_source(package: str, source_root: Path) -> None:
+    resolved = str(source_root.resolve())
+    with _ACTIVE_PROJECT_SOURCE_LOCK:
+        current = _ACTIVE_PROJECT_SOURCES.get(package)
+        if current is None or current[0] != resolved:
+            raise RuntimeError("project source snapshot retain/release ownership drifted")
+        if current[1] > 1:
+            _ACTIVE_PROJECT_SOURCES[package] = (resolved, current[1] - 1)
+            return
+        _ACTIVE_PROJECT_SOURCES.pop(package, None)
+        try:
+            sys.path.remove(resolved)
+        except ValueError as exc:
+            raise RuntimeError(
+                "project source snapshot disappeared from import authority"
+            ) from exc
 
 
 class _LazyProjectResearchOS:
@@ -89,22 +279,33 @@ class _LazyProjectResearchOS:
         return self._delegate.inspect(target, payload)
 
     def pause(self, target, payload=None):
-        return self._execution_delegate().pause(target, payload)
+        # PAUSE is durable ResearchGraph control.  A second operator process
+        # must never materialize or contend for the physical execution plane
+        # merely to fence new claims in an already-running project.
+        return self._delegate.pause(target, payload)
 
     def drain(self, target, payload=None):
-        return self._execution_delegate().drain(target, payload)
+        # DRAIN publishes admission intent into the durable graph; the live
+        # scheduler observes that intent and converges to PAUSED itself.
+        return self._delegate.drain(target, payload)
 
     def interrupt(self, target, payload=None):
-        return self._execution_delegate().interrupt(target, payload)
+        # INTERRUPT fences the selected graph/node generation durably.  Lower
+        # execution is stopped by the process that already owns it.
+        return self._delegate.interrupt(target, payload)
 
     def resume(self, target, payload=None):
+        # RESUME can produce new execution, so it must attach an execution
+        # plane when no live owner remains.
         return self._execution_delegate().resume(target, payload)
 
     def retry(self, target, payload=None):
         return self._execution_delegate().retry(target, payload)
 
     def cancel(self, target, payload=None):
-        return self._execution_delegate().cancel(target, payload)
+        # CANCEL is a durable graph/subgraph terminal transition and releases
+        # only Research-OS-owned value pins; it requires no provider runtime.
+        return self._delegate.cancel(target, payload)
 
     def checkpoint(self, target, payload=None):
         return self._execution_delegate().checkpoint(target, payload)
@@ -126,13 +327,16 @@ class LoadedProjectResearchOS:
     project_root: Path
     state_root: Path
     manifest: ProjectManifest
-    portfolio: ResearchPortfolio
+    _portfolio: ResearchPortfolio | None
     revision: ResearchGraphRevision
     active_revision: ResearchGraphRevision | None
     research_os: ResearchOS
     execution_pool: ResearchExecutionPool
     _composition: LocalResearchOSComposition
-    _execution_config: ProjectExecutionAuthorityConfig
+    source_snapshot_digest: str
+    _source_snapshot_src: Path
+    _project_package: str
+    _source_retained: bool = True
     _shared_runtime: ManagedResearchRuntime | None = None
     _managed_runtime: ManagedResearchRuntime | None = None
     _owns_managed_runtime: bool = False
@@ -144,15 +348,38 @@ class LoadedProjectResearchOS:
     def default_execution_id(self) -> str:
         return self.manifest.project.identity.project_id
 
+    def _materialize_portfolio(self) -> ResearchPortfolio:
+        portfolio = self._portfolio
+        if portfolio is not None:
+            return portfolio
+        snapshot_root = self._source_snapshot_src.parent
+        _verify_source_snapshot(snapshot_root, self.source_snapshot_digest)
+        _retain_project_source(self._project_package, self._source_snapshot_src)
+        self._source_retained = True
+        try:
+            portfolio = _load_generated_portfolio(snapshot_root, self.manifest)
+        except BaseException:
+            _release_project_source(self._project_package, self._source_snapshot_src)
+            self._source_retained = False
+            raise
+        if portfolio.portfolio_digest != self.revision.portfolio_digest:
+            _release_project_source(self._project_package, self._source_snapshot_src)
+            self._source_retained = False
+            raise RuntimeError(
+                "active project source snapshot drifted from durable revision"
+            )
+        self._portfolio = portfolio
+        return portfolio
+
+    @property
+    def portfolio(self) -> ResearchPortfolio:
+        return self._materialize_portfolio()
+
     @property
     def execution_plane_ready(self) -> bool:
         return self._managed_runtime is not None
 
-    def ensure_execution_plane(
-        self,
-        *,
-        start_background_controllers: bool | None = None,
-    ) -> None:
+    def ensure_execution_plane(self) -> None:
         """Materialize the one physical execution plane at first execution intent."""
         if self._closed:
             raise RuntimeError("project Research OS is closed")
@@ -173,6 +400,7 @@ class LoadedProjectResearchOS:
                     # they can race the bootstrap fleet over the same desired
                     # deployment generation.
                     start_background_controllers=False,
+                    runtime_consumer_scope=self.manifest.project.identity.scope,
                 )
             else:
                 managed_runtime.assert_healthy()
@@ -204,13 +432,10 @@ class LoadedProjectResearchOS:
                     ),
                     content_authorities=context.content,
                 )
-                should_start_controllers = (
-                    self._execution_config.start_background_controllers
-                    if start_background_controllers is None
-                    else start_background_controllers
-                )
-                if should_start_controllers:
-                    managed_runtime.start_background_controllers()
+                # Background reconcilers attach only after the synchronous
+                # execution-authority closure is complete. This ordering is
+                # platform-owned and cannot be disabled by downstream code.
+                managed_runtime.start_background_controllers()
             except BaseException as primary:
                 cleanup_errors: list[BaseException] = []
                 if authorities is not None:
@@ -323,12 +548,22 @@ class LoadedProjectResearchOS:
                 self._managed_runtime.close()
             except BaseException as exc:
                 errors.append(exc)
+        if self._source_retained:
+            try:
+                _release_project_source(
+                    self._project_package,
+                    self._source_snapshot_src,
+                )
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._source_retained = False
+        self._closed = True
         if errors:
             raise ExceptionGroup(
                 "project Research OS close failed",
                 errors,
             )
-        self._closed = True
 
 def _project_manifest(root: Path) -> ProjectManifest:
     path = root / "project.manifest.json"
@@ -422,9 +657,9 @@ def load_project_portfolio(project_root: Path) -> ResearchPortfolio:
 def load_project_research_os(
     project_root: Path,
     *,
-    config_path: Path | None = None,
     shared_runtime: ManagedResearchRuntime | None = None,
     state_root: Path | None = None,
+    revision_intent: str = "working",
 ) -> LoadedProjectResearchOS:
     """Load one project directly into the canonical Research OS.
 
@@ -439,7 +674,13 @@ def load_project_research_os(
         ManagedResearchRuntime,
     ):
         raise TypeError("shared project runtime must be ManagedResearchRuntime")
-    root, manifest, portfolio = _load_project_source(project_root)
+    if revision_intent not in {"working", "active"}:
+        raise ValueError("project revision_intent must be 'working' or 'active'")
+
+    root = project_root.expanduser().absolute()
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("project Research OS root must be a real directory")
+    manifest = _project_manifest(root)
     resolved_state_root = (
         _project_state_root(root)
         if state_root is None
@@ -449,59 +690,121 @@ def load_project_research_os(
         raise ValueError("project Research OS state root must not be a symlink")
     resolved_state_root.mkdir(parents=True, exist_ok=True)
 
-    config = (
-        ProjectExecutionAuthorityConfig()
-        if config_path is None
-        else load_project_execution_authority_config(config_path)
-    )
+    package = project_package_name(manifest.project.identity.project_id)
+    composition: LocalResearchOSComposition | None = None
+    snapshot_src: Path | None = None
+    source_snapshot_digest: str | None = None
+    source_retained = False
+    try:
+        # Compose durable control state first.  ACTIVE intent intentionally does
+        # not read the mutable worktree at all: it discovers the exact source
+        # snapshot from the already-active durable ResearchGraph cut.
+        composition = compose_local_research_os(resolved_state_root)
+        research_os = composition.research_os
+        revisions = composition.revision_store
+        graph = composition.graph_store
+        pool = composition.execution_pool
+        execution_id = manifest.project.identity.project_id
+        active = graph.active_cut(execution_id)
+        active_revision: ResearchGraphRevision | None = None
 
-    # Project opening is control-plane only. Physical runtime ownership,
-    # Docker/model/resource reconciliation and execution authorities attach at
-    # the first execution intent.
-    composition = compose_local_research_os(resolved_state_root)
-    research_os = composition.research_os
-    revisions = composition.revision_store
-    graph = composition.graph_store
-    pool = composition.execution_pool
+        if active is not None:
+            stored = revisions.revision(
+                manifest.project.identity.project_id,
+                active.research_revision_digest,
+            )
+            active_revision = _public_revision(stored)
 
-    execution_id = manifest.project.identity.project_id
-    active = graph.active_cut(execution_id)
-    active_revision = None
-    if active is None:
-        revision = research_os.commit(
-            portfolio,
-            message=_REVISION_MESSAGE_INITIAL,
-        )
-    else:
-        stored = revisions.revision(
-            portfolio.portfolio_id,
-            active.research_revision_digest,
-        )
-        active_revision = _public_revision(stored)
-        if active_revision.portfolio_digest == portfolio.portfolio_digest:
+        if revision_intent == "active":
+            if active_revision is None:
+                raise RuntimeError(
+                    "active project control requires an existing durable Research OS cut"
+                )
+            source_snapshot_digest = _source_snapshot_digest_from_message(
+                active_revision.message
+            )
+            snapshot_root = (
+                resolved_state_root
+                / _SOURCE_SNAPSHOT_DIRECTORY
+                / source_snapshot_digest
+            )
+            if snapshot_root.is_symlink() or not snapshot_root.is_dir():
+                raise RuntimeError(
+                    "active project immutable source snapshot is missing"
+                )
+            snapshot_src = snapshot_root / "src"
+            # ACTIVE control is durable-state only.  Import the immutable paper
+            # source lazily if and only if an execution-producing action later
+            # needs to reattach execution authorities.
+            portfolio = None
             revision = active_revision
         else:
-            revision = research_os.commit(
-                portfolio,
-                parents=(active_revision,),
-                message=_REVISION_MESSAGE_UPDATE,
+            snapshot_root, source_snapshot_digest = (
+                _materialize_project_source_snapshot(
+                    root,
+                    resolved_state_root,
+                )
             )
+            snapshot_src = snapshot_root / "src"
+            _retain_project_source(package, snapshot_src)
+            source_retained = True
+            portfolio = _load_generated_portfolio(snapshot_root, manifest)
+            revision_message = _source_revision_message(source_snapshot_digest)
+            if active_revision is None:
+                revision = research_os.commit(
+                    portfolio,
+                    message=revision_message,
+                )
+            elif (
+                active_revision.portfolio_digest == portfolio.portfolio_digest
+                and active_revision.message == revision_message
+            ):
+                revision = active_revision
+            else:
+                revision = research_os.commit(
+                    portfolio,
+                    parents=(active_revision,),
+                    message=revision_message,
+                )
 
-    loaded = LoadedProjectResearchOS(
-        root,
-        resolved_state_root,
-        manifest,
-        portfolio,
-        revision,
-        active_revision,
-        research_os,
-        pool,
-        composition,
-        config,
-        _shared_runtime=shared_runtime,
-    )
-    loaded.research_os = _LazyProjectResearchOS(loaded, research_os)
-    return loaded
+        assert source_snapshot_digest is not None
+        assert snapshot_src is not None
+        loaded = LoadedProjectResearchOS(
+            root,
+            resolved_state_root,
+            manifest,
+            portfolio,
+            revision,
+            active_revision,
+            research_os,
+            pool,
+            composition,
+            source_snapshot_digest,
+            snapshot_src,
+            package,
+            _source_retained=source_retained,
+            _shared_runtime=shared_runtime,
+        )
+        loaded.research_os = _LazyProjectResearchOS(loaded, research_os)
+        return loaded
+    except BaseException as primary:
+        cleanup_errors: list[BaseException] = []
+        if composition is not None:
+            try:
+                composition.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        if source_retained and snapshot_src is not None:
+            try:
+                _release_project_source(package, snapshot_src)
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+        if cleanup_errors:
+            raise ExceptionGroup(
+                "project Research OS open failed with cleanup errors",
+                [primary, *cleanup_errors],
+            ) from primary
+        raise
 
 
 __all__ = ["LoadedProjectResearchOS", "load_project_portfolio", "load_project_research_os"]

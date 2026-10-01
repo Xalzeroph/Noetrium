@@ -442,3 +442,149 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
     assert final.link.child_transition_end == 5
     assert final.link.child_result_ref is not None
     assert len(journal.commits("optimization:aflow-search")) == 5
+
+
+def test_platform_progress_watchdog_stops_repeated_verified_no_progress() -> None:
+    program = (
+        ResearchProgramBuilder(
+            program_id="platform.progress-watchdog",
+            kind=MachineKind.RUNTIME,
+            version="1",
+            state_schema="platform.progress-watchdog.v1",
+            entrypoint="act",
+        )
+        .node("act", "paper.no-progress", next_node="act")
+        .build()
+    )
+    handlers = core_program_handlers()
+    fingerprint = canonical_digest({"effect": "same-rejected-action"})
+
+    def no_progress(_request):
+        return ProgramNodeResult(
+            value={"effect": "rejected"},
+            next_node="act",
+            progress=False,
+            progress_fingerprint=fingerprint,
+        )
+
+    handlers.register(
+        "paper.no-progress",
+        no_progress,
+        implementation_digest=canonical_digest({"operation": "paper.no-progress"}),
+    )
+    machine = MachineExecutor(
+        identity=MachineIdentity(
+            "runtime:progress-watchdog", MachineKind.RUNTIME, "1", "g1"
+        ),
+        program=program.machine_program_ref(_lock()),
+        journal=InMemoryMachineJournal(),
+        family=programmable_machine_family(MachineKind.RUNTIME),
+    )
+    interpreter = ProgrammableMachineInterpreter(program, handlers)
+    machine.open({})
+    machine.step(
+        MachineCommand(
+            command_id="start-progress-watchdog",
+            machine_id=machine.machine_id,
+            expected_revision=0,
+            kind="program.start",
+            payload={"initial_data": {}},
+        ),
+        interpreter,
+    )
+    for index in range(2):
+        receipt = machine.step(
+            MachineCommand(
+                command_id=f"no-progress-{index}",
+                machine_id=machine.machine_id,
+                expected_revision=index + 1,
+                kind="program.step",
+                payload={},
+            ),
+            interpreter,
+        )
+        assert receipt.accepted_status.value == "runnable"
+    failed = machine.step(
+        MachineCommand(
+            command_id="no-progress-2",
+            machine_id=machine.machine_id,
+            expected_revision=3,
+            kind="program.step",
+            payload={},
+        ),
+        interpreter,
+    )
+    assert failed.accepted_status.value == "failed"
+    failure = failed.state["_program"]["semantic"]["program_failure"]
+    assert failure["code"] == "program.no_progress_livelock"
+
+
+def test_platform_progress_watchdog_resets_on_verified_progress() -> None:
+    program = (
+        ResearchProgramBuilder(
+            program_id="platform.progress-reset",
+            kind=MachineKind.RUNTIME,
+            version="1",
+            state_schema="platform.progress-reset.v1",
+            entrypoint="act",
+        )
+        .node("act", "paper.progress-reset", next_node="act")
+        .build()
+    )
+    handlers = core_program_handlers()
+    fingerprint = canonical_digest({"effect": "rejected-action"})
+
+    def action(request):
+        count = int(request.visit)
+        progressed = count == 3
+        return ProgramNodeResult(
+            value={"visit": count},
+            next_node="act",
+            progress=progressed,
+            progress_fingerprint=(
+                canonical_digest({"effect": "confirmed", "visit": count})
+                if progressed
+                else fingerprint
+            ),
+        )
+
+    handlers.register(
+        "paper.progress-reset",
+        action,
+        implementation_digest=canonical_digest({"operation": "paper.progress-reset"}),
+    )
+    machine = MachineExecutor(
+        identity=MachineIdentity(
+            "runtime:progress-reset", MachineKind.RUNTIME, "1", "g1"
+        ),
+        program=program.machine_program_ref(_lock()),
+        journal=InMemoryMachineJournal(),
+        family=programmable_machine_family(MachineKind.RUNTIME),
+    )
+    interpreter = ProgrammableMachineInterpreter(program, handlers)
+    machine.open({})
+    machine.step(
+        MachineCommand(
+            command_id="start-progress-reset",
+            machine_id=machine.machine_id,
+            expected_revision=0,
+            kind="program.start",
+            payload={"initial_data": {}},
+        ),
+        interpreter,
+    )
+    for index in range(5):
+        receipt = machine.step(
+            MachineCommand(
+                command_id=f"progress-reset-{index}",
+                machine_id=machine.machine_id,
+                expected_revision=index + 1,
+                kind="program.step",
+                payload={},
+            ),
+            interpreter,
+        )
+        assert receipt.accepted_status.value == "runnable"
+    watchdog = receipt.state["_program"]["progress_watchdog"]
+    assert watchdog["consecutive_no_progress"] == 2
+    assert watchdog["same_fingerprint"] == 2

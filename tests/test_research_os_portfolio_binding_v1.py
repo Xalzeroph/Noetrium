@@ -229,10 +229,9 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     builder.environment("world", config={"family": "minecraft"})
     builder.dataset("tasks", config={"split": "test"})
     builder.protocol("protocol", config={"repetitions": 3})
-    builder.resource_policy("resources", config={"accelerator": "gpu"})
     builder.study(
         "main",
-        definitions=("planner", "world", "tasks", "protocol", "resources"),
+        definitions=("planner", "world", "tasks", "protocol"),
     )
     portfolio = research_os_api.ResearchPortfolio("declarative-suite", (builder.freeze(),))
 

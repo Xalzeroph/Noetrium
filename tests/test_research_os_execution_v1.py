@@ -58,6 +58,7 @@ from noetrium_platform.composition.research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionNotFound,
@@ -486,6 +487,60 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
     finally:
         pool.close()
 
+
+
+def test_run_hot_replaces_quiescent_paused_revision_under_exclusive_owner_fence(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path, runtime, values, exclusive_owner_generation=True
+    )
+    try:
+        first_portfolio = _portfolio()
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        execution_id = "execution-hot-replace"
+        first_target = research_os_api.ResearchExecutionTarget(
+            execution_id, first_revision
+        )
+        assert (
+            research_os.run(first_target.for_node("paper", "source")).state
+            == "succeeded"
+        )
+        paused = research_os.pause(first_target)
+        assert paused.state == "paused"
+        first_active = graph.active_cut(execution_id)
+        assert first_active is not None
+        first_snapshot = graph.snapshot(first_active.cut_id)
+
+        second_portfolio = _portfolio_v2()
+        second_revision = research_os.commit(
+            second_portfolio,
+            parents=(first_revision,),
+            message="r2",
+        )
+        second_target = research_os_api.ResearchExecutionTarget(
+            execution_id, second_revision
+        )
+        receipt = research_os.run(second_target.for_node("paper", "source"))
+
+        second_compilation = compile_research_portfolio_graph(
+            second_revision, second_portfolio
+        )
+        second_cut = ResearchOSExecutionCut.from_compilation(
+            execution_id, second_compilation
+        )
+        active = graph.active_cut(execution_id)
+        assert active is not None
+        assert active.cut_id == second_cut.cut_id
+        assert receipt.state == "succeeded"
+        assert graph.snapshot(first_active.cut_id) == first_snapshot
+        assert graph.control_state(first_active.cut_id).phase is (
+            ResearchGraphControlPhase.PAUSED
+        )
+    finally:
+        pool.close()
 
 
 def test_run_supersedes_abandoned_revision_under_exclusive_owner_fence(
@@ -1346,5 +1401,107 @@ def test_derived_artifact_without_lineage_authority_fails_before_cut(tmp_path: P
         ):
             research_os.run(target)
         assert graph.active_cut("execution-lineage-missing") is None
+    finally:
+        pool.close()
+
+
+def test_run_auto_reconciles_only_newly_fenced_abandoned_owner_generation(
+    tmp_path: Path,
+) -> None:
+    runtime = _ReconciliationRuntime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path,
+        runtime,
+        values,
+        exclusive_owner_generation=True,
+    )
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="abandoned-owner-auto-recovery")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-auto-abandoned-recovery",
+            revision,
+        )
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claim = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=2,
+            lease_expires_at_ns=(1 << 63) - 1,
+        )
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claim.attempt_id or "",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=3,
+        )
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "succeeded"
+        assert runtime.executed == ["paper::source", "paper::consume"]
+        attempts = graph.attempts(cut.cut_id, "paper::source")
+        assert attempts[0].state is ResearchGraphAttemptState.RECONCILED_RETRY
+        assert graph.node_control_state(
+            cut.cut_id, "paper::source"
+        ).phase is ResearchGraphNodeControlPhase.ACTIVE
+    finally:
+        pool.close()
+
+
+def test_run_does_not_auto_reconcile_preexisting_manual_recovery_intent(
+    tmp_path: Path,
+) -> None:
+    runtime = _ReconciliationRuntime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path,
+        runtime,
+        values,
+        exclusive_owner_generation=True,
+    )
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="manual-recovery-remains-explicit")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-manual-recovery",
+            revision,
+        )
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claim = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:manual-owner:worker",
+            now_ns=2,
+            lease_expires_at_ns=(1 << 63) - 1,
+        )
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claim.attempt_id or "",
+            owner_id="research-graph-scheduler:manual-owner:worker",
+            now_ns=3,
+        )
+        interrupted = research_os.interrupt(target.for_node("paper", "source"))
+        assert interrupted.state == "node_recovery_required"
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "node_recovery_required"
+        assert runtime.executed == []
+        assert graph.node_control_state(
+            cut.cut_id, "paper::source"
+        ).phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
     finally:
         pool.close()

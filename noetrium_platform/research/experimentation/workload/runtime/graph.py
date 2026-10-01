@@ -459,7 +459,11 @@ class WorkloadGraphBinding:
                         failure_scope=TaskFailureScope.CALLER,
                     ),
                     run,
-                    deadline=Deadline.after(float(task.max_seconds)),
+                    deadline=(
+                        None
+                        if task.max_seconds is None
+                        else Deadline.after(float(task.max_seconds))
+                    ),
                 )
                 unresolved.remove(task_id)
 

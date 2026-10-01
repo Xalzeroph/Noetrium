@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from collections.abc import Mapping
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.research.execution.api import ArtifactReference
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
     ExperimentTrialProtocolIdentity,
 )
@@ -319,6 +320,7 @@ class TrialExecutionRequest:
     measurement_protocol: MeasurementProtocol
     protocol_identity: ExperimentTrialProtocolIdentity
     task_definitions: tuple[TaskDefinition, ...]
+    scientific_inputs: Mapping[str, object] = field(default_factory=dict)
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -388,6 +390,13 @@ class TrialExecutionRequest:
                 "trial request task_definitions must be a non-empty tuple "
                 "of TaskDefinition"
             )
+        if not isinstance(self.scientific_inputs, Mapping):
+            raise TypeError("trial request scientific_inputs must be an object")
+        object.__setattr__(
+            self,
+            "scientific_inputs",
+            freeze_json(dict(self.scientific_inputs)),
+        )
         task_ids = tuple(row.task_id for row in self.task_definitions)
         if len(task_ids) != len(set(task_ids)):
             raise ValueError("trial request task definition ids must be unique")
@@ -419,6 +428,7 @@ class TrialExecutionRequest:
                     "task_definition_digests": tuple(
                         row.task_digest for row in self.task_definitions
                     ),
+                    "scientific_inputs": self.scientific_inputs,
                 }
             ),
         )

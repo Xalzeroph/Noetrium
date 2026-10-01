@@ -11,6 +11,9 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelRuntimeState,
 )
 from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
+from noetrium_platform.capabilities.model.serving.runtime import (
+    InterprocessModelAdmissionRegistry,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
@@ -22,6 +25,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
     InterprocessFileLock,
 )
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
+from noetrium_platform.foundation.scope.api import ScopeIdentity
 from noetrium_platform.infrastructure.resources.lease.api import (
     DEFAULT_RESOURCE_LEASE_POLICY,
     ResourceIdentity,
@@ -138,9 +142,21 @@ class ManagedResearchRuntime:
     _lock_released: bool = False
     _closed: bool = False
 
-    def _attach_runtime_fabric_consumer(self, coordination_lock_path: Path) -> None:
-        """Publish this live runtime as one fenced Runtime Fabric consumer."""
+    def _attach_runtime_fabric_consumer(
+        self,
+        coordination_lock_path: Path,
+        *,
+        holder_scope: ScopeIdentity = PLATFORM_SCOPE,
+    ) -> None:
+        """Publish this live runtime as one fenced Runtime Fabric consumer.
 
+        Project executions bind their exact Project scope here, making active
+        Runtime Fabric leases the single durable live-fleet membership truth.
+        Shared repository/fleet runtimes retain PLATFORM_SCOPE.
+        """
+
+        if not isinstance(holder_scope, ScopeIdentity):
+            raise TypeError("Runtime Fabric consumer holder_scope must be ScopeIdentity")
         if self._fabric_consumer_lease is not None:
             raise RuntimeError("Runtime Fabric consumer is already attached")
         lock_path = Path(coordination_lock_path).expanduser().absolute()
@@ -157,7 +173,7 @@ class ManagedResearchRuntime:
         lease = ResourceLease(
             lease_id=f"runtime-fabric-consumer:{self.execution_pool.owner_generation_id}",
             resource=resource,
-            holder_scope=PLATFORM_SCOPE,
+            holder_scope=holder_scope,
             purpose="runtime-fabric-consumer",
         )
         leases = self.management.platform_meta.resource_leases
@@ -545,7 +561,10 @@ def build_local_managed_research_runtime(
     resource_reconcile_interval_seconds: float = 30.0,
     resource_competition_policy: ResourceCompetitionPolicy | None = None,
     runtime_fabric_root_path: Path | None = None,
+    runtime_consumer_scope: ScopeIdentity = PLATFORM_SCOPE,
 ) -> ManagedResearchRuntime:
+    if not isinstance(runtime_consumer_scope, ScopeIdentity):
+        raise TypeError("runtime_consumer_scope must be ScopeIdentity")
     runtime_lock = InterprocessFileLock(
         layout.locks / "managed-research-runtime.lock",
         blocking=False,
@@ -588,6 +607,9 @@ def build_local_managed_research_runtime(
         storage_pressure_observer=storage_pressure_observer,
         network_pressure_observer=network_pressure_observer,
         resource_competition_policy=resource_competition_policy,
+        model_admission_registry=InterprocessModelAdmissionRegistry(
+            fabric_layout.locks / "model-admission"
+        ),
         exclusive_owner_generation=True,
         )
         group = pool.open_orchestration_group(
@@ -666,7 +688,8 @@ def build_local_managed_research_runtime(
             model_replica_pool=model_replica_pool,
         )
         runtime._attach_runtime_fabric_consumer(
-            fabric_layout.locks / "runtime-fabric-consumers.lock"
+            fabric_layout.locks / "runtime-fabric-consumers.lock",
+            holder_scope=runtime_consumer_scope,
         )
         if start_background_controllers:
             runtime.start_background_controllers(

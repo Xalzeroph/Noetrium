@@ -461,6 +461,31 @@ def _attach_test_fabric_consumer(managed, tmp_path, *, include_foreign=False):
     return registry, resource, own, foreign, guard
 
 
+def test_normal_project_close_detaches_only_its_runtime_fabric_consumer(
+    tmp_path,
+) -> None:
+    managed, pool, _group, _controller, resources, fleet, runtime_lock = runtime()
+    registry, resource, own, foreign, guard = _attach_test_fabric_consumer(
+        managed,
+        tmp_path,
+        include_foreign=True,
+    )
+    assert foreign is not None
+
+    managed.close()
+
+    active = registry.active_for(resource)
+    assert tuple(row.lease_id for row in active) == (foreign.lease_id,)
+    assert guard.closed is True
+    assert pool.workloads_quiesced is True
+    assert resources.cleaned == 0
+    assert fleet.removals == 0
+    assert fleet.shutdowns == 0
+    assert runtime_lock.released is True
+
+    registry.release(foreign.lease_id, fencing_token=foreign.fencing_token)
+
+
 def test_terminal_runtime_fabric_retirement_refuses_foreign_consumer_without_side_effects(
     tmp_path,
 ) -> None:

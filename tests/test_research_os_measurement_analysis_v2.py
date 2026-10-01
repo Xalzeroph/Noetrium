@@ -235,3 +235,82 @@ def test_standard_projection_supports_non_scalar_typed_measurements():
             MeasurementValueKind.TEXT_JUDGEMENT:value.text_judgement,
         }[kind]
         assert carrier==expected
+
+
+def test_protocol_mapping_can_source_measurements_only_from_top_level_metric_definitions():
+    from noetrium_platform.composition.research_os_study_closure import (
+        materialize_research_protocol_definition,
+        research_measurement_definitions,
+    )
+    from noetrium_platform.product.research_os import (
+        ResearchDefinitionKind,
+    )
+
+    def protocol():
+        return {
+            "project_id":"metrics-v2",
+            "study_id":"metric-owned-study",
+            "benchmark":{
+                "benchmark_id":"fixture",
+                "revision_id":"v1",
+                "source_digest":"a"*64,
+                "task_schema_id":"fixture.task.v1",
+                "tasks":({
+                    "task_id":"t1",
+                    "revision_id":"v1",
+                    "family":"fixture",
+                    "schema_id":"fixture.task.v1",
+                    "content_digest":"b"*64,
+                    "content":{"goal":"x"},
+                    "lineage_refs":(),
+                },),
+                "task_graph":{"edges":()},
+                "splits":({"split_id":"all","task_ids":("t1",)},),
+            },
+            "benchmark_split_id":"all",
+            "method":{
+                "role":"method",
+                "kind":"agent_method",
+                "implementation":"method",
+                "capabilities":(),
+                "configurations":(),
+                "depends_on":(),
+            },
+            "models":{},
+            "trial":{
+                "protocol_id":"fixture-trial",
+                "configuration_digest":"c"*64,
+            },
+            "repetitions":1,
+            "seeds":("seed",),
+            "limits":{"budget_id":"fixture"},
+            "assignment_workloads":({"task_ids":("t1",),"task_graph":{"edges":()}},),
+            "factors":(),
+        }
+
+    portfolio=api.ResearchPortfolioBuilder("metric-owned")
+    builder=portfolio.program("paper")
+    builder.protocol("protocol",implementation=protocol)
+    builder.metric(
+        "success-rate",
+        value_kind="scalar",
+        schema_id="noetrium.measurement.scalar.v1",
+        semantic_kind="task_success",
+        unit="ratio",
+        scale="binary",
+        source_path="success",
+        reducer="mean",
+    )
+    program=portfolio.freeze().programs[0]
+    protocol_def=next(
+        row for row in program.definitions
+        if row.kind is ResearchDefinitionKind.PROTOCOL
+    )
+    declared=research_measurement_definitions(program.definitions)
+    study=materialize_research_protocol_definition(
+        protocol_def,
+        declared_measurements=declared,
+    )
+    assert tuple(
+        row.measurement_id for row in study.measurement_protocol.definitions
+    ) == ("success-rate",)

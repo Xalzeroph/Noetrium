@@ -80,7 +80,7 @@ class StudyVariantSpec:
     kind: VariantKind
     implementation_id: str
     configuration_digest: str
-    budget_tier: str = "standard"
+    budget_tier: str | None = None
     ablates: tuple[str, ...] = ()
 
     @classmethod
@@ -91,7 +91,7 @@ class StudyVariantSpec:
         kind: VariantKind,
         implementation_id: str,
         configuration: object,
-        budget_tier: str = "standard",
+        budget_tier: str | None = None,
         ablates: tuple[str, ...] = (),
     ) -> Self:
         return cls(
@@ -109,104 +109,11 @@ class StudyVariantSpec:
             raise TypeError("study variant kind must be VariantKind")
         _require_non_empty_string(self.implementation_id, "study variant implementation_id")
         _require_sha256(self.configuration_digest, "study variant configuration_digest")
-        _require_non_empty_string(self.budget_tier, "study variant budget_tier")
+        if self.budget_tier is not None:
+            _require_non_empty_string(self.budget_tier, "study variant budget_tier")
         _require_string_tuple(
             self.ablates, "study variant ablates", non_empty=False, unique=True
         )
-
-
-@dataclass(frozen=True, slots=True)
-class StudyConcurrencyPolicy:
-    """Frozen execution-concurrency identity for a scientific study.
-
-    Parallelism can change contention, timing and therefore observations.  It is
-    part of the protocol digest rather than an invisible runtime tuning knob.
-    """
-
-    max_parallel_repetitions: int
-    parallel_assignments: bool
-    cpu_isolation: str
-    gpu_isolation: str
-    environment_isolation: str
-    model_admission_policy: str
-    scheduler_policy: str
-    repetition_timeout_seconds: float
-    max_parallel_assignments: int
-
-    @classmethod
-    def serial_shared_v1(cls, *, repetition_timeout_seconds: float) -> Self:
-        """Versioned canonical serial/shared execution policy.
-
-        The factory is a stable named scientific contract; callers must still
-        state the timeout explicitly because it participates in execution identity.
-        """
-        return cls(
-            max_parallel_repetitions=1,
-            parallel_assignments=False,
-            cpu_isolation="shared",
-            gpu_isolation="shared",
-            environment_isolation="shared",
-            model_admission_policy="runtime-hierarchical-v1",
-            scheduler_policy="deterministic-priority-fair-v1",
-            repetition_timeout_seconds=repetition_timeout_seconds,
-            max_parallel_assignments=1,
-        )
-
-    @classmethod
-    def isolated_parallel_v1(
-        cls,
-        *,
-        max_parallel_repetitions: int,
-        max_parallel_assignments: int,
-        repetition_timeout_seconds: float,
-        cpu_isolation: str = "worker",
-        gpu_isolation: str = "provider-admission",
-        environment_isolation: str = "per-assignment",
-        model_admission_policy: str = "runtime-hierarchical-v1",
-        scheduler_policy: str = "deterministic-priority-fair-v1",
-    ) -> Self:
-        """Canonical high-throughput policy for independently isolated assignments.
-
-        The scientific protocol freezes *allowed* concurrency and isolation
-        semantics. Runtime resource admission may execute fewer assignments when
-        hardware/model capacity is lower, but it may never exceed these bounds.
-        """
-        return cls(
-            max_parallel_repetitions=max_parallel_repetitions,
-            parallel_assignments=True,
-            cpu_isolation=cpu_isolation,
-            gpu_isolation=gpu_isolation,
-            environment_isolation=environment_isolation,
-            model_admission_policy=model_admission_policy,
-            scheduler_policy=scheduler_policy,
-            repetition_timeout_seconds=repetition_timeout_seconds,
-            max_parallel_assignments=max_parallel_assignments,
-        )
-
-    def __post_init__(self) -> None:
-        _require_positive_int(
-            self.max_parallel_repetitions, "max_parallel_repetitions"
-        )
-        if type(self.parallel_assignments) is not bool:
-            raise TypeError("parallel_assignments must be boolean")
-        _require_positive_int(self.max_parallel_assignments, "max_parallel_assignments")
-        if self.parallel_assignments and self.max_parallel_assignments < 2:
-            raise ValueError(
-                "parallel_assignments requires max_parallel_assignments greater than one"
-            )
-        timeout = _require_finite_number(
-            self.repetition_timeout_seconds, "repetition_timeout_seconds"
-        )
-        if timeout <= 0:
-            raise ValueError("repetition_timeout_seconds must be positive")
-        for name, value in (
-            ("cpu_isolation", self.cpu_isolation),
-            ("gpu_isolation", self.gpu_isolation),
-            ("environment_isolation", self.environment_isolation),
-            ("model_admission_policy", self.model_admission_policy),
-            ("scheduler_policy", self.scheduler_policy),
-        ):
-            _require_non_empty_string(value, f"study concurrency {name}")
 
 
 def _require_variants(value: object) -> tuple[StudyVariantSpec, ...]:
@@ -222,16 +129,14 @@ def _require_variants(value: object) -> tuple[StudyVariantSpec, ...]:
     return value
 
 
-def _require_concurrency_policy(value: object) -> StudyConcurrencyPolicy:
-    if not isinstance(value, StudyConcurrencyPolicy):
-        raise TypeError("study protocol concurrency_policy must be StudyConcurrencyPolicy")
-    return value
-
-
 def _require_variant_budget_tiers(
     variants: tuple[StudyVariantSpec, ...], budget_tiers: tuple[str, ...]
 ) -> None:
-    unknown = {item.budget_tier for item in variants} - set(budget_tiers)
+    unknown = {
+        item.budget_tier
+        for item in variants
+        if item.budget_tier is not None
+    } - set(budget_tiers)
     if unknown:
         raise ValueError(f"study variants use undeclared budget tiers: {sorted(unknown)}")
 
@@ -249,7 +154,6 @@ class StudyProtocol:
     task_manifest_digest: str
     assignment_workloads: tuple["AssignmentWorkload", ...]
     budget_tiers: tuple[str, ...]
-    concurrency_policy: StudyConcurrencyPolicy
     protocol_digest: str = field(init=False)
 
     @classmethod
@@ -265,7 +169,6 @@ class StudyProtocol:
         task_manifest: object,
         assignment_workloads: tuple["AssignmentWorkload", ...],
         budget_tiers: tuple[str, ...],
-        concurrency_policy: StudyConcurrencyPolicy,
     ) -> Self:
         return cls(
             study_id=study_id,
@@ -277,7 +180,6 @@ class StudyProtocol:
             task_manifest_digest=canonical_digest(task_manifest),
             assignment_workloads=assignment_workloads,
             budget_tiers=budget_tiers,
-            concurrency_policy=concurrency_policy,
         )
 
     def __post_init__(self) -> None:
@@ -308,9 +210,8 @@ class StudyProtocol:
         if len(workload_digests) != len(set(workload_digests)):
             raise ValueError("study protocol assignment workloads must be unique")
         budget_tiers = _require_string_tuple(
-            self.budget_tiers, "study protocol budget_tiers", non_empty=True, unique=True
+            self.budget_tiers, "study protocol budget_tiers", non_empty=False, unique=True
         )
-        _require_concurrency_policy(self.concurrency_policy)
         _require_variant_budget_tiers(variants, budget_tiers)
         object.__setattr__(self, "protocol_digest", canonical_digest({
             "study_id": self.study_id,
@@ -324,7 +225,6 @@ class StudyProtocol:
                 row.workload_digest for row in self.assignment_workloads
             ),
             "budget_tiers": self.budget_tiers,
-            "concurrency_policy": self.concurrency_policy,
         }))
 
 
@@ -745,7 +645,6 @@ class StudyMetricAggregate:
 
 __all__ = [
     "AssignmentWorkload",
-    "StudyConcurrencyPolicy",
     "StudyAssignment",
     "StudyExecutionUnit",
     "StudyMatrixExecutionReport",

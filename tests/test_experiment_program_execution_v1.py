@@ -1,4 +1,3 @@
-from dataclasses import replace
 from threading import Event, Lock, Thread
 import time
 from unittest.mock import patch
@@ -16,7 +15,6 @@ from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal
 from noetrium_platform.research.experimentation.lifecycle.api import (
     AssignmentWorkload,
     StudyExecutionPlan,
-    StudyConcurrencyPolicy,
     StudyMetricObservation,
     StudyProtocol,
     StudyVariantSpec,
@@ -33,11 +31,7 @@ from noetrium_platform.research.experimentation.api.program import (
 )
 
 
-def _protocol(
-    *,
-    repetitions: int = 2,
-    concurrency_policy: StudyConcurrencyPolicy | None = None,
-) -> StudyProtocol:
+def _protocol(*, repetitions: int = 2) -> StudyProtocol:
     return StudyProtocol(
         "study-matrix",
         "workload-matrix",
@@ -51,9 +45,6 @@ def _protocol(
         "d" * 64,
         (AssignmentWorkload(("task-1",)),),
         ("standard",),
-        concurrency_policy or StudyConcurrencyPolicy.serial_shared_v1(
-            repetition_timeout_seconds=3600.0
-        ),
     )
 
 
@@ -73,7 +64,13 @@ def _plan(protocol: StudyProtocol | None = None) -> StudyExecutionPlan:
     return StudyExecutionPlan.compile(protocol, bindings, assignments)
 
 
-def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
+def _execute(
+    plan: StudyExecutionPlan,
+    adapter,
+    *,
+    task_group=None,
+    frontier_capacity: int | None = None,
+):
     return ExperimentProgramBinding(
         compile_experiment_program(plan),
         adapter,
@@ -81,6 +78,9 @@ def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
         execution_binding_digest="e" * 64,
         execution_id="f" * 64,
         task_group=task_group,
+        frontier_capacity=(
+            len(plan.assignments) if frontier_capacity is None else frontier_capacity
+        ),
     ).execute(journal=InMemoryMachineJournal())
 
 
@@ -117,24 +117,17 @@ def test_experiment_program_consumes_only_frozen_plan_authority() -> None:
     }
 
 
-def test_parallel_repetition_policy_uses_structured_concurrency_and_deterministic_merge() -> None:
-    protocol = _protocol(
-        repetitions=4,
-        concurrency_policy=replace(
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
-            max_parallel_repetitions=2,
-        ),
-    )
-    plan = _plan(protocol)
+def test_platform_frontier_controls_experiment_parallelism_and_deterministic_merge() -> None:
+    plan = _plan(_protocol(repetitions=4))
     runtime = build_concurrency_runtime(
         budget=ConcurrencyBudget(
             max_blocking_io_workers=2,
             max_cpu_workers=1,
-            default_queue_capacity=4,
+            default_queue_capacity=8,
         )
     )
     group = runtime.open_task_group(
-        "study-parallel-execution",
+        "study-platform-frontier",
         failure_policy=TaskFailurePolicy.COLLECT_ALL,
     )
     active = 0
@@ -143,52 +136,53 @@ def test_parallel_repetition_policy_uses_structured_concurrency_and_deterministi
 
     class ParallelAdapter:
         def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("platform-managed batches execute independent assignments")
+
+        def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
             nonlocal active, max_active
-            del bindings
+            del binding, execution_id
             assert plan_digest == plan.plan_digest
             with lock:
                 active += 1
                 max_active = max(max_active, active)
             try:
                 time.sleep(0.04)
-                return tuple(
-                    StudyMetricObservation(
-                        assignment,
-                        (("score", float(unit.repetition + 1)),),
-                    )
-                    for assignment in unit.assignments
+                return StudyMetricObservation(
+                    assignment, (("score", float(assignment.repetition + 1)),)
                 )
             finally:
                 with lock:
                     active -= 1
 
-        def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
-            raise AssertionError("serial-variant plan must use repetition execution")
-
     try:
-        report = _execute(plan, ParallelAdapter(), task_group=group)
+        report = _execute(
+            plan, ParallelAdapter(), task_group=group, frontier_capacity=2
+        )
         assert max_active == 2
         assert [item.assignment.repetition for item in report.observations] == [
             0, 0, 1, 1, 2, 2, 3, 3
-        ]
-        assert [item.assignment.variant_id for item in report.observations[:2]] == [
-            "control", "treatment"
         ]
     finally:
         group.close()
         runtime.close()
 
-
-def test_scientific_concurrency_policy_is_part_of_protocol_identity() -> None:
-    serial = _protocol()
-    parallel = _protocol(
-        concurrency_policy=replace(
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
-            max_parallel_repetitions=2,
-        )
+def test_runtime_frontier_is_not_part_of_scientific_protocol_identity() -> None:
+    plan = _plan(_protocol(repetitions=2))
+    compiled = compile_experiment_program(plan)
+    assert compiled.plan.protocol.protocol_digest == plan.protocol.protocol_digest
+    # Runtime frontier is supplied only when binding execution, so changing it
+    # cannot alter the frozen scientific plan/protocol digest.
+    one = ExperimentProgramBinding(
+        compiled, _BoundAdapter(), BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64, execution_id="f" * 64,
+        frontier_capacity=1,
     )
-    assert serial.protocol_digest != parallel.protocol_digest
-
+    many = ExperimentProgramBinding(
+        compiled, _BoundAdapter(), BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64, execution_id="f" * 64,
+        frontier_capacity=8,
+    )
+    assert one.compiled.plan.protocol.protocol_digest == many.compiled.plan.protocol.protocol_digest
 
 def test_experiment_program_uses_binding_index_not_repeated_linear_lookup() -> None:
     plan = _plan()
@@ -237,15 +231,8 @@ def test_assignment_order_is_frozen_plan_authority() -> None:
     assert forward.plan_digest != reverse.plan_digest
 
 
-def test_parallel_assignment_policy_uses_bound_variant_entrypoint() -> None:
-    protocol = _protocol(
-        concurrency_policy=replace(
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
-            parallel_assignments=True,
-            max_parallel_assignments=2,
-        )
-    )
-    plan = _plan(protocol)
+def test_platform_frontier_uses_bound_variant_entrypoint() -> None:
+    plan = _plan(_protocol(repetitions=2))
     runtime = build_concurrency_runtime(
         budget=ConcurrencyBudget(
             max_blocking_io_workers=2,
@@ -263,7 +250,7 @@ def test_parallel_assignment_policy_uses_bound_variant_entrypoint() -> None:
 
     class BoundVariantAdapter:
         def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
-            raise AssertionError("parallel assignments must use bound assignment execution")
+            raise AssertionError("platform-managed assignments must use bound assignment execution")
 
         def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
             nonlocal active, max_active
@@ -280,22 +267,15 @@ def test_parallel_assignment_policy_uses_bound_variant_entrypoint() -> None:
                     active -= 1
 
     try:
-        report = _execute(plan, BoundVariantAdapter(), task_group=group)
+        report = _execute(
+            plan, BoundVariantAdapter(), task_group=group, frontier_capacity=2
+        )
     finally:
         group.close()
         runtime.close()
 
     assert max_active == 2
-    assert [
-        (item.assignment.repetition, item.assignment.variant_id)
-        for item in report.observations
-    ] == [
-        (0, "control"),
-        (0, "treatment"),
-        (1, "control"),
-        (1, "treatment"),
-    ]
-
+    assert len(report.observations) == 4
 
 def test_experiment_program_rejects_incomplete_bound_provider_before_execution() -> None:
     class IncompleteAdapter:
@@ -306,68 +286,33 @@ def test_experiment_program_rejects_incomplete_bound_provider_before_execution()
         _execute(_plan(), IncompleteAdapter())
 
 
-def test_serial_repetition_scheduler_prepares_exactly_one_unit_ahead() -> None:
-    protocol = _protocol(repetitions=4)
-    plan = _plan(protocol)
-    prepared: list[int] = []
-    prepare_calls: list[int] = []
-    snapshots: list[tuple[int, ...]] = []
+def test_single_slot_platform_frontier_prepares_one_assignment_ahead() -> None:
+    plan = _plan(_protocol(repetitions=2))
+    prepared: list[str] = []
+    snapshots: list[tuple[str, ...]] = []
 
     class PipelinedAdapter:
         def prepare_bound(self, unit, bindings, plan_digest, *, execution_id):
-            del bindings, execution_id
-            assert plan_digest == plan.plan_digest
-            prepare_calls.append(unit.repetition)
-            if unit.repetition not in prepared:
-                prepared.append(unit.repetition)
+            raise AssertionError("platform-managed execution prepares assignments")
 
-        def prepare_bound_variant(
-            self,
-            assignment,
-            binding,
-            plan_digest,
-            *,
-            execution_id,
-        ):
-            raise AssertionError(
-                "serial repetition execution must prepare grouped units"
-            )
+        def prepare_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
+            del binding, execution_id
+            assert plan_digest == plan.plan_digest
+            prepared.append(assignment.assignment_digest)
 
         def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
-            del bindings, execution_id
-            assert plan_digest == plan.plan_digest
+            raise AssertionError("platform-managed execution uses variant entrypoint")
+
+        def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
+            del binding, execution_id
             snapshots.append(tuple(prepared))
-            return tuple(
-                StudyMetricObservation(
-                    assignment,
-                    (("score", float(unit.repetition + 1)),),
-                )
-                for assignment in unit.assignments
-            )
+            return StudyMetricObservation(assignment, (("score", 1.0),))
 
-        def execute_bound_variant(
-            self,
-            assignment,
-            binding,
-            plan_digest,
-            *,
-            execution_id,
-        ):
-            raise AssertionError(
-                "serial repetition execution must use grouped units"
-            )
-
-    report = _execute(plan, PipelinedAdapter())
-
-    assert len(report.observations) == 8
-    assert prepare_calls == [0, 1, 2, 3]
-    assert snapshots == [
-        (0, 1),
-        (0, 1, 2),
-        (0, 1, 2, 3),
-        (0, 1, 2, 3),
-    ]
-
+    report = _execute(plan, PipelinedAdapter(), frontier_capacity=1)
+    assert len(report.observations) == 4
+    assert len(prepared) == 4
+    assert len(set(prepared)) == 4
+    assert len(snapshots[0]) == 2
 
 def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() -> None:
     variants = (
@@ -375,13 +320,6 @@ def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() 
         StudyVariantSpec("v1", VariantKind.TREATMENT, "one", "1" * 64),
         StudyVariantSpec("v2", VariantKind.TREATMENT, "two", "2" * 64),
         StudyVariantSpec("v3", VariantKind.TREATMENT, "three", "3" * 64),
-    )
-    policy = replace(
-        StudyConcurrencyPolicy.serial_shared_v1(
-            repetition_timeout_seconds=3600.0
-        ),
-        parallel_assignments=True,
-        max_parallel_assignments=2,
     )
     protocol = StudyProtocol(
         "lookahead-study",
@@ -393,7 +331,6 @@ def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() 
         "d" * 64,
         (AssignmentWorkload(("task-1",)),),
         ("standard",),
-        policy,
     )
     plan = _plan(protocol)
     runtime = build_concurrency_runtime(
@@ -475,6 +412,7 @@ def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() 
                     plan,
                     PipelinedVariantAdapter(),
                     task_group=group,
+                    frontier_capacity=2,
                 )
             )
         except BaseException as exc:
@@ -495,6 +433,104 @@ def test_parallel_assignment_scheduler_prewarms_one_full_replacement_frontier() 
         assert len(report_box[0].observations) == 4
     finally:
         gate.set()
+        thread.join(5.0)
+        group.close()
+        runtime.close()
+
+
+def test_prepare_failure_waits_for_all_active_assignment_workers_to_converge() -> None:
+    plan = _plan(_protocol(repetitions=3))
+    runtime = build_concurrency_runtime(
+        budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            default_queue_capacity=8,
+        )
+    )
+    group = runtime.open_task_group(
+        "prepare-failure-worker-convergence",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    slow_started = Event()
+    release_slow = Event()
+    slow_finished = Event()
+    prepare_failed = Event()
+    prepare_calls: list[str] = []
+    failure_box: list[BaseException] = []
+    execution_calls = 0
+    execution_lock = Lock()
+
+    class FailingPreparationAdapter:
+        def prepare_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("platform-managed execution prepares assignments")
+
+        def prepare_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            del binding, execution_id
+            assert plan_digest == plan.plan_digest
+            prepare_calls.append(assignment.assignment_digest)
+            if len(prepare_calls) == 5:
+                prepare_failed.set()
+                raise RuntimeError("replacement frontier preparation failed")
+
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("platform-managed execution uses variant entrypoint")
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            nonlocal execution_calls
+            del binding, execution_id
+            assert plan_digest == plan.plan_digest
+            with execution_lock:
+                execution_calls += 1
+                call_number = execution_calls
+            if call_number == 1:
+                slow_started.set()
+                try:
+                    assert release_slow.wait(3.0)
+                finally:
+                    slow_finished.set()
+            return StudyMetricObservation(assignment, (("score", 1.0),))
+
+    def run() -> None:
+        try:
+            _execute(
+                plan,
+                FailingPreparationAdapter(),
+                task_group=group,
+                frontier_capacity=2,
+            )
+        except BaseException as exc:
+            failure_box.append(exc)
+
+    thread = Thread(target=run)
+    thread.start()
+    try:
+        assert slow_started.wait(2.0)
+        assert prepare_failed.wait(2.0)
+        time.sleep(0.05)
+        assert thread.is_alive(), "scheduler returned while an admitted worker was still live"
+        assert not slow_finished.is_set()
+        release_slow.set()
+        thread.join(5.0)
+        assert not thread.is_alive()
+        assert slow_finished.is_set()
+        assert len(failure_box) == 1
+        assert "replacement frontier preparation failed" in str(failure_box[0])
+    finally:
+        release_slow.set()
         thread.join(5.0)
         group.close()
         runtime.close()

@@ -6,10 +6,11 @@ owns the durable execution cut. No second execution loop is introduced here.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json, require_sha256
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
     MeasurementValueKind,
@@ -275,6 +276,7 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
         provider_binding: ResearchOSExperimentTrialProviderBinding,
         observation: ResearchOSExperimentTrialObservationPort | None = None,
         receipt_publisher: ResearchOSExperimentTrialReceiptPublisherPort | None = None,
+        scientific_inputs: Mapping[str, object] | None = None,
     ) -> None:
         self._closure = closure
         self._provider_binding = provider_binding
@@ -290,6 +292,11 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
                 "Trial Study receipt_publisher must satisfy typed publisher port"
             )
         self._receipt_publisher = receipt_publisher
+        if scientific_inputs is None:
+            scientific_inputs = {}
+        if not isinstance(scientific_inputs, Mapping):
+            raise TypeError("Trial Study scientific_inputs must be an object")
+        self._scientific_inputs = freeze_json(dict(scientific_inputs))
         provider_protocol = provider_binding.provider.protocol_identity
         if provider_protocol != closure.research_plan.trial_protocol_identity:
             raise ValueError(
@@ -318,6 +325,18 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
                 "canonical Trial Study execution requires at least one scalar "
                 "measurement metric"
             )
+
+    def bind_scientific_inputs(
+        self,
+        inputs: Mapping[str, object],
+    ) -> "_TrialBoundStudyExecution":
+        return _TrialBoundStudyExecution(
+            self._closure,
+            self._provider_binding,
+            self._observation_sink,
+            self._receipt_publisher,
+            scientific_inputs=inputs,
+        )
 
     def _request(
         self,
@@ -358,6 +377,7 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             measurement_protocol=plan.measurement_protocol,
             protocol_identity=plan.trial_protocol_identity,
             task_definitions=task_definitions,
+            scientific_inputs=self._scientific_inputs,
         )
 
     def _observation(

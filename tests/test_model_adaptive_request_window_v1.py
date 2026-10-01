@@ -29,6 +29,14 @@ class _Clock:
         return self.value
 
 
+
+def test_adaptive_window_default_start_is_capacity_derived():
+    clock = _Clock()
+    assert AdaptiveRequestWindow(max_limit=1, clock=clock).limit == 1
+    assert AdaptiveRequestWindow(max_limit=16, clock=clock).limit == 4
+    assert AdaptiveRequestWindow(max_limit=64, clock=clock).limit == 8
+
+
 def test_adaptive_window_rate_limit_reduces_and_transient_does_not():
     clock=_Clock()
     window=AdaptiveRequestWindow(

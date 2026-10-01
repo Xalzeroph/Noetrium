@@ -32,10 +32,28 @@ from .research_os_lowering import (
 )
 
 
+def _measurement_authoring_mapping(
+    row: MeasurementDefinition,
+) -> dict[str, object]:
+    return {
+        "measurement_id": row.measurement_id,
+        "schema_id": row.schema_id,
+        "value_kind": row.value_kind.value,
+        "unit": row.unit,
+        "description": row.description,
+        "semantic_kind": row.semantic_kind,
+        "scale": row.scale,
+        "domain": row.domain,
+        "source_path": row.source_path,
+        "reducer": row.reducer,
+    }
+
+
 def materialize_research_protocol_definition(
     definition,
     resolver: ResearchImplementationResolverPort | None = None,
     definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
+    declared_measurements: tuple[MeasurementDefinition, ...] = (),
 ) -> ResearchStudyDefinition:
     if definition.kind is not ResearchDefinitionKind.PROTOCOL:
         raise TypeError("research protocol materialization requires PROTOCOL definition")
@@ -60,7 +78,13 @@ def materialize_research_protocol_definition(
     if type(study) is ResearchStudyDefinition:
         return study
     if isinstance(study, dict):
-        return materialize_research_study_spec(study)
+        authored = dict(study)
+        if not authored.get("measurements") and declared_measurements:
+            authored["measurements"] = tuple(
+                _measurement_authoring_mapping(row)
+                for row in declared_measurements
+            )
+        return materialize_research_study_spec(authored)
     raise TypeError("Research Study protocol factory must return a top-level Study mapping")
 
 
@@ -175,10 +199,12 @@ class ResearchStudyProtocolClosureProvider:
                 "Experiment node requires exactly one PROTOCOL definition: "
                 f"node={node.graph_node_id} count={len(candidates)}"
             )
+        declared = research_measurement_definitions(node.definitions)
         study=materialize_research_protocol_definition(
             candidates[0],
             self._resolver,
             self._definition_bindings,
+            declared,
         )
         return merge_research_measurements(study,node.definitions)
 

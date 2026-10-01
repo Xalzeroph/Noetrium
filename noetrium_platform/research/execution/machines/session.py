@@ -226,14 +226,15 @@ class ResearchMachineSession:
         *,
         command_id_prefix: str,
         payload: JsonValue = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
     ) -> ResearchMachineRun:
         if type(command_id_prefix) is not str or not command_id_prefix.strip():
             raise ValueError("command_id_prefix is required")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("max_steps must be positive or None")
         commits: list[MachineCommit] = []
-        for ordinal in range(max_steps):
+        ordinal = 0
+        while max_steps is None or ordinal < max_steps:
             if self.status is not MachineStatus.RUNNABLE:
                 return ResearchMachineRun(tuple(commits), self.status, self.revision)
             commit = self.step(
@@ -243,6 +244,7 @@ class ResearchMachineSession:
             commits.append(commit)
             if commit.accepted_status in _TERMINAL:
                 return ResearchMachineRun(tuple(commits), commit.accepted_status, commit.revision)
+            ordinal += 1
         limit = self._commit(self._command(
             command_id=f"{command_id_prefix}:limit:{self.revision}",
             kind="program.limit",

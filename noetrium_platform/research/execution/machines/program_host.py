@@ -150,7 +150,7 @@ class ResearchProgramHost:
         journal: MachineJournalPort,
         base_handlers: ProgramHandlerRegistry | None = None,
         snapshot_store: MachineSnapshotStorePort | None = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
         dependency_identity: JsonValue = None,
         binding_restorer: ResearchHostBindingRestorer | None = None,
     ) -> None:
@@ -165,8 +165,8 @@ class ResearchProgramHost:
         names = tuple(item.operation for item in operations)
         if len(names) != len(set(names)):
             raise ValueError("research host operation names must be unique")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("research host max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("research host max_steps must be positive or None")
         if not isinstance(journal, MachineJournalPort):
             raise TypeError("research host requires MachineJournalPort")
         if base_handlers is not None and not isinstance(

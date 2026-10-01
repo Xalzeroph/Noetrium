@@ -963,6 +963,34 @@ def _materialize_trial_verifier(
     return verifier, identity
 
 
+class _EnvironmentTaskFinalizingWorkload:
+    """Release task-scoped environment sessions at the task boundary."""
+
+    def __init__(self, delegate, lifetime) -> None:
+        self._delegate = delegate
+        self._lifetime = lifetime
+        self.identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.environment-task-finalizing-workload.v1",
+                "delegate": delegate.identity_digest,
+                "environment": lifetime.identity_digest,
+            }
+        )
+
+    @property
+    def task_frontier_capacity(self):
+        return self._delegate.task_frontier_capacity
+
+    def task_group_scope(self, context):
+        return self._delegate.task_group_scope(context)
+
+    def execute_one(self, task, context):
+        try:
+            return self._delegate.execute_one(task, context)
+        finally:
+            self._lifetime.release_context(context)
+
+
 @dataclass(frozen=True, slots=True)
 class PortfolioAutomaticTrialProviderResolver:
     """Build the canonical workload TrialProvider directly from frozen Study IR."""
@@ -1026,7 +1054,7 @@ class PortfolioAutomaticTrialProviderResolver:
                     study_inventory,
                     method_program_digests=(method.program_digest,),
                     journal=program_journal,
-                    max_steps=10_000,
+                    max_steps=None,
                 )
                 method_inventories[method.program_digest] = program_inventory
             runtime = compose_method_runtime_bindings(
@@ -1057,13 +1085,25 @@ class PortfolioAutomaticTrialProviderResolver:
                     runtime,
                 )
             )
+        lifetime_releaser = self.lifetime_releaser
+        if lifetime_releaser is not None:
+            selector = getattr(lifetime_releaser, "for_program", None)
+            if callable(selector):
+                lifetime_releaser = selector(program.program_id)
+
+        task_workload = ScheduledParticipantWorkloadBinding(
+            schedule=schedule,
+            participants=tuple(participant_runtimes),
+            journal=program_journal,
+            execution_pool=self.context.execution_pool,
+        )
+        if lifetime_releaser is not None:
+            task_workload = _EnvironmentTaskFinalizingWorkload(
+                task_workload,
+                lifetime_releaser,
+            )
         workload = bind_workload_graph(
-            ScheduledParticipantWorkloadBinding(
-                schedule=schedule,
-                participants=tuple(participant_runtimes),
-                journal=program_journal,
-                execution_pool=self.context.execution_pool,
-            ),
+            task_workload,
             journal=program_journal,
         )
         task_projection = _materialize_trial_task_projection(
@@ -1090,11 +1130,6 @@ class PortfolioAutomaticTrialProviderResolver:
                 else ResearchExecutionVerifierArtifactPublisher(self.context.content)
             ),
         )
-        lifetime_releaser = self.lifetime_releaser
-        if lifetime_releaser is not None:
-            selector = getattr(lifetime_releaser, "for_program", None)
-            if callable(selector):
-                lifetime_releaser = selector(program.program_id)
         if lifetime_releaser is not None:
             provider = AssignmentLifetimeFinalizingTrialProvider(
                 provider,
@@ -1186,7 +1221,7 @@ def _materialize_platform_definition_bindings(
         else dict(environment_runtime.runtimes)
     )
 
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for definition in program.definitions:
             if definition.kind is ResearchDefinitionKind.PROTOCOL:
                 study = None
@@ -1268,19 +1303,6 @@ def _materialize_platform_definition_bindings(
                     identity=canonical_digest(dataset),
                     binding=dataset,
                 )
-                continue
-
-            if definition.kind is ResearchDefinitionKind.RESOURCE_POLICY:
-                config = thaw_json(definition.config)
-                actual = asdict(context.execution_pool.resource_competition_policy)
-                if isinstance(config, Mapping) and dict(config) == actual:
-                    add(
-                        definition,
-                        owner="resource",
-                        provider="research-execution-pool.resource-competition",
-                        identity=context.execution_pool.resource_competition_policy_digest,
-                        binding=context.execution_pool.resource_competition_policy,
-                    )
                 continue
 
     for program, study in studies:
@@ -1408,12 +1430,12 @@ class LocalResearchExecutionAuthorityMaterializer:
 
         manifests = PortfolioDerivedProjectManifestResolver(
             self.project_manifest,
-            portfolio.programs,
+            portfolio._programs,
         )
         runtime_requirements: dict[
             tuple[str, str], set[str]
         ] = {}
-        for program in portfolio.programs:
+        for program in portfolio._programs:
             for definition in program.definitions:
                 if definition.kind is not ResearchDefinitionKind.PROTOCOL:
                     continue
@@ -1531,7 +1553,7 @@ class LocalResearchExecutionAuthorityMaterializer:
         )
         reconciliation_registrations = []
         seen_protocols = set()
-        for program in portfolio.programs:
+        for program in portfolio._programs:
             for definition in program.definitions:
                 if definition.kind is ResearchDefinitionKind.PROTOCOL:
                     study = materialize_research_protocol_definition(

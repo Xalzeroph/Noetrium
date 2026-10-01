@@ -623,6 +623,7 @@ __all__ = tuple(__all__) + (
 
 # Canonical Method aggregate. Agent-loop and all harness components are owned here.
 from noetrium_platform.research.execution.method import (
+    MemoryScope,
     ResearchComponent,
     ResearchComponentBuilder,
     ResearchComponentCall,
@@ -631,11 +632,18 @@ from noetrium_platform.research.execution.method import (
     ResearchEvent,
     ResearchMethod,
     ResearchMethodBuilder,
+    ResearchMethodDSL,
+    ResearchMethodContractDSL,
+    ResearchMethodComponentsDSL,
+    ResearchMethodFlowDSL,
+    ResearchComponentDSL,
+    ResearchMemoryDSL,
     ResearchMethodCall,
     ResearchMethodTransition,
 )
 
 __all__ = tuple(__all__) + (
+    "MemoryScope",
     "ResearchComponent",
     "ResearchComponentBuilder",
     "ResearchComponentCall",
@@ -644,6 +652,12 @@ __all__ = tuple(__all__) + (
     "ResearchEvent",
     "ResearchMethod",
     "ResearchMethodBuilder",
+    "ResearchMethodDSL",
+    "ResearchMethodContractDSL",
+    "ResearchMethodComponentsDSL",
+    "ResearchMethodFlowDSL",
+    "ResearchComponentDSL",
+    "ResearchMemoryDSL",
     "ResearchMethodCall",
     "ResearchMethodTransition",
 )

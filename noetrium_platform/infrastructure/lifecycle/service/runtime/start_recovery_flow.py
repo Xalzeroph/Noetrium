@@ -3,7 +3,7 @@ from __future__ import annotations
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
 from dataclasses import replace
 
-from .contracts import ServicePhase
+from .contracts import ServiceExitClass, ServicePhase
 from .prepared_start import PreparedServiceStartStatus, crash_durable_start_adapter
 from .service_state_contracts import ServiceSupervisorState
 from .start_flow_common import ServiceReadinessCommitter, service_start_intent_refs
@@ -70,6 +70,34 @@ class PreparedServiceStartRecoveryFlow:
                 state,
                 "start intent reached post-prepare phase without process identity",
             )
+
+        if state.phase in {ServicePhase.STOPPING, ServicePhase.EXITED}:
+            exact, refs = self._adapter.reconcile(
+                replace(state, process=process),
+                contract,
+            )
+            evidence.extend(refs)
+            if exact is not None:
+                if exact != process:
+                    raise ServicePreparedStartRecoveryRequired(
+                        state,
+                        "cleanup recovery observed a different exact process",
+                    )
+                state = self._transitions.persist(
+                    state,
+                    ServicePhase.STOPPING,
+                    process=process,
+                )
+                self._adapter.stop(process, contract)
+            self._journal.abort(intent)
+            state = self._transitions.persist(
+                state,
+                ServicePhase.EXITED,
+                process=None,
+                last_exit_class=ServiceExitClass.CLEAN,
+            )
+            evidence.append("service-start-recovery:readiness-failure-cleanup")
+            return ServiceStartReport(state, tuple(evidence))
 
         exact, refs = self._adapter.reconcile(replace(state, process=process), contract)
         evidence.extend(refs)

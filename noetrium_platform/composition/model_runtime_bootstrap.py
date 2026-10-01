@@ -78,6 +78,7 @@ from .model_stack_materialization import (
     ModelStackPlacementUnavailable,
     model_kv_cache_budget_bytes,
     model_kv_cache_bytes_per_token,
+    vllm_cudagraph_capture_sizes_for_capacity,
 )
 from .research_execution_pool import ResearchExecutionPool
 
@@ -684,13 +685,74 @@ def _without_engine_option(
     return tuple(rows)
 
 
+def _rewrite_vllm_cudagraph_capture_sizes(
+    args: tuple[str, ...],
+    capture_sizes: tuple[int, ...] | None,
+) -> tuple[str, ...]:
+    """Set or remove only the measured CUDA-graph field in compilation config."""
+
+    if capture_sizes is not None and (
+        not capture_sizes
+        or any(type(value) is not int or value <= 0 for value in capture_sizes)
+    ):
+        raise ValueError("vLLM cudagraph capture sizes must be positive integers")
+    rows: list[str] = []
+    index = 0
+    found = False
+    name = "--compilation-config"
+    prefix = name + "="
+    while index < len(args):
+        item = args[index]
+        raw = None
+        consumed = 1
+        if item == name:
+            if index + 1 >= len(args):
+                raise ValueError("vLLM compilation-config requires a value")
+            raw = args[index + 1]
+            consumed = 2
+        elif item.startswith(prefix):
+            raw = item[len(prefix):]
+        if raw is None:
+            rows.append(item)
+            index += 1
+            continue
+        try:
+            document = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError("vLLM compilation-config must be valid JSON") from exc
+        if not isinstance(document, dict):
+            raise ValueError("vLLM compilation-config must be a JSON object")
+        document = dict(document)
+        if capture_sizes is None:
+            document.pop("cudagraph_capture_sizes", None)
+        else:
+            document["cudagraph_capture_sizes"] = list(capture_sizes)
+        if document:
+            rows.extend((
+                name,
+                json.dumps(document, sort_keys=True, separators=(",", ":")),
+            ))
+        found = True
+        index += consumed
+    if capture_sizes is not None and not found:
+        rows.extend((
+            name,
+            json.dumps(
+                {"cudagraph_capture_sizes": list(capture_sizes)},
+                sort_keys=True,
+                separators=(",", ":"),
+            ),
+        ))
+    return tuple(rows)
+
+
 def qualification_source_stack_digest(stack: ModelStackSpec) -> str:
     """Digest the immutable qualification source, excluding measured tuning.
 
-    Static qualification may produce a re-qualified vLLM stack whose only
-    derived scheduler mutation is ``--max-num-seqs``. Runtime refresh must
-    compare the current materialized source against that source identity, not
-    mistake the measured tuning result for a user/model/runtime change.
+    Static qualification may produce a re-qualified vLLM stack whose scheduler
+    admission and CUDA-graph surface are both derived from measurements. Runtime
+    refresh compares the current materialized source against that source identity,
+    rather than mistaking measured tuning for a user/model/runtime change.
     """
     if not isinstance(stack, ModelStackSpec):
         raise TypeError("qualification source digest requires ModelStackSpec")
@@ -700,8 +762,10 @@ def qualification_source_stack_digest(stack: ModelStackSpec) -> str:
         stack.engine_args,
         name="--max-num-seqs",
     )
-    if source_args == stack.engine_args:
-        return stack.digest()
+    source_args = _rewrite_vllm_cudagraph_capture_sizes(
+        source_args,
+        None,
+    )
     return replace(stack, engine_args=source_args).digest()
 
 
@@ -727,18 +791,20 @@ def _tuned_vllm_stack_candidate(
     envelope = certificate.resource_envelope
     safe = envelope.max_qualified_concurrency
     preferred = envelope.preferred_operating_concurrency
-    if preferred is None or safe <= preferred:
-        return stack
-    # Explore exactly one measured step beyond the current throughput knee.
-    # The final tuned stack is re-qualified, so this is a candidate proposal,
-    # never an unverified production mutation.
-    target = min(safe, preferred * 2)
-    if target <= preferred:
-        return stack
+    if type(safe) is not int or safe <= 0:
+        raise ValueError("qualified vLLM concurrency must be positive")
+    capture_sizes = vllm_cudagraph_capture_sizes_for_capacity(
+        safe,
+        preferred_concurrency=preferred,
+    )
     args = _with_engine_integer_option(
         stack.engine_args,
         name="--max-num-seqs",
-        value=target,
+        value=safe,
+    )
+    args = _rewrite_vllm_cudagraph_capture_sizes(
+        args,
+        capture_sizes,
     )
     return replace(stack, engine_args=args)
 
@@ -746,7 +812,7 @@ def _tuned_vllm_stack_candidate(
 def _historical_preferred_concurrency(
     path: Path,
     *,
-    stack_digest: str,
+    qualification_source_digest: str,
     host_identity_digest: str,
 ) -> int | None:
     if not path.is_file():
@@ -763,7 +829,8 @@ def _historical_preferred_concurrency(
         deployment.certificate.resource_envelope.preferred_operating_concurrency
         for deployment in closure.deployments
         if (
-            deployment.stack.digest() == stack_digest
+            qualification_source_stack_digest(deployment.stack)
+            == qualification_source_digest
             and deployment.host_identity_digest == host_identity_digest
         )
     )
@@ -1193,7 +1260,9 @@ def _realize_and_qualify_model_stack(
             )
             historical_preferred = _historical_preferred_concurrency(
                 historical_closure_path,
-                stack_digest=stack.digest(),
+                qualification_source_digest=(
+                    qualification_source_stack_digest(stack)
+                ),
                 host_identity_digest=row.compute.host_id,
             )
         qualification_group = execution_pool.open_model_io_group(

@@ -33,6 +33,7 @@ from noetrium_platform.research.experimentation.api import (
     ResearchEvent,
     ResearchMethod,
     ResearchMethodBuilder,
+    ResearchMethodDSL,
     ResearchMethodCall,
     ResearchMethodTransition,
 )
@@ -142,6 +143,92 @@ def _tokens(values: tuple[str, ...], field: str) -> tuple[str, ...]:
     return result
 
 
+_PLATFORM_RUNTIME_CONFIG_KEYS = frozenset({
+    "base_url",
+    "bind_port",
+    "container",
+    "container_id",
+    "cuda",
+    "cuda_device",
+    "cuda_visible_devices",
+    "deployment_generation",
+    "deployment_id",
+    "docker",
+    "endpoint",
+    "engine_args",
+    "gpu",
+    "gpu_device",
+    "gpu_devices",
+    "gpu_id",
+    "gpu_ids",
+    "gpu_memory_utilization",
+    "host_port",
+    "http_max_connections",
+    "image",
+    "max_num_seqs",
+    "max_workers",
+    "pipeline_parallel_size",
+    "placement",
+    "pool_size",
+    "port",
+    "provider_id",
+    "queue_capacity",
+    "replica",
+    "replica_count",
+    "replicas",
+    "server_port",
+    "tensor_parallel_size",
+    "worker_count",
+})
+
+_PLATFORM_MODEL_CONFIG_KEYS = _PLATFORM_RUNTIME_CONFIG_KEYS | frozenset({"engine"})
+_PLATFORM_ENVIRONMENT_CONFIG_KEYS = _PLATFORM_RUNTIME_CONFIG_KEYS | frozenset({
+    "backend",
+    "implementation_id",
+    "profile_id",
+})
+
+
+def _reject_platform_runtime_config(
+    value: JsonValue,
+    *,
+    field: str,
+    forbidden: frozenset[str],
+    path: tuple[str, ...] = (),
+) -> None:
+    """Keep physical realization knobs out of the downstream scientific DSL."""
+
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            key_text = str(key)
+            child_path = path + (key_text,)
+            if key_text in forbidden:
+                location = ".".join(child_path)
+                raise ValueError(
+                    f"{field} config key {location!r} is platform-owned; "
+                    "declare scientific requirements, not runtime realization"
+                )
+            # Asset acquisition backends are also physical provider choices.
+            if path and path[-1] == "source" and key_text == "backend":
+                location = ".".join(child_path)
+                raise ValueError(
+                    f"{field} config key {location!r} is platform-owned; "
+                    "model/environment assets are resolved automatically"
+                )
+            _reject_platform_runtime_config(
+                child, field=field, forbidden=forbidden, path=child_path
+            )
+        return
+    if type(value) in {tuple, list}:
+        for index, child in enumerate(value):
+            _reject_platform_runtime_config(
+                child,
+                field=field,
+                forbidden=forbidden,
+                path=path + (str(index),),
+            )
+
+
 class ResearchDefinitionKind(StrEnum):
     METHOD = "method"
     BENCHMARK = "benchmark"
@@ -155,7 +242,6 @@ class ResearchDefinitionKind(StrEnum):
     PROTOCOL = "protocol"
     TRIAL_PROVIDER = "trial-provider"
     VERIFIER = "verifier"
-    RESOURCE_POLICY = "resource-policy"
     CHILD_MACHINE = "child-machine"
     CUSTOM = "custom"
 
@@ -303,9 +389,16 @@ class ResearchMethodImplementation:
             input_schema=input_schema,
             output_schema=output_schema,
         )
-        result = configurer(builder, *(thaw_json(row) for row in args), **dict(thaw_json(kwargs)))
-        if result is not None and result is not builder:
-            raise TypeError("research method configurator must return None or the same builder")
+        public_builder = ResearchMethodDSL(builder)
+        result = configurer(
+            public_builder,
+            *(thaw_json(row) for row in args),
+            **dict(thaw_json(kwargs)),
+        )
+        if result is not None and result is not public_builder:
+            raise TypeError(
+                "research method configurator must return None or the same Method DSL"
+            )
         return builder.build()
 
     @classmethod
@@ -716,7 +809,23 @@ class ResearchDefinition:
             raise ValueError(
                 "CHILD_MACHINE definitions require an exact ResearchProgram implementation"
             )
+        if self.kind in {ResearchDefinitionKind.MODEL, ResearchDefinitionKind.ENVIRONMENT} and self.implementation is not None:
+            raise ValueError(
+                f"{self.kind.value} definitions are platform-resolved requirements and must not bind an implementation"
+            )
         config = freeze_json(self.config)
+        if self.kind is ResearchDefinitionKind.MODEL:
+            _reject_platform_runtime_config(
+                config,
+                field="research model",
+                forbidden=_PLATFORM_MODEL_CONFIG_KEYS,
+            )
+        if self.kind is ResearchDefinitionKind.ENVIRONMENT:
+            _reject_platform_runtime_config(
+                config,
+                field="research environment",
+                forbidden=_PLATFORM_ENVIRONMENT_CONFIG_KEYS,
+            )
         object.__setattr__(self, "config", config)
         object.__setattr__(
             self,
@@ -885,6 +994,11 @@ class ResearchNode:
         if len(output_keys) != len(set(output_keys)):
             raise ValueError("research node output kind/name pairs must be unique")
         config = freeze_json(self.config)
+        _reject_platform_runtime_config(
+            config,
+            field="research node",
+            forbidden=_PLATFORM_RUNTIME_CONFIG_KEYS,
+        )
         object.__setattr__(self, "definition_ids", definitions)
         object.__setattr__(self, "outputs", outputs)
         object.__setattr__(self, "config", config)
@@ -1269,38 +1383,66 @@ def _research_portfolio_document(portfolio: "ResearchPortfolio") -> dict[str, ob
         "portfolio_id": portfolio.portfolio_id,
         "programs": tuple(
             _research_program_document(program)
-            for program in portfolio.programs
+            for program in portfolio._programs
         ),
         "dependencies": tuple(
             _research_portfolio_dependency_document(dependency)
-            for dependency in portfolio.dependencies
+            for dependency in portfolio._dependencies
         ),
     }
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchProgramView:
+    """Immutable downstream summary of one compiled research program."""
+
+    program_id: str
+    definition_ids: tuple[str, ...]
+    stage_ids: tuple[str, ...]
+    program_digest: str
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchHandoffView:
+    """Immutable downstream summary of one cross-program typed handoff."""
+
+    upstream: tuple[str, str]
+    downstream: tuple[str, str]
+    inputs: tuple[tuple[str, str, str], ...]
+    handoff_digest: str
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchPortfolio:
+    """Frozen four-root portfolio view with private compiled graph state."""
+
     portfolio_id: str
-    programs: tuple[ResearchProgram, ...]
-    dependencies: tuple[ResearchPortfolioDependency, ...] = ()
+    _programs: tuple[ResearchProgram, ...] = field(repr=False)
+    _dependencies: tuple[ResearchPortfolioDependency, ...] = field(
+        default=(),
+        repr=False,
+    )
     portfolio_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         _token(self.portfolio_id, "research portfolio_id")
-        if type(self.programs) is not tuple or not self.programs or any(
-            type(row) is not ResearchProgram for row in self.programs
+        if type(self._programs) is not tuple or not self._programs or any(
+            type(row) is not ResearchProgram for row in self._programs
         ):
             raise TypeError("research portfolio programs must be non-empty typed tuple")
-        if type(self.dependencies) is not tuple or any(
+        if type(self._dependencies) is not tuple or any(
             type(row) is not ResearchPortfolioDependency
-            for row in self.dependencies
+            for row in self._dependencies
         ):
             raise TypeError("research portfolio dependencies must be typed tuple")
-        programs = tuple(sorted(self.programs, key=lambda row: row.program_id))
+
+        programs = tuple(
+            sorted(self._programs, key=lambda row: row.program_id)
+        )
         ids = tuple(row.program_id for row in programs)
         if len(ids) != len(set(ids)):
             raise ValueError("research portfolio program identities must be unique")
-        program_by_id = {row.program_id: row for row in programs}
+
         node_by_ref = {
             ResearchNodeRef(program.program_id, node.node_id): node
             for program in programs
@@ -1308,7 +1450,7 @@ class ResearchPortfolio:
         }
         dependencies = tuple(
             sorted(
-                self.dependencies,
+                self._dependencies,
                 key=lambda row: (
                     row.downstream.program_id,
                     row.downstream.node_id,
@@ -1328,8 +1470,14 @@ class ResearchPortfolio:
 
         for program in programs:
             for edge in program.dependencies:
-                upstream = ResearchNodeRef(program.program_id, edge.upstream_node_id)
-                downstream = ResearchNodeRef(program.program_id, edge.downstream_node_id)
+                upstream = ResearchNodeRef(
+                    program.program_id,
+                    edge.upstream_node_id,
+                )
+                downstream = ResearchNodeRef(
+                    program.program_id,
+                    edge.downstream_node_id,
+                )
                 upstream_by_downstream[downstream].append(upstream)
                 downstream_inputs[downstream].update(
                     binding.input_name for binding in edge.bindings
@@ -1338,17 +1486,17 @@ class ResearchPortfolio:
         for dependency in dependencies:
             if dependency.upstream not in node_by_ref:
                 raise ValueError(
-                    "portfolio dependency references unknown upstream node: "
+                    "portfolio dependency references unknown upstream stage: "
                     f"{dependency.upstream.program_id}:{dependency.upstream.node_id}"
                 )
             if dependency.downstream not in node_by_ref:
                 raise ValueError(
-                    "portfolio dependency references unknown downstream node: "
+                    "portfolio dependency references unknown downstream stage: "
                     f"{dependency.downstream.program_id}:{dependency.downstream.node_id}"
                 )
             edge_key = (dependency.upstream, dependency.downstream)
             if edge_key in seen_edges:
-                raise ValueError("portfolio dependencies must not repeat an edge")
+                raise ValueError("portfolio handoffs must not repeat an edge")
             seen_edges.add(edge_key)
             upstream_node = node_by_ref[dependency.upstream]
             output_keys = {
@@ -1358,12 +1506,12 @@ class ResearchPortfolio:
             for binding in dependency.bindings:
                 if (binding.kind, binding.output_name) not in output_keys:
                     raise ValueError(
-                        "portfolio dependency references missing upstream output "
+                        "portfolio handoff references missing upstream output "
                         f"{binding.kind.value}:{binding.output_name}"
                     )
                 if binding.input_name in names:
                     raise ValueError(
-                        "portfolio downstream node receives duplicate input "
+                        "portfolio downstream stage receives duplicate input "
                         f"{binding.input_name!r}"
                     )
                 names.add(binding.input_name)
@@ -1394,49 +1542,156 @@ class ResearchPortfolio:
         ):
             visit(ref)
 
-        object.__setattr__(self, "programs", programs)
-        object.__setattr__(self, "dependencies", dependencies)
+        object.__setattr__(self, "_programs", programs)
+        object.__setattr__(self, "_dependencies", dependencies)
         object.__setattr__(
             self,
             "portfolio_digest",
             canonical_digest(_research_portfolio_document(self)),
         )
 
+    @property
+    def programs(self) -> tuple[ResearchProgramView, ...]:
+        return tuple(
+            ResearchProgramView(
+                program_id=program.program_id,
+                definition_ids=tuple(
+                    row.definition_id for row in program.definitions
+                ),
+                stage_ids=tuple(row.node_id for row in program.nodes),
+                program_digest=program.program_digest,
+            )
+            for program in self._programs
+        )
+
+    @property
+    def handoffs(self) -> tuple[ResearchHandoffView, ...]:
+        return tuple(
+            ResearchHandoffView(
+                upstream=(
+                    row.upstream.program_id,
+                    row.upstream.node_id,
+                ),
+                downstream=(
+                    row.downstream.program_id,
+                    row.downstream.node_id,
+                ),
+                inputs=tuple(
+                    (
+                        binding.input_name,
+                        binding.output_name,
+                        binding.kind.value,
+                    )
+                    for binding in row.bindings
+                ),
+                handoff_digest=row.dependency_digest,
+            )
+            for row in self._dependencies
+        )
+
+
+class ResearchPortfolioProgramsDSL:
+    """Program system under the four-root Portfolio builder."""
+
+    def __init__(self, owner: "ResearchPortfolioBuilder") -> None:
+        self._owner = owner
+
+    def create(self, program_id: str) -> "ResearchProgramDSL":
+        _token(program_id, "research program_id")
+        if program_id in self._owner._programs:
+            raise ValueError(f"duplicate research program: {program_id}")
+        builder = ResearchProgramBuilder(program_id)
+        self._owner._programs[program_id] = builder
+        return ResearchProgramDSL(builder)
+
+
+class ResearchPortfolioHandoffsDSL:
+    """Typed cross-program scientific value/artifact handoff system."""
+
+    def __init__(self, owner: "ResearchPortfolioBuilder") -> None:
+        self._owner = owner
+
+    def bind(
+        self,
+        *,
+        upstream: tuple[str, str],
+        downstream: tuple[str, str],
+        inputs: Mapping[str, object] | None = None,
+    ) -> "ResearchPortfolioHandoffsDSL":
+        if type(upstream) is not tuple or len(upstream) != 2:
+            raise TypeError(
+                "research handoff upstream must be (program_id, stage_id)"
+            )
+        if type(downstream) is not tuple or len(downstream) != 2:
+            raise TypeError(
+                "research handoff downstream must be (program_id, stage_id)"
+            )
+        upstream_program_id, upstream_stage_id = upstream
+        downstream_program_id, downstream_stage_id = downstream
+        _token(upstream_program_id, "research handoff upstream program")
+        _token(upstream_stage_id, "research handoff upstream stage")
+        _token(downstream_program_id, "research handoff downstream program")
+        _token(downstream_stage_id, "research handoff downstream stage")
+
+        rows: list[object] = []
+        if inputs is not None:
+            if not isinstance(inputs, Mapping):
+                raise TypeError("research handoff inputs must be a mapping")
+            for input_name, raw in inputs.items():
+                _token(str(input_name), "research handoff input name")
+                if type(raw) is str:
+                    rows.append((str(input_name), raw, "artifact"))
+                    continue
+                if type(raw) is tuple and len(raw) in {1, 2}:
+                    output_name = raw[0]
+                    kind = "artifact" if len(raw) == 1 else raw[1]
+                    rows.append((str(input_name), str(output_name), str(kind)))
+                    continue
+                if isinstance(raw, Mapping):
+                    output_name = raw.get("output")
+                    if type(output_name) is not str or not output_name.strip():
+                        raise ValueError(
+                            "research handoff input mapping requires output"
+                        )
+                    rows.append({
+                        "input_name": str(input_name),
+                        "output_name": output_name.strip(),
+                        "kind": str(raw.get("kind", "artifact")),
+                    })
+                    continue
+                raise TypeError(
+                    "research handoff input must be output name, "
+                    "(output[, kind]) tuple, or mapping"
+                )
+
+        self._owner._dependencies.append(
+            ResearchPortfolioDependency(
+                ResearchNodeRef(upstream_program_id, upstream_stage_id),
+                ResearchNodeRef(downstream_program_id, downstream_stage_id),
+                _research_input_bindings(tuple(rows)),
+            )
+        )
+        return self
+
 
 class ResearchPortfolioBuilder:
-    """Compose many papers/programs into one cross-program research graph."""
+    """Compose many programs through systemized Program and Handoff DSLs."""
 
     def __init__(self, portfolio_id: str) -> None:
         _token(portfolio_id, "research portfolio_id")
         self._portfolio_id = portfolio_id
         self._programs: dict[str, ResearchProgramBuilder] = {}
         self._dependencies: list[ResearchPortfolioDependency] = []
+        self._programs_dsl = ResearchPortfolioProgramsDSL(self)
+        self._handoffs_dsl = ResearchPortfolioHandoffsDSL(self)
 
-    def program(self, program_id: str) -> "ResearchProgramBuilder":
-        _token(program_id, "research program_id")
-        if program_id in self._programs:
-            raise ValueError(f"duplicate research program: {program_id}")
-        builder = ResearchProgramBuilder(program_id)
-        self._programs[program_id] = builder
-        return builder
+    @property
+    def programs(self) -> ResearchPortfolioProgramsDSL:
+        return self._programs_dsl
 
-    def depends(
-        self,
-        *,
-        downstream_program_id: str,
-        downstream_node_id: str,
-        upstream_program_id: str,
-        upstream_node_id: str,
-        bindings: tuple[ResearchInputBinding, ...] = (),
-    ) -> "ResearchPortfolioBuilder":
-        self._dependencies.append(
-            ResearchPortfolioDependency(
-                ResearchNodeRef(upstream_program_id, upstream_node_id),
-                ResearchNodeRef(downstream_program_id, downstream_node_id),
-                _research_input_bindings(bindings),
-            )
-        )
-        return self
+    @property
+    def handoffs(self) -> ResearchPortfolioHandoffsDSL:
+        return self._handoffs_dsl
 
     def freeze(self) -> ResearchPortfolio:
         return ResearchPortfolio(
@@ -1891,6 +2146,20 @@ class ResearchProgramBuilder:
         ) = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
+        if kind in {ResearchDefinitionKind.MODEL, ResearchDefinitionKind.ENVIRONMENT}:
+            if implementation is not None:
+                raise ValueError(
+                    f"{kind.value} implementation is platform-owned; declare only scientific requirements"
+                )
+            _reject_platform_runtime_config(
+                freeze_json({} if config is None else config),
+                field=f"{kind.value} config",
+                forbidden=(
+                    _PLATFORM_MODEL_CONFIG_KEYS
+                    if kind is ResearchDefinitionKind.MODEL
+                    else _PLATFORM_ENVIRONMENT_CONFIG_KEYS
+                ),
+            )
         resolved = (
             None
             if implementation is None
@@ -2214,13 +2483,11 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.MODEL,
-            implementation=implementation,
             config=config,
         )
 
@@ -2228,13 +2495,11 @@ class ResearchProgramBuilder:
         self,
         definition_id: str,
         *,
-        implementation: ResearchImplementation | Callable[..., object] | None = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.ENVIRONMENT,
-            implementation=implementation,
             config=config,
         )
 
@@ -2328,20 +2593,6 @@ class ResearchProgramBuilder:
             config=config,
         )
 
-    def resource_policy(
-        self,
-        definition_id: str,
-        *,
-        implementation: ResearchImplementation | Callable[..., object] | None = None,
-        config: JsonInput = None,
-    ) -> "ResearchProgramBuilder":
-        return self.definition(
-            definition_id,
-            kind=ResearchDefinitionKind.RESOURCE_POLICY,
-            implementation=implementation,
-            config=config,
-        )
-
     def custom_definition(
         self,
         definition_id: str,
@@ -2427,19 +2678,251 @@ class ResearchProgramBuilder:
         self,
         node_id: str,
         *,
-        definitions: tuple[str, ...],
+        definitions: tuple[str, ...] = (),
+        study: JsonInput | Callable[..., object] = None,
+        lanes: Mapping[str, JsonInput] | None = None,
+        inputs: Mapping[str, tuple[object, ...]] | None = None,
         outputs: tuple[ResearchOutputSpec, ...] = (),
         depends_on: tuple[str, ...] = (),
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
-        return self.node(
+        """Declare one scientific experiment through one authoring surface.
+
+        Study embeds the canonical Study protocol and hides the internal
+        protocol node. Lanes expands mutually-exclusive method comparisons
+        while preserving one shared scientific Study. Inputs binds typed
+        upstream ResearchGraph outputs for staged or transfer experiments.
+
+        With neither study nor lanes this remains the raw graph-node form used
+        by platform/internal composition.
+        """
+
+        _token(node_id, "research experiment id")
+        if type(definitions) is not tuple or any(
+            type(row) is not str or not row.strip() for row in definitions
+        ):
+            raise TypeError(
+                "research experiment definitions must contain non-empty strings"
+            )
+        if inputs is None:
+            resolved_inputs: Mapping[str, tuple[object, ...]] = {}
+        elif not isinstance(inputs, Mapping):
+            raise TypeError("research experiment inputs must be a mapping")
+        else:
+            resolved_inputs = inputs
+        for upstream, bindings in resolved_inputs.items():
+            _token(str(upstream), "research experiment input upstream node")
+            _research_input_bindings(bindings)
+
+        if lanes is not None:
+            if study is None:
+                raise ValueError("research experiment lanes require a shared Study")
+            if not isinstance(lanes, Mapping) or not lanes:
+                raise TypeError(
+                    "research experiment lanes must be a non-empty mapping"
+                )
+            if callable(study):
+                raise TypeError(
+                    "research experiment lanes require a declarative Study; "
+                    "typed Study factories are single-lane authorities"
+                )
+            base_study = _plain_mapping(
+                study, "research experiment shared Study"
+            )
+            base_method = _plain_mapping(
+                base_study.get("method"),
+                "research experiment shared Study method",
+            )
+            base_config = _plain_mapping(
+                config, "research experiment group config"
+            )
+            reserved_config = {
+                "experiment_group",
+                "lane_id",
+                "method_definition_id",
+            }
+            overlap = reserved_config.intersection(base_config)
+            if overlap:
+                raise ValueError(
+                    "research experiment config uses reserved keys: "
+                    f"{sorted(overlap)!r}"
+                )
+            allowed_lane_keys = frozenset({
+                "method",
+                "treatment",
+                "factors",
+                "definitions",
+                "config",
+            })
+            for raw_lane_id in sorted(lanes):
+                lane_id = _token(
+                    str(raw_lane_id), "research experiment lane id"
+                )
+                lane = _plain_mapping(
+                    lanes[raw_lane_id],
+                    f"research experiment lane {lane_id!r}",
+                )
+                unknown = set(lane).difference(allowed_lane_keys)
+                if unknown:
+                    raise ValueError(
+                        f"research experiment lane {lane_id!r} has unsupported "
+                        f"keys: {sorted(unknown)!r}"
+                    )
+                method_definition_id = lane.get("method")
+                if (
+                    type(method_definition_id) is not str
+                    or not method_definition_id.strip()
+                ):
+                    raise ValueError(
+                        f"research experiment lane {lane_id!r} requires method"
+                    )
+                method_definition_id = method_definition_id.strip()
+                definition = self._definitions.get(method_definition_id)
+                if (
+                    definition is None
+                    or definition.kind is not ResearchDefinitionKind.METHOD
+                ):
+                    raise ValueError(
+                        f"research experiment lane {lane_id!r} references "
+                        f"unknown Method definition {method_definition_id!r}"
+                    )
+                implementation = definition.implementation
+                if type(implementation) is not ResearchMethodImplementation:
+                    raise TypeError(
+                        "research experiment lanes require exact Method "
+                        "implementations"
+                    )
+
+                lane_definitions_raw = lane.get("definitions", ())
+                if (
+                    type(lane_definitions_raw) is not tuple
+                    or any(
+                        type(row) is not str or not row.strip()
+                        for row in lane_definitions_raw
+                    )
+                ):
+                    raise TypeError(
+                        f"research experiment lane {lane_id!r} definitions "
+                        "must be a tuple of non-empty strings"
+                    )
+                lane_config = _plain_mapping(
+                    lane.get("config"),
+                    f"research experiment lane {lane_id!r} config",
+                )
+                overlap = reserved_config.intersection(lane_config)
+                if overlap:
+                    raise ValueError(
+                        f"research experiment lane {lane_id!r} config uses "
+                        f"reserved keys: {sorted(overlap)!r}"
+                    )
+
+                lane_study = dict(base_study)
+                method = dict(base_method)
+                method["implementation"] = implementation.method_id
+                if "treatment" in lane:
+                    treatment = lane["treatment"]
+                    if (
+                        type(treatment) is not str
+                        or not treatment.strip()
+                    ):
+                        raise ValueError(
+                            f"research experiment lane {lane_id!r} treatment "
+                            "must be non-empty text"
+                        )
+                    method["treatment"] = treatment.strip()
+                lane_study["method"] = method
+                if "factors" in lane:
+                    factors = lane["factors"]
+                    if type(factors) is not tuple:
+                        raise TypeError(
+                            f"research experiment lane {lane_id!r} factors "
+                            "must be a tuple"
+                        )
+                    lane_study["factors"] = factors
+
+                lane_node_id = f"{node_id}.{lane_id}"
+                node_config = dict(base_config)
+                node_config.update(lane_config)
+                node_config.update({
+                    "experiment_group": node_id,
+                    "lane_id": lane_id,
+                    "method_definition_id": method_definition_id,
+                })
+                self.experiment(
+                    lane_node_id,
+                    definitions=(
+                        (method_definition_id,)
+                        + definitions
+                        + tuple(
+                            row.strip() for row in lane_definitions_raw
+                        )
+                    ),
+                    study=lane_study,
+                    outputs=outputs,
+                    depends_on=depends_on,
+                    inputs=resolved_inputs,
+                    config=node_config,
+                )
+            return self
+
+        resolved_definitions = tuple(row.strip() for row in definitions)
+        if study is not None:
+            protocol_id = f"{node_id}.protocol"
+            if callable(study):
+                self.protocol(protocol_id, implementation=study)
+            else:
+                study_row = _plain_mapping(study, "research experiment Study")
+                method_definitions = tuple(
+                    definition_id
+                    for definition_id in resolved_definitions
+                    if (
+                        self._definitions.get(definition_id) is not None
+                        and self._definitions[definition_id].kind
+                        is ResearchDefinitionKind.METHOD
+                    )
+                )
+                if len(method_definitions) != 1:
+                    raise ValueError(
+                        "study-backed research experiment requires exactly one "
+                        "Method definition"
+                    )
+                method_definition_id = method_definitions[0]
+                method_definition = self._definitions[method_definition_id]
+                implementation = method_definition.implementation
+                if type(implementation) is not ResearchMethodImplementation:
+                    raise TypeError(
+                        "study-backed research experiment requires an exact "
+                        "Method implementation"
+                    )
+                method = _plain_mapping(
+                    study_row.get("method"),
+                    "research experiment Study method",
+                )
+                method["implementation"] = implementation.method_id
+                study_row["method"] = method
+                study_row["study_id"] = f"{node_id}.study"
+                study_row["experiment_id"] = node_id
+                self.protocol(protocol_id, config={"study": study_row})
+            resolved_definitions = resolved_definitions + (protocol_id,)
+
+        self.node(
             node_id,
             kind=ResearchNodeKind.EXPERIMENT,
-            definitions=definitions,
+            definitions=resolved_definitions,
             outputs=outputs,
             depends_on=depends_on,
             config=config,
         )
+        for upstream, bindings in sorted(
+            resolved_inputs.items(),
+            key=lambda item: str(item[0]),
+        ):
+            self.depends(
+                node_id,
+                str(upstream),
+                bindings=_research_input_bindings(bindings),
+            )
+        return self
 
     def evaluation(
         self,
@@ -2838,6 +3321,531 @@ class ResearchProgramBuilder:
             tuple(self._nodes.values()),
             tuple(self._dependencies),
         )
+
+
+class ResearchProgramMethodsDSL:
+    """Method system of one Research Program."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def define(
+        self,
+        definition_id: str,
+        configure: Callable[..., object] | None = None,
+        *,
+        method_id: str | None = None,
+        entrypoint: str | None = None,
+        version: str = "1",
+        semantic_contract: str = "research.method.v1",
+        configuration: JsonInput = None,
+        execution: str = "effect_recorded",
+        evidence: tuple[str, ...] = (),
+        metrics: tuple[str, ...] = (),
+        artifacts: tuple[str, ...] = (),
+        state_schema: str = "json",
+        input_schema: str = "json",
+        output_schema: str = "json",
+        args: tuple[JsonValue, ...] = (),
+        kwargs: JsonInput = None,
+        metadata: JsonInput = None,
+    ) -> "ResearchProgramMethodsDSL":
+        self._parent._builder.method(
+            definition_id,
+            configure,
+            method_id=method_id,
+            entrypoint=entrypoint,
+            version=version,
+            semantic_contract=semantic_contract,
+            method_configuration=configuration,
+            execution=execution,
+            evidence=evidence,
+            metrics=metrics,
+            artifacts=artifacts,
+            state_schema=state_schema,
+            input_schema=input_schema,
+            output_schema=output_schema,
+            args=args,
+            kwargs=kwargs,
+            config=metadata,
+        )
+        return self
+
+    def require(
+        self,
+        definition_id: str,
+        *,
+        metadata: JsonInput = None,
+    ) -> "ResearchProgramMethodsDSL":
+        self._parent._builder.method(
+            definition_id,
+            configure=None,
+            config=metadata,
+        )
+        return self
+
+
+class ResearchProgramDataDSL:
+    """Benchmark, dataset and measurement/metric system."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def benchmark(
+        self,
+        definition_id: str,
+        *,
+        implementation: Callable[..., object] | None = None,
+        config: JsonInput = None,
+    ) -> "ResearchProgramDataDSL":
+        self._parent._builder.benchmark(
+            definition_id,
+            implementation=implementation,
+            config=config,
+        )
+        return self
+
+    def dataset(
+        self,
+        definition_id: str,
+        *,
+        implementation: Callable[..., object] | None = None,
+        config: JsonInput = None,
+    ) -> "ResearchProgramDataDSL":
+        self._parent._builder.dataset(
+            definition_id,
+            implementation=implementation,
+            config=config,
+        )
+        return self
+
+    def metric(
+        self,
+        definition_id: str,
+        *,
+        implementation: Callable[..., object] | None = None,
+        value_kind: str | None = None,
+        schema_id: str | None = None,
+        semantic_kind: str | None = None,
+        unit: str | None = None,
+        scale: str | None = None,
+        domain: str | None = None,
+        source_path: str | None = None,
+        reducer: str | None = None,
+        aggregation: str | None = None,
+        record_types: tuple[str, ...] = (),
+        schema_ids: tuple[str, ...] = (),
+        value_path: str | tuple[str, ...] | None = None,
+        group_by: tuple[str | tuple[str, ...], ...] = (),
+        predicates: tuple[Mapping[str, object], ...] = (),
+        missing: str = "skip",
+        description: str = "",
+        config: JsonInput = None,
+    ) -> "ResearchProgramDataDSL":
+        self._parent._builder.metric(
+            definition_id,
+            implementation=implementation,
+            value_kind=value_kind,
+            schema_id=schema_id,
+            semantic_kind=semantic_kind,
+            unit=unit,
+            scale=scale,
+            domain=domain,
+            source_path=source_path,
+            reducer=reducer,
+            aggregation=aggregation,
+            record_types=record_types,
+            schema_ids=schema_ids,
+            value_path=value_path,
+            group_by=group_by,
+            predicates=predicates,
+            missing=missing,
+            description=description,
+            config=config,
+        )
+        return self
+
+
+class ResearchProgramRequirementsDSL:
+    """Scientific requirements; physical providers remain platform-owned."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def model(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramRequirementsDSL":
+        self._parent._builder.model(definition_id, config=config)
+        return self
+
+    def environment(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramRequirementsDSL":
+        self._parent._builder.environment(definition_id, config=config)
+        return self
+
+    def participant(
+        self,
+        definition_id: str,
+        *,
+        implementation: Callable[..., object] | None = None,
+        config: JsonInput = None,
+    ) -> "ResearchProgramRequirementsDSL":
+        self._parent._builder.participant(
+            definition_id,
+            implementation=implementation,
+            config=config,
+        )
+        return self
+
+    def configuration(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput,
+    ) -> "ResearchProgramRequirementsDSL":
+        self._parent._builder.configuration(definition_id, config=config)
+        return self
+
+    def verifier(
+        self,
+        requirement_id: str,
+        factory: Callable[..., object] | None = None,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramRequirementsDSL":
+        self._parent._builder.verifier(
+            requirement_id,
+            factory,
+            config=config,
+        )
+        return self
+
+
+class ResearchProgramExperimentsDSL:
+    """Complete scientific experiment system over one universal execution graph."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def define(
+        self,
+        experiment_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        study: JsonInput | Callable[..., object] = None,
+        lanes: Mapping[str, JsonInput] | None = None,
+        inputs: Mapping[str, tuple[object, ...]] | None = None,
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.experiment(
+            experiment_id,
+            definitions=definitions,
+            study=study,
+            lanes=lanes,
+            inputs=inputs,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def evaluate(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.evaluation(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def analyze(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        implementation: Callable[..., object] | None = None,
+        value: str = "value",
+        group_by: tuple[str, ...] = (),
+        comparison_group: str | None = None,
+        baseline: JsonValue = None,
+        candidate: JsonValue = None,
+        candidates: tuple[JsonValue, ...] = (),
+        pair_by: str | None = None,
+        inference: str = "none",
+        replicates: int = 2000,
+        seed: int = 0,
+        multiple_comparison: str = "holm",
+        alpha: float = 0.05,
+        missing: str = "reject",
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.analysis(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            implementation=implementation,
+            value=value,
+            group_by=group_by,
+            comparison_group=comparison_group,
+            baseline=baseline,
+            candidate=candidate,
+            candidates=candidates,
+            pair_by=pair_by,
+            inference=inference,
+            replicates=replicates,
+            seed=seed,
+            multiple_comparison=multiple_comparison,
+            alpha=alpha,
+            missing=missing,
+            config=config,
+        )
+        return self
+
+    def select(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.selection(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def optimize(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.optimization(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def ablate(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.ablation(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def robustness(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.robustness(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def scale(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramExperimentsDSL":
+        self._parent._builder.scaling(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+
+class ResearchProgramReportsDSL:
+    """Derived scientific reporting artifacts."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def figure(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramReportsDSL":
+        self._parent._builder.figure(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def table(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramReportsDSL":
+        self._parent._builder.table(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+    def publication(
+        self,
+        node_id: str,
+        *,
+        definitions: tuple[str, ...] = (),
+        outputs: tuple[object, ...] = (),
+        after: tuple[str, ...] = (),
+        config: JsonInput = None,
+    ) -> "ResearchProgramReportsDSL":
+        self._parent._builder.publication(
+            node_id,
+            definitions=definitions,
+            outputs=outputs,
+            depends_on=after,
+            config=config,
+        )
+        return self
+
+
+class ResearchProgramExtensionsDSL:
+    """Paper-private semantic extension point without provider/port exposure."""
+
+    def __init__(self, parent: "ResearchProgramDSL") -> None:
+        self._parent = parent
+
+    def define(
+        self,
+        definition_id: str,
+        implementation: Callable[..., object],
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramExtensionsDSL":
+        self._parent._builder.custom_definition(
+            definition_id,
+            implementation=implementation,
+            config=config,
+        )
+        return self
+
+    def require(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramExtensionsDSL":
+        self._parent._builder.custom_requirement(
+            definition_id,
+            config=config,
+        )
+        return self
+
+
+
+class ResearchProgramDSL:
+    """Only Program object reachable from the four-root downstream API."""
+
+    def __init__(self, builder: ResearchProgramBuilder) -> None:
+        if type(builder) is not ResearchProgramBuilder:
+            raise TypeError("ResearchProgramDSL requires internal ResearchProgramBuilder")
+        self._builder = builder
+        self._methods = ResearchProgramMethodsDSL(self)
+        self._experiments = ResearchProgramExperimentsDSL(self)
+        self._data = ResearchProgramDataDSL(self)
+        self._requirements = ResearchProgramRequirementsDSL(self)
+        self._reports = ResearchProgramReportsDSL(self)
+        self._extensions = ResearchProgramExtensionsDSL(self)
+
+    @property
+    def methods(self) -> ResearchProgramMethodsDSL:
+        return self._methods
+
+    @property
+    def experiments(self) -> ResearchProgramExperimentsDSL:
+        return self._experiments
+
+    @property
+    def data(self) -> ResearchProgramDataDSL:
+        return self._data
+
+    @property
+    def requirements(self) -> ResearchProgramRequirementsDSL:
+        return self._requirements
+
+    @property
+    def reports(self) -> ResearchProgramReportsDSL:
+        return self._reports
+
+    @property
+    def extensions(self) -> ResearchProgramExtensionsDSL:
+        return self._extensions
+
 
 
 __all__ = [

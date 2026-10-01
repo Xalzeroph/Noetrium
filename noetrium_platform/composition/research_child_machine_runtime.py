@@ -33,7 +33,7 @@ def compose_program_method_runtime_inventory(
     *,
     method_program_digests: tuple[str, ...],
     journal: MachineJournalPort,
-    max_steps: int,
+    max_steps: int | None,
 ) -> MethodRuntimePortInventory:
     """Bind only the selected MethodPrograms' components into one runtime inventory.
 
@@ -50,8 +50,8 @@ def compose_program_method_runtime_inventory(
         raise TypeError("child runtime composition requires MethodRuntimePortInventory")
     if not isinstance(journal, MachineJournalPort):
         raise TypeError("child runtime composition requires MachineJournalPort")
-    if type(max_steps) is not int or max_steps < 1:
-        raise ValueError("child runtime composition max_steps must be positive")
+    if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+        raise ValueError("child runtime composition max_steps must be positive or None")
     if type(method_program_digests) is not tuple or any(
         type(value) is not str
         or len(value) != 64

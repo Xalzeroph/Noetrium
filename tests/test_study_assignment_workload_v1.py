@@ -107,6 +107,73 @@ def test_default_authoring_lowers_each_task_to_one_node_workload() -> None:
     )
 
 
+def test_repetition_seed_schedule_is_paired_not_cartesian() -> None:
+    base = _study()
+    definition = type(base)(
+        project_id=base.project_id,
+        experiment_id=base.experiment_id,
+        study_id=base.study_id,
+        workload_id=base.workload_id,
+        factors=base.factors,
+        seeds=("seed-0", "seed-1", "seed-2"),
+        repetitions=3,
+        measurement_protocol=base.measurement_protocol,
+        benchmark=base.benchmark,
+        benchmark_split_id=base.benchmark_split_id,
+        assignment_workloads=(AssignmentWorkload(("task:a",)),),
+        binding_requirements=base.binding_requirements,
+        trial_protocol_identity=base.trial_protocol_identity,
+        revision=base.revision,
+        execution_policy=base.execution_policy,
+        aggregation_requirement_id=base.aggregation_requirement_id,
+    )
+    rows = _assignments(definition, (_variant(),))
+    assert [(row.repetition, row.seed) for row in rows] == [
+        (0, "seed-0"),
+        (1, "seed-1"),
+        (2, "seed-2"),
+    ]
+
+
+def test_study_rejects_seed_repetition_cardinality_drift() -> None:
+    try:
+        Study(
+            project_id="project",
+            study_id="study",
+            benchmark=_benchmark(),
+            benchmark_split_id="test",
+            assignment_workloads=(AssignmentWorkload(("task:a",)),),
+            method=StudyParticipant(
+                role="agent",
+                kind="agent",
+                implementation="method",
+                treatment="treatment",
+            ),
+            models={},
+            measurements=(
+                MeasurementDefinition.scalar(
+                    "score",
+                    schema_id="measurement.scalar.v1",
+                    unit="ratio",
+                    semantic_kind="task_score",
+                    scale="continuous",
+                    domain="test",
+                ),
+            ),
+            trial=ExperimentTrialProtocolIdentity(
+                "trial",
+                canonical_digest({"trial": "paired-seeds"}),
+            ),
+            repetitions=2,
+            seeds=("only-one-seed",),
+            limits=TrialBudget("budget", max_steps=1),
+        )
+    except ValueError as exc:
+        assert "one-to-one" in str(exc)
+    else:
+        raise AssertionError("seed/repetition cardinality drift must fail closed")
+
+
 def test_multi_task_chain_is_the_same_assignment_machine() -> None:
     workload = AssignmentWorkload(
         ("task:a", "task:b"),

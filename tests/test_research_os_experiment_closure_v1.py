@@ -156,14 +156,13 @@ def _study_definition(*, seeds=("seed-1",)) -> ResearchStudyDefinition:
         ResearchBindingRequirements("trial-provider"),
         ExperimentTrialProtocolIdentity("trial.test", "c" * 64),
         ResearchRevision("research-os-revision", "d" * 64),
-        StudyExecutionPolicy.serial_shared_v1(
+        StudyExecutionPolicy(
             trial_budget=TrialBudget(
                 "standard",
                 max_steps=8,
                 max_seconds=60.0,
             ),
             replay_level=ReplayLevel.EXACT,
-            repetition_timeout_seconds=60.0,
         ),
     )
 
@@ -817,6 +816,52 @@ def test_trial_provider_bridge_uses_execution_cut_as_trial_run_identity() -> Non
     )
     assert observation.assignment == assignment
     assert observation.metrics == (("score", 1.0),)
+
+
+def test_trial_study_adapter_binds_scientific_inputs_into_request_identity() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    providers = _TrialProviderResolver(
+        closure.research_plan.trial_protocol_identity
+    )
+    base = ResearchOSExperimentTrialStudyExecutionResolver(providers).resolve(
+        closure
+    ).adapter
+    bound = base.bind_scientific_inputs(
+        {"source_architecture": {"generation": 7, "nodes": ()}}
+    )
+    assignment = closure.research_plan.experiment_plan.assignments[0]
+    variant_binding = closure.research_plan.experiment_plan.binding_for(
+        assignment.variant_id
+    )
+    base_request = base._request(
+        assignment,
+        variant_binding,
+        closure.research_plan.experiment_plan.plan_digest,
+        execution_id="8" * 64,
+    )
+    bound_request = bound._request(
+        assignment,
+        variant_binding,
+        closure.research_plan.experiment_plan.plan_digest,
+        execution_id="8" * 64,
+    )
+    assert dict(bound_request.scientific_inputs) == {
+        "source_architecture": {"generation": 7, "nodes": ()}
+    }
+    assert base_request.scientific_inputs == {}
+    assert bound_request.request_digest != base_request.request_digest
 
 
 def test_trial_provider_bridge_rejects_protocol_drift_before_execution() -> None:

@@ -199,6 +199,7 @@ def _serving_policy(raw: object, *, field: str) -> ModelServingPolicy:
             "prefix_cache_hash_algorithm",
             "chunked_prefill",
             "max_batch_tokens",
+            "runtime_tuning_revision",
         }),
     )
     prefix_caching = (
@@ -228,6 +229,10 @@ def _serving_policy(raw: object, *, field: str) -> ModelServingPolicy:
         ),
         chunked_prefill=chunked_prefill,
         max_batch_tokens=max_batch_tokens,
+        runtime_tuning_revision=_string(
+            value["runtime_tuning_revision"],
+            field=f"{field}.runtime_tuning_revision",
+        ),
     )
 
 

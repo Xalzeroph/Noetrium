@@ -140,6 +140,18 @@ def test_repository_workspace_provider_records_read_edit_and_test_state(
     assert edit.effect is not None
     assert edit.effect.before_artifact == initial_digest
     assert edit.effect.after_artifact != initial_digest
+    edit_view = edit.observation.payload["decision_view"]
+    assert edit_view == {
+        "kind": "software_edit.v1",
+        "path": "main.py",
+        "size_bytes": len("print('v2')\n".encode("utf-8")),
+        "line_count": 1,
+        "workspace": {
+            "file_count": 1,
+            "total_bytes": len("print('v2')\n".encode("utf-8")),
+        },
+    }
+    assert "files" not in edit_view
     assert session.reconcile(edit.effect, _context()) == edit.effect
 
     test = session.act(ActionRequest(
@@ -164,6 +176,27 @@ def test_repository_workspace_provider_records_read_edit_and_test_state(
     closed = session.diagnostics_snapshot()
     assert closed.ready is False
     assert closed.closed is True
+
+
+def test_edit_reuses_post_edit_workspace_scan(tmp_path: Path) -> None:
+    provider, _runner = _provider(tmp_path)
+    session = provider.open_session(session_id="scan-count", services=object())
+    calls = 0
+    original = session._workspace_rows
+
+    def counted():
+        nonlocal calls
+        calls += 1
+        return original()
+
+    session._workspace_rows = counted
+    session.act(ActionRequest(
+        "edit-scan",
+        SoftwareActionKind.EDIT.value,
+        {"path": "main.py", "content": "print('fast')\n"},
+        _context(),
+    ))
+    assert calls == 2
 
 
 def test_repository_workspace_provider_rejects_path_escape_and_action_drift(
@@ -244,3 +277,54 @@ def test_repository_workspace_translates_process_timeout(
             {"argv": ("python", "main.py"), "timeout_seconds": 0.01},
             _context(),
         ))
+
+
+def test_software_decision_views_bound_large_model_context(tmp_path: Path) -> None:
+    provider, runner = _provider(tmp_path)
+    session = provider.open_session(session_id="context", services=object())
+
+    large = "HEAD\n" + ("x" * 20_000) + "\nTAIL\n"
+    (tmp_path / "large.txt").write_text(large, encoding="utf-8")
+    read = session.act(ActionRequest(
+        "read-large",
+        SoftwareActionKind.READ.value,
+        {"path": "large.txt"},
+        _context(),
+    ))
+    payload = read.observation.payload
+    assert payload["content"] == large
+    view = payload["decision_view"]
+    assert view["kind"] == "software_read.v1"
+    assert view["truncated"] is True
+    assert len(view["content"]) < len(large)
+    assert "HEAD" in view["content"]
+    assert "TAIL" in view["content"]
+
+    ranged = session.act(ActionRequest(
+        "read-range",
+        SoftwareActionKind.READ.value,
+        {"path": "large.txt", "start_line": 1, "end_line": 1},
+        _context(),
+    ))
+    assert ranged.observation.payload["decision_view"]["content"] == "HEAD\n"
+
+    runner.run = lambda *args, **kwargs: LocalCommandResult(
+        argv=("tool",),
+        returncode=1,
+        stdout="begin\n" + ("o" * 20_000) + "\nend-out\n",
+        stderr="err-begin\n" + ("e" * 20_000) + "\nerr-end\n",
+    )
+    executed = session.act(ActionRequest(
+        "execute-large",
+        SoftwareActionKind.EXECUTE.value,
+        {"argv": ("tool",)},
+        _context(),
+    ))
+    raw = executed.observation.payload
+    assert len(raw["stdout"]) > 20_000
+    command_view = raw["decision_view"]
+    assert command_view["stdout"]["truncated"] is True
+    assert command_view["stderr"]["truncated"] is True
+    assert "begin" in command_view["stdout"]["text"]
+    assert "end-out" in command_view["stdout"]["text"]
+    assert "err-end" in command_view["stderr"]["text"]

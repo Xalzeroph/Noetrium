@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+import hashlib
 from threading import Lock
 from typing import Generic, TypeVar
 
@@ -83,13 +84,20 @@ class LeaseHeartbeatGuard(Generic[RowT]):
             heartbeat_id = self._heartbeat_namespace + ":" + ",".join(
                 self._row_identity(row) for row in self._rows
             )
+            phase = int.from_bytes(
+                hashlib.sha256(heartbeat_id.encode("utf-8")).digest()[:8],
+                "big",
+            ) / float((1 << 64) - 1)
+            initial_delay_seconds = self._interval_seconds * (
+                0.10 + (0.80 * phase)
+            )
             self._scheduled = self._heartbeat_scheduler.register(
                 self._task_group.group_id,
                 HeartbeatSpec(
                     heartbeat_id=heartbeat_id,
                     lane_id=self._lane_id,
                     interval_seconds=self._interval_seconds,
-                    initial_delay_seconds=self._interval_seconds,
+                    initial_delay_seconds=initial_delay_seconds,
                     lane_capacity=self._lane_capacity,
                     failure_scope=TaskFailureScope.CALLER,
                 ),

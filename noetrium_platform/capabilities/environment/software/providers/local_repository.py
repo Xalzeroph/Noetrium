@@ -72,6 +72,38 @@ def _argv(value: object) -> tuple[str, ...]:
     return result
 
 
+def _text_decision_view(text: str, *, max_chars: int) -> dict[str, object]:
+    total = len(text)
+    if total <= max_chars:
+        return {
+            "text": text,
+            "total_chars": total,
+            "truncated": False,
+        }
+    head_chars = max_chars // 3
+    tail_chars = max_chars - head_chars
+    elided = total - max_chars
+    preview = (
+        text[:head_chars]
+        + f"\n...[{elided} chars elided; request a narrower range/filter]...\n"
+        + text[-tail_chars:]
+    )
+    return {
+        "text": preview,
+        "total_chars": total,
+        "truncated": True,
+        "elided_chars": elided,
+    }
+
+
+def _positive_int(value: object, name: str, *, default: int | None = None) -> int | None:
+    if value is None:
+        return default
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise ValueError(f"software {name} must be a positive integer")
+    return value
+
+
 class LocalRepositorySoftwareProvider(EnvironmentProviderPort):
     """Local repository workspace provider over the shared process authority."""
 
@@ -274,13 +306,22 @@ class _LocalRepositorySoftwareSession(
     def _list(self, request: ActionRequest) -> ActionResult:
         payload = _payload(request)
         suffix = payload.get("suffix")
-        if suffix is not None and type(suffix) is not str:
-            raise TypeError("software list suffix must be text or None")
+        prefix = payload.get("prefix")
+        contains = payload.get("contains")
+        for name, value in (("suffix", suffix), ("prefix", prefix), ("contains", contains)):
+            if value is not None and type(value) is not str:
+                raise TypeError(f"software list {name} must be text or None")
+        requested_limit = _positive_int(payload.get("limit"), "list limit")
         files = tuple(
-            row["path"]
+            str(row["path"])
             for row in self._workspace_rows()
-            if suffix is None or str(row["path"]).endswith(suffix)
+            if (suffix is None or str(row["path"]).endswith(suffix))
+            and (prefix is None or str(row["path"]).startswith(prefix))
+            and (contains is None or contains in str(row["path"]))
         )
+        policy_limit = self._spec.context_policy.max_list_files
+        view_limit = min(requested_limit or policy_limit, policy_limit)
+        visible = files[:view_limit]
         observation = Observation(
             observation_id=f"software:{request.action_id}:list",
             generation=self._workspace_state_digest(),
@@ -288,6 +329,20 @@ class _LocalRepositorySoftwareSession(
                 "action": SoftwareActionKind.LIST.value,
                 "files": files,
                 "suffix": suffix,
+                "prefix": prefix,
+                "contains": contains,
+                "decision_view": {
+                    "kind": "software_list.v1",
+                    "files": visible,
+                    "matched_count": len(files),
+                    "shown_count": len(visible),
+                    "truncated": len(visible) < len(files),
+                    "filters": {
+                        "suffix": suffix,
+                        "prefix": prefix,
+                        "contains": contains,
+                    },
+                },
             },
         )
         return ActionResult(
@@ -304,6 +359,17 @@ class _LocalRepositorySoftwareSession(
         if not path.is_file():
             raise FileNotFoundError(path)
         content = path.read_text(encoding="utf-8")
+        lines = content.splitlines(keepends=True)
+        start_line = _positive_int(payload.get("start_line"), "read start_line", default=1)
+        end_line = _positive_int(payload.get("end_line"), "read end_line")
+        assert start_line is not None
+        if end_line is not None and end_line < start_line:
+            raise ValueError("software read end_line must be >= start_line")
+        selected = "".join(lines[start_line - 1:end_line])
+        preview = _text_decision_view(
+            selected,
+            max_chars=self._spec.context_policy.max_text_chars,
+        )
         observation = Observation(
             observation_id=f"software:{request.action_id}:read",
             generation=self._workspace_state_digest(),
@@ -312,6 +378,20 @@ class _LocalRepositorySoftwareSession(
                 "path": path.relative_to(self._root).as_posix(),
                 "content": content,
                 "sha256": sha256(content.encode("utf-8")).hexdigest(),
+                "decision_view": {
+                    "kind": "software_read.v1",
+                    "path": path.relative_to(self._root).as_posix(),
+                    "content": preview["text"],
+                    "total_lines": len(lines),
+                    "requested_lines": {
+                        "start": start_line,
+                        "end": end_line,
+                    },
+                    "selected_chars": len(selected),
+                    "truncated": preview["truncated"],
+                    "total_chars": preview["total_chars"],
+                    "elided_chars": preview.get("elided_chars", 0),
+                },
             },
         )
         return ActionResult(
@@ -329,8 +409,15 @@ class _LocalRepositorySoftwareSession(
         if type(content) is not str:
             raise TypeError("software edit content must be text")
         before = self._workspace_state_digest()
-        atomic_replace_bytes(path, content.encode("utf-8"))
-        after = self._workspace_state_digest()
+        encoded = content.encode("utf-8")
+        atomic_replace_bytes(path, encoded)
+        after_rows = self._workspace_rows()
+        after = canonical_digest(after_rows)
+        relative_path = path.relative_to(self._root).as_posix()
+        workspace_summary = {
+            "file_count": len(after_rows),
+            "total_bytes": sum(int(row["size_bytes"]) for row in after_rows),
+        }
         effect = EffectReceipt(
             effect_id=f"software-edit:{request.action_id}",
             request_digest=action_request_digest(request),
@@ -348,7 +435,16 @@ class _LocalRepositorySoftwareSession(
             action_id=request.action_id,
             accepted=True,
             observation=self._workspace_observation(
-                f"software:{request.action_id}:edit"
+                f"software:{request.action_id}:edit",
+                rows=after_rows,
+                digest=after,
+                decision_view={
+                    "kind": "software_edit.v1",
+                    "path": relative_path,
+                    "size_bytes": len(encoded),
+                    "line_count": len(content.splitlines()),
+                    "workspace": workspace_summary,
+                },
             ),
             effect=effect,
             diagnostics={
@@ -392,6 +488,14 @@ class _LocalRepositorySoftwareSession(
             after_artifact=after,
             provider_receipt=request.action_id,
         )
+        stdout_view = _text_decision_view(
+            completed.stdout,
+            max_chars=self._spec.context_policy.max_text_chars,
+        )
+        stderr_view = _text_decision_view(
+            completed.stderr,
+            max_chars=self._spec.context_policy.max_text_chars,
+        )
         observation = Observation(
             observation_id=f"software:{request.action_id}:{kind.value}",
             generation=after,
@@ -403,6 +507,13 @@ class _LocalRepositorySoftwareSession(
                 "stderr": completed.stderr,
                 "before_state_digest": before,
                 "after_state_digest": after,
+                "decision_view": {
+                    "kind": f"software_{kind.value}.v1",
+                    "argv": argv,
+                    "returncode": completed.returncode,
+                    "stdout": stdout_view,
+                    "stderr": stderr_view,
+                },
             },
         )
         return ActionResult(
@@ -417,17 +528,44 @@ class _LocalRepositorySoftwareSession(
             },
         )
 
-    def _workspace_observation(self, observation_id: str) -> Observation:
-        rows = self._workspace_rows()
-        digest = canonical_digest(rows)
+    def _workspace_observation(
+        self,
+        observation_id: str,
+        *,
+        rows: tuple[dict[str, object], ...] | None = None,
+        digest: str | None = None,
+        decision_view: dict[str, object] | None = None,
+    ) -> Observation:
+        resolved_rows = self._workspace_rows() if rows is None else rows
+        resolved_digest = (
+            canonical_digest(resolved_rows) if digest is None else digest
+        )
+        if decision_view is None:
+            visible_rows = resolved_rows[: self._spec.context_policy.max_workspace_files]
+            decision_view = {
+                "kind": "software_workspace.v1",
+                "workspace_id": self._spec.environment_id,
+                "revision": self._spec.revision,
+                "file_count": len(resolved_rows),
+                "total_bytes": sum(
+                    int(row["size_bytes"]) for row in resolved_rows
+                ),
+                "files": tuple(
+                    (row["path"], row["size_bytes"])
+                    for row in visible_rows
+                ),
+                "shown_count": len(visible_rows),
+                "truncated": len(visible_rows) < len(resolved_rows),
+            }
         return Observation(
             observation_id=observation_id,
-            generation=digest,
+            generation=resolved_digest,
             payload={
                 "workspace_id": self._spec.environment_id,
                 "revision": self._spec.revision,
-                "state_digest": digest,
-                "files": rows,
+                "state_digest": resolved_digest,
+                "files": resolved_rows,
+                "decision_view": decision_view,
             },
         )
 

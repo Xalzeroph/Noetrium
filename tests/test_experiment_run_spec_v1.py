@@ -9,7 +9,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import ExperimentR
 from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, ReplayLevel
 from noetrium_platform.research.experimentation.lifecycle.api import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
-from noetrium_platform.research.experimentation.lifecycle.api import AssignmentWorkload, StudyConcurrencyPolicy, StudyProtocol, StudyVariantSpec, VariantKind
+from noetrium_platform.research.experimentation.lifecycle.api import AssignmentWorkload, StudyProtocol, StudyVariantSpec, VariantKind
 from tests_support import model_role_for_test
 
 
@@ -66,9 +66,6 @@ class ExperimentRunSpecTests(unittest.TestCase):
             task_manifest_digest=tasks,
             assignment_workloads=(AssignmentWorkload(("task-0",)),),
             budget_tiers=("standard",),
-            concurrency_policy=StudyConcurrencyPolicy.serial_shared_v1(
-                repetition_timeout_seconds=3600.0
-            ),
         )
         run = ExperimentRunSpec(
             "run-1", "project-1", "experiment-1", "study-1", "baseline",

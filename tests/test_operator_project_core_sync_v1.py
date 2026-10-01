@@ -104,8 +104,8 @@ from noetrium import api
 
 def build_research() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("paper")
-    portfolio.program("paper-a").custom_node("alpha")
-    portfolio.program("paper-b").custom_node("beta")
+    portfolio.programs.create("paper-a").extensions.node("alpha")
+    portfolio.programs.create("paper-b").extensions.node("beta")
     return portfolio.freeze()
 
 
@@ -262,8 +262,8 @@ def test_user_core_may_delegate_to_arbitrary_project_modules(
 
 def make_portfolio() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("modular-paper")
-    portfolio.program("paper-a").custom_node("discover")
-    portfolio.program("paper-b").custom_node("verify")
+    portfolio.programs.create("paper-a").extensions.node("discover")
+    portfolio.programs.create("paper-b").extensions.node("verify")
     return portfolio.freeze()
 ''',
         encoding="utf-8",
@@ -322,10 +322,10 @@ def build_research() -> api.ResearchPortfolio:
         ("paper-b", ("b0", "b1")),
         ("paper-c", ("c0",)),
     ):
-        builder = portfolio.program(program_id)
+        builder = portfolio.programs.create(program_id)
         previous = None
         for node_id in node_ids:
-            builder.custom_node(
+            builder.extensions.node(
                 node_id,
                 depends_on=(() if previous is None else (previous,)),
             )

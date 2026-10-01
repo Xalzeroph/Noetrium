@@ -16,6 +16,8 @@ from noetrium_platform.capabilities.environment.minecraft.providers.jsonl_bridge
 from noetrium_platform.composition.environment_capabilities.minecraft_local import (
     LocalMinecraftLifetimeSessionAuthority,
     _DockerMinecraftCapsule,
+    _DockerMinecraftServer,
+    _DockerServerFactory,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ContentAddressedSingleFlight
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
@@ -305,3 +307,108 @@ def test_minecraft_warm_capsule_identity_is_process_generation_independent(tmp_p
 
     assert first.allocation_id == second.allocation_id
     assert first.generation_digest == second.generation_digest
+
+
+class _ContainerProcessRunner:
+    def __init__(self):
+        self.rows = {
+            101: {"start": "111", "command": "/opt/java/openjdk/bin/java -jar /asset/server.jar nogui", "alive": True},
+            102: {"start": "222", "command": "/usr/local/bin/node /opt/noetrium-environments/minecraft/bridge/bridge.js", "alive": True},
+            103: {"start": "333", "command": "/bin/sleep 3600", "alive": True},
+        }
+        self.signals = []
+
+    def run(self, argv, *, timeout_seconds):
+        del timeout_seconds
+        command = argv[-1] if argv and argv[-2:-1] == ("-c",) else ""
+        if command.startswith("cat /proc/") and command.endswith("/stat"):
+            pid = int(command.split("/proc/", 1)[1].split("/", 1)[0])
+            row = self.rows.get(pid)
+            if row is None or not row["alive"]:
+                return SimpleNamespace(returncode=1, stdout="", stderr="missing")
+            fields = ["S"] + ["0"] * 18 + [row["start"]]
+            return SimpleNamespace(
+                returncode=0,
+                stdout=f"{pid} (proc) " + " ".join(fields),
+                stderr="",
+            )
+        if "cmdline" in command:
+            pid = int(command.split("/proc/", 1)[1].split("/", 1)[0])
+            row = self.rows.get(pid)
+            if row is None or not row["alive"]:
+                return SimpleNamespace(returncode=1, stdout="", stderr="missing")
+            return SimpleNamespace(returncode=0, stdout=row["command"], stderr="")
+        if command.startswith("kill -"):
+            _kill, signal, raw_pid = command.split()
+            pid = int(raw_pid)
+            self.signals.append((signal, pid))
+            if pid in self.rows:
+                self.rows[pid]["alive"] = False
+            return SimpleNamespace(returncode=0, stdout="", stderr="")
+        raise AssertionError(f"unexpected command: {argv!r}")
+
+
+def test_minecraft_reopen_reaps_only_exact_stale_lifetime_processes(tmp_path) -> None:
+    recovery = tmp_path / "recovery"
+    recovery.mkdir()
+    (recovery / "minecraft-server-41001.pid").write_text("101 111\n", encoding="utf-8")
+    (recovery / "minecraft-bridge-41001.pid").write_text("102 222\n", encoding="utf-8")
+    (recovery / "minecraft-server-41002.pid").write_text("103 333\n", encoding="utf-8")
+
+    runner = _ContainerProcessRunner()
+    runtime = SimpleNamespace(
+        docker_executable="docker",
+        inspect=lambda _name: SimpleNamespace(running=True, container_id="container-a"),
+    )
+    server = object.__new__(_DockerMinecraftServer)
+    server.recovery_root = recovery
+    server.runner = runner
+    server.authority = SimpleNamespace(runtime=runtime)
+    server.capsule = SimpleNamespace(
+        assert_healthy=lambda: None,
+        container_name="warm-minecraft",
+    )
+    server.contract = SimpleNamespace(stop_timeout_s=0.01)
+
+    server._reconcile_stale_lifetime_processes()
+
+    assert runner.signals == [("-TERM", 101), ("-TERM", 102)]
+    assert runner.rows[103]["alive"] is True
+    assert not tuple(recovery.glob("minecraft-*.pid"))
+
+
+class _CaptureProcessSupervisor:
+    def __init__(self) -> None:
+        self.argv = None
+        self.kwargs = None
+
+    def spawn_interactive(self, argv, **kwargs):
+        self.argv = argv
+        self.kwargs = kwargs
+        return object()
+
+
+def test_minecraft_bridge_publishes_inner_container_pid_for_crash_recovery(tmp_path) -> None:
+    supervisor = _CaptureProcessSupervisor()
+    factory = object.__new__(_DockerServerFactory)
+    factory.lock = RLock()
+    factory.by_port = {
+        25565: SimpleNamespace(
+            container_name="warm-minecraft",
+            recovery_root=tmp_path,
+        )
+    }
+    factory.authority = SimpleNamespace(
+        runtime=SimpleNamespace(docker_executable="docker")
+    )
+    factory.process_supervisor = supervisor
+
+    factory.bridge_process_factory(25565)(["ignored"], env={})
+
+    assert supervisor.argv is not None
+    assert supervisor.argv[-3:-1] == ("/bin/sh", "-c")
+    shell = supervisor.argv[-1]
+    assert "minecraft-bridge-25565.pid" in shell
+    assert "awk '{print $22}' /proc/$$/stat" in shell
+    assert "exec /usr/local/bin/node" in shell
+    assert "/opt/noetrium-environments/minecraft/bridge/bridge.js" in shell

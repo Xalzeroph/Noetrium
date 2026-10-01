@@ -1393,6 +1393,69 @@ class StrictResearchOSControl(
         )
         return ResearchOSExecutionActivation(cut, active, target_snapshot)
 
+    def _recover_abandoned_run_nodes(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+        prepared: PreparedResearchOSExecution,
+        activation: ResearchOSExecutionActivation,
+    ) -> tuple[str, ...]:
+        """Reconcile only work fenced as abandoned by this RUN generation.
+
+        User-driven interrupt/recovery intent is deliberately excluded: only a
+        node observed RUNNING before this call and changed to RECONCILE_REQUIRED
+        by the exclusive owner-generation fence is eligible for automatic
+        recovery.  Lower authority remains the sole source of the disposition.
+        """
+        if (
+            not self._pool.can_recover_abandoned_owner_generations
+            or not isinstance(self._store, ResearchGraphOwnerGenerationRecoveryPort)
+        ):
+            return ()
+        before = activation.snapshot
+        after = self._store.recover_abandoned_owner_generation(
+            activation.cut.cut_id,
+            current_owner_generation_id=self._pool.owner_generation_id,
+            now_ns=time.time_ns(),
+        )
+        abandoned = tuple(
+            node.node_id
+            for node in before.nodes
+            if node.state is ResearchGraphLiveNodeState.RUNNING
+            and after.node(node.node_id).state
+            is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+        )
+        for graph_node_id in abandoned:
+            compiled = prepared.compilation.node(graph_node_id)
+            recovery_target = request.target.for_node(
+                compiled.ref.program_id,
+                compiled.ref.node_id,
+            )
+            self._reconcile(
+                ResearchControlRequest(
+                    ResearchControlAction.RECONCILE,
+                    recovery_target,
+                ),
+                portfolio,
+            )
+            node_control = self._store.node_control_state(
+                activation.cut.cut_id,
+                graph_node_id,
+            )
+            if node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
+                resumed = self._store.resume_node(
+                    activation.cut.cut_id,
+                    graph_node_id,
+                    expected_generation=node_control.generation,
+                    now_ns=time.time_ns(),
+                )
+                if resumed.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                    raise ResearchGraphExecutionConflict(
+                        "automatic abandoned-generation recovery did not reactivate "
+                        f"node control: {graph_node_id}={resumed.phase.value}"
+                    )
+        return abandoned
+
     def _run(
         self,
         request: ResearchControlRequest,
@@ -1424,6 +1487,12 @@ class StrictResearchOSControl(
                 "RUN requires an active graph control phase; use RESUME for a "
                 f"paused execution, actual={control.phase.value}"
             )
+        self._recover_abandoned_run_nodes(
+            request,
+            portfolio,
+            prepared,
+            activation,
+        )
         return self._drive(
             request,
             prepared,

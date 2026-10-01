@@ -13,7 +13,7 @@ RUNTIME_FABRIC_ROOT="${NOETRIUM_RUNTIME_FABRIC_ROOT:-$DATA_ROOT/runtime-fabric}"
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|project|env|docker> [args]
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate|project|env|docker> [args]
 
   doctor     verify ordinary-user Docker/Compose access and environment registry
   build      build or reuse all active environment profiles
@@ -21,6 +21,8 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|project|e
   requirements emit the machine-readable owner authority prerequisite manifest
   preflight  materialize exact authority closure and admit the fleet without starting work
   run        build/reuse environments and execute one or many Research OS projects through the shared portfolio runtime
+  inspect/pause/drain/interrupt/resume/retry/cancel/checkpoint/reconcile/migrate
+             control exactly one project Research OS without touching unrelated projects
   project    create/sync/doctor/test downstream project sources; execution uses run
   env        pass remaining arguments to the low-level environment bootstrap
   docker     manage the optional ordinary-user rootless Docker daemon
@@ -268,6 +270,10 @@ case "$command" in
       fleet_with_optional_materializer --execute \
         --state-root "$FLEET_STATE_ROOT" "$@"
     fi
+    ;;
+  inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate)
+    host_doctor
+    project_control "$command" "$@"
     ;;
   project)
     host_doctor

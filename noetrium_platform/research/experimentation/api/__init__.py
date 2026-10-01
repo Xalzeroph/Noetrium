@@ -401,7 +401,6 @@ __all__ = tuple(__all__) + ("VariantKind",)
 
 from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyProtocol,
-    StudyConcurrencyPolicy,
     VariantBinding,
     StudyAssignment,
     StudyExecutionPlan,
@@ -409,7 +408,6 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 __all__ = tuple(__all__) + (
     "StudyProtocol",
-    "StudyConcurrencyPolicy",
     "VariantBinding",
     "StudyAssignment",
     "ExperimentPlan",
@@ -628,6 +626,12 @@ from noetrium_platform.research.execution.api import (
     ResearchEvent,
     ResearchMethod,
     ResearchMethodBuilder,
+    ResearchMethodDSL,
+    ResearchMethodContractDSL,
+    ResearchMethodComponentsDSL,
+    ResearchMethodFlowDSL,
+    ResearchComponentDSL,
+    ResearchMemoryDSL,
     ResearchMethodCall,
     ResearchMethodTransition,
 )
@@ -641,6 +645,12 @@ __all__ = tuple(__all__) + (
     "ResearchEvent",
     "ResearchMethod",
     "ResearchMethodBuilder",
+    "ResearchMethodDSL",
+    "ResearchMethodContractDSL",
+    "ResearchMethodComponentsDSL",
+    "ResearchMethodFlowDSL",
+    "ResearchComponentDSL",
+    "ResearchMemoryDSL",
     "ResearchMethodCall",
     "ResearchMethodTransition",
 )

@@ -170,10 +170,10 @@ def compile_research_portfolio_graph(
     if revision.portfolio_digest != portfolio.portfolio_digest:
         raise ValueError("research graph revision/portfolio digest mismatch")
 
-    programs = {program.program_id: program for program in portfolio.programs}
+    programs = {program.program_id: program for program in portfolio._programs}
     nodes = {
         ResearchNodeRef(program.program_id, node.node_id): node
-        for program in portfolio.programs
+        for program in portfolio._programs
         for node in program.nodes
     }
     definitions = {
@@ -181,7 +181,7 @@ def compile_research_portfolio_graph(
             definition.definition_id: definition
             for definition in program.definitions
         }
-        for program in portfolio.programs
+        for program in portfolio._programs
     }
     incoming: dict[
         ResearchNodeRef,
@@ -190,7 +190,7 @@ def compile_research_portfolio_graph(
         ref: [] for ref in nodes
     }
 
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for dependency in program.dependencies:
             upstream = ResearchNodeRef(
                 program.program_id,
@@ -207,7 +207,7 @@ def compile_research_portfolio_graph(
                     dependency.dependency_digest,
                 )
             )
-    for dependency in portfolio.dependencies:
+    for dependency in portfolio._dependencies:
         incoming[dependency.downstream].append(
             (
                 dependency.upstream,
@@ -254,7 +254,7 @@ def compile_research_portfolio_graph(
                 key=lambda definition: definition.definition_id,
             )
         )
-        for program in portfolio.programs
+        for program in portfolio._programs
     }
     semantic_digests: dict[ResearchNodeRef, str] = {}
 

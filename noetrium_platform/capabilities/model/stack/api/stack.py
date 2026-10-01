@@ -65,6 +65,7 @@ class ModelServingPolicy:
     prefix_cache_hash_algorithm: str | None = None
     chunked_prefill: bool | None = None
     max_batch_tokens: int | None = None
+    runtime_tuning_revision: str = "legacy"
 
     def __post_init__(self) -> None:
         for name in ("prefix_caching", "chunked_prefill"):
@@ -83,6 +84,13 @@ class ModelServingPolicy:
                 raise ValueError(
                     "prefix_cache_hash_algorithm requires prefix_caching=True"
                 )
+        if (
+            type(self.runtime_tuning_revision) is not str
+            or not self.runtime_tuning_revision.strip()
+        ):
+            raise ValueError(
+                "model serving policy runtime_tuning_revision must be non-empty text"
+            )
         if self.max_batch_tokens is not None and (
             type(self.max_batch_tokens) is not int
             or self.max_batch_tokens <= 0

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from enum import StrEnum
 import hashlib
 import inspect
 from typing import Protocol, runtime_checkable
@@ -75,6 +76,23 @@ class ResearchComponentResult:
         }
 
 
+class MemoryScope(StrEnum):
+    """Durable scope for one Method-owned Memory Machine instance."""
+
+    METHOD = "method"
+    STUDY = "study"
+    RUN = "run"
+    TASK = "task"
+    LIFETIME = "lifetime"
+    CONDITION = "condition"
+    REPETITION = "repetition"
+    DECISION = "decision"
+    BRANCH = "branch"
+    PARTICIPANT = "participant"
+    TENANT = "tenant"
+    CUSTOM = "custom"
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchMethodCall:
     node_id: str
@@ -85,14 +103,24 @@ class ResearchMethodCall:
     effect_receipts: tuple[Mapping[str, JsonValue], ...]
     run_id: str
     trace_id: str
+    study_id: str | None
     condition_id: str | None
     condition_selections: tuple[tuple[str, str], ...]
     intervention_values: tuple[tuple[str, JsonValue], ...]
     assignment_seed: str | None
+    repetition: int | None
     participant_context: Mapping[str, JsonValue]
     replay_level: str | None
     trial_budget: Mapping[str, JsonValue]
     lifetime_id: str | None
+    branch_id: str | None
+    task_id: str | None
+    decision_cycle_id: str | None
+    checkpoint_id: str | None
+    operation_id: str | None
+    component_id: str | None
+    execution_tenant_id: str | None
+    parent_machine_id: str | None
     checkpoint: JsonValue
     _request: MethodNodeRequest = field(repr=False, compare=False)
 
@@ -120,16 +148,157 @@ class ResearchMethodCall:
             ),
             run_id=request.context.run_id,
             trace_id=request.context.trace_id,
+            study_id=request.context.study_id,
             condition_id=request.context.condition_id,
             condition_selections=request.context.condition_selections,
             intervention_values=request.context.intervention_values,
             assignment_seed=request.context.assignment_seed,
+            repetition=request.context.repetition,
             participant_context=request.context.participant_context,
             replay_level=request.context.replay_level,
             trial_budget=request.context.trial_budget,
             lifetime_id=request.context.lifetime_id,
+            branch_id=request.context.branch_id,
+            task_id=request.context.task_id,
+            decision_cycle_id=request.context.decision_cycle_id,
+            checkpoint_id=request.context.checkpoint_id,
+            operation_id=request.context.operation_id,
+            component_id=request.context.component_id,
+            execution_tenant_id=request.context.execution_tenant_id,
+            parent_machine_id=request.parent_machine_id,
             checkpoint=request.checkpoint,
             _request=request,
+        )
+
+    def memory_scope_identity(
+        self,
+        scope: MemoryScope | str,
+        *,
+        scope_key: JsonValue = None,
+    ) -> dict[str, JsonValue]:
+        """Resolve one deterministic Method-owned memory lifetime identity.
+
+        The child-runtime identity isolates identical logical memory names
+        across different frozen Method implementations. Standard scopes are
+        derived only from immutable ExecutionContext identities; participant
+        and custom scopes require an explicit paper-owned key.
+        """
+
+        try:
+            resolved = scope if isinstance(scope, MemoryScope) else MemoryScope(scope)
+        except ValueError as exc:
+            raise ValueError(f"unknown memory scope: {scope!r}") from exc
+
+        context_key: JsonValue
+        if resolved is MemoryScope.METHOD:
+            context_key = "method"
+        elif resolved is MemoryScope.STUDY:
+            context_key = self.study_id
+        elif resolved is MemoryScope.RUN:
+            context_key = self.run_id
+        elif resolved is MemoryScope.TASK:
+            context_key = self.task_id
+        elif resolved is MemoryScope.LIFETIME:
+            context_key = self.lifetime_id
+        elif resolved is MemoryScope.CONDITION:
+            context_key = self.condition_id
+        elif resolved is MemoryScope.REPETITION:
+            context_key = {
+                "study_id": self.study_id,
+                "run_id": self.run_id,
+                "assignment_seed": self.assignment_seed,
+                "repetition": self.repetition,
+            }
+        elif resolved is MemoryScope.DECISION:
+            context_key = {
+                "run_id": self.run_id,
+                "task_id": self.task_id,
+                "decision_cycle_id": self.decision_cycle_id,
+            }
+        elif resolved is MemoryScope.BRANCH:
+            context_key = self.branch_id
+        elif resolved is MemoryScope.TENANT:
+            context_key = self.execution_tenant_id
+        elif resolved in {MemoryScope.PARTICIPANT, MemoryScope.CUSTOM}:
+            context_key = scope_key
+        else:  # pragma: no cover - enum exhaustiveness
+            raise AssertionError(resolved)
+
+        if resolved not in {MemoryScope.PARTICIPANT, MemoryScope.CUSTOM} and scope_key is not None:
+            raise ValueError(
+                f"memory scope {resolved.value!r} derives its identity from ExecutionContext"
+            )
+        if context_key is None:
+            raise ValueError(
+                f"memory scope {resolved.value!r} is unavailable in this execution context"
+            )
+
+        child_runtime = self._request.child_machines
+        if child_runtime is None:
+            raise RuntimeError(
+                "memory scope identity requires the Method component runtime"
+            )
+        return {
+            "schema": "noetrium.method-memory-scope.v1",
+            "scope": resolved.value,
+            "scope_key": freeze_json(context_key),
+            "component_runtime_digest": child_runtime.identity_digest,
+        }
+
+    def memory_component_identity(
+        self,
+        *,
+        host_id: str,
+        memory_id: str,
+        scope: MemoryScope | str,
+        scope_key: JsonValue = None,
+    ) -> tuple[str, dict[str, JsonValue]]:
+        """Resolve the stable durable identity for one Method-owned memory."""
+
+        if type(memory_id) is not str or not memory_id.strip():
+            raise ValueError("research memory_id must be non-empty")
+        if type(host_id) is not str or not host_id.strip():
+            raise ValueError("research memory host_id must be non-empty")
+        identity = self.memory_scope_identity(scope, scope_key=scope_key)
+        logical_identity = {
+            "memory_id": memory_id.strip(),
+            "host_id": host_id.strip(),
+            "scope": identity,
+        }
+        component_instance_id = (
+            "memory:"
+            + memory_id.strip()
+            + ":"
+            + canonical_digest(logical_identity)[:24]
+        )
+        return component_instance_id, logical_identity
+
+    def memory_component(
+        self,
+        *,
+        host_id: str,
+        memory_id: str,
+        scope: MemoryScope | str,
+        initial_data: Mapping[str, JsonValue],
+        payload: JsonValue = None,
+        scope_key: JsonValue = None,
+        command_id_prefix: str | None = None,
+    ) -> "ResearchComponentResult":
+        """Step one durable Method-owned Memory Machine with explicit scope."""
+
+        component_instance_id, logical_identity = self.memory_component_identity(
+            host_id=host_id,
+            memory_id=memory_id,
+            scope=scope,
+            scope_key=scope_key,
+        )
+        return self.component(
+            host_id=host_id.strip(),
+            component_instance_id=component_instance_id,
+            instance_identity=logical_identity,
+            initial_data=initial_data,
+            payload=payload,
+            command_id_prefix=command_id_prefix,
         )
 
     def environment_action(
@@ -848,7 +1017,7 @@ class ResearchMethodBuilder:
         handler: Callable[[ResearchMethodCall], ResearchMethodTransition],
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         evidence: tuple[str, ...] = (),
     ) -> "ResearchMethodBuilder":
         self._builder.compute(
@@ -870,7 +1039,7 @@ class ResearchMethodBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect: str = "non_idempotent",
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         evidence: tuple[str, ...] = (),
     ) -> "ResearchMethodBuilder":
         if type(capability_ids) is not tuple or not capability_ids or any(
@@ -900,7 +1069,7 @@ class ResearchMethodBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view: Callable[[ResearchMethodCall], Mapping[str, JsonValue]],
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         evidence: tuple[str, ...] = (),
     ) -> "ResearchMethodBuilder":
         self._runtime_ports.add(MethodRuntimePort.AGENT_LOOP)
@@ -924,7 +1093,7 @@ class ResearchMethodBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view: Callable[[ResearchMethodCall], Mapping[str, JsonValue]],
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         evidence: tuple[str, ...] = (),
     ) -> "ResearchMethodBuilder":
         if type(agent_ids) is not tuple or not agent_ids or any(
@@ -1118,7 +1287,7 @@ class ResearchMethodBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect: str = "pure",
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         evidence: tuple[str, ...] = (),
     ) -> "ResearchMethodBuilder":
         try:
@@ -1147,7 +1316,7 @@ class ResearchMethodBuilder:
         handler: Callable[[ResearchMethodCall], ResearchMethodTransition],
         next_nodes: tuple[str, ...],
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "ResearchMethodBuilder":
         self._builder.route(
             node_id,
@@ -1163,7 +1332,7 @@ class ResearchMethodBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "ResearchMethodBuilder":
         self._builder.checkpoint(
             node_id,
@@ -1177,7 +1346,7 @@ class ResearchMethodBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "ResearchMethodBuilder":
         self._builder.interrupt(
             node_id,
@@ -1223,7 +1392,479 @@ class ResearchMethodBuilder:
         return ResearchMethod(program, tuple(self._components.values()))
 
 
+class ResearchComponentDSL:
+    """Systemized Method-owned component facade over one internal component builder."""
+
+    def __init__(
+        self,
+        parent: "ResearchMethodDSL",
+        builder: ResearchComponentBuilder,
+    ) -> None:
+        self._parent = parent
+        self._builder = builder
+
+    def semantic(
+        self,
+        node_id: str,
+        concern: str,
+        operation: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchComponentDSL":
+        self._builder.semantic(
+            node_id,
+            concern,
+            operation,
+            handler,
+            configuration=configuration,
+            next_node=next_node,
+        )
+        return self
+
+    def custom(
+        self,
+        node_id: str,
+        operation: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchComponentDSL":
+        self._builder.custom(
+            node_id,
+            operation,
+            handler,
+            configuration=configuration,
+            next_node=next_node,
+        )
+        return self
+
+    def end(self) -> "ResearchMethodDSL":
+        self._builder.end()
+        return self._parent
+
+
+class ResearchMemoryDSL(ResearchComponentDSL):
+    """Complete Method-owned Memory authoring without exposing Machine internals."""
+
+    def _semantic_memory(
+        self,
+        concern: str,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        self._builder.semantic(
+            node_id,
+            concern,
+            f"memory.{concern}" if operation is None else operation,
+            handler,
+            configuration=configuration,
+            next_node=next_node,
+        )
+        return self
+
+    def write(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "write", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+    def update(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "update", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+    def retrieve(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "retrieval", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+    def verify(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "trust", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+    def forget(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "retention", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+    def consolidate(
+        self,
+        node_id: str,
+        handler: Callable[[ResearchComponentCall], ResearchComponentTransition],
+        *,
+        operation: str | None = None,
+        configuration: Mapping[str, JsonValue] | None = None,
+        next_node: str | None = None,
+    ) -> "ResearchMemoryDSL":
+        return self._semantic_memory(
+            "consolidation", node_id, handler,
+            operation=operation, configuration=configuration, next_node=next_node,
+        )
+
+
+class ResearchMethodContractDSL:
+    def __init__(self, parent: "ResearchMethodDSL") -> None:
+        self._parent = parent
+
+    def configure(
+        self,
+        values: Mapping[str, JsonValue],
+    ) -> "ResearchMethodContractDSL":
+        self._parent._builder.configure(values)
+        return self
+
+    def requires(self, *capability_ids: str) -> "ResearchMethodContractDSL":
+        self._parent._builder.requires(*capability_ids)
+        return self
+
+    def policy(
+        self,
+        *,
+        execution: str | None = None,
+        evidence: tuple[str, ...] | None = None,
+        metrics: tuple[str, ...] | None = None,
+        artifacts: tuple[str, ...] | None = None,
+        state_schema: str | None = None,
+        input_schema: str | None = None,
+        output_schema: str | None = None,
+    ) -> "ResearchMethodContractDSL":
+        self._parent._builder.policy(
+            execution=execution,
+            evidence=evidence,
+            metrics=metrics,
+            artifacts=artifacts,
+            state_schema=state_schema,
+            input_schema=input_schema,
+            output_schema=output_schema,
+        )
+        return self
+
+
+class ResearchMethodComponentsDSL:
+    def __init__(self, parent: "ResearchMethodDSL") -> None:
+        self._parent = parent
+
+    def memory(
+        self,
+        host_id: str,
+        *,
+        entrypoint: str,
+        version: str = "1",
+        state_schema: str = "json",
+    ) -> ResearchMemoryDSL:
+        return ResearchMemoryDSL(
+            self._parent,
+            self._parent._builder.memory(
+                host_id,
+                entrypoint=entrypoint,
+                version=version,
+                state_schema=state_schema,
+            ),
+        )
+
+    def runtime(
+        self,
+        host_id: str,
+        *,
+        entrypoint: str,
+        version: str = "1",
+        state_schema: str = "json",
+    ) -> ResearchComponentDSL:
+        return ResearchComponentDSL(
+            self._parent,
+            self._parent._builder.runtime(
+                host_id,
+                entrypoint=entrypoint,
+                version=version,
+                state_schema=state_schema,
+            ),
+        )
+
+    def participant(
+        self,
+        host_id: str,
+        *,
+        entrypoint: str,
+        version: str = "1",
+        state_schema: str = "json",
+    ) -> ResearchComponentDSL:
+        return ResearchComponentDSL(
+            self._parent,
+            self._parent._builder.participant(
+                host_id,
+                entrypoint=entrypoint,
+                version=version,
+                state_schema=state_schema,
+            ),
+        )
+
+    def environment(
+        self,
+        host_id: str,
+        *,
+        entrypoint: str,
+        version: str = "1",
+        state_schema: str = "json",
+    ) -> ResearchComponentDSL:
+        return ResearchComponentDSL(
+            self._parent,
+            self._parent._builder.environment(
+                host_id,
+                entrypoint=entrypoint,
+                version=version,
+                state_schema=state_schema,
+            ),
+        )
+
+    def optimization(
+        self,
+        host_id: str,
+        *,
+        entrypoint: str,
+        version: str = "1",
+        state_schema: str = "json",
+    ) -> ResearchComponentDSL:
+        return ResearchComponentDSL(
+            self._parent,
+            self._parent._builder.optimization(
+                host_id,
+                entrypoint=entrypoint,
+                version=version,
+                state_schema=state_schema,
+            ),
+        )
+
+
+class ResearchMethodFlowDSL:
+    def __init__(self, parent: "ResearchMethodDSL") -> None:
+        self._parent = parent
+
+    @property
+    def _builder(self) -> ResearchMethodBuilder:
+        return self._parent._builder
+
+    def compute(
+        self,
+        node_id: str,
+        operation: str,
+        handler: Callable[[ResearchMethodCall], ResearchMethodTransition],
+        next_nodes: tuple[str, ...] = (),
+        *,
+        max_visits: int | None = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.compute(
+            node_id, operation, handler, next_nodes,
+            max_visits=max_visits, evidence=evidence,
+        )
+        return self
+
+    def capability(
+        self,
+        node_id: str,
+        operation: str,
+        capability: str,
+        next_nodes: tuple[str, ...] = (),
+        *,
+        effect: str = "pure",
+        max_visits: int | None = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.capability(
+            node_id, operation, capability, next_nodes,
+            effect=effect, max_visits=max_visits, evidence=evidence,
+        )
+        return self
+
+    def dynamic_capability(
+        self,
+        node_id: str,
+        operation: str,
+        capability_ids: tuple[str, ...],
+        target: Callable[[ResearchMethodCall], str],
+        next_nodes: tuple[str, ...] = (),
+        *,
+        effect: str = "non_idempotent",
+        max_visits: int | None = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.dynamic_capability(
+            node_id, operation, capability_ids, target, next_nodes,
+            effect=effect, max_visits=max_visits, evidence=evidence,
+        )
+        return self
+
+    def agent(
+        self,
+        node_id: str,
+        operation: str,
+        role: str,
+        next_nodes: tuple[str, ...] = (),
+        *,
+        view: Callable[[ResearchMethodCall], Mapping[str, JsonValue]],
+        max_visits: int | None = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.agent(
+            node_id, operation, role, next_nodes,
+            view=view, max_visits=max_visits, evidence=evidence,
+        )
+        return self
+
+    def dynamic_agent(
+        self,
+        node_id: str,
+        operation: str,
+        agent_ids: tuple[str, ...],
+        target: Callable[[ResearchMethodCall], str],
+        next_nodes: tuple[str, ...] = (),
+        *,
+        view: Callable[[ResearchMethodCall], Mapping[str, JsonValue]],
+        max_visits: int | None = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.dynamic_agent(
+            node_id, operation, agent_ids, target, next_nodes,
+            view=view, max_visits=max_visits, evidence=evidence,
+        )
+        return self
+
+    def phases(
+        self,
+        phases: tuple[Mapping[str, JsonValue], ...],
+        *,
+        max_cycles: int | None = None,
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.phases(phases, max_cycles=max_cycles)
+        return self
+
+    def route(
+        self,
+        node_id: str,
+        operation: str,
+        handler: Callable[[ResearchMethodCall], ResearchMethodTransition],
+        next_nodes: tuple[str, ...],
+        *,
+        max_visits: int | None = 1,
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.route(
+            node_id, operation, handler, next_nodes, max_visits=max_visits,
+        )
+        return self
+
+    def checkpoint(
+        self,
+        node_id: str,
+        next_nodes: tuple[str, ...] = (),
+        *,
+        max_visits: int | None = 1,
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.checkpoint(
+            node_id, next_nodes, max_visits=max_visits,
+        )
+        return self
+
+    def interrupt(
+        self,
+        node_id: str,
+        next_nodes: tuple[str, ...] = (),
+        *,
+        max_visits: int | None = 1,
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.interrupt(
+            node_id, next_nodes, max_visits=max_visits,
+        )
+        return self
+
+    def finish(
+        self,
+        step_id: str,
+        operation: str,
+        handler: Callable[[ResearchMethodCall], ResearchMethodTransition],
+    ) -> "ResearchMethodFlowDSL":
+        self._builder.return_node(step_id, operation, handler)
+        return self
+
+
+class ResearchMethodDSL:
+    """Systemized public Method DSL; lower MethodMachine authoring is not exposed."""
+
+    def __init__(self, builder: ResearchMethodBuilder) -> None:
+        if type(builder) is not ResearchMethodBuilder:
+            raise TypeError("ResearchMethodDSL requires internal ResearchMethodBuilder")
+        self._builder = builder
+        self._contract = ResearchMethodContractDSL(self)
+        self._components = ResearchMethodComponentsDSL(self)
+        self._flow = ResearchMethodFlowDSL(self)
+
+    @property
+    def contract(self) -> ResearchMethodContractDSL:
+        return self._contract
+
+    @property
+    def components(self) -> ResearchMethodComponentsDSL:
+        return self._components
+
+    @property
+    def flow(self) -> ResearchMethodFlowDSL:
+        return self._flow
+
+
+
 __all__ = [
+    "MemoryScope",
     "ResearchComponent",
     "ResearchComponentBuilder",
     "ResearchComponentCall",
@@ -1232,6 +1873,12 @@ __all__ = [
     "ResearchEvent",
     "ResearchMethod",
     "ResearchMethodBuilder",
+    "ResearchMethodDSL",
+    "ResearchMethodContractDSL",
+    "ResearchMethodComponentsDSL",
+    "ResearchMethodFlowDSL",
+    "ResearchComponentDSL",
+    "ResearchMemoryDSL",
     "ResearchMethodCall",
     "ResearchMethodTransition",
 ]

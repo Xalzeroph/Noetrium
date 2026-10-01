@@ -93,7 +93,7 @@ class ResearchMachineSessionPort(Protocol):
         *,
         command_id_prefix: str,
         payload: JsonValue = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
     ) -> ResearchMachineRunPort: ...
 
     def checkpoint(self) -> MachineSnapshot: ...

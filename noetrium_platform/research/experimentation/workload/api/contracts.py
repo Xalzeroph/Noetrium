@@ -308,8 +308,8 @@ class TaskDefinitionExperimentTaskProjection:
                 ),
                 depends_on_task_ids=depends_on,
                 retry_of_task_id=(retry_edges[0] if retry_edges else None),
-                max_steps=content.get("max_steps", 12),
-                max_seconds=content.get("max_seconds", 180.0),
+                max_steps=content.get("max_steps"),
+                max_seconds=content.get("max_seconds"),
                 payload=content,
             )
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest, require_sha256
 from noetrium_platform.research.experimentation.api import (
     CompiledExperimentProgram,
     CompiledResearchPlan,
@@ -208,6 +208,19 @@ class ResearchOSExperimentReconciliationPort(Protocol):
     ) -> ResearchOSNodeReconciliationProof: ...
 
 
+@runtime_checkable
+class ResearchOSScientificInputBoundStudyExecutionPort(
+    BoundStudyExecutionPort,
+    Protocol,
+):
+    """Study adapter that can bind immutable upstream ResearchGraph inputs."""
+
+    def bind_scientific_inputs(
+        self,
+        inputs: JsonObject,
+    ) -> BoundStudyExecutionPort: ...
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchOSExperimentRuntimeBinding:
     """Static scientific/runtime binding for one Experiment closure.
@@ -385,5 +398,6 @@ __all__ = [
     "ResearchOSExperimentReconciliationPort",
     "ResearchOSExperimentRuntimeBinding",
     "ResearchOSExperimentRuntimeBindingPort",
+    "ResearchOSScientificInputBoundStudyExecutionPort",
     "compile_research_os_experiment_closure",
 ]

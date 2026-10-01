@@ -71,6 +71,7 @@ from noetrium_platform.research.execution.workflow.runtime import (
 from .environment_capabilities.lifetime import LifetimeRoutedEnvironmentCapability
 from .environment_capabilities.minecraft_local import (
     LocalMinecraftLifetimeSessionAuthority,
+    MINECRAFT_LOCAL_IMPLEMENTATION_ID,
 )
 from .environment_image_runtime import resolve_current_environment_image
 from .workflows.agent_turn.capability_effects import CapabilityEffectExecutor
@@ -306,7 +307,11 @@ class AssignmentLifetimeFinalizingTrialProvider:
             ),
             replay_level=request.execution_policy.replay_level.value,
             lifetime_id=request.assignment_lifetime_id,
-            task_id=None,
+            task_id=(
+                request.assignment.workload.task_ids[0]
+                if request.execution_policy.environment_session_scope == "task"
+                else None
+            ),
             operation_id=request.request_digest,
             component_id="environment-prewarm",
         )
@@ -338,6 +343,19 @@ def _environment_definition(program: ResearchProgram) -> ResearchDefinition | No
     return rows[0]
 
 
+def _registered_local_environment_implementations() -> dict[EnvironmentCategoryId, tuple[str, ...]]:
+    """Physical runtime implementations owned by this composition.
+
+    Downstream code declares an environment category/capability requirement only.
+    This registry is the platform-side executable authority and can grow without
+    changing paper code.
+    """
+
+    return {
+        EnvironmentCategoryId.MINECRAFT: (MINECRAFT_LOCAL_IMPLEMENTATION_ID,),
+    }
+
+
 def _environment_implementation(
     definition: ResearchDefinition,
 ) -> tuple[dict[str, object], str, EnvironmentCategoryId]:
@@ -349,17 +367,17 @@ def _environment_implementation(
     if not isinstance(definition.config, Mapping):
         raise TypeError("platform-resolved ENVIRONMENT config must be an object")
     config = dict(definition.config)
+    if "implementation_id" in config:
+        raise ValueError(
+            "Environment implementation_id is platform-owned; downstream code declares "
+            "category/capability semantics only"
+        )
     if config.get("required_capability") != "environment.act":
         raise ValueError("local Environment runtime requires capability environment.act")
     category_text = config.get("category_id")
-    implementation_id = config.get("implementation_id")
     if type(category_text) is not str or not category_text.strip():
         raise ValueError(
             "platform-resolved ENVIRONMENT requires explicit category_id"
-        )
-    if type(implementation_id) is not str or not implementation_id.strip():
-        raise ValueError(
-            "platform-resolved ENVIRONMENT requires explicit implementation_id"
         )
     try:
         category_id = EnvironmentCategoryId(category_text.strip())
@@ -367,19 +385,29 @@ def _environment_implementation(
         raise ValueError(
             f"unknown Environment category_id: {category_text!r}"
         ) from exc
+
     catalog = default_environment_category_catalog()
-    implementation = catalog.implementation(implementation_id.strip())
-    if implementation.category_id is not category_id:
-        raise ValueError(
-            "Environment implementation/category identity mismatch: "
-            f"{implementation.implementation_id} belongs to "
-            f"{implementation.category_id.value}, not {category_id.value}"
-        )
-    if implementation.status is not EnvironmentCategoryStatus.AVAILABLE:
+    registered = _registered_local_environment_implementations().get(category_id, ())
+    candidates = tuple(
+        row
+        for row in catalog.implementations(category_id)
+        if row.status is EnvironmentCategoryStatus.AVAILABLE
+        and row.implementation_id in registered
+    )
+    if not candidates:
         raise RuntimeError(
-            "Environment implementation is contract-only and cannot execute locally: "
-            + implementation.implementation_id
+            "no platform-qualified local Environment implementation is available for "
+            f"category={category_id.value!r}"
         )
+    if len(candidates) != 1:
+        # Multiple executable providers require a platform-side qualification/
+        # telemetry selector; never push the choice back into paper code.
+        raise RuntimeError(
+            "Environment category has multiple platform-executable implementations "
+            "without a unique platform qualification winner: "
+            + repr(tuple(sorted(row.implementation_id for row in candidates)))
+        )
+    implementation = candidates[0]
     return config, implementation.implementation_id, category_id
 
 
@@ -465,7 +493,7 @@ def _compose_program_environment_runtime(
     context,
 ) -> LocalEnvironmentCapabilityRuntime:
     config, implementation_id, category_id = _environment_implementation(definition)
-    if implementation_id != "minecraft.mineflayer":
+    if implementation_id != MINECRAFT_LOCAL_IMPLEMENTATION_ID:
         raise RuntimeError(
             "local Environment execution has no registered runtime factory for "
             f"{implementation_id!r}; category={category_id.value!r}"
@@ -559,6 +587,12 @@ def _compose_program_environment_runtime(
                 environment_instances
             )
         ),
+        compute_scheduler=context.runtime.management.platform_meta.compute_scheduler,
+        compute_lease_guard_factory=(
+            context.execution_pool.compute_lease_guard_factory(
+                context.runtime.management.platform_meta.compute_scheduler
+            )
+        ),
         image=image,
         image_digest=image_digest,
         runner=runner,
@@ -572,7 +606,11 @@ def _compose_program_environment_runtime(
             / "global-single-flight"
         ),
     )
-    lifetime = LifetimeRoutedEnvironmentCapability(lifetime_authority)
+    session_scope = str(config.get("session_scope", "assignment")).strip()
+    lifetime = LifetimeRoutedEnvironmentCapability(
+        lifetime_authority,
+        session_scope=session_scope,
+    )
 
     dispatcher = context.runtime.operation_runtime.dispatcher
     operations = CapabilityOperationAdapter(dispatcher)
@@ -652,7 +690,7 @@ def compose_local_environment_capability_runtime(
     if type(portfolio) is not ResearchPortfolio:
         raise TypeError("Environment capability composition requires ResearchPortfolio")
     rows: list[tuple[str, LocalEnvironmentCapabilityRuntime]] = []
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         definition = _environment_definition(program)
         if definition is None:
             continue

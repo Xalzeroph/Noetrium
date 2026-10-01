@@ -485,10 +485,6 @@ class MethodModelAgentLoop:
             raise ValueError(
                 "additional_reserved_tokens must be a non-negative integer"
             )
-        if not request.context.trial_budget:
-            raise RuntimeError(
-                "canonical model execution requires a frozen TrialBudget"
-            )
         scope_id = request.context.lifetime_id
         if type(scope_id) is not str or not scope_id.strip():
             raise RuntimeError(

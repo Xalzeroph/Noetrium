@@ -411,23 +411,40 @@ class WorkloadTrialProvider:
         if request.protocol_identity != self.protocol_identity:
             raise ValueError("trial request protocol identity drift")
         budget = request.execution_policy.trial_budget
-        budget_snapshot = self._execution_budget.open_scope(
-            ExecutionBudgetPolicy(
-                scope_id=request.assignment_lifetime_id,
-                budget_id=budget.budget_id,
-                budget_digest=budget.budget_digest,
-                replay_level=request.execution_policy.replay_level.value,
-                max_steps=budget.max_steps,
-                max_seconds=budget.max_seconds,
-                max_tokens=budget.max_tokens,
-                resource_budget_digest=budget.resource_budget_digest,
-                max_turns=budget.max_turns,
-                max_messages=budget.max_messages,
-                max_model_calls=budget.max_model_calls,
-                max_working_seconds=budget.max_working_seconds,
-                max_cost_usd=budget.max_cost_usd,
+        if budget is None:
+            # Keep exact usage accounting without inventing a scientific limit.
+            # This scope has no ceilings and therefore can never reject work on
+            # step/model/token/time/cost usage.
+            accounting_digest = canonical_digest({
+                "schema": "noetrium.execution-usage-accounting.v1",
+                "replay_level": request.execution_policy.replay_level.value,
+            })
+            budget_snapshot = self._execution_budget.open_scope(
+                ExecutionBudgetPolicy(
+                    scope_id=request.assignment_lifetime_id,
+                    budget_id="no-scientific-budget",
+                    budget_digest=accounting_digest,
+                    replay_level=request.execution_policy.replay_level.value,
+                )
             )
-        )
+        else:
+            budget_snapshot = self._execution_budget.open_scope(
+                ExecutionBudgetPolicy(
+                    scope_id=request.assignment_lifetime_id,
+                    budget_id=budget.budget_id,
+                    budget_digest=budget.budget_digest,
+                    replay_level=request.execution_policy.replay_level.value,
+                    max_steps=budget.max_steps,
+                    max_seconds=budget.max_seconds,
+                    max_tokens=budget.max_tokens,
+                    resource_budget_digest=budget.resource_budget_digest,
+                    max_turns=budget.max_turns,
+                    max_messages=budget.max_messages,
+                    max_model_calls=budget.max_model_calls,
+                    max_working_seconds=budget.max_working_seconds,
+                    max_cost_usd=budget.max_cost_usd,
+                )
+            )
         verifier_tasks = tuple(
             definition for definition in request.task_definitions
             if definition.package is not None
@@ -438,13 +455,17 @@ class WorkloadTrialProvider:
             self._task_projection.task(request, definition)
             for definition in request.task_definitions
         )
-        time_limits = tuple(
-            value
-            for value in (
-                budget.max_seconds,
-                budget.max_working_seconds,
+        time_limits = (
+            ()
+            if budget is None
+            else tuple(
+                value
+                for value in (
+                    budget.max_seconds,
+                    budget.max_working_seconds,
+                )
+                if value is not None
             )
-            if value is not None
         )
         task_deadline = None if not time_limits else min(time_limits)
         tasks = tuple(
@@ -452,13 +473,21 @@ class WorkloadTrialProvider:
                 task,
                 max_steps=(
                     task.max_steps
-                    if budget.max_steps is None
-                    else min(task.max_steps, budget.max_steps)
+                    if budget is None or budget.max_steps is None
+                    else (
+                        budget.max_steps
+                        if task.max_steps is None
+                        else min(task.max_steps, budget.max_steps)
+                    )
                 ),
                 max_seconds=(
                     task.max_seconds
                     if task_deadline is None
-                    else min(task.max_seconds, float(task_deadline))
+                    else (
+                        float(task_deadline)
+                        if task.max_seconds is None
+                        else min(task.max_seconds, float(task_deadline))
+                    )
                 ),
             )
             for task in raw_tasks
@@ -496,24 +525,33 @@ class WorkloadTrialProvider:
                 else request.participant_schedule_spec.waves
             ),
             replay_level=request.execution_policy.replay_level.value,
-            trial_budget={
-                "budget_id": request.execution_policy.trial_budget.budget_id,
-                "budget_digest": request.execution_policy.trial_budget.budget_digest,
-                "max_steps": request.execution_policy.trial_budget.max_steps,
-                "max_seconds": request.execution_policy.trial_budget.max_seconds,
-                "max_tokens": request.execution_policy.trial_budget.max_tokens,
-                "resource_budget_digest": (
-                    request.execution_policy.trial_budget.resource_budget_digest
-                ),
-                "max_turns": request.execution_policy.trial_budget.max_turns,
-                "max_messages": request.execution_policy.trial_budget.max_messages,
-                "max_model_calls": request.execution_policy.trial_budget.max_model_calls,
-                "max_working_seconds": (
-                    request.execution_policy.trial_budget.max_working_seconds
-                ),
-                "max_cost_usd": request.execution_policy.trial_budget.max_cost_usd,
-            },
+            trial_budget=(
+                {}
+                if budget is None
+                else {
+                    "budget_id": budget.budget_id,
+                    "budget_digest": budget.budget_digest,
+                    "max_steps": budget.max_steps,
+                    "max_seconds": budget.max_seconds,
+                    "max_tokens": budget.max_tokens,
+                    "resource_budget_digest": budget.resource_budget_digest,
+                    "max_turns": budget.max_turns,
+                    "max_messages": budget.max_messages,
+                    "max_model_calls": budget.max_model_calls,
+                    "max_working_seconds": budget.max_working_seconds,
+                    "max_cost_usd": budget.max_cost_usd,
+                }
+            ),
             execution_policy_admission_digest=budget_snapshot.admission_digest,
+            participant_context={
+                "scientific_inputs": dict(request.scientific_inputs),
+                "environment_session_scope": (
+                    request.execution_policy.environment_session_scope
+                ),
+                "environment_seed_scope": (
+                    request.execution_policy.environment_seed_scope
+                ),
+            },
             lifetime_id=request.assignment_lifetime_id,
             task_id=None,
             operation_id=request.request_digest,

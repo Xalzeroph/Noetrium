@@ -421,17 +421,17 @@ def decode_research_portfolio(raw: bytes) -> ResearchPortfolio:
     portfolio = ResearchPortfolio(
         _text(root["portfolio_id"], "research portfolio.portfolio_id"),
         tuple(
-            _decode_program(item, "research portfolio.programs[]")
-            for item in _array(root["programs"], "research portfolio.programs")
+            _decode_program(item, "research portfolio._programs[]")
+            for item in _array(root["programs"], "research portfolio._programs")
         ),
         tuple(
             _decode_portfolio_dependency(
                 item,
-                "research portfolio.dependencies[]",
+                "research portfolio._dependencies[]",
             )
             for item in _array(
                 root["dependencies"],
-                "research portfolio.dependencies",
+                "research portfolio._dependencies",
             )
         ),
     )
@@ -445,7 +445,7 @@ def _local_node_digests(
     portfolio: ResearchPortfolio,
 ) -> dict[ResearchNodeRef, str]:
     rows: dict[ResearchNodeRef, str] = {}
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         definitions = {
             definition.definition_id: definition
             for definition in program.definitions
@@ -473,10 +473,10 @@ def _incoming_edges(
 ) -> dict[ResearchNodeRef, tuple[tuple[ResearchNodeRef, str], ...]]:
     rows: dict[ResearchNodeRef, list[tuple[ResearchNodeRef, str]]] = {
         ResearchNodeRef(program.program_id, node.node_id): []
-        for program in portfolio.programs
+        for program in portfolio._programs
         for node in program.nodes
     }
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for dependency in program.dependencies:
             upstream = ResearchNodeRef(
                 program.program_id,
@@ -487,7 +487,7 @@ def _incoming_edges(
                 dependency.downstream_node_id,
             )
             rows[downstream].append((upstream, dependency.dependency_digest))
-    for dependency in portfolio.dependencies:
+    for dependency in portfolio._dependencies:
         rows[dependency.downstream].append(
             (dependency.upstream, dependency.dependency_digest)
         )

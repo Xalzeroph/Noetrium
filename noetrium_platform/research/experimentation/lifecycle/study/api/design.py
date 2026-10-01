@@ -10,7 +10,7 @@ from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_dige
 
 from .benchmark import BenchmarkTaskSet, TrialBudget
 from noetrium_platform.research.experimentation.binding import ResearchBindingRequirements
-from .contracts import AssignmentWorkload, StudyConcurrencyPolicy
+from .contracts import AssignmentWorkload
 from .measurement import MeasurementProtocol
 
 _HEX = frozenset("0123456789abcdef")
@@ -193,51 +193,55 @@ class ParticipantSchedule:
 
 @dataclass(frozen=True, slots=True)
 class StudyExecutionPolicy:
-    """Complete execution semantics for one scientific Study.
+    """Scientific execution semantics that belong to the Study identity.
 
-    Trial budget, replay guarantee and concurrency are one identity-bearing
-    policy. None of them may be inferred by authoring helpers.
+    Physical parallelism, worker counts and scheduler windows are deliberately
+    excluded. Environment session scope is scientific: it determines whether
+    world state persists across tasks inside one assignment while Method/Memory
+    lifetime remains assignment-scoped.
     """
 
-    trial_budget: TrialBudget
+    trial_budget: TrialBudget | None
     replay_level: ReplayLevel
-    concurrency_policy: StudyConcurrencyPolicy
+    environment_session_scope: str = "assignment"
+    environment_seed_scope: str = "assignment"
     policy_digest: str = field(init=False)
 
-    @classmethod
-    def serial_shared_v1(
-        cls,
-        *,
-        trial_budget: TrialBudget,
-        replay_level: ReplayLevel,
-        repetition_timeout_seconds: float,
-    ) -> "StudyExecutionPolicy":
-        """Stable serial/shared preset with an explicit replay guarantee."""
-        return cls(
-            trial_budget=trial_budget,
-            replay_level=replay_level,
-            concurrency_policy=StudyConcurrencyPolicy.serial_shared_v1(
-                repetition_timeout_seconds=repetition_timeout_seconds
-            ),
-        )
-
     def __post_init__(self) -> None:
-        if type(self.trial_budget) is not TrialBudget:
-            raise TypeError("study execution policy trial_budget must be TrialBudget")
+        if self.trial_budget is not None and type(self.trial_budget) is not TrialBudget:
+            raise TypeError(
+                "study execution policy trial_budget must be TrialBudget or None"
+            )
         if not isinstance(self.replay_level, ReplayLevel):
             raise TypeError("study execution policy replay_level must be ReplayLevel")
-        if type(self.concurrency_policy) is not StudyConcurrencyPolicy:
-            raise TypeError(
-                "study execution policy concurrency_policy must be StudyConcurrencyPolicy"
+        if self.environment_session_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "study environment_session_scope must be 'assignment' or 'task'"
+            )
+        if self.environment_seed_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "study environment_seed_scope must be 'assignment' or 'task'"
+            )
+        if (
+            self.environment_session_scope == "assignment"
+            and self.environment_seed_scope != "assignment"
+        ):
+            raise ValueError(
+                "assignment-scoped environment sessions require assignment-scoped seeds"
             )
         object.__setattr__(
             self,
             "policy_digest",
             canonical_digest(
                 {
-                    "trial_budget": self.trial_budget.budget_digest,
+                    "trial_budget": (
+                        None
+                        if self.trial_budget is None
+                        else self.trial_budget.budget_digest
+                    ),
                     "replay_level": self.replay_level.value,
-                    "concurrency_policy": self.concurrency_policy,
+                    "environment_session_scope": self.environment_session_scope,
+                    "environment_seed_scope": self.environment_seed_scope,
                 }
             ),
         )
@@ -284,6 +288,11 @@ class ResearchStudyDefinition:
         _unique_strings(self.seeds, "research study seeds")
         if type(self.repetitions) is not int or self.repetitions <= 0:
             raise ValueError("research study repetitions must be a positive integer")
+        if len(self.seeds) != self.repetitions:
+            raise ValueError(
+                "research study seeds must map one-to-one to repetitions; "
+                f"seeds={len(self.seeds)} repetitions={self.repetitions}"
+            )
         if type(self.measurement_protocol) is not MeasurementProtocol:
             raise TypeError("research study measurement_protocol must be MeasurementProtocol")
         if type(self.benchmark) is not BenchmarkTaskSet:

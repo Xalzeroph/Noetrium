@@ -135,3 +135,66 @@ def test_repeated_participant_task_uses_fresh_terminal_replay_attempts(tmp_path)
         assert first.participant_receipts[0][1].run_digest != second.participant_receipts[0][1].run_digest
     finally:
         pool.close()
+
+
+def test_participant_method_preserves_inherited_scientific_inputs(tmp_path) -> None:
+    seen = []
+
+    identity = MethodProgramIdentity(
+        MethodIdentity("participant.scientific-inputs", "1", "1", "1")
+    )
+
+    def finish(request):
+        seen.append(dict(request.context.participant_context))
+        return MethodNodeResult(value=request.input_value)
+
+    program = (
+        MethodProgramBuilder(identity, entrypoint="finish")
+        .return_node("finish", "participant.scientific-inputs.finish", finish)
+        .build()
+    )
+    runtime = MethodRuntimeBindings(
+        runtime_binder=standard_method_runtime_binder(),
+        dispatcher=KernelOperationDispatcher(OperationExecutor()),
+        evidence_factory=standard_method_evidence_factory(
+            compose_research_execution_content(tmp_path / "content")
+        ),
+        state_root=tmp_path / "state",
+    )
+    pool = ResearchExecutionPool()
+    try:
+        binding = ScheduledParticipantWorkloadBinding(
+            schedule=ParticipantSchedule((("sem_agent",),)),
+            participants=(
+                ParticipantMethodRuntime(
+                    "sem_agent", "agent", "sem", program, runtime
+                ),
+            ),
+            journal=InMemoryMachineJournal(),
+            execution_pool=pool,
+            input_projection=TaskFieldProjection(
+                fields=(("task_id", "task_id"), ("objective", "objective")),
+            ),
+        )
+        result = binding.execute_one(
+            ExperimentTaskSpec("task-inputs", "fixture", "consume prior experiment"),
+            ExecutionContext(
+                "participant-scientific-inputs",
+                "trace",
+                "root",
+                participant_context={
+                    "scientific_inputs": {
+                        "source_architecture": {"generation": 3}
+                    }
+                },
+            ),
+        )
+        assert result.success is True
+        assert len(seen) == 1
+        assert seen[0]["scientific_inputs"] == {
+            "source_architecture": {"generation": 3}
+        }
+        assert seen[0]["role"] == "sem_agent"
+        assert seen[0]["treatment_id"] == "sem"
+    finally:
+        pool.close()

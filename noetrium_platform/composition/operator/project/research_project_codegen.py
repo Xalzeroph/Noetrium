@@ -36,9 +36,9 @@ def _bootstrap():
 def build_research() -> api.ResearchPortfolio:
     # Executable semantics-neutral bootstrap only. Replace this entire body.
     portfolio = api.ResearchPortfolioBuilder({project_id!r})
-    program = portfolio.program({project_id!r})
-    program.custom_definition("bootstrap", implementation=_bootstrap)
-    program.custom_node("root", definitions=("bootstrap",))
+    program = portfolio.programs.create({project_id!r})
+    program.extensions.define("bootstrap", implementation=_bootstrap)
+    program.extensions.node("root", definitions=("bootstrap",))
     return portfolio.freeze()
 
 

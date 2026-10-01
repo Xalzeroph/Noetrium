@@ -259,7 +259,7 @@ class ScheduledParticipantWorkloadBinding:
         participant: ParticipantMethodRuntime,
         runtime_context,
         *,
-        max_steps: int,
+        max_steps: int | None,
     ) -> ResearchProgramHost:
         dependency_identity = {
             "schema": "noetrium.participant-method-child.v1",
@@ -415,18 +415,20 @@ class ScheduledParticipantWorkloadBinding:
             lambda: self._input_projection.project(task),
         )
         max_steps = context.trial_budget.get("max_steps")
-        resolved_max_steps = 10_000 if max_steps is None else int(max_steps)
+        resolved_max_steps = None if max_steps is None else int(max_steps)
         for participant in self._participants:
             binding_plan_digest = self._binding_plan_digest_by_role[
                 participant.role
             ]
+            inherited_context = dict(context.participant_context)
+            inherited_context.update({
+                "role": participant.role,
+                "participant_kind": participant.participant_kind,
+                "treatment_id": participant.treatment_id,
+            })
             participant_context = replace(
                 context,
-                participant_context={
-                    "role": participant.role,
-                    "participant_kind": participant.participant_kind,
-                    "treatment_id": participant.treatment_id,
-                },
+                participant_context=inherited_context,
             )
             runtime_context, _task_root = participant.runtime.materialize_context(
                 program=participant.program,
@@ -459,11 +461,19 @@ class ScheduledParticipantWorkloadBinding:
                     raise TypeError("participant child context identity must be an object")
                 if identity.get("participant_context_digest") != canonical_digest(participant_context):
                     raise ValueError("participant child context identity digest drifted")
+                merged_context = dict(_base.execution.participant_context)
+                for key, value in participant_context.items():
+                    if key in merged_context:
+                        raise ValueError(
+                            "participant prior context collides with inherited execution context: "
+                            + str(key)
+                        )
+                    merged_context[str(key)] = value
                 return replace(
                     _base,
                     execution=replace(
                         _base.execution,
-                        participant_context=dict(participant_context),
+                        participant_context=merged_context,
                     ),
                     program_host=_host,
                     machine_id=child_request.child_machine_id,

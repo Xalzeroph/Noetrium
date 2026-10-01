@@ -20,6 +20,7 @@ class SimulatorObservation:
 
     raw_payload: bytes
     normalized_payload: JsonObject
+    decision_payload: JsonObject | None = None
     status: str = "ok"
     reward: float | None = None
     success: bool = False
@@ -32,6 +33,12 @@ class SimulatorObservation:
             raise TypeError("simulator observation raw_payload must be bytes")
         if not isinstance(self.normalized_payload, Mapping):
             raise TypeError("simulator observation normalized_payload must be an object")
+        if self.decision_payload is not None and not isinstance(
+            self.decision_payload, Mapping
+        ):
+            raise TypeError(
+                "simulator observation decision_payload must be an object or None"
+            )
         if type(self.status) is not str or not self.status.strip():
             raise ValueError("simulator observation status is required")
         if self.reward is not None and (
@@ -50,6 +57,12 @@ class SimulatorObservation:
             "normalized_payload",
             freeze_json(self.normalized_payload),
         )
+        if self.decision_payload is not None:
+            object.__setattr__(
+                self,
+                "decision_payload",
+                freeze_json(self.decision_payload),
+            )
         object.__setattr__(self, "metadata", freeze_json(self.metadata))
 
 

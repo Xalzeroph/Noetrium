@@ -9,7 +9,8 @@ the parent Program owns the scientific semantics of fail/collect/continue.
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from enum import StrEnum
 from threading import RLock
@@ -388,6 +389,8 @@ class ChildResearchMachineExecutor:
         if isinstance(registry, ChildResearchHostRegistry):
             registry.seal()
         self.registry = registry
+        self._machine_locks_guard = RLock()
+        self._machine_locks: dict[str, tuple[RLock, int]] = {}
         registry_identity_digest = require_sha256(
             registry.identity_digest,
             "child research host registry identity_digest",
@@ -400,6 +403,37 @@ class ChildResearchMachineExecutor:
     @property
     def identity_digest(self) -> str:
         return self._identity_digest
+
+    @contextmanager
+    def _serialize_machine(self, machine_id: str) -> Iterator[None]:
+        """Serialize one durable child Machine without throttling unrelated children."""
+
+        with self._machine_locks_guard:
+            current = self._machine_locks.get(machine_id)
+            if current is None:
+                lock = RLock()
+                self._machine_locks[machine_id] = (lock, 1)
+            else:
+                lock, references = current
+                self._machine_locks[machine_id] = (lock, references + 1)
+        lock.acquire()
+        try:
+            yield
+        finally:
+            lock.release()
+            with self._machine_locks_guard:
+                current = self._machine_locks.get(machine_id)
+                if current is None or current[0] is not lock:
+                    raise RuntimeError(
+                        "child machine serialization ownership drifted"
+                    )
+                if current[1] == 1:
+                    del self._machine_locks[machine_id]
+                else:
+                    self._machine_locks[machine_id] = (
+                        lock,
+                        current[1] - 1,
+                    )
 
     @staticmethod
     def _project_execution(
@@ -460,33 +494,34 @@ class ChildResearchMachineExecutor:
                 "child executor requires ChildResearchMachineRequest"
             )
         registered = self.registry.resolve(request.host_id)
-        binding = registered.binding_factory(request)
-        if single_step:
-            execution = registered.host.step_once(
-                machine_id=request.child_machine_id,
-                instance_identity=request.instance_identity,
-                binding=binding,
-                initial_data=request.initial_data,
-                payload=request.payload,
-                command_id_prefix=request.command_id_prefix,
-                resume_waiting=request.resume_waiting,
-            )
-            transition_start = (
-                execution.run.commits[0].revision
-                if execution.run.commits
-                else execution.revision
-            )
-        else:
-            execution = registered.host.execute(
-                machine_id=request.child_machine_id,
-                instance_identity=request.instance_identity,
-                binding=binding,
-                initial_data=request.initial_data,
-                payload=request.payload,
-                command_id_prefix=request.command_id_prefix,
-                resume_waiting=request.resume_waiting,
-            )
-            transition_start = 1
+        with self._serialize_machine(request.child_machine_id):
+            binding = registered.binding_factory(request)
+            if single_step:
+                execution = registered.host.step_once(
+                    machine_id=request.child_machine_id,
+                    instance_identity=request.instance_identity,
+                    binding=binding,
+                    initial_data=request.initial_data,
+                    payload=request.payload,
+                    command_id_prefix=request.command_id_prefix,
+                    resume_waiting=request.resume_waiting,
+                )
+                transition_start = (
+                    execution.run.commits[0].revision
+                    if execution.run.commits
+                    else execution.revision
+                )
+            else:
+                execution = registered.host.execute(
+                    machine_id=request.child_machine_id,
+                    instance_identity=request.instance_identity,
+                    binding=binding,
+                    initial_data=request.initial_data,
+                    payload=request.payload,
+                    command_id_prefix=request.command_id_prefix,
+                    resume_waiting=request.resume_waiting,
+                )
+                transition_start = 1
         return self._project_execution(
             execution=execution,
             parent_machine_id=request.parent_machine_id,

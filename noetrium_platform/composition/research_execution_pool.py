@@ -182,6 +182,7 @@ class ResearchExecutionPool:
         capability_io_admission_budget: AdmissionBudget | None = None,
         model_io_concurrency_budget: ConcurrencyBudget | None = None,
         model_io_admission_budget: AdmissionBudget | None = None,
+        model_admission_registry: ModelAdmissionRegistryPort | None = None,
         priority_aging_seconds: float = 1.0,
         host_runtime_observer: HostRuntimeObserverPort | None = None,
         storage_pressure_observer: SharedStoragePressureObserverPort | None = None,
@@ -324,7 +325,18 @@ class ResearchExecutionPool:
                 timer_name="research-model-timer",
                 cpu_provider=self._shared_workload_cpu,
             )
-            self._model_admission: ModelAdmissionRegistryPort = ModelAdmissionRegistry()
+            if model_admission_registry is not None and (
+                not callable(getattr(model_admission_registry, "controller_for", None))
+                or not callable(getattr(model_admission_registry, "close", None))
+            ):
+                raise TypeError(
+                    "model_admission_registry must satisfy ModelAdmissionRegistryPort"
+                )
+            self._model_admission: ModelAdmissionRegistryPort = (
+                ModelAdmissionRegistry()
+                if model_admission_registry is None
+                else model_admission_registry
+            )
             self._model_io_resource_lock = Lock()
             self._model_io_resources: list[object] = []
             self._model_io_resource_ids: set[int] = set()
@@ -376,6 +388,9 @@ class ResearchExecutionPool:
                 errors,
             ) from exc
         self._workload_cpu_workers = shared_cpu_budget.max_cpu_workers
+        self._experiment_frontier_capacity = int(
+            resolved_experiment_budget.max_blocking_io_workers
+        )
         # Mechanical submission window for one workload DAG. This is not a
         # scientific concurrency policy: admission/fairness/resource gates
         # remain authoritative. It prevents one ready set from pre-queuing
@@ -432,6 +447,12 @@ class ResearchExecutionPool:
                 "research execution pool resource competition wiring is split"
             )
         return states[0]
+
+    @property
+    def experiment_frontier_capacity(self) -> int:
+        """Mechanical experiment frontier computed by the platform runtime."""
+
+        return self._experiment_frontier_capacity
 
     @property
     def workload_cpu_workers(self) -> int:
@@ -746,7 +767,7 @@ class ResearchExecutionPool:
         leases: ResourceLeasePort,
         *,
         policy: ResourceLeasePolicy = DEFAULT_RESOURCE_LEASE_POLICY,
-        lane_capacity: int | None = 1,
+        lane_capacity: int | None = None,
     ) -> LeaseHeartbeatFactory:
         """Bind generic durable resource leases to the universal heartbeat machine."""
         self._require_workloads_open()
@@ -788,7 +809,7 @@ class ResearchExecutionPool:
         scheduler: ComputeSchedulerPort,
         *,
         policy: ComputeLeasePolicy = DEFAULT_COMPUTE_LEASE_POLICY,
-        lane_capacity: int | None = 1,
+        lane_capacity: int | None = None,
     ) -> ComputeLeaseGuardFactoryPort:
         """Share one structured heartbeat authority across all compute leases."""
         self._require_workloads_open()
@@ -817,7 +838,7 @@ class ResearchExecutionPool:
         allocations: EndpointAllocationPort,
         *,
         policy: EndpointLeasePolicy = DEFAULT_ENDPOINT_LEASE_POLICY,
-        lane_capacity: int | None = 1,
+        lane_capacity: int | None = None,
     ) -> EndpointLeaseGuardFactoryPort:
         """Share one structured heartbeat authority across endpoint leases."""
         self._require_workloads_open()
@@ -846,7 +867,7 @@ class ResearchExecutionPool:
         authority: EnvironmentInstanceLeaseAuthority,
         *,
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
-        lane_capacity: int | None = 1,
+        lane_capacity: int | None = None,
     ) -> LeaseHeartbeatFactory:
         """Share one structured heartbeat authority across environment checkouts."""
         self._require_workloads_open()
@@ -875,7 +896,7 @@ class ResearchExecutionPool:
         authority: DockerContainerLeaseAuthority,
         *,
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
-        lane_capacity: int | None = 1,
+        lane_capacity: int | None = None,
     ) -> LeaseHeartbeatFactory:
         """Share one structured heartbeat authority across managed Docker containers."""
         self._require_workloads_open()

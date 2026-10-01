@@ -321,7 +321,7 @@ class MethodNodeSpec:
     capability_target: MethodCapabilityTargetHandler | None = None
     capability_targets: tuple[str, ...] = ()
     effect_class: EffectClass = EffectClass.PURE
-    max_visits: int = 1
+    max_visits: int | None = 1
     input_schema: str = "json"
     output_schema: str = "json"
     evidence_obligations: tuple[str, ...] = ()
@@ -342,8 +342,12 @@ class MethodNodeSpec:
             raise TypeError("method node kind must be MethodNodeKind")
         if not isinstance(self.effect_class, EffectClass):
             raise TypeError("method node effect_class must be EffectClass")
-        if type(self.max_visits) is not int or self.max_visits < 1:
-            raise ValueError("method node max_visits must be a positive integer")
+        if self.max_visits is not None and (
+            type(self.max_visits) is not int or self.max_visits < 1
+        ):
+            raise ValueError(
+                "method node max_visits must be a positive integer or None"
+            )
         if any(not isinstance(value, str) or not value.strip() for value in (self.input_schema, self.output_schema)):
             raise ValueError("method node schemas must be non-empty text")
         if not isinstance(self.evidence_obligations, tuple) or any(
@@ -596,7 +600,7 @@ class MethodProgramBuilder:
         handler: MethodNodeHandler,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -616,7 +620,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect_class: EffectClass = EffectClass.PURE,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -637,7 +641,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect_class: EffectClass = EffectClass.NON_IDEMPOTENT,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -675,7 +679,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view_handler: MethodAgentViewHandler,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -696,7 +700,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view_handler: MethodAgentViewHandler,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -726,7 +730,7 @@ class MethodProgramBuilder:
         handler: MethodNodeHandler,
         next_nodes: tuple[str, ...],
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id, operation_type, next_nodes, handler,
@@ -738,7 +742,7 @@ class MethodProgramBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id,
@@ -753,7 +757,7 @@ class MethodProgramBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id,

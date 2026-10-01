@@ -7,7 +7,7 @@ slots saturated instead of imposing fixed wave barriers.
 """
 from __future__ import annotations
 
-from collections import defaultdict, deque
+from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -16,7 +16,6 @@ from typing import Protocol, runtime_checkable
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
-    Deadline,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskFailureScope,
@@ -174,22 +173,11 @@ def _units(plan: StudyExecutionPlan) -> tuple[StudyExecutionUnit, ...]:
 
 def _compile_batches(plan: StudyExecutionPlan) -> tuple[ExperimentBatch, ...]:
     units = _units(plan)
-    policy = plan.protocol.concurrency_policy
     if not units:
         return ()
-    if not policy.parallel_assignments:
-        return (
-            ExperimentBatch.create(
-                batch_id="frontier:0",
-                kind=ExperimentBatchKind.REPETITION_UNITS,
-                unit_repetitions=tuple(unit.repetition for unit in units),
-                assignment_digests=tuple(
-                    assignment.assignment_digest
-                    for unit in units
-                    for assignment in unit.assignments
-                ),
-            ),
-        )
+    # Assignment independence is already encoded by the scientific plan. The
+    # compiler never freezes a machine-specific parallelism number into that
+    # plan; physical admission belongs to the runtime execution pool.
     assignments = tuple(
         assignment
         for unit in units
@@ -419,6 +407,7 @@ class ExperimentProgramBinding:
         execution_binding_digest: str,
         execution_id: str,
         task_group: TaskGroupPort | None = None,
+        frontier_capacity: int = 1,
     ) -> None:
         if not isinstance(compiled, CompiledExperimentProgram):
             raise TypeError("experiment binding requires CompiledExperimentProgram")
@@ -442,9 +431,12 @@ class ExperimentProgramBinding:
             else None
         )
         self.aggregation = aggregation
+        if type(frontier_capacity) is not int or frontier_capacity <= 0:
+            raise ValueError("experiment frontier_capacity must be a positive integer")
         self.execution_binding_digest = execution_binding_digest
         self.execution_id = execution_id
         self.task_group = task_group
+        self.frontier_capacity = frontier_capacity
         self._assignment_by_digest = {
             row.assignment_digest: row for row in compiled.plan.assignments
         }
@@ -478,9 +470,13 @@ class ExperimentProgramBinding:
     ) -> tuple[object, ...]:
         if type(limit) is not int or limit <= 0:
             raise ValueError("parallel experiment limit must be positive")
+        # Without a platform TaskGroup there is no parallel execution authority.
+        # Direct/internal bindings therefore degrade mechanically to one slot;
+        # formal ResearchOS execution always injects the platform-owned group.
+        effective_limit = 1 if self.task_group is None else limit
         prepared: set[int] = set()
 
-        if len(items) <= 1 or limit == 1:
+        if len(items) <= 1 or effective_limit == 1:
             values: list[object] = []
             for index, item in enumerate(items):
                 self._prepare_once(index, items, prepare, prepared)
@@ -490,7 +486,6 @@ class ExperimentProgramBinding:
 
         if self.task_group is None:
             raise RuntimeError("parallel experiment batch requires TaskGroupPort")
-        timeout = self.compiled.plan.protocol.concurrency_policy.repetition_timeout_seconds
         invocation = uuid4().hex
         completion: Queue[int] = Queue()
         active: dict[int, object] = {}
@@ -525,31 +520,59 @@ class ExperimentProgramBinding:
                     failure_scope=TaskFailureScope.CALLER,
                 ),
                 run,
-                deadline=Deadline.after(timeout),
             )
 
         # Publish preparation for both the active wave and one complete
         # replacement wave before workers can begin consuming the active wave.
         # The frontier is monotonic: every item crosses preparation exactly once
         # instead of repeatedly rescanning an overlapping lookahead window.
-        prepare_through(2 * limit)
-        while next_index < len(items) and len(active) < limit:
-            submit(next_index)
-            next_index += 1
-
-        while active:
-            index = completion.get()
-            handle = active.pop(index)
-            try:
-                values[index] = handle.result()
-            except BaseException as exc:
-                errors.append(exc)
-            if next_index < len(items):
-                # Extend the replacement frontier before making the next slot
-                # runnable so startup work always leads execution.
-                prepare_through(next_index + limit + 1)
+        #
+        # Preparation/submission is part of the same ownership boundary as the
+        # workers already admitted by this rolling frontier.  If either fails,
+        # the caller must not unwind into authority teardown while those workers
+        # are still live.  Cancel every admitted handle and wait for physical
+        # convergence before propagating the primary error.
+        try:
+            prepare_through(2 * effective_limit)
+            while next_index < len(items) and len(active) < effective_limit:
                 submit(next_index)
                 next_index += 1
+
+            while active:
+                index = completion.get()
+                handle = active.pop(index)
+                try:
+                    values[index] = handle.result()
+                except BaseException as exc:
+                    errors.append(exc)
+                if next_index < len(items):
+                    # Extend the replacement frontier before making the next slot
+                    # runnable so startup work always leads execution.
+                    prepare_through(next_index + effective_limit + 1)
+                    submit(next_index)
+                    next_index += 1
+        except BaseException as primary:
+            convergence_errors: list[BaseException] = []
+            remaining = tuple(active.values())
+            for handle in remaining:
+                try:
+                    handle.cancel()
+                except BaseException as exc:
+                    convergence_errors.append(exc)
+            for handle in remaining:
+                try:
+                    handle.result()
+                except BaseException:
+                    # A cancelled/racing worker may report its own task failure;
+                    # the rolling-frontier failure remains the causal primary.
+                    pass
+            active.clear()
+            if convergence_errors:
+                raise ExceptionGroup(
+                    f"experiment batch abort convergence failed: {batch_id}",
+                    [primary, *convergence_errors],
+                ) from primary
+            raise
 
         if errors:
             raise ExceptionGroup(f"experiment batch failed: {batch_id}", errors)
@@ -565,151 +588,17 @@ class ExperimentProgramBinding:
         batch_id: str,
         prepare=None,
     ) -> tuple[object, ...]:
-        policy = self.compiled.plan.protocol.concurrency_policy
-        prepared: set[int] = set()
-
-        if (
-            len(assignments) <= 1
-            or (
-                policy.max_parallel_repetitions == 1
-                and policy.max_parallel_assignments == 1
-            )
-        ):
-            values: list[object] = []
-            for index, assignment in enumerate(assignments):
-                self._prepare_once(
-                    index,
-                    assignments,
-                    prepare,
-                    prepared,
-                )
-                self._prepare_once(
-                    index + 1,
-                    assignments,
-                    prepare,
-                    prepared,
-                )
-                values.append(fn(assignment))
-            return tuple(values)
-
-        if self.task_group is None:
-            raise RuntimeError("parallel experiment batch requires TaskGroupPort")
-        repetition_limit = policy.max_parallel_repetitions
-        assignment_limit = policy.max_parallel_assignments
-        timeout = policy.repetition_timeout_seconds
-        invocation = uuid4().hex
-        completion: Queue[int] = Queue()
-        by_repetition: dict[int, list[int]] = defaultdict(list)
-        for index, assignment in enumerate(assignments):
-            by_repetition[assignment.repetition].append(index)
-        waiting_repetitions = deque(sorted(by_repetition))
-        active_repetitions: set[int] = set()
-        indexes_by_repetition = {
-            repetition: tuple(indexes)
-            for repetition, indexes in by_repetition.items()
-        }
-        next_index_by_repetition: dict[int, int] = {
-            repetition: 0 for repetition in by_repetition
-        }
-        prepared_count_by_repetition: dict[int, int] = {
-            repetition: 0 for repetition in by_repetition
-        }
-        active_counts: dict[int, int] = defaultdict(int)
-        active: dict[int, tuple[int, object]] = {}
-        values: list[object | None] = [None] * len(assignments)
-        errors: list[BaseException] = []
-
-        def activate_repetitions() -> tuple[int, ...]:
-            activated: list[int] = []
-            while (
-                waiting_repetitions
-                and len(active_repetitions) < repetition_limit
-            ):
-                repetition = waiting_repetitions.popleft()
-                active_repetitions.add(repetition)
-                activated.append(repetition)
-            return tuple(activated)
-
-        def submit(index: int, repetition: int) -> None:
-            assignment = assignments[index]
-
-            def run(_context, owned=assignment, owned_index=index):
-                try:
-                    return fn(owned)
-                finally:
-                    completion.put(owned_index)
-
-            handle = self.task_group.submit(
-                ExecutionSpec(
-                    task_id=f"experiment:{batch_id}:{invocation}:{index}",
-                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                    failure_scope=TaskFailureScope.CALLER,
-                ),
-                run,
-                deadline=Deadline.after(timeout),
-            )
-            active[index] = (repetition, handle)
-            active_counts[repetition] += 1
-
-        def refill(repetition: int) -> None:
-            indexes = indexes_by_repetition[repetition]
-            next_position = next_index_by_repetition[repetition]
-            available_slots = max(
-                0,
-                assignment_limit - active_counts[repetition],
-            )
-            # Prepare current admissions plus one replacement wave. Both the
-            # submission cursor and preparation frontier are monotonic, so each
-            # assignment is inspected/prepared exactly once.
-            target_prepared = min(
-                len(indexes),
-                next_position + available_slots + assignment_limit,
-            )
-            prepared_count = prepared_count_by_repetition[repetition]
-            if prepare is not None:
-                for position in range(prepared_count, target_prepared):
-                    prepare(assignments[indexes[position]])
-            prepared_count_by_repetition[repetition] = target_prepared
-
-            while (
-                next_position < len(indexes)
-                and active_counts[repetition] < assignment_limit
-            ):
-                submit(indexes[next_position], repetition)
-                next_position += 1
-            next_index_by_repetition[repetition] = next_position
-
-        for repetition in activate_repetitions():
-            refill(repetition)
-
-        while active:
-            index = completion.get()
-            repetition, handle = active.pop(index)
-            active_counts[repetition] -= 1
-            try:
-                values[index] = handle.result()
-            except BaseException as exc:
-                errors.append(exc)
-            refill(repetition)
-            if (
-                next_index_by_repetition[repetition]
-                >= len(indexes_by_repetition[repetition])
-                and active_counts[repetition] == 0
-            ):
-                active_repetitions.remove(repetition)
-                for candidate in activate_repetitions():
-                    refill(candidate)
-
-        if errors:
-            raise ExceptionGroup(
-                f"experiment batch failed: {batch_id}",
-                errors,
-            )
-        if any(value is None for value in values):
-            raise RuntimeError(
-                "experiment rolling assignment scheduler lost a result"
-            )
-        return tuple(values)
+        # One scheduler authority: the platform execution pool supplies the
+        # mechanical frontier. Scientific Study code never caps repetitions or
+        # assignments with machine-specific numbers. ResourceCompetition and
+        # downstream resource leases remain free to admit fewer tasks at runtime.
+        return self._parallel(
+            assignments,
+            fn,
+            batch_id=batch_id,
+            limit=min(self.frontier_capacity, max(1, len(assignments))),
+            prepare=prepare,
+        )
 
     def _execute_batch(self, batch: ExperimentBatch) -> tuple[StudyMetricObservation, ...]:
         plan = self.compiled.plan
@@ -750,7 +639,7 @@ class ExperimentProgramBinding:
                 units,
                 execute,
                 batch_id=batch.batch_id,
-                limit=plan.protocol.concurrency_policy.max_parallel_repetitions,
+                limit=self.frontier_capacity,
                 prepare=(
                     prepare_unit
                     if self._preparation is not None

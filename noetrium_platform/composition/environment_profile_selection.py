@@ -16,7 +16,7 @@ def required_environment_categories(portfolio: ResearchPortfolio) -> tuple[str, 
     if type(portfolio) is not ResearchPortfolio:
         raise TypeError("environment selection requires ResearchPortfolio")
     categories: set[str] = set()
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for definition in program.definitions:
             if definition.kind is not ResearchDefinitionKind.ENVIRONMENT:
                 continue

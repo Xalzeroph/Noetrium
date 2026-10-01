@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import replace
-
 import pytest
 
 from noetrium_platform.research.experimentation.api import (
@@ -9,7 +7,7 @@ from noetrium_platform.research.experimentation.api import (
     ResearchCampaignStudy,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    StudyConcurrencyPolicy,
+    AssignmentWorkload,
     StudyExecutionPlan,
     StudyProtocol,
     StudyVariantSpec,
@@ -22,12 +20,6 @@ from noetrium_platform.research.experimentation.lifecycle.study.algorithms impor
 
 
 def _plan(study_id: str, *, repetitions: int = 2) -> StudyExecutionPlan:
-    policy = replace(
-        StudyConcurrencyPolicy.serial_shared_v1(
-            repetition_timeout_seconds=30.0,
-        ),
-        max_parallel_repetitions=2,
-    )
     protocol = StudyProtocol(
         study_id,
         f"workload-{study_id}",
@@ -43,8 +35,8 @@ def _plan(study_id: str, *, repetitions: int = 2) -> StudyExecutionPlan:
         "b" * 64,
         ("score",),
         "c" * 64,
+        (AssignmentWorkload(("task-0",)),),
         ("standard",),
-        policy,
     )
     bindings = (
         VariantBinding(

@@ -14,6 +14,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectClass, JsonInput, JsonValue
 
+from .observation import observation_evidence, semantic_observation_payload
+
 _REQUEST_SCHEMA = "noetrium.environment.reset-capability.request.v1"
 _RESULT_SCHEMA = "noetrium.environment.reset-capability.result.v1"
 
@@ -26,17 +28,6 @@ def environment_reset_capability_payload(
     if not isinstance(metadata, Mapping):
         raise TypeError("environment reset metadata must be a mapping")
     return {str(key): value for key, value in metadata.items()}
-
-
-def _observation_payload(observation: Observation) -> JsonValue:
-    if not isinstance(observation, Observation):
-        raise TypeError("environment reset must return Observation")
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": observation.payload,
-        "artifact_refs": observation.artifact_refs,
-    }
 
 
 class EnvironmentResetCapabilityBinding:
@@ -88,13 +79,17 @@ class EnvironmentResetCapabilityBinding:
             capability_id=self._descriptor.capability_id,
             payload={
                 "reset": True,
-                "observation": _observation_payload(observation),
+                "observation": semantic_observation_payload(observation),
                 "metadata": dict(request.payload),
             },
             generation=observation.generation,
             artifacts=observation.artifact_refs,
             diagnostics={"reset": True},
             request_digest=request_digest,
+            evidence=observation_evidence(
+                observation,
+                schema="noetrium.environment.reset-evidence.v1",
+            ),
         )
 
 

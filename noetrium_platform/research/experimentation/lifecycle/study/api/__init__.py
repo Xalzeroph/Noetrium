@@ -2,7 +2,6 @@ from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant, mate
 from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
     AssignmentWorkload,
-    StudyConcurrencyPolicy,
     StudyAssignment,
     StudyExecutionUnit,
     StudyMatrixExecutionReport,
@@ -118,7 +117,6 @@ __all__ = [
     "ParticipantSchedule",
     "FactorSelection",
     "FactorLevelSpec",
-    "StudyConcurrencyPolicy",
     "MeasurementContentReference",
     "MeasurementDefinition",
     "MeasurementProtocol",

@@ -21,6 +21,10 @@ from noetrium_platform.product.operator.runtime.research_cli import build_resear
 from noetrium_platform.composition.operator.wiring.research import main
 
 
+def _public_extension_handler():
+    return {"ok": True}
+
+
 class _Application:
     def __init__(self) -> None:
         self.requests: list[ResearchRequest] = []
@@ -136,7 +140,7 @@ def test_lifecycle_cli_routes_directly_through_project_research_os(capsys):
     with patch(
         "noetrium_platform.composition.operator.wiring.research.load_project_research_os",
         return_value=loaded,
-    ):
+    ) as loader:
         rc = main([
             "run",
             "run-7",
@@ -163,6 +167,7 @@ def test_lifecycle_cli_routes_directly_through_project_research_os(capsys):
     assert target.node == research_os_api.ResearchNodeRef("paper", "source")
     assert payload["seed"] == 7
     assert loaded.closed is True
+    loader.assert_called_once_with(Path("."), revision_intent="working")
 
 
 def test_lifecycle_cli_fails_closed_on_research_os_control_error(capsys):
@@ -170,7 +175,7 @@ def test_lifecycle_cli_fails_closed_on_research_os_control_error(capsys):
     with patch(
         "noetrium_platform.composition.operator.wiring.research.load_project_research_os",
         return_value=loaded,
-    ):
+    ) as loader:
         rc = main([
             "reconcile",
             "run-7",
@@ -189,6 +194,7 @@ def test_lifecycle_cli_fails_closed_on_research_os_control_error(capsys):
     assert error["command"] == "reconcile"
     assert error["error_type"] == "ValueError"
     assert loaded.closed is True
+    loader.assert_called_once_with(Path("."), revision_intent="active")
 
 
 def test_manage_route_preserves_foreign_cli_arguments_verbatim():
@@ -254,4 +260,16 @@ def test_research_parser_exposes_terminal_runtime_fabric_retirement():
     args = parser.parse_args(["retire", "--project", "."])
     assert args.command == "retire"
     assert args.project_root == Path(".")
-    assert args.config is None
+
+
+def test_public_extensions_feed_systemized_experiment_stages() -> None:
+    from noetrium import api
+
+    portfolio = api.ResearchPortfolioBuilder("extension-paper")
+    program = portfolio.programs.create("extension-paper")
+    program.extensions.define("handler", _public_extension_handler)
+    assert not hasattr(program.extensions, "node")
+    program.experiments.define("root", definitions=("handler",))
+    frozen = portfolio.freeze()
+    assert frozen.programs[0].stage_ids == ("root",)
+    assert frozen.programs[0].definition_ids == ("handler",)

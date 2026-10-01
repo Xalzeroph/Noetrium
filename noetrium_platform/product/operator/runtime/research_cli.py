@@ -53,11 +53,6 @@ def _add_lifecycle_command(
         help="downstream project root; defaults to current directory",
     )
     parser.add_argument(
-        "--config",
-        type=Path,
-        help="platform-owned external provider binding configuration",
-    )
-    parser.add_argument(
         "--program",
         help="optional program id for node-scoped control",
     )
@@ -160,11 +155,6 @@ def build_research_parser() -> argparse.ArgumentParser:
         default=Path("."),
         help="downstream project root; defaults to current directory",
     )
-    retire.add_argument(
-        "--config",
-        type=Path,
-        help="platform-owned external provider binding configuration",
-    )
     _add_project_commands(subparsers)
     return parser
 
@@ -197,9 +187,14 @@ def _run_project_lifecycle(
     args: argparse.Namespace,
     project_research_os_loader: ProjectResearchOSLoader,
 ) -> int:
+    revision_intent = (
+        "working"
+        if args.action in {ResearchControlAction.RUN, ResearchControlAction.MIGRATE}
+        else "active"
+    )
     loaded = project_research_os_loader(
         args.project_root,
-        config_path=args.config,
+        revision_intent=revision_intent,
     )
     try:
         target = _execution_target(args, loaded)
@@ -215,10 +210,7 @@ def _run_project_retirement(
     args: argparse.Namespace,
     project_research_os_loader: ProjectResearchOSLoader,
 ) -> int:
-    loaded = project_research_os_loader(
-        args.project_root,
-        config_path=args.config,
-    )
+    loaded = project_research_os_loader(args.project_root)
     try:
         loaded.retire_runtime_fabric()
         _emit(

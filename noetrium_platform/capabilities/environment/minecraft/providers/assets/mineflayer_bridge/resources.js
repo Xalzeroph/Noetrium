@@ -42,27 +42,48 @@ async function collectBlock (msg) {
     return runtime.rejected('collect_block', action, 'MINEFLAYER_PATHFINDER_SAFETY_UNAVAILABLE')
   }
 
-  const positions = activeBot.findBlocks({
-    matching: block => block && block.name === action.block,
+  // Resource requests are grounded against both the world-block identity and
+  // the block's native drop table.  This keeps one collection primitive while
+  // correctly handling resources whose natural source has a different block
+  // name (for example stone -> cobblestone and coal_ore -> coal).
+  const matchesRequestedResource = block => block && (
+    block.name === action.block ||
+    dropNamesForBlock(activeBot, block).includes(action.block)
+  )
+  const safeToBreak = block => Boolean(
+    block && activeBot.pathfinder.movements.safeToBreak(block)
+  )
+  const safePositions = activeBot.findBlocks({
+    matching: block => matchesRequestedResource(block) && safeToBreak(block),
     maxDistance: action.max_distance,
     count: action.count
   })
-  const targets = positions
+  const targets = safePositions
     .map(position => activeBot.blockAt(position))
-    .filter(block => block && block.name === action.block)
+    .filter(block => matchesRequestedResource(block) && safeToBreak(block))
   if (targets.length === 0) {
-    return runtime.rejected('collect_block', action, 'BLOCK_NOT_FOUND', {
-      requested_count: action.count,
-      target_count: 0
+    // Distinguish an absent resource from a present-but-unsafe resource without
+    // weakening the safety boundary or forcing the caller to understand terrain.
+    const candidatePositions = activeBot.findBlocks({
+      matching: matchesRequestedResource,
+      maxDistance: action.max_distance,
+      count: action.count
     })
-  }
-
-  const unsafe = targets.filter(block => !activeBot.pathfinder.movements.safeToBreak(block))
-  if (unsafe.length > 0) {
+    const candidates = candidatePositions
+      .map(position => activeBot.blockAt(position))
+      .filter(matchesRequestedResource)
+    if (candidates.length === 0) {
+      return runtime.rejected('collect_block', action, 'BLOCK_NOT_FOUND', {
+        requested_count: action.count,
+        target_count: 0
+      })
+    }
     return runtime.rejected('collect_block', action, 'UNSAFE_BLOCK_BREAK', {
       requested_count: action.count,
-      target_count: targets.length,
-      unsafe: unsafe.map(block => ({ name: block.name, position: runtime.vec(block.position) }))
+      target_count: candidates.length,
+      unsafe: candidates
+        .filter(block => !safeToBreak(block))
+        .map(block => ({ name: block.name, position: runtime.vec(block.position) }))
     })
   }
 
@@ -99,6 +120,8 @@ async function collectBlock (msg) {
     requested_count: action.count,
     target_count: targets.length,
     target_positions: targets.map(block => runtime.vec(block.position)),
+    requested_resource: action.block,
+    source_blocks: [...new Set(targets.map(block => block.name))],
     expected_items: expectedItems,
     broken,
     errors: failure ? [{ phase: 'collectblock', ...failure }] : [],

@@ -202,6 +202,38 @@ def _event_payload(event: MethodEvent) -> dict[str, object]:
     return {"kind": event.kind, "payload": event.payload}
 
 
+def _capability_progress_signal(
+    node,
+    result: MethodNodeResult,
+) -> tuple[bool | None, str | None]:
+    if node.kind is not MethodNodeKind.CAPABILITY or not result.effect_receipts:
+        return None, None
+    certainties = tuple(receipt.certainty for receipt in result.effect_receipts)
+    if any(value is EffectCertainty.EFFECT_CONFIRMED for value in certainties):
+        progress = True
+    elif all(
+        value in {EffectCertainty.NO_EFFECT, EffectCertainty.EFFECT_REJECTED}
+        for value in certainties
+    ):
+        progress = False
+    else:
+        return None, None
+    fingerprint = canonical_digest({
+        "method_node_id": node.node_id,
+        "receipts": tuple(
+            {
+                "request_digest": receipt.request_digest,
+                "certainty": receipt.certainty.value,
+                "provider_instance_id": receipt.provider_instance_id,
+                "before_artifact": receipt.before_artifact,
+                "after_artifact": receipt.after_artifact,
+            }
+            for receipt in result.effect_receipts
+        ),
+    })
+    return progress, fingerprint
+
+
 def decode_method_event(payload: Mapping[str, object]) -> MethodEvent:
     return MethodEvent(str(payload["kind"]), payload.get("payload"))
 
@@ -668,7 +700,6 @@ def _method_operation(
             if (
                 runtime.execution_budget is not None
                 and method_request.context.lifetime_id is not None
-                and method_request.context.trial_budget
             ):
                 runtime.execution_budget.consume(
                     method_request.context.lifetime_id,
@@ -798,6 +829,7 @@ def _method_operation(
                 child_links=result.child_links,
             )
 
+        progress, progress_fingerprint = _capability_progress_signal(node, result)
         terminal = (
             node.kind is MethodNodeKind.RETURN
             or (not node.next_nodes and result.next_node is None)
@@ -845,6 +877,8 @@ def _method_operation(
                 receipt.effect_id for receipt in result.effect_receipts
             ),
             child_links=result.child_links,
+            progress=progress,
+            progress_fingerprint=progress_fingerprint,
         )
 
     return handler

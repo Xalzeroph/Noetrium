@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import math
-import re
 from pathlib import Path
 
 from noetrium_platform.capabilities.model.asset.api import ModelAssetMode
@@ -39,22 +38,72 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 
 _GIB = 1024 ** 3
 _VLLM_REPOSITORY = "vllm/vllm-openai"
+_VLLM_RELEASE_SOURCE = _VLLM_REPOSITORY + ":v0.8.5"
 _RUNTIME_FINGERPRINT_SCHEMA = "noetrium.docker-model-runtime-fingerprint.v1"
-_VERSION_RE = re.compile(r"^v?(\d+(?:\.\d+){1,3})(?:[-+].*)?$")
-_VLLM_CUDAGRAPH_CAPTURE_SIZES = (
-    1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512,
-)
-_VLLM_COMPILATION_CONFIG = json.dumps(
-    {"cudagraph_capture_sizes": _VLLM_CUDAGRAPH_CAPTURE_SIZES},
-    sort_keys=True,
-    separators=(",", ":"),
+# Qualification starts with a deliberately narrow CUDA-graph scout surface.
+# Larger qualification batches remain valid through vLLM eager fallback; the
+# measured final admission capacity is then used to materialize and re-qualify
+# the exact production graph surface.
+_VLLM_SCOUT_CUDAGRAPH_CAPTURE_SIZES = (1, 2, 4, 8, 16, 32)
+_VLLM_RELEASE_MAX_CUDAGRAPH_CAPTURE_SIZE = 512
+_VLLM_RUNTIME_TUNING_REVISION = "vllm-0.8.5-adaptive-cudagraph-v1"
+
+
+def vllm_cudagraph_capture_sizes_for_capacity(
+    max_concurrency: int,
+    *,
+    preferred_concurrency: int | None = None,
+) -> tuple[int, ...]:
+    """Minimal logarithmic graph surface for one measured admission envelope.
+
+    vLLM 0.8.5 can run batches above the largest captured graph eagerly. Keep
+    powers of two for bounded padding, add the measured throughput knee, and
+    terminate exactly at the qualified capacity up to vLLM's own V1 default
+    graph ceiling. This avoids capturing graph shapes that production admission
+    can never select.
+    """
+
+    if type(max_concurrency) is not int or max_concurrency <= 0:
+        raise ValueError("vLLM cudagraph capacity must be positive")
+    if preferred_concurrency is not None and (
+        type(preferred_concurrency) is not int
+        or preferred_concurrency <= 0
+        or preferred_concurrency > max_concurrency
+    ):
+        raise ValueError(
+            "vLLM preferred cudagraph concurrency must be positive and within capacity"
+        )
+    ceiling = min(max_concurrency, _VLLM_RELEASE_MAX_CUDAGRAPH_CAPTURE_SIZE)
+    sizes: set[int] = set()
+    value = 1
+    while value <= ceiling:
+        sizes.add(value)
+        value *= 2
+    sizes.add(ceiling)
+    if preferred_concurrency is not None and preferred_concurrency <= ceiling:
+        sizes.add(preferred_concurrency)
+    return tuple(sorted(sizes))
+
+
+def _vllm_compilation_config(capture_sizes: tuple[int, ...]) -> str:
+    if not capture_sizes or any(type(value) is not int or value <= 0 for value in capture_sizes):
+        raise ValueError("vLLM cudagraph capture sizes must be positive integers")
+    return json.dumps(
+        {"cudagraph_capture_sizes": capture_sizes},
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+_VLLM_SCOUT_COMPILATION_CONFIG = _vllm_compilation_config(
+    _VLLM_SCOUT_CUDAGRAPH_CAPTURE_SIZES
 )
 _VLLM_PLATFORM_ENGINE_ARGS = (
     "--disable-uvicorn-access-log",
     "--generation-config",
     "vllm",
     "--compilation-config",
-    _VLLM_COMPILATION_CONFIG,
+    _VLLM_SCOUT_COMPILATION_CONFIG,
 )
 
 
@@ -125,6 +174,33 @@ def _tensor_parallel_supported_by_model_geometry(
             "model config lacks attention-head geometry for tensor parallel planning"
         )
     return attention_heads % tensor_parallel == 0
+
+
+def _tensor_parallel_candidates_for_model_geometry(
+    asset_path: Path,
+) -> tuple[int, ...]:
+    """Enumerate every legal TP factor from immutable model geometry.
+
+    Physical GPU count/memory/pressure remains ComputeScheduler authority; this
+    function only removes the old host-specific TP ceiling from model planning.
+    """
+
+    document = _model_text_config(asset_path)
+    attention_heads = _positive_int(
+        document,
+        "num_attention_heads",
+        "n_head",
+        "num_heads",
+    )
+    if attention_heads is None:
+        raise RuntimeError(
+            "model config lacks attention-head geometry for tensor parallel planning"
+        )
+    return tuple(
+        factor
+        for factor in range(1, attention_heads + 1)
+        if attention_heads % factor == 0
+    )
 
 
 def model_kv_cache_bytes_per_token(
@@ -318,7 +394,7 @@ class DockerModelStackMaterializer:
         state_root: Path,
         docker_executable: str = "docker",
         source_catalog: PackagedModelSourceCatalog | None = None,
-        vllm_default_source: str = _VLLM_REPOSITORY + ":latest",
+        vllm_default_source: str = _VLLM_RELEASE_SOURCE,
         image_pull_timeout_seconds: float = 3600.0,
         fingerprint_timeout_seconds: float = 600.0,
     ) -> None:
@@ -343,45 +419,6 @@ class DockerModelStackMaterializer:
         self._pull_timeout = float(image_pull_timeout_seconds)
         self._fingerprint_timeout = float(fingerprint_timeout_seconds)
 
-    @staticmethod
-    def _version_key(reference: str) -> tuple[int, ...] | None:
-        tag = reference.rpartition(":")[2]
-        match = _VERSION_RE.fullmatch(tag)
-        if match is None:
-            return None
-        return tuple(int(part) for part in match.group(1).split("."))
-
-    def _local_vllm_source(self) -> str | None:
-        result = self._runner.run(
-            (
-                self._docker,
-                "image",
-                "ls",
-                "--format",
-                "{{.Repository}}:{{.Tag}}",
-                _VLLM_REPOSITORY,
-            ),
-            timeout_seconds=30.0,
-        )
-        if result.returncode != 0:
-            raise RuntimeError("Docker image inventory failed")
-        candidates = tuple(
-            line.strip()
-            for line in result.stdout.splitlines()
-            if line.strip()
-            and not line.strip().endswith(":<none>")
-        )
-        versioned = tuple(
-            (key, ref)
-            for ref in candidates
-            if (key := self._version_key(ref)) is not None
-        )
-        if versioned:
-            return max(versioned, key=lambda row: row[0])[1]
-        if self._vllm_default in candidates:
-            return self._vllm_default
-        return None
-
     def _image_id(self, source: str) -> str | None:
         result = self._runner.run(
             (
@@ -405,7 +442,11 @@ class DockerModelStackMaterializer:
         return digest
 
     def _resolve_vllm_image(self) -> tuple[str, str]:
-        source = self._local_vllm_source() or self._vllm_default
+        # Model-runtime source is a platform release decision. Never scan the
+        # host for a "highest" local vLLM tag: unrelated cached images must not
+        # mutate the research runtime generation. Reuse the exact release tag
+        # when present; otherwise materialize exactly that release.
+        source = self._vllm_default
         digest = self._image_id(source)
         if digest is None:
             pulled = self._runner.run(
@@ -679,6 +720,7 @@ print(json.dumps({
             serving_policy=ModelServingPolicy(
                 prefix_caching=True,
                 chunked_prefill=True,
+                runtime_tuning_revision=_VLLM_RUNTIME_TUNING_REVISION,
             ),
         )
         base = _model_compute_requirement(
@@ -752,19 +794,15 @@ print(json.dumps({
         model_id: str,
         *,
         scope: ScopeIdentity | None = None,
-        max_tensor_parallel: int = 8,
     ) -> MaterializedModelStack:
         holder_scope, source, image_digest, fingerprint = self._source_context(
             model_id,
             scope=scope,
         )
         asset = self._assets.model(model_id)
-        for tensor_parallel in range(1, max_tensor_parallel + 1):
-            if not _tensor_parallel_supported_by_model_geometry(
-                asset.path,
-                tensor_parallel,
-            ):
-                continue
+        for tensor_parallel in _tensor_parallel_candidates_for_model_geometry(
+            asset.path
+        ):
             provisional = self._candidate(
                 model_id=model_id,
                 scope=holder_scope,
@@ -789,4 +827,5 @@ __all__ = [
     "ModelStackPlacementUnavailable",
     "model_kv_cache_budget_bytes",
     "model_kv_cache_bytes_per_token",
+    "vllm_cudagraph_capture_sizes_for_capacity",
 ]

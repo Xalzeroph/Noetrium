@@ -13,7 +13,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api.pressure import (
 @dataclass(frozen=True, slots=True)
 class AdaptiveRequestWindowPolicy:
     min_limit: int = 1
-    start_limit: int = 4
+    start_limit: int | None = None
     decrease_factor: float = 0.8
     scale_up_percent: float = 0.05
     cooldown_seconds: float = 15.0
@@ -24,12 +24,17 @@ class AdaptiveRequestWindowPolicy:
     policy_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
-        for name in ("min_limit", "start_limit"):
-            value = getattr(self, name)
-            if type(value) is not int or value <= 0:
-                raise ValueError(f"adaptive request window {name} must be positive integer")
-        if self.start_limit < self.min_limit:
-            raise ValueError("adaptive request window start_limit cannot be below min_limit")
+        if type(self.min_limit) is not int or self.min_limit <= 0:
+            raise ValueError("adaptive request window min_limit must be positive integer")
+        if self.start_limit is not None:
+            if type(self.start_limit) is not int or self.start_limit <= 0:
+                raise ValueError(
+                    "adaptive request window start_limit must be positive integer when provided"
+                )
+            if self.start_limit < self.min_limit:
+                raise ValueError(
+                    "adaptive request window start_limit cannot be below min_limit"
+                )
         for name in (
             "decrease_factor",
             "scale_up_percent",
@@ -156,7 +161,14 @@ class AdaptiveRequestWindow:
                 "and cannot exceed max_limit"
             )
         start_limit = (
-            self._policy.start_limit
+            (
+                max(
+                    self._min_limit,
+                    int(math.ceil(math.sqrt(max_limit))),
+                )
+                if self._policy.start_limit is None
+                else self._policy.start_limit
+            )
             if initial_limit is None
             else initial_limit
         )

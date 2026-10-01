@@ -443,6 +443,42 @@ test('collect_block delegates the full target batch to native Mineflayer plugins
   assert.equal(toolCalls, 2)
 })
 
+test('collect_block resolves requested resources through native block drops', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const position = new Vec3(2, 64, 0)
+  let live = true
+  const source = { name: 'stone', position, drops: [35] }
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.findBlocks = options => {
+    assert.equal(options.matching(source), true)
+    return [position]
+  }
+  bot.blockAt = () => live ? { ...source } : { name: 'air', position, drops: [] }
+  bot.tool.equipForBlock = async block => {
+    assert.equal(block.name, 'stone')
+    bot.heldItem = { name: 'wooden_pickaxe', type: 900, count: 1, slot: 0 }
+  }
+  bot.collectBlock.collect = async targets => {
+    assert.equal(targets.length, 1)
+    assert.equal(targets[0].name, 'stone')
+    await bot.tool.equipForBlock(targets[0])
+    live = false
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'cobblestone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true, JSON.stringify(result))
+  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
+  assert.equal(result.outcome.requested_resource, 'cobblestone')
+  assert.deepEqual(result.outcome.source_blocks, ['stone'])
+  assert.equal(result.outcome.inventory_delta.cobblestone, 1)
+})
+
 test('collect_block fails closed when the native collector cannot harvest', async () => {
   const items = []
   const bot = fakeBot(items)
@@ -610,6 +646,50 @@ test('goto_entity delegates moving targets to runtime GoalFollow navigation', as
   }
 })
 
+
+test('collect_block selects safe resource sources instead of rejecting nearer unsafe blocks', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const unsafePos = new Vec3(0, 63, 0)
+  const safePos = new Vec3(3, 64, 0)
+  let safeLive = true
+  const blocks = [
+    { name: 'stone', position: unsafePos, drops: [35], safe: false },
+    { name: 'stone', position: safePos, drops: [35], safe: true }
+  ]
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.pathfinder.movements.safeToBreak = block => Boolean(block.safe)
+  bot.findBlocks = options => blocks
+    .filter(block => options.matching(block))
+    .slice(0, options.count)
+    .map(block => block.position)
+  bot.blockAt = position => {
+    if (position.equals(unsafePos)) return { ...blocks[0] }
+    if (position.equals(safePos)) return safeLive ? { ...blocks[1] } : { name: 'air', position, drops: [], safe: true }
+    return { name: 'air', position, drops: [], safe: true }
+  }
+  bot.tool.equipForBlock = async block => {
+    assert.equal(block.position.equals(safePos), true)
+    bot.heldItem = { name: 'wooden_pickaxe', type: 900, count: 1, slot: 0 }
+  }
+  bot.collectBlock.collect = async targets => {
+    assert.equal(targets.length, 1)
+    assert.equal(targets[0].position.equals(safePos), true)
+    await bot.tool.equipForBlock(targets[0])
+    safeLive = false
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'cobblestone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true, JSON.stringify(result))
+  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
+  assert.deepEqual(result.outcome.source_blocks, ['stone'])
+  assert.equal(result.outcome.inventory_delta.cobblestone, 1)
+})
 
 test('collect_block rejects unsafe targets before invoking the native collector', async () => {
   const bot = fakeBot([])

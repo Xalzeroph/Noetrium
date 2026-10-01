@@ -49,27 +49,25 @@ def consume(payload):
 
 def build_research() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("paper")
-    first = portfolio.program("paper-a")
-    first.custom_definition("source", implementation=source)
-    first.custom_node(
+    first = portfolio.programs.create("paper-a")
+    first.extensions.define("source", implementation=source)
+    first.extensions.node(
         "source",
         definitions=("source",),
         outputs=(("data", "data"),),
     )
 
-    second = portfolio.program("paper-b")
-    second.custom_definition("consume", implementation=consume)
-    second.custom_node(
+    second = portfolio.programs.create("paper-b")
+    second.extensions.define("consume", implementation=consume)
+    second.extensions.node(
         "consume",
         definitions=("consume",),
         outputs=(("data", "data"),),
     )
-    portfolio.depends(
-        upstream_program_id="paper-a",
-        upstream_node_id="source",
-        downstream_program_id="paper-b",
-        downstream_node_id="consume",
-        bindings=(("upstream", "data", "data"),),
+    portfolio.handoffs.bind(
+        upstream=("paper-a", "source"),
+        downstream=("paper-b", "consume"),
+        inputs={"upstream": ("data", "data")},
     )
     return portfolio.freeze()
 
@@ -136,7 +134,7 @@ def build_study():
 
 def build_research() -> api.ResearchPortfolio:
     portfolio = api.ResearchPortfolioBuilder("study-paper")
-    research = portfolio.program("study-paper")
+    research = portfolio.programs.create("study-paper")
     research.study_protocol("study", implementation=build_study)
     research.experiment("experiment", definitions=("study",))
     return portfolio.freeze()

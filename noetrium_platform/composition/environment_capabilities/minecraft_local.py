@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+MINECRAFT_LOCAL_IMPLEMENTATION_ID = "minecraft.mineflayer"
+
+
 import os
 import shlex
 import shutil
@@ -52,6 +55,13 @@ from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceStopOutcome,
 )
 from noetrium_platform.infrastructure.resources.container.runtime import DockerContainerLeaseAuthority
+from noetrium_platform.infrastructure.resources.compute.api import (
+    ComputeAllocation,
+    ComputeBindingProof,
+    ComputeLeaseGuardFactoryPort,
+    ComputeRequirement,
+    ComputeSchedulerPort,
+)
 from noetrium_platform.composition.environment_instance_leases import (
     EnvironmentInstanceLeaseAuthority,
     EnvironmentInstanceLeaseHandle,
@@ -62,6 +72,40 @@ from .lifetime import EnvironmentLifetimeSessionAuthorityPort
 _BRIDGE_ROOT = "/opt/noetrium-environments/minecraft/bridge"
 _NODE = "/usr/local/bin/node"
 _JAVA = "/opt/java/openjdk/bin/java"
+_JVM_MEMORY_UNITS = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
+
+
+def _jvm_memory_bytes(value: str) -> int:
+    text = value.strip().upper()
+    if not text:
+        raise ValueError("JVM memory quantity is required")
+    unit = text[-1]
+    if unit in _JVM_MEMORY_UNITS:
+        digits = text[:-1]
+        multiplier = _JVM_MEMORY_UNITS[unit]
+    else:
+        digits = text
+        multiplier = 1
+    if not digits.isdigit() or int(digits) <= 0:
+        raise ValueError(f"invalid JVM memory quantity: {value!r}")
+    return int(digits) * multiplier
+
+
+def _minecraft_compute_requirement(spec: MinecraftServerSpec) -> ComputeRequirement:
+    """Reserve the lifetime's worst-case JVM heap plus provider overhead.
+
+    This is platform-owned physical capacity, not downstream scientific
+    concurrency.  The scheduler holds it for the exact Minecraft lifetime so
+    multiple papers cannot independently overcommit host memory.
+    """
+
+    heap = _jvm_memory_bytes(spec.xmx)
+    provider_overhead = max(heap // 4, 256 * 1024**2)
+    return ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=heap + provider_overhead,
+        require_host_runtime=True,
+    )
 
 
 class _DockerMinecraftCapsule:
@@ -364,35 +408,107 @@ class _DockerMinecraftServer:
             + fields[19]
         )
 
-    def _process_identity(self) -> ServiceProcessIdentity:
+    def _proc_command(self, pid: int) -> str:
+        self.capsule.assert_healthy()
+        result = self.runner.run(
+            (
+                self.authority.runtime.docker_executable,
+                "exec",
+                self.container_name,
+                "/bin/sh",
+                "-c",
+                f"tr '\\000' ' ' < /proc/{pid}/cmdline",
+            ),
+            timeout_seconds=10.0,
+        )
+        if result.returncode != 0:
+            raise RuntimeError("Minecraft container process is not alive")
+        return result.stdout.strip()
+
+    def _process_identity_from_path(
+        self,
+        pid_path: Path,
+        *,
+        expected_command_marker: str,
+    ) -> ServiceProcessIdentity:
         try:
-            raw = self.pid_path.read_text(encoding="utf-8").strip()
-            pid = int(raw)
-        except (OSError, ValueError) as exc:
+            fields = pid_path.read_text(encoding="utf-8").strip().split()
+            pid = int(fields[0])
+        except (OSError, ValueError, IndexError) as exc:
             raise RuntimeError(
-                "Minecraft Java process pid publication is missing"
+                "Minecraft process pid publication is missing"
             ) from exc
         if pid <= 0:
-            raise RuntimeError("Minecraft Java process pid is invalid")
-        return ServiceProcessIdentity(
-            pid,
-            self._proc_start_identity(pid),
+            raise RuntimeError("Minecraft process pid is invalid")
+        start_identity = self._proc_start_identity(pid)
+        if len(fields) >= 2 and fields[1] != start_identity.rsplit(":", 1)[-1]:
+            raise RuntimeError("Minecraft recovered process generation is stale")
+        if expected_command_marker not in self._proc_command(pid):
+            raise RuntimeError("Minecraft recovered process command identity drifted")
+        return ServiceProcessIdentity(pid, start_identity)
+
+    def _process_identity(self) -> ServiceProcessIdentity:
+        return self._process_identity_from_path(
+            self.pid_path,
+            expected_command_marker="server.jar",
         )
+
+    def _identity_alive(self, process: ServiceProcessIdentity) -> bool:
+        try:
+            return self._proc_start_identity(process.pid) == process.start_identity
+        except BaseException:
+            return False
 
     def alive(self, process: ServiceProcessIdentity) -> bool:
         for attempt in range(3):
-            try:
-                current = self._process_identity()
-            except BaseException:
-                if attempt < 2:
-                    time.sleep(0.02)
-                    continue
-                return False
-            return (
-                current.pid == process.pid
-                and current.start_identity == process.start_identity
-            )
+            if self._identity_alive(process):
+                return True
+            if attempt < 2:
+                time.sleep(0.02)
         return False
+
+    def _terminate_recovered_process(
+        self,
+        process: ServiceProcessIdentity,
+    ) -> None:
+        if not self._identity_alive(process):
+            return
+        self._terminate_pid(process, signal="TERM")
+        deadline = time.monotonic() + self.contract.stop_timeout_s
+        while self._identity_alive(process) and time.monotonic() < deadline:
+            time.sleep(0.05)
+        if self._identity_alive(process):
+            self._terminate_pid(process, signal="KILL")
+            deadline = time.monotonic() + 5.0
+            while self._identity_alive(process) and time.monotonic() < deadline:
+                time.sleep(0.05)
+        if self._identity_alive(process):
+            raise RuntimeError(
+                "Minecraft recovered process survived fenced cleanup"
+            )
+
+    def _reconcile_stale_lifetime_processes(self) -> None:
+        candidates = (
+            tuple(
+                (path, "server.jar")
+                for path in sorted(self.recovery_root.glob("minecraft-server-*.pid"))
+            )
+            + tuple(
+                (path, f"{_BRIDGE_ROOT}/bridge.js")
+                for path in sorted(self.recovery_root.glob("minecraft-bridge-*.pid"))
+            )
+        )
+        for pid_path, marker in candidates:
+            try:
+                process = self._process_identity_from_path(
+                    pid_path,
+                    expected_command_marker=marker,
+                )
+            except BaseException:
+                pid_path.unlink(missing_ok=True)
+                continue
+            self._terminate_recovered_process(process)
+            pid_path.unlink(missing_ok=True)
 
     def _terminate_pid(
         self,
@@ -434,6 +550,7 @@ class _DockerMinecraftServer:
                 ),
             )
         self.capsule.start()
+        self._reconcile_stale_lifetime_processes()
         self.pid_path.unlink(missing_ok=True)
         workdir = str(Path(self.spec.workdir).resolve())
         log_path = str(
@@ -441,7 +558,8 @@ class _DockerMinecraftServer:
             / "noetrium-minecraft-server.log"
         )
         shell = (
-            f"echo $$ > {shlex.quote(str(self.pid_path))}; "
+            "start=$(awk '{print $22}' /proc/$$/stat); "
+            f"printf '%s %s\\n' $$ \"$start\" > {shlex.quote(str(self.pid_path))}; "
             f"exec {shlex.join(self.spec.command())} "
             f">> {shlex.quote(log_path)} 2>&1"
         )
@@ -613,6 +731,15 @@ class _DockerServerFactory:
             environment = process_options.get("env")
             if not isinstance(environment, dict):
                 environment = os.environ.copy()
+            bridge_pid_path = (
+                server.recovery_root / f"minecraft-bridge-{port}.pid"
+            )
+            bridge_shell = (
+                "start=$(awk '{print $22}' /proc/$$/stat); "
+                f"printf '%s %s\\n' $$ \"$start\" > "
+                f"{shlex.quote(str(bridge_pid_path))}; "
+                f"exec {_NODE} {shlex.quote(f'{_BRIDGE_ROOT}/bridge.js')}"
+            )
             return self.process_supervisor.spawn_interactive(
                 (
                     self.authority.runtime.docker_executable,
@@ -623,8 +750,9 @@ class _DockerServerFactory:
                     "-e",
                     f"NODE_PATH={_BRIDGE_ROOT}/node_modules",
                     server.container_name,
-                    _NODE,
-                    f"{_BRIDGE_ROOT}/bridge.js",
+                    "/bin/sh",
+                    "-c",
+                    bridge_shell,
                 ),
                 cwd="/",
                 environment={str(k): str(v) for k, v in environment.items()},
@@ -659,6 +787,8 @@ class _LifetimeRuntime:
     workdir: Path
     instance_handle: EnvironmentInstanceLeaseHandle
     instance_guard: object
+    compute_allocation: ComputeAllocation
+    compute_guard: object
 
 
 class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthorityPort):
@@ -674,6 +804,8 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         docker_lease_guard_factory,
         environment_instance_authority: EnvironmentInstanceLeaseAuthority,
         environment_instance_lease_guard_factory,
+        compute_scheduler: ComputeSchedulerPort,
+        compute_lease_guard_factory: ComputeLeaseGuardFactoryPort,
         image: str,
         image_digest: str,
         runner,
@@ -695,6 +827,23 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             raise TypeError("Minecraft lifetime authority requires EnvironmentInstanceLeaseAuthority")
         self.environment_instance_authority = environment_instance_authority
         self.environment_instance_lease_guard_factory = environment_instance_lease_guard_factory
+        required_scheduler_methods = (
+            "allocate", "confirm_bound", "release", "renew_many"
+        )
+        if any(
+            not callable(getattr(compute_scheduler, name, None))
+            for name in required_scheduler_methods
+        ):
+            raise TypeError("Minecraft lifetime authority requires ComputeSchedulerPort")
+        if (
+            not callable(getattr(compute_lease_guard_factory, "create", None))
+            or not hasattr(compute_lease_guard_factory, "policy")
+        ):
+            raise TypeError(
+                "Minecraft lifetime authority requires ComputeLeaseGuardFactoryPort"
+            )
+        self.compute_scheduler = compute_scheduler
+        self.compute_lease_guard_factory = compute_lease_guard_factory
         self.image = image
         self.image_digest = image_digest
         self.runner = runner
@@ -719,7 +868,7 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         self.profile_id = "minecraft.local"
         self.runtime_identity_digest = canonical_digest(
             {
-                "implementation_id": "minecraft.mineflayer",
+                "implementation_id": MINECRAFT_LOCAL_IMPLEMENTATION_ID,
                 "image_digest": self.image_digest,
                 "asset_digest": self.asset_digest,
             }
@@ -851,10 +1000,10 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                     EnvironmentInstance(
                         instance_id=instance_id,
                         resolved_spec_digest=canonical_digest({
-                            "implementation_id": "minecraft.mineflayer",
+                            "implementation_id": MINECRAFT_LOCAL_IMPLEMENTATION_ID,
                             "config": self.config,
                         }),
-                        backend="minecraft.mineflayer",
+                        backend=MINECRAFT_LOCAL_IMPLEMENTATION_ID,
                         runtime_reference=(
                             self.profile_materialization.runtime_reference
                         ),
@@ -908,9 +1057,30 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             raise RuntimeError(
                 "Minecraft assignment runtime requires Study assignment seed"
             )
-        assignment_seed_context = replace(context, task_id=None)
+        seed_scope = str(
+            context.participant_context.get(
+                "environment_seed_scope",
+                "assignment",
+            )
+        )
+        if seed_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "Minecraft environment_seed_scope must be 'assignment' or 'task'"
+            )
+        if seed_scope == "assignment":
+            assignment_lifetime_id = context.participant_context.get(
+                "environment_assignment_lifetime_id",
+                context.lifetime_id,
+            )
+            seed_context = replace(
+                context,
+                lifetime_id=str(assignment_lifetime_id),
+                task_id=None,
+            )
+        else:
+            seed_context = context
         world_seed = str(
-            assignment_seed_context.random_seed("environment:minecraft:world")
+            seed_context.random_seed("environment:minecraft:world")
         )
         branch = MinecraftWorldBranch(
             branch_id=branch_id,
@@ -950,6 +1120,25 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             xms="512M",
             xmx="2G",
         )
+        compute_requirement = _minecraft_compute_requirement(server_template)
+        compute_allocation = self.compute_scheduler.allocate(
+            allocation_id=(
+                "minecraft-compute:"
+                + self.owner_generation_id[:16]
+                + ":"
+                + key[:24]
+            ),
+            scope=branch_scope,
+            requirement=compute_requirement,
+            placement_scope=PLATFORM_SCOPE,
+            ttl_seconds=self.compute_lease_guard_factory.policy.ttl_seconds,
+        )
+        compute_guard = self.compute_lease_guard_factory.create((compute_allocation,))
+        try:
+            compute_guard.start()
+        except BaseException:
+            self.compute_scheduler.release(compute_allocation)
+            raise
         try:
             binding = branch_factory.open(
                 MinecraftBranchRuntimeRequest(
@@ -963,7 +1152,35 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                 )
             )
             session = binding.open_session(object())
+            server = servers.by_port.get(binding.allocation.endpoint.port)
+            if server is None or server.process is None:
+                raise RuntimeError("Minecraft compute binding lost server process identity")
+            binder_identity_digest = canonical_digest(
+                {
+                    "contract_digest": server.contract.digest(),
+                    "process": server.process,
+                    "environment_generation": binding.environment_generation,
+                }
+            )
+            compute_allocation = self.compute_scheduler.confirm_bound(
+                ComputeBindingProof(
+                    allocation_id=compute_allocation.allocation_id,
+                    host_id=compute_allocation.host_id,
+                    gpu_ids=compute_allocation.gpu_ids,
+                    lease_fencing_token=compute_allocation.lease_fencing_token,
+                    binder_identity_digest=binder_identity_digest,
+                    observed_at_epoch_s=time.time(),
+                    evidence_ref=(
+                        "minecraft-ready:" + server.contract.digest()
+                    ),
+                )
+            )
+            compute_guard.assert_healthy()
         except BaseException:
+            try:
+                compute_guard.close()
+            finally:
+                self.compute_scheduler.release(compute_allocation)
             instance_guard.close()
             current_handle = instance_guard.handles[0]
             self.environment_instance_authority.release(current_handle)
@@ -974,6 +1191,8 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             workdir,
             instance_guard.handles[0],
             instance_guard,
+            compute_allocation,
+            compute_guard,
         )
 
     def _reap_completed_retirements(self) -> None:
@@ -1135,6 +1354,13 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         finally:
             row.instance_guard.close()
             current_handle = row.instance_guard.handles[0]
+            compute_release_error: BaseException | None = None
+            try:
+                row.compute_guard.close()
+                if physical_closed:
+                    self.compute_scheduler.release(row.compute_allocation)
+            except BaseException as exc:
+                compute_release_error = exc
             if physical_closed:
                 proof = EnvironmentCleanlinessProof(
                     instance_id=current_handle.instance.instance_id,
@@ -1170,6 +1396,8 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                 )
             else:
                 self.environment_instance_authority.release(current_handle)
+            if compute_release_error is not None:
+                raise compute_release_error
 
     def release(self, lifetime_id: str) -> None:
         self._reap_completed_retirements()
@@ -1280,4 +1508,4 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
             raise ExceptionGroup("Minecraft lifetime cleanup failed", errors)
 
 
-__all__ = ["LocalMinecraftLifetimeSessionAuthority"]
+__all__ = ["LocalMinecraftLifetimeSessionAuthority", "MINECRAFT_LOCAL_IMPLEMENTATION_ID"]

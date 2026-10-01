@@ -189,6 +189,7 @@ class ExecutionContext:
                 "repetition": self.repetition,
                 "study_id": self.study_id,
                 "condition_id": self.condition_id,
+                "lifetime_id": self.lifetime_id,
                 "task_id": self.task_id,
                 "namespace": namespace,
             }

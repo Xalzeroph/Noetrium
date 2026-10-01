@@ -97,7 +97,7 @@ def runtime_program_trial_configuration_digest(
     *,
     program: ResearchProgram,
     surface_id: str,
-    max_steps: int,
+    max_steps: int | None,
     operations: tuple[TrialProgramOperation, ...],
     restorer_implementation_digest: str | None = None,
 ) -> str:
@@ -129,7 +129,7 @@ class RuntimeProgramTrialProtocol:
         surface_id: str,
         program: ResearchProgram,
         operations: tuple[TrialProgramOperation, ...],
-        max_steps: int = 256,
+        max_steps: int | None = None,
         journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
         restorer: TrialProgramRestorer | None = None,
@@ -148,8 +148,8 @@ class RuntimeProgramTrialProtocol:
         names = tuple(item.operation for item in operations)
         if len(names) != len(set(names)):
             raise ValueError("trial operation names must be unique")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("trial max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("trial max_steps must be positive or None")
         if restorer is not None and not callable(restorer):
             raise TypeError("trial restorer must be callable")
         if restorer is None:

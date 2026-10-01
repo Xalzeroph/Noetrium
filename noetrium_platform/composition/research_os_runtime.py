@@ -64,6 +64,7 @@ from .research_os_checkpoint import (
 from .research_os_experiment import (
     ResearchOSExperimentRuntimeBinding,
     ResearchOSExperimentRuntimeBindingPort,
+    ResearchOSScientificInputBoundStudyExecutionPort,
 )
 from .research_os_execution import (
     ResearchOSNodeAdmission,
@@ -128,15 +129,15 @@ class CanonicalResearchOSNodeRuntime(
         operation_dispatcher: OperationDispatchPort | None = None,
         method_observation: MethodObservationPort | None = None,
         content_authorities: ResearchExecutionContentAuthorities,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
     ) -> None:
         if not isinstance(state_root, (str, Path)):
             raise TypeError("canonical Research OS runtime state_root is required")
         root = Path(state_root).absolute()
         if root.exists() and not root.is_dir():
             raise ValueError("canonical Research OS runtime state_root must be a directory")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("canonical Research OS runtime max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("canonical Research OS runtime max_steps must be positive or None")
         if (execution_pool is None) != (experiment_bindings is None):
             raise ValueError(
                 "canonical Experiment runtime requires both execution_pool and "
@@ -200,7 +201,7 @@ class CanonicalResearchOSNodeRuntime(
         nodes_by_program: dict[str, list[CompiledResearchOSGraphNode]] = {}
         for node in compilation.nodes:
             nodes_by_program.setdefault(node.ref.program_id, []).append(node)
-        for program in compilation.portfolio.programs:
+        for program in compilation.portfolio._programs:
             for node in nodes_by_program.get(program.program_id, ()):
                 method_program_digests = tuple(
                     definition.implementation.resolve().program.program_digest
@@ -485,6 +486,7 @@ class CanonicalResearchOSNodeRuntime(
                 machine_id,
                 lowering,
                 admission.runtime_binding_digest,
+                scientific_inputs=inputs,
                 execution_cut_id=execution_cut_id,
                 execution_id=context.run_id,
                 execution_tenant_id=context.execution_tenant_id,
@@ -643,6 +645,7 @@ class CanonicalResearchOSNodeRuntime(
         lowering: LoweredResearchOSGraphNode,
         admission_binding_digest: str,
         *,
+        scientific_inputs: JsonObject,
         execution_cut_id: str,
         execution_id: str,
         execution_tenant_id: str | None,
@@ -689,15 +692,28 @@ class CanonicalResearchOSNodeRuntime(
             ),
             deadline=deadline,
         )
+        adapter = runtime_binding.adapter
+        if scientific_inputs:
+            if not isinstance(
+                adapter,
+                ResearchOSScientificInputBoundStudyExecutionPort,
+            ):
+                raise CanonicalResearchOSRuntimeUnsupported(
+                    "Experiment received upstream scientific inputs but its "
+                    "Study execution adapter cannot bind them"
+                )
+            adapter = adapter.bind_scientific_inputs(scientific_inputs)
+
         completed = False
         try:
             report = ExperimentProgramBinding(
                 closure.experiment_program,
-                runtime_binding.adapter,
+                adapter,
                 runtime_binding.aggregation,
                 execution_binding_digest=runtime_binding.runtime_binding_digest,
                 execution_id=execution_id,
                 task_group=group,
+                frontier_capacity=self._execution_pool.experiment_frontier_capacity,
             ).execute(
                 journal=self._machine_journal,
                 machine_id=machine_id,
