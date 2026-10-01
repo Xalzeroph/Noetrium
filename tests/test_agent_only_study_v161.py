@@ -81,13 +81,12 @@ def _spec():
     )
 
 
-def _runtime(checkpoint_store=None):
+def _runtime():
     agents = FakeParticipantResolver(); agents.register("agent", "generic-agent", GenericAgent)
     providers = FakeParticipantResolver(); providers.register("capability_provider", "echo-provider", EchoProvider)
     return agent_turn_runtime(
         agents,
         capability_plugins=providers,
-        checkpoint_store=checkpoint_store,
     )
 
 
@@ -119,35 +118,3 @@ def test_agent_only_long_run_keeps_agent_session_alive_across_cycles():
         assert r2.primary_result.agent_generation == "agent-g2"
     finally:
         run.close()
-
-
-def test_agent_only_joint_checkpoint_restores_agent_and_provider_state(tmp_path):
-    from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-    from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-    from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
-
-    store = DirectoryRunCheckpointStore(tmp_path / "checkpoints")
-    runtime = _runtime(store)
-    identity = RunIdentity("run-agent", "session-agent", "trace-agent")
-    cycle1 = DecisionCycleIdentity("run-agent", "dc1", "session-agent", "task1", "trace-agent")
-    with runtime.open_run(_spec(), run_identity=identity) as run:
-        first = run.execute(task="one", input_kind="input", input_payload=1, cycle_identity=cycle1)
-        checkpoint_id = run.latest_checkpoint_id
-        assert checkpoint_id is not None
-        assert first.primary_result.agent_generation == "agent-g1"
-        assert first.primary_result.output["provider_calls"] == 1
-
-    runtime2 = _runtime(store)
-    restored = runtime2.open_run(
-        _spec(),
-        run_identity=identity,
-        restore_checkpoint_id=checkpoint_id,
-        restore_cycle_identity=cycle1,
-    )
-    try:
-        cycle2 = DecisionCycleIdentity("run-agent", "dc2", "session-agent", "task2", "trace-agent")
-        second = restored.execute(task="two", input_kind="input", input_payload=2, cycle_identity=cycle2)
-        assert second.primary_result.agent_generation == "agent-g2"
-        assert second.primary_result.output["provider_calls"] == 2
-    finally:
-        restored.close()

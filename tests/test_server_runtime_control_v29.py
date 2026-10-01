@@ -139,7 +139,7 @@ class ServerRuntimeControlV29Tests(unittest.TestCase):
     def setUp(self):
         self.d1=deployment("d1","GPU-1")
         self.d2=deployment("d2","GPU-2")
-        self.roles=RoleModelManifest((RoleModelAssignment("planner","d1"),RoleModelAssignment("meta","d2")))
+        self.roles=RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),RoleModelAssignment("meta","generation","model.generation.request.v1","model.generation.response.v1","d2")))
         self.ds=freeze_model_deployment_set(self.roles,(self.d1,self.d2))
 
     def test_gpu_overlap_across_independent_deployments_is_forbidden(self):
@@ -147,7 +147,7 @@ class ServerRuntimeControlV29Tests(unittest.TestCase):
             freeze_model_deployment_set(self.roles,(self.d1,deployment("d2","GPU-1")))
 
     def test_unknown_role_deployment_is_forbidden(self):
-        roles=RoleModelManifest((RoleModelAssignment("planner","missing"),))
+        roles=RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","missing"),))
         with self.assertRaises(ValueError): freeze_model_deployment_set(roles,(self.d1,))
 
     def test_exact_server_control_runs_full_transaction(self):

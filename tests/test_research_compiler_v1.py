@@ -16,6 +16,7 @@ from noetrium_platform.research.experimentation.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     BenchmarkTaskSet,
     FactorLevelSpec,
     MeasurementDefinition,
@@ -27,6 +28,9 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyExecutionPolicy,
     StudyFactorSpec,
     TaskDefinition,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
     TaskPackageSpec,
     TaskSetSplit,
     TrialBudget,
@@ -192,6 +196,8 @@ def _definition(
     measurements: MeasurementProtocol | None = None,
     seeds: tuple[str, ...] = ("seed-a", "seed-b"),
     benchmark: BenchmarkTaskSet | None = None,
+    benchmark_split_id: str | None = None,
+    assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
     budget: TrialBudget | None = None,
 ) -> ResearchStudyDefinition:
     factors = (
@@ -210,16 +216,24 @@ def _definition(
             ),
         ),
     )
+    resolved_benchmark = benchmark or _benchmark()
+    resolved_workloads = (
+        assignment_workloads
+        if assignment_workloads is not None
+        else tuple(
+            AssignmentWorkload((task.task_id,))
+            for task in resolved_benchmark.selected_tasks(benchmark_split_id)
+        )
+    )
     return ResearchStudyDefinition(
         "project-1", "experiment-1", "study-1", "workload-1",
         factors, seeds, 2, measurements or _measurements(),
-        benchmark or _benchmark(), None, _binding_requirements(),
+        resolved_benchmark, benchmark_split_id, resolved_workloads, _binding_requirements(),
         ExperimentTrialProtocolIdentity("trial.agent", CFG),
         ResearchRevision("revision-1", "d" * 64),
-        StudyExecutionPolicy.serial_shared_v1(
+        StudyExecutionPolicy(
             trial_budget=budget or TrialBudget("standard", max_steps=12, max_seconds=180.0),
             replay_level=ReplayLevel.EXACT,
-            repetition_timeout_seconds=3600.0,
         ),
     )
 
@@ -249,13 +263,58 @@ def test_compiler_expands_factor_seed_repetition_task_matrix_and_schedule() -> N
     assert sum(row.control for row in plan.interventions) == 1
     assert len(plan.experiment_plan.assignments) == 16
     assert {row.seed for row in plan.experiment_plan.assignments} == {"seed-a", "seed-b"}
-    assert {row.task_id for row in plan.experiment_plan.assignments} == {"task-1"}
+    assert {
+        row.workload.task_ids for row in plan.experiment_plan.assignments
+    } == {("task-1",)}
     assert plan.protocol.metric_names == ("score",)
     assert plan.participant_schedule.waves == (("actor",), ("evaluator",), ("critic",))
     assert plan.research_semantics.study_plan_digest == plan.experiment_plan.plan_digest
     assert plan.research_semantics.measurement_protocol_digest == plan.measurement_protocol.semantic_digest
     assert plan.research_semantics.participant_schedule.applicable is True
     assert plan.trial_protocol_identity == ExperimentTrialProtocolIdentity("trial.agent", CFG)
+
+
+def test_compiler_preserves_multi_task_assignment_workload_graph() -> None:
+    tasks = (
+        TaskDefinition("task-1", "1", "generic", "task.v1", "a" * 64),
+        TaskDefinition("task-2", "1", "generic", "task.v1", "c" * 64),
+    )
+    benchmark = BenchmarkTaskSet(
+        "benchmark",
+        "1",
+        "b" * 64,
+        "task.v1",
+        tasks,
+    )
+    workload = AssignmentWorkload(
+        ("task-1", "task-2"),
+        TaskGraph(
+            (
+                TaskGraphEdge(
+                    "task-1",
+                    "task-2",
+                    TaskGraphRelation.PREREQUISITE,
+                ),
+            )
+        ),
+    )
+    definition = _definition(
+        seeds=("seed-a",),
+        benchmark=benchmark,
+        assignment_workloads=(workload,),
+    )
+    plan = _compile(definition)
+
+    assert len(plan.experiment_plan.assignments) == 8
+    assert all(
+        row.workload == workload
+        for row in plan.experiment_plan.assignments
+    )
+    assert tuple(row.task_id for row in plan.task_definitions) == (
+        "task-1",
+        "task-2",
+    )
+    assert plan.protocol.assignment_workloads == (workload,)
 
 
 def test_compiler_accepts_non_scalar_measurements_without_fake_numeric_metric() -> None:
@@ -343,9 +402,19 @@ def test_benchmark_split_order_is_execution_order_and_changes_assignment_project
     )
     forward = BenchmarkTaskSet("benchmark", "1", "3" * 64, "task.v1", tasks, splits=(TaskSetSplit("train", ("task-a", "task-b")),))
     reverse = BenchmarkTaskSet("benchmark", "1", "3" * 64, "task.v1", tasks, splits=(TaskSetSplit("train", ("task-b", "task-a")),))
-    left = _compile(replace(_definition(benchmark=forward), benchmark_split_id="train"))
-    right = _compile(replace(_definition(benchmark=reverse), benchmark_split_id="train"))
-    assert [row.task_id for row in left.experiment_plan.assignments[:2]] != [row.task_id for row in right.experiment_plan.assignments[:2]]
+    left = _compile(
+        _definition(benchmark=forward, benchmark_split_id="train")
+    )
+    right = _compile(
+        _definition(benchmark=reverse, benchmark_split_id="train")
+    )
+    assert [
+        row.workload.task_ids
+        for row in left.experiment_plan.assignments[:2]
+    ] != [
+        row.workload.task_ids
+        for row in right.experiment_plan.assignments[:2]
+    ]
     assert left.experiment_plan.assignment_digest != right.experiment_plan.assignment_digest
 
 

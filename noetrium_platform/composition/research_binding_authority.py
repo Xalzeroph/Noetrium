@@ -8,6 +8,7 @@ validates the result through the canonical research compiler.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from threading import RLock
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.api import ProjectModelBinding
@@ -24,6 +25,7 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectRequirementCardinality,
 )
 from noetrium_platform.research.experimentation.api import (
+    ResearchBindingAssuranceGap,
     ResearchBindingContribution,
     ResearchCapabilityBinding,
     ResearchModelRoleBinding,
@@ -987,12 +989,21 @@ class ResearchBindingAuthority:
         self._capabilities = capabilities
         self._participants = participants
         self._models = models
+        self._cache: dict[
+            str,
+            tuple[ResearchRequirementResolution, ResearchBindingContribution],
+        ] = {}
+        self._cache_lock = RLock()
 
     def _capability_bindings(
         self,
         context: ResearchBindingResolutionContext,
     ) -> tuple[ResearchCapabilityBinding, ...]:
         rows: list[ResearchCapabilityBinding] = []
+        model_requirement_ids = {
+            row.requirement_id
+            for row in context.definition.binding_requirements.model_roles
+        }
         for requirement in context.resolution.capability_requirements:
             resolutions = self._capabilities.resolve(requirement, context)
             if type(resolutions) is not tuple:
@@ -1017,6 +1028,11 @@ class ResearchBindingAuthority:
                 )
             bound_rows: list[tuple[BindingProof, object]] = []
             for resolution in resolutions:
+                if (
+                    resolution.binding is None
+                    and requirement.requirement_id in model_requirement_ids
+                ):
+                    continue
                 binding, proof = _bound(
                     resolution,
                     stage="capability",
@@ -1069,17 +1085,17 @@ class ResearchBindingAuthority:
     def _model_bindings(
         self,
         context: ResearchBindingResolutionContext,
-    ) -> tuple[ResearchModelRoleBinding, ...]:
+    ) -> tuple[
+        tuple[ResearchModelRoleBinding, ...],
+        tuple[ResearchBindingAssuranceGap, ...],
+    ]:
         rows: list[ResearchModelRoleBinding] = []
+        gaps: list[ResearchBindingAssuranceGap] = []
         for requirement in context.definition.binding_requirements.model_roles:
             resolutions = self._models.resolve(requirement, context)
             if type(resolutions) is not tuple:
                 raise TypeError(
                     "model resolver must return tuple[BindingResolution, ...]"
-                )
-            if requirement.required and not resolutions:
-                raise ValueError(
-                    f"required model role {requirement.role!r} resolved empty"
                 )
             if (
                 requirement.max_bindings is not None
@@ -1090,7 +1106,14 @@ class ResearchBindingAuthority:
                     f"max_bindings={requirement.max_bindings}"
                 )
             proof_digests: list[str] = []
-            for member_index, resolution in enumerate(resolutions):
+            diagnostic_digests: list[str] = []
+            member_index = 0
+            for resolution in resolutions:
+                if resolution.binding is None:
+                    diagnostic_digests.extend(
+                        row.machine_digest for row in resolution.diagnostics
+                    )
+                    continue
                 binding, proof = _bound(
                     resolution,
                     stage="model",
@@ -1110,11 +1133,30 @@ class ResearchBindingAuthority:
                         member_index,
                     )
                 )
+                if not binding.qualified:
+                    gaps.append(
+                        ResearchBindingAssuranceGap(
+                            domain="model",
+                            requirement_key=requirement.role,
+                            requirement_digest=requirement.requirement_digest,
+                            diagnostic_digests=(),
+                        )
+                    )
+                member_index += 1
             if len(proof_digests) != len(set(proof_digests)):
                 raise ValueError(
                     f"model role {requirement.role!r} resolved duplicate proofs"
                 )
-        return tuple(rows)
+            if requirement.required and not proof_digests:
+                gaps.append(
+                    ResearchBindingAssuranceGap(
+                        domain="model",
+                        requirement_key=requirement.role,
+                        requirement_digest=requirement.requirement_digest,
+                        diagnostic_digests=tuple(sorted(set(diagnostic_digests))),
+                    )
+                )
+        return tuple(rows), tuple(gaps)
 
     def resolve(
         self,
@@ -1126,6 +1168,12 @@ class ResearchBindingAuthority:
             raise TypeError(
                 "research binding authority requires ResearchStudyDefinition"
             )
+        cache_key = definition.definition_digest
+        with self._cache_lock:
+            cached = self._cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         manifest = self._manifests.resolve(definition)
         if type(manifest) is not ProjectManifest:
             raise TypeError(
@@ -1137,17 +1185,27 @@ class ResearchBindingAuthority:
             manifest,
             resolution,
         )
+        model_bindings, assurance_gaps = self._model_bindings(context)
         contribution = ResearchBindingContribution(
             resolution.resolution_digest,
             self._capability_bindings(context),
             self._participant_bindings(context),
-            self._model_bindings(context),
+            model_bindings,
+            assurance_gaps,
         )
 
         # The canonical compiler is the final authority for cross-domain binding
         # invariants. This is validation only; no execution or provider effects.
         compile_research_plan(definition, resolution, contribution)
-        return resolution, contribution
+        resolved = (resolution, contribution)
+        with self._cache_lock:
+            existing = self._cache.setdefault(cache_key, resolved)
+        if existing != resolved:
+            raise RuntimeError(
+                "research binding authority resolved one Study definition to "
+                "multiple immutable binding closures"
+            )
+        return existing
 
 
 __all__ = [

@@ -8,6 +8,7 @@ import signal
 import subprocess
 from threading import Lock
 from typing import Mapping
+from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
@@ -62,6 +63,7 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         *,
         cleanup_timeout_seconds: float = 2.0,
         default_output_limit_bytes: int = 8 * 1024 * 1024,
+        task_namespace: str | None = None,
     ) -> None:
         if not math.isfinite(float(cleanup_timeout_seconds)) or cleanup_timeout_seconds <= 0:
             raise ValueError("process command cleanup timeout must be finite and positive")
@@ -70,6 +72,10 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         self._task_group = task_group
         self._cleanup_timeout_seconds = float(cleanup_timeout_seconds)
         self._default_output_limit_bytes = int(default_output_limit_bytes)
+        namespace = str(task_namespace).strip() if task_namespace is not None else uuid4().hex
+        if not namespace:
+            raise ValueError("process command task namespace required")
+        self._task_namespace = namespace
         # A task deadline must outlive child cleanup so the coroutine can reap
         # the complete process tree before its structured owner becomes terminal.
         self._cleanup_reserve_seconds = (2.0 * self._cleanup_timeout_seconds) + 0.1
@@ -83,7 +89,7 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
             self._sequence += 1
             sequence = self._sequence
         executable = str(argv[0]).rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-        return f"process-command:{executable}:{sequence}"
+        return f"process-command:{self._task_namespace}:{executable}:{sequence}"
 
     @staticmethod
     def _signal_process(
@@ -225,11 +231,13 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
     ) -> ProcessCommandResult:
         context.checkpoint()
         remaining = context.remaining_seconds
-        if remaining is None:
-            raise RuntimeError("process command execution requires a structured deadline")
-        runtime_budget = min(
-            float(timeout_seconds),
-            max(0.0, remaining - self._cleanup_reserve_seconds),
+        runtime_budget = (
+            float(timeout_seconds)
+            if remaining is None
+            else min(
+                float(timeout_seconds),
+                max(0.0, remaining - self._cleanup_reserve_seconds),
+            )
         )
         if runtime_budget <= 0:
             return ProcessCommandResult(
@@ -287,11 +295,13 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         try:
             try:
                 remaining = context.remaining_seconds
-                if remaining is None:
-                    raise RuntimeError("process command execution lost its structured deadline")
-                runtime_budget = min(
-                    float(timeout_seconds),
-                    max(0.0, remaining - self._cleanup_reserve_seconds),
+                runtime_budget = (
+                    float(timeout_seconds)
+                    if remaining is None
+                    else min(
+                        float(timeout_seconds),
+                        max(0.0, remaining - self._cleanup_reserve_seconds),
+                    )
                 )
                 if runtime_budget <= 0:
                     await self._terminate_and_drain(
@@ -340,10 +350,9 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         if resolved_limit <= 0:
             raise ValueError("process command output limit must be positive")
         task_id = self._task_id(argv)
-        # ``timeout_seconds`` is the command's end-to-end execution budget.
-        # The task deadline also bounds ASYNC_IO admission.  A cleanup reserve is
-        # added outside that budget so timeout/cancellation can terminate and reap
-        # the process tree before ownership is released.
+        # timeout_seconds is the physical command execution budget.
+        # Queue/admission waiting belongs to TaskGroup admission policy and any
+        # group deadline. The process timeout starts only after execution admission.
         return self._task_group.submit(
             ExecutionSpec(
                 task_id=task_id,
@@ -358,7 +367,6 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
             bool(inherit_stdin),
             bool(inherit_output),
             resolved_limit,
-            deadline=Deadline.after(float(timeout_seconds) + self._cleanup_reserve_seconds),
         )
 
 

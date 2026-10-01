@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
+
 from noetrium_platform.composition.operator.project import project_scaffold
 from noetrium_platform.composition.operator.project.project_platform_identity import (
     InstalledPlatformIdentity,
@@ -45,48 +48,28 @@ def consume(payload):
 
 
 def build_research() -> api.ResearchPortfolio:
-    first = api.ResearchProgramBuilder("paper-a")
-    first.definition(
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    first = portfolio.programs.create("paper-a")
+    first.extensions.define("source", implementation=source)
+    first.extensions.node(
         "source",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=source,
-    )
-    first.node(
-        "source",
-        kind=api.ResearchNodeKind.CUSTOM,
         definitions=("source",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(("data", "data"),),
     )
 
-    second = api.ResearchProgramBuilder("paper-b")
-    second.definition(
+    second = portfolio.programs.create("paper-b")
+    second.extensions.define("consume", implementation=consume)
+    second.extensions.node(
         "consume",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=consume,
-    )
-    second.node(
-        "consume",
-        kind=api.ResearchNodeKind.CUSTOM,
         definitions=("consume",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(("data", "data"),),
     )
-
-    dependency = api.ResearchPortfolioDependency(
-        api.ResearchNodeRef("paper-a", "source"),
-        api.ResearchNodeRef("paper-b", "consume"),
-        (
-            api.ResearchInputBinding(
-                "upstream",
-                "data",
-                api.ResearchValueKind.DATA,
-            ),
-        ),
+    portfolio.handoffs.bind(
+        upstream=("paper-a", "source"),
+        downstream=("paper-b", "consume"),
+        inputs={"upstream": ("data", "data")},
     )
-    return api.ResearchPortfolio(
-        "paper",
-        (first.freeze(), second.freeze()),
-        (dependency,),
-    )
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -111,17 +94,68 @@ __all__ = ["build_research"]
             "paper-b::consume",
         }
         consume = graph.node("paper-b::consume")
-        assert consume.node.depends_on == (
-            api.ResearchDependency(
-                api.ResearchNodeRef("paper-a", "source"),
-                (
-                    api.ResearchInputBinding(
-                        "upstream",
-                        "data",
-                        api.ResearchValueKind.DATA,
-                    ),
-                ),
+        assert consume.upstream_refs == (
+            research_os_api.ResearchNodeRef("paper-a", "source"),
+        )
+        assert len(consume.incoming_edges) == 1
+        assert consume.incoming_edges[0].bindings == (
+            research_os_api.ResearchInputBinding(
+                "upstream",
+                "data",
+                research_os_api.ResearchValueKind.DATA,
             ),
+        )
+    finally:
+        loaded.close()
+
+
+def test_generated_project_preserves_public_study_experiment_authoring(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path / "study-paper"
+    monkeypatch.setattr(
+        project_scaffold,
+        "installed_platform_identity",
+        lambda: _FIXED_PLATFORM,
+    )
+    project_scaffold.create_project(
+        ProjectCreateRequest("study-paper", "0.1.0", root)
+    )
+
+    core = root / "src" / "study_paper" / "core.py"
+    core.write_text(
+        '''from noetrium import api
+
+
+def build_study():
+    raise AssertionError("study factory must not execute while loading authoring IR")
+
+
+def build_research() -> api.ResearchPortfolio:
+    portfolio = api.ResearchPortfolioBuilder("study-paper")
+    research = portfolio.programs.create("study-paper")
+    research.study_protocol("study", implementation=build_study)
+    research.experiment("experiment", definitions=("study",))
+    return portfolio.freeze()
+
+
+__all__ = ["build_research"]
+''',
+        encoding="utf-8",
+    )
+
+    project_scaffold.sync_project(root)
+    loaded = load_project_research_os(root)
+    try:
+        program = loaded.portfolio.programs[0]
+        assert any(
+            definition.kind is research_os_api.ResearchDefinitionKind.PROTOCOL
+            for definition in program.definitions
+        )
+        assert any(
+            node.kind is research_os_api.ResearchNodeKind.EXPERIMENT
+            for node in program.nodes
         )
     finally:
         loaded.close()

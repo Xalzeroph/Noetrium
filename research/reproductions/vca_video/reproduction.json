@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "344ec6f50ce9faafb4edfe91968cac6e4626438fcb6b7eb9fcb5ed3fda40f9b2",
-  "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
+  "package_digest": "cf9c408c8be5a6de22130e97172e753fca05c359146b1402a9d71374a47daa1b",
+  "definition_digest": "b8e9ee67a4ed397e515106bff145dd9c06d3a14394e1af64e46c87542a6c0c73",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -83,13 +83,13 @@
       "kind": "method_program",
       "path": "research/reproductions/vca_video/program.py",
       "declaration_digest": "05be28204185be60f25035c661840b08e3dd19ea5c30320bc4ce702018aac607",
-      "content_sha256": "acafb85c478e65a972ade8498bcb13397bfe56d8afb86b3442ef9d71ee8efc79"
+      "content_sha256": "052745018010252d37dd2a98095256fa9998498ee2a9545c94d7c6255df3736c"
     },
     {
       "kind": "study",
       "path": "research/reproductions/vca_video/study.py",
       "declaration_digest": "ecea08a091320896f8014d8b2bd449f1ff27b918171a2669b251677417c6800f",
-      "content_sha256": "e99db7e29f5f01558240586e2c62d828c7ce39c7063dc955f797000fab29afcd"
+      "content_sha256": "5b576d411e299cdf87d95c1885001dd008f98584c84dcee680a3e68ef8fbb600"
     },
     {
       "kind": "support",
@@ -195,7 +195,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "vca_video",
-    "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
+    "program_digest": "63eda586b595ed82ef2da42c7e1acd9ce6baf1483d48b5d9dd135cf6d207e665",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

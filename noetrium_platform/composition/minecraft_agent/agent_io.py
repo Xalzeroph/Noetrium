@@ -24,17 +24,17 @@ def _json_mapping(value: Mapping[str, MinecraftJsonValue]) -> dict[str, JsonValu
     return {str(key): _json_value(item) for key, item in value.items()}
 
 
-def _bounded_json(value: object, *, depth: int = 0) -> object:
-    if depth >= 4:
-        return str(value)
-    if isinstance(value, Mapping):
-        return {
-            str(key): _bounded_json(item, depth=depth + 1)
-            for key, item in list(value.items())[:64]
-        }
-    if isinstance(value, (list, tuple)):
-        return [_bounded_json(item, depth=depth + 1) for item in value[:32]]
-    return value
+
+def _minecraft_decision_state(payload: object) -> Mapping[str, MinecraftJsonValue]:
+    if not isinstance(payload, Mapping):
+        raise ValueError("Minecraft observation payload must be a mapping")
+    view = payload.get("decision_view")
+    if not isinstance(view, Mapping) or view.get("kind") != "minecraft_decision_view.v1":
+        raise ValueError("Minecraft observation is missing canonical decision_view")
+    state = view.get("state")
+    if not isinstance(state, Mapping):
+        raise ValueError("Minecraft decision_view must contain mapping state")
+    return state
 
 
 def _agent_effect_certainty(certainty: EffectCertainty | None) -> str:
@@ -86,40 +86,7 @@ class MinecraftAgentObservationPort:
 
     def observe(self, context) -> AgentObservation:
         raw = self._session.observe(context)
-        if not isinstance(raw.payload, Mapping) or not isinstance(raw.payload.get("state"), Mapping):
-            raise ValueError("Minecraft observation payload must contain a mapping state")
-        raw_state = raw.payload["state"]
-        allowed_keys = (
-            "health",
-            "position",
-            "yaw",
-            "pitch",
-            "held_item",
-            "inventory",
-            "equipment",
-            "nearby_entities",
-            "hostile_entities",
-            "nearby_blocks",
-            "anchors",
-            "mode",
-            "time",
-            "world_generation",
-        )
-        state = {
-            key: _bounded_json(raw_state[key])
-            for key in allowed_keys
-            if key in raw_state
-        }
-        state.setdefault("world_generation", raw.generation)
-        state.setdefault("nearby_entities", [])
-        state.setdefault("hostile_entities", [])
-        state.setdefault("yaw", None)
-        state.setdefault("pitch", None)
-        state.setdefault("held_item", None)
-        state.setdefault("inventory", {})
-        state.setdefault("equipment", {})
-        state.setdefault("nearby_blocks", [])
-        state.setdefault("mode", "survival")
+        state = _minecraft_decision_state(raw.payload)
         self._sequence += 1
         return AgentObservation(
             f"agent:{raw.observation_id}:{self._sequence}", raw.generation, _json_mapping(state),
@@ -158,11 +125,10 @@ class MinecraftAgentActionExecutor(AgentActionExecutorPort):
         verified = verified_value if isinstance(verified_value, bool) else None
         observation = None
         if result.observation is not None:
-            if not isinstance(result.observation.payload, Mapping) or not isinstance(result.observation.payload.get("state"), Mapping):
-                raise ValueError("Minecraft action result observation is missing state")
+            state = _minecraft_decision_state(result.observation.payload)
             observation = AgentObservation(
                 f"agent:{result.observation.observation_id}", result.observation.generation,
-                _json_mapping(dict(result.observation.payload["state"])), modality="minecraft.rich_world",
+                _json_mapping(dict(state)), modality="minecraft.rich_world",
                 artifact_refs=result.observation.artifact_refs,
                 evidence_payload=_json_mapping(dict(result.observation.payload)),
             )

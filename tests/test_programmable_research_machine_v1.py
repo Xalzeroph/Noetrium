@@ -14,7 +14,6 @@ from noetrium_platform.research.execution.machines import (
     ChildResearchHostRegistry,
     ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
-    RegisteredChildResearchMachineExecutor,
     ProgramNodeResult,
     ProgrammableMachineInterpreter,
     ResearchProgramBuilder,
@@ -128,7 +127,13 @@ def test_parent_program_commits_authoritative_child_machine_link() -> None:
         journal=journal,
         max_steps=4,
     )
-    child_executor = ChildResearchMachineExecutor(child_host)
+    child_registry = ChildResearchHostRegistry()
+    child_registry.register_static(
+        child_host,
+        {},
+        binding_identity_digest=canonical_digest({"binding": "paper.optimizer"}),
+    )
+    child_executor = child_registry.executor()
 
     parent_program = (
         ResearchProgramBuilder(
@@ -145,12 +150,14 @@ def test_parent_program_commits_authoritative_child_machine_link() -> None:
 
     def search(request):
         child = child_executor.execute(
-            parent_machine_id=request.snapshot.machine_id,
-            child_machine_id="optimization:paper:child-1",
-            instance_identity={"candidate_space": "paper"},
-            binding={},
-            initial_data={"seed": 7},
-            failure_policy=ChildFailurePolicy.FAIL_PARENT,
+            ChildResearchMachineRequest(
+                host_id=child_host.host_id,
+                parent_machine_id=request.snapshot.machine_id,
+                child_machine_id="optimization:paper:child-1",
+                instance_identity={"candidate_space": "paper"},
+                initial_data={"seed": 7},
+                failure_policy=ChildFailurePolicy.FAIL_PARENT,
+            )
         )
         return ProgramNodeResult(
             value={
@@ -249,7 +256,7 @@ def test_registered_child_host_invocation_is_data_driven() -> None:
             "implementation_revision": 1,
         }),
     )
-    executor = RegisteredChildResearchMachineExecutor(registry)
+    executor = registry.executor()
     request = ChildResearchMachineRequest(
         host_id="optimizer.registered",
         parent_machine_id="method:parent",
@@ -346,24 +353,31 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
         journal=journal,
         preset=preset,
     )
-    executor = ChildResearchMachineExecutor(host)
+    registry = ChildResearchHostRegistry()
+    registry.register_static(
+        host,
+        {},
+        binding_identity_digest=canonical_digest({"binding": "aflow-search"}),
+    )
+    executor = registry.executor()
     initial_data = optimization_initial_data("aflow-search", preset)
     common = {
+        "host_id": host.host_id,
         "parent_machine_id": "method:aflow-parent",
         "child_machine_id": "optimization:aflow-search",
         "instance_identity": {
             "method": "aflow",
             "optimization_id": "aflow-search",
         },
-        "binding": {},
         "initial_data": initial_data,
         "failure_policy": ChildFailurePolicy.FAIL_PARENT,
         "command_id_prefix": "aflow-child",
     }
 
     register = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.candidate.register",
                 {
@@ -371,7 +385,8 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
                     "definition": {"workflow": "blank"},
                 },
             ).as_payload(),
-        },
+            },
+        )
     )
     assert register.status.value == "runnable"
     assert register.link.child_transition_start == 1
@@ -379,8 +394,9 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
     assert register.execution.data["candidates"]["w0"]["evaluated"] is False
 
     observe = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.candidate.observe",
                 {
@@ -388,7 +404,8 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
                     "metrics": {"score": 0.25},
                 },
             ).as_payload(),
-        },
+            },
+        )
     )
     assert observe.status.value == "runnable"
     assert observe.link.child_transition_start == 3
@@ -396,28 +413,178 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
     assert observe.execution.data["evaluated_count"] == 1
 
     select = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.select",
                 {},
             ).as_payload(),
-        },
+            },
+        )
     )
     assert select.link.child_transition_start == 4
     assert select.result["incumbent_id"] == "w0"
 
     final = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.finalize",
                 {},
             ).as_payload(),
-        },
+            },
+        )
     )
     assert final.status.value == "completed"
     assert final.link.child_transition_start == 5
     assert final.link.child_transition_end == 5
     assert final.link.child_result_ref is not None
     assert len(journal.commits("optimization:aflow-search")) == 5
+
+
+def test_platform_progress_watchdog_stops_repeated_verified_no_progress() -> None:
+    program = (
+        ResearchProgramBuilder(
+            program_id="platform.progress-watchdog",
+            kind=MachineKind.RUNTIME,
+            version="1",
+            state_schema="platform.progress-watchdog.v1",
+            entrypoint="act",
+        )
+        .node("act", "paper.no-progress", next_node="act")
+        .build()
+    )
+    handlers = core_program_handlers()
+    fingerprint = canonical_digest({"effect": "same-rejected-action"})
+
+    def no_progress(_request):
+        return ProgramNodeResult(
+            value={"effect": "rejected"},
+            next_node="act",
+            progress=False,
+            progress_fingerprint=fingerprint,
+        )
+
+    handlers.register(
+        "paper.no-progress",
+        no_progress,
+        implementation_digest=canonical_digest({"operation": "paper.no-progress"}),
+    )
+    machine = MachineExecutor(
+        identity=MachineIdentity(
+            "runtime:progress-watchdog", MachineKind.RUNTIME, "1", "g1"
+        ),
+        program=program.machine_program_ref(_lock()),
+        journal=InMemoryMachineJournal(),
+        family=programmable_machine_family(MachineKind.RUNTIME),
+    )
+    interpreter = ProgrammableMachineInterpreter(program, handlers)
+    machine.open({})
+    machine.step(
+        MachineCommand(
+            command_id="start-progress-watchdog",
+            machine_id=machine.machine_id,
+            expected_revision=0,
+            kind="program.start",
+            payload={"initial_data": {}},
+        ),
+        interpreter,
+    )
+    for index in range(2):
+        receipt = machine.step(
+            MachineCommand(
+                command_id=f"no-progress-{index}",
+                machine_id=machine.machine_id,
+                expected_revision=index + 1,
+                kind="program.step",
+                payload={},
+            ),
+            interpreter,
+        )
+        assert receipt.accepted_status.value == "runnable"
+    failed = machine.step(
+        MachineCommand(
+            command_id="no-progress-2",
+            machine_id=machine.machine_id,
+            expected_revision=3,
+            kind="program.step",
+            payload={},
+        ),
+        interpreter,
+    )
+    assert failed.accepted_status.value == "failed"
+    failure = failed.state["_program"]["semantic"]["program_failure"]
+    assert failure["code"] == "program.no_progress_livelock"
+
+
+def test_platform_progress_watchdog_resets_on_verified_progress() -> None:
+    program = (
+        ResearchProgramBuilder(
+            program_id="platform.progress-reset",
+            kind=MachineKind.RUNTIME,
+            version="1",
+            state_schema="platform.progress-reset.v1",
+            entrypoint="act",
+        )
+        .node("act", "paper.progress-reset", next_node="act")
+        .build()
+    )
+    handlers = core_program_handlers()
+    fingerprint = canonical_digest({"effect": "rejected-action"})
+
+    def action(request):
+        count = int(request.visit)
+        progressed = count == 3
+        return ProgramNodeResult(
+            value={"visit": count},
+            next_node="act",
+            progress=progressed,
+            progress_fingerprint=(
+                canonical_digest({"effect": "confirmed", "visit": count})
+                if progressed
+                else fingerprint
+            ),
+        )
+
+    handlers.register(
+        "paper.progress-reset",
+        action,
+        implementation_digest=canonical_digest({"operation": "paper.progress-reset"}),
+    )
+    machine = MachineExecutor(
+        identity=MachineIdentity(
+            "runtime:progress-reset", MachineKind.RUNTIME, "1", "g1"
+        ),
+        program=program.machine_program_ref(_lock()),
+        journal=InMemoryMachineJournal(),
+        family=programmable_machine_family(MachineKind.RUNTIME),
+    )
+    interpreter = ProgrammableMachineInterpreter(program, handlers)
+    machine.open({})
+    machine.step(
+        MachineCommand(
+            command_id="start-progress-reset",
+            machine_id=machine.machine_id,
+            expected_revision=0,
+            kind="program.start",
+            payload={"initial_data": {}},
+        ),
+        interpreter,
+    )
+    for index in range(5):
+        receipt = machine.step(
+            MachineCommand(
+                command_id=f"progress-reset-{index}",
+                machine_id=machine.machine_id,
+                expected_revision=index + 1,
+                kind="program.step",
+                payload={},
+            ),
+            interpreter,
+        )
+        assert receipt.accepted_status.value == "runnable"
+    watchdog = receipt.state["_program"]["progress_watchdog"]
+    assert watchdog["consecutive_no_progress"] == 2
+    assert watchdog["same_fingerprint"] == 2

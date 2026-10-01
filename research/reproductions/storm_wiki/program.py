@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import STORM_WIKI_REFERENCE_FIDELITY
 from .pipeline import STORM_WIKI_STAGE_ORDER
@@ -65,21 +62,21 @@ def storm_wiki_initial_state(*, topic: str) -> JsonObject:
     }
 
 
-def _model_count(request: MethodNodeRequest) -> int:
+def _model_count(request: MethodCall) -> int:
     value = request.state.get("model_call_count", 0)
     if type(value) is not int or value < 0:
         raise ValueError("STORM model_call_count must be non-negative")
     return value
 
 
-def _search_count(request: MethodNodeRequest) -> int:
+def _search_count(request: MethodCall) -> int:
     value = request.state.get("search_call_count", 0)
     if type(value) is not int or value < 0:
         raise ValueError("STORM search_call_count must be non-negative")
     return value
 
 
-def _perspective_view(request: MethodNodeRequest) -> JsonObject:
+def _perspective_view(request: MethodCall) -> JsonObject:
     return {
         "topic": request.state.get("topic"),
         "objective": (
@@ -89,7 +86,7 @@ def _perspective_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_perspectives(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_perspectives(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, Mapping):
         raw = value.get("perspectives", ())
@@ -103,7 +100,7 @@ def _record_perspectives(request: MethodNodeRequest) -> MethodNodeResult:
     if not rows:
         raise ValueError("STORM perspective discovery returned no perspectives")
     rows = rows[: STORM_WIKI_REFERENCE_FIDELITY.max_perspectives]
-    return MethodNodeResult(
+    return dict(
         value={"perspectives": rows},
         state_update={
             "perspectives": rows,
@@ -115,14 +112,14 @@ def _record_perspectives(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _perspectives(request: MethodNodeRequest) -> tuple[str, ...]:
+def _perspectives(request: MethodCall) -> tuple[str, ...]:
     return tuple(
         _text(row, "perspective")
         for row in _sequence(request.state.get("perspectives", ()), "perspectives")
     )
 
 
-def _dialogue_route(request: MethodNodeRequest) -> MethodNodeResult:
+def _dialogue_route(request: MethodCall) -> MethodNodeResult:
     perspectives = _perspectives(request)
     index = request.state.get("perspective_index", 0)
     turn = request.state.get("turn_index", 0)
@@ -131,7 +128,7 @@ def _dialogue_route(request: MethodNodeRequest) -> MethodNodeResult:
     if type(turn) is not int or turn < 0:
         raise ValueError("STORM turn_index must be non-negative")
     if index >= len(perspectives):
-        return MethodNodeResult(
+        return dict(
             value={"knowledge_curation_complete": True},
             next_node="outline",
             checkpoint=True,
@@ -145,7 +142,7 @@ def _dialogue_route(request: MethodNodeRequest) -> MethodNodeResult:
                 ),
             },
         )
-    return MethodNodeResult(
+    return dict(
         value={
             "perspective": perspectives[index],
             "turn_index": turn,
@@ -154,7 +151,7 @@ def _dialogue_route(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _question_view(request: MethodNodeRequest) -> JsonObject:
+def _question_view(request: MethodCall) -> JsonObject:
     perspectives = _perspectives(request)
     index = request.state.get("perspective_index", 0)
     if type(index) is not int or not 0 <= index < len(perspectives):
@@ -177,7 +174,7 @@ def _question_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_question(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_question(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("STORM question output must be an object")
@@ -190,7 +187,7 @@ def _record_question(request: MethodNodeRequest) -> MethodNodeResult:
     if not queries:
         queries = (question,)
     queries = queries[:limit]
-    return MethodNodeResult(
+    return dict(
         value={"question": question, "queries": queries},
         state_update={
             "pending_question": question,
@@ -201,8 +198,8 @@ def _record_question(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_search(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _prepare_search(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "topic": request.state.get("topic"),
             "question": request.state.get("pending_question"),
@@ -215,7 +212,7 @@ def _prepare_search(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_search(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_search(request: MethodCall) -> MethodNodeResult:
     result = thaw_json(request.previous_value)
     rows = list(
         _sequence(
@@ -228,7 +225,7 @@ def _record_search(request: MethodNodeRequest) -> MethodNodeResult:
         "queries": request.state.get("pending_queries", ()),
         "result": result,
     })
-    return MethodNodeResult(
+    return dict(
         value={"search_result": result},
         state_update={
             "last_search_results": result,
@@ -239,7 +236,7 @@ def _record_search(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _expert_view(request: MethodNodeRequest) -> JsonObject:
+def _expert_view(request: MethodCall) -> JsonObject:
     perspectives = _perspectives(request)
     index = request.state.get("perspective_index", 0)
     if type(index) is not int or not 0 <= index < len(perspectives):
@@ -256,7 +253,7 @@ def _expert_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_expert(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_expert(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         answer = value
@@ -288,7 +285,7 @@ def _record_expert(request: MethodNodeRequest) -> MethodNodeResult:
     if next_turn >= STORM_WIKI_REFERENCE_FIDELITY.max_conversation_turns:
         next_perspective += 1
         next_turn = 0
-    return MethodNodeResult(
+    return dict(
         value={"answer": answer, "citations": citations},
         state_update={
             "conversation_log": tuple(log),
@@ -308,7 +305,7 @@ def _record_expert(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _outline_view(request: MethodNodeRequest) -> JsonObject:
+def _outline_view(request: MethodCall) -> JsonObject:
     return {
         "topic": request.state.get("topic"),
         "conversation_log": request.state.get("conversation_log", ()),
@@ -317,7 +314,7 @@ def _outline_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_outline(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_outline(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         outline = value
@@ -331,7 +328,7 @@ def _record_outline(request: MethodNodeRequest) -> MethodNodeResult:
         direct = _text(direct_raw, "direct outline", allow_empty=True)
     else:
         raise TypeError("STORM outline output must be text or object")
-    return MethodNodeResult(
+    return dict(
         value={"outline": outline, "direct_outline": direct},
         state_update={
             "outline": outline,
@@ -347,7 +344,7 @@ def _record_outline(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _article_view(request: MethodNodeRequest) -> JsonObject:
+def _article_view(request: MethodCall) -> JsonObject:
     return {
         "topic": request.state.get("topic"),
         "outline": request.state.get("outline"),
@@ -362,7 +359,7 @@ def _article_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_article(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_article(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         article = value
@@ -372,7 +369,7 @@ def _record_article(request: MethodNodeRequest) -> MethodNodeResult:
         url_to_info = value.get("url_to_info", {})
     else:
         raise TypeError("STORM article output must be text or object")
-    return MethodNodeResult(
+    return dict(
         value={"article": article, "url_to_info": url_to_info},
         state_update={
             "article": article,
@@ -388,7 +385,7 @@ def _record_article(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _polish_view(request: MethodNodeRequest) -> JsonObject:
+def _polish_view(request: MethodCall) -> JsonObject:
     return {
         "topic": request.state.get("topic"),
         "article": request.state.get("article"),
@@ -400,7 +397,7 @@ def _polish_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_polish(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_polish(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         article = value
@@ -411,7 +408,7 @@ def _record_polish(request: MethodNodeRequest) -> MethodNodeResult:
         )
     else:
         raise TypeError("STORM polishing output must be text or object")
-    return MethodNodeResult(
+    return dict(
         value={"polished_article": article},
         state_update={
             "polished_article": article,
@@ -426,8 +423,8 @@ def _record_polish(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "topic": request.state.get("topic"),
             "perspectives": request.state.get("perspectives", ()),
@@ -443,10 +440,10 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_storm_wiki_method_program(
+def build_storm_wiki_method_program(method,
     *,
     search_capability_id: str,
-) -> MethodProgram:
+) -> None:
     search_capability_id = _text(search_capability_id, "search capability id")
     fidelity = STORM_WIKI_REFERENCE_FIDELITY
     configuration: JsonObject = {
@@ -459,25 +456,17 @@ def build_storm_wiki_method_program(
         "section_retrieve_top_k": fidelity.section_retrieve_top_k,
         "search_capability_id": search_capability_id,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="storm",
-            implementation_version=fidelity.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="storm.naacl2024.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     dialogue_bound = (
         fidelity.max_perspectives * fidelity.max_conversation_turns
     )
-    builder = MethodProgramBuilder(identity, entrypoint="perspectives")
+    builder = method
     builder.agent(
         "perspectives",
         "storm.knowledge-curation.perspectives",
         _PERSPECTIVE_AGENT,
         ("record_perspectives",),
-        view_handler=_perspective_view,
+        view=_perspective_view,
     )
     builder.compute(
         "record_perspectives",
@@ -497,7 +486,7 @@ def build_storm_wiki_method_program(
         "storm.knowledge-curation.question",
         _QUESTION_AGENT,
         ("record_question",),
-        view_handler=_question_view,
+        view=_question_view,
         max_visits=dialogue_bound,
     )
     builder.compute(
@@ -519,9 +508,9 @@ def build_storm_wiki_method_program(
         "storm.knowledge-curation.search",
         search_capability_id,
         ("record_search",),
-        effect_class=EffectClass.PURE,
+        effect='pure',
         max_visits=dialogue_bound,
-        evidence_obligations=("storm.search-evidence",),
+        evidence=("storm.search-evidence",),
     )
     builder.compute(
         "record_search",
@@ -535,7 +524,7 @@ def build_storm_wiki_method_program(
         "storm.knowledge-curation.expert",
         _EXPERT_AGENT,
         ("record_expert",),
-        view_handler=_expert_view,
+        view=_expert_view,
         max_visits=dialogue_bound,
     )
     builder.compute(
@@ -550,7 +539,7 @@ def build_storm_wiki_method_program(
         "storm.outline-generation",
         _OUTLINE_AGENT,
         ("record_outline",),
-        view_handler=_outline_view,
+        view=_outline_view,
     )
     builder.compute(
         "record_outline",
@@ -563,7 +552,7 @@ def build_storm_wiki_method_program(
         "storm.article-generation",
         _ARTICLE_AGENT,
         ("record_article",),
-        view_handler=_article_view,
+        view=_article_view,
     )
     builder.compute(
         "record_article",
@@ -576,7 +565,7 @@ def build_storm_wiki_method_program(
         "storm.article-polishing",
         _POLISH_AGENT,
         ("record_polish",),
-        view_handler=_polish_view,
+        view=_polish_view,
     )
     builder.compute(
         "record_polish",
@@ -585,18 +574,18 @@ def build_storm_wiki_method_program(
         ("return",),
     )
     builder.return_node("return", "storm.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(search_capability_id,),
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(search_capability_id,))
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
             "storm.search-evidence",
             "storm.conversation-log",
             "storm.outline",
             "storm.article",
             "storm.citation-grounding",
         ),
-        metric_names=(
+        metrics=(
             "heading_soft_recall",
             "heading_entity_recall",
             "rouge",
@@ -605,7 +594,7 @@ def build_storm_wiki_method_program(
             "model_call_count",
             "search_call_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "storm_conversation_log",
             "storm_raw_search_results",
             "storm_outline",
@@ -613,6 +602,23 @@ def build_storm_wiki_method_program(
             "storm_polished_article",
         ),
     )
+    return builder
 
 
-__all__ = ["build_storm_wiki_method_program", "storm_wiki_initial_state"]
+METHOD_CONFIGURER = build_storm_wiki_method_program
+METHOD_ENTRYPOINT = "perspectives"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = [
+    'build_storm_wiki_method_program',
+    'storm_wiki_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
+]
+
+METHOD_SPEC = {"method_id": 'storm', "version": "paper-protocol", "semantic_contract": 'storm' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

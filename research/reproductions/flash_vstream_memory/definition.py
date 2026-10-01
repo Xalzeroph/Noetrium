@@ -59,7 +59,8 @@ REPRODUCTION = ReproductionDefinition(
             "augmentation-before-context memory composition",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
+            "Method aggregate and Method-owned memory-component composition",
             "immutable tensor content references",
             "multimodal model transport",
             "benchmark cut identity",
@@ -72,8 +73,8 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/flash_vstream_memory/fidelity.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
-            path="research/reproductions/flash_vstream_memory/memory.py",
+            kind=ReproductionAssetKind.METHOD_PROGRAM,
+            path="research/reproductions/flash_vstream_memory/program.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind.BENCHMARK,
@@ -88,7 +89,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/flash_vstream_memory/source.py",
         ),
     ),
-    primary_executable="research/reproductions/flash_vstream_memory/memory.py",
+    primary_executable="research/reproductions/flash_vstream_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="flash_vstream_egoschema_main",
@@ -157,11 +158,12 @@ REPRODUCTION = ReproductionDefinition(
         "bytes plus exact released Qwen2-VL/Flash-VStream checkpoint assets.",
         "The paper also reports MLVU, LVBench, MVBench and Video-MME; those "
         "additional benchmark authorities remain to be bound.",
-        "A full end-to-end inference MethodProgram remains to be separated from "
-        "the already bound dual Flash MemoryProgram.",
+        "The public source audit does not establish a canonical raw-text-to-A-E "
+        "parser contract; measured execution therefore requires the bound model "
+        "provider to return the structured choice index with its raw output.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_flash_vstream_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

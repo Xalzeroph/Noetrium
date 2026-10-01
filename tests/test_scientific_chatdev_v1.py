@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import hashlib
 
-from research.reproductions.chatdev_v1 import (
-    CHATDEV_V1_AUDITED_COMMIT,
-    CHATDEV_V1_AUDITED_TAG,
+from research.reproductions.chatdev_v1.chain import (
     CHATDEV_V1_COMPOSED_PHASES,
-    CHATDEV_V1_REFERENCE_FIDELITY,
     CHATDEV_V1_SIMPLE_PHASES,
     CHATDEV_V1_TOP_LEVEL_CHAIN,
     ChatDevV1ComposedPhaseSpec,
     ChatDevV1PhaseReceipt,
     ChatDevV1SimplePhaseSpec,
+)
+from research.reproductions.chatdev_v1.fidelity import (
+    CHATDEV_V1_AUDITED_COMMIT,
+    CHATDEV_V1_AUDITED_TAG,
+    CHATDEV_V1_REFERENCE_FIDELITY,
 )
 
 

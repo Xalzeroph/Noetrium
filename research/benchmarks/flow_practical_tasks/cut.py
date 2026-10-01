@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceKind,
+    BenchmarkSourceResolution,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
     TaskArtifactSpec,
@@ -155,6 +156,13 @@ def build_flow_practical_task_set() -> BenchmarkTaskSet:
     )
 
 
+def bind_flow_practical_cut() -> BenchmarkSourceResolution:
+    return BenchmarkSourceResolution(
+        source=build_flow_practical_source(),
+        task_set=build_flow_practical_task_set(),
+    )
+
+
 __all__ = [
     "FLOW_PAPER_URI",
     "FLOW_PRACTICAL_BENCHMARK_ID",
@@ -162,6 +170,7 @@ __all__ = [
     "FLOW_PRACTICAL_SPLIT_ID",
     "FLOW_PRACTICAL_TASKS",
     "FlowPracticalTaskRecord",
+    "bind_flow_practical_cut",
     "build_flow_practical_source",
     "build_flow_practical_task_set",
 ]

@@ -19,6 +19,7 @@ def _assignment_for_variant(
     protocol: StudyProtocol,
     repetition: int,
     variant_id: str,
+    workload,
 ) -> StudyAssignment:
     return StudyAssignment(
         protocol.study_id,
@@ -30,9 +31,11 @@ def _assignment_for_variant(
                 "workload_id": protocol.workload_id,
                 "variant_id": variant_id,
                 "repetition": repetition,
+                "workload_digest": workload.workload_digest,
                 "seed_schedule_digest": protocol.seed_schedule_digest,
             }
         ),
+        workload,
     )
 
 
@@ -41,8 +44,14 @@ def _assignments_for_repetition(
     repetition: int,
 ) -> tuple[StudyAssignment, ...]:
     return tuple(
-        _assignment_for_variant(protocol, repetition, variant.variant_id)
+        _assignment_for_variant(
+            protocol,
+            repetition,
+            variant.variant_id,
+            workload,
+        )
         for variant in protocol.variants
+        for workload in protocol.assignment_workloads
     )
 
 

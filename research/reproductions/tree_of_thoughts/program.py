@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
 from collections.abc import Mapping, Sequence
 
-from noetrium.api import MethodIdentity, MethodProgramIdentity
-from noetrium.api import JsonObject, JsonValue, canonical_digest
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import TREE_OF_THOUGHTS_GAME24_FIDELITY, TREE_OF_THOUGHTS_REFERENCE_FIDELITY
 from .search import TreeSearchFrontier, assign_duplicate_zero_values, greedy_select
@@ -60,7 +65,7 @@ def _number_tuple(value: JsonValue, field: str) -> tuple[float, ...]:
     return tuple(rows)
 
 
-def _tot_generate_view(request: MethodNodeRequest) -> JsonObject:
+def _tot_generate_view(request: MethodCall) -> JsonObject:
     return {
         "problem": _required_text(request.state, "problem"),
         "depth": _required_int(request.state, "depth"),
@@ -68,7 +73,7 @@ def _tot_generate_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _tot_evaluate_view(request: MethodNodeRequest) -> JsonObject:
+def _tot_evaluate_view(request: MethodCall) -> JsonObject:
     return {
         "problem": _required_text(request.state, "problem"),
         "depth": _required_int(request.state, "depth"),
@@ -91,15 +96,15 @@ def tot_game24_initial_state(*, problem: str) -> JsonObject:
     }
 
 
-def _record_generation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_generation(request: MethodCall) -> MethodNodeResult:
     candidates = _text_tuple(request.previous_value, "generated candidates")
-    return MethodNodeResult(
+    return dict(
         value=candidates,
         state_update={"candidate_texts": candidates},
     )
 
 
-def _select_frontier(request: MethodNodeRequest) -> MethodNodeResult:
+def _select_frontier(request: MethodCall) -> MethodNodeResult:
     candidates = _text_tuple(request.state.get("candidate_texts"), "candidate_texts")
     values = _number_tuple(request.previous_value, "evaluated values")
     scored = assign_duplicate_zero_values(candidates, values)
@@ -107,7 +112,7 @@ def _select_frontier(request: MethodNodeRequest) -> MethodNodeResult:
     depth = _required_int(request.state, "depth") + 1
     frontier = TreeSearchFrontier(depth, tuple(row.text for row in selected))
     scores = tuple({"text": row.text, "value": row.value} for row in selected)
-    return MethodNodeResult(
+    return dict(
         value={"depth": depth, "frontier": frontier.candidates, "scores": scores},
         state_update={
             "depth": depth,
@@ -117,18 +122,18 @@ def _select_frontier(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _route_depth(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_depth(request: MethodCall) -> MethodNodeResult:
     depth = _required_int(request.state, "depth")
     terminal = depth >= TREE_OF_THOUGHTS_GAME24_FIDELITY.search_steps
-    return MethodNodeResult(
+    return dict(
         value={"depth": depth, "terminal": terminal},
         next_node="return" if terminal else "generate",
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     frontier = _text_tuple(request.state.get("frontier"), "frontier")
-    return MethodNodeResult(
+    return dict(
         value={
             "problem": _required_text(request.state, "problem"),
             "depth": _required_int(request.state, "depth"),
@@ -139,7 +144,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_tot_game24_method_program() -> MethodProgram:
+def build_tot_game24_method_program(method, ) -> None:
     """Compile the released Game24 BFS control loop into the universal MethodProgram ABI.
 
     The two agent nodes deliberately expose generation and value evaluation as
@@ -163,23 +168,15 @@ def build_tot_game24_method_program() -> MethodProgram:
         "search_steps": TREE_OF_THOUGHTS_GAME24_FIDELITY.search_steps,
         "value_prompt_cache": TREE_OF_THOUGHTS_REFERENCE_FIDELITY.value_prompt_cache,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="tree-of-thoughts-game24",
-            implementation_version="official-8050e67d",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="tree-of-thoughts.game24.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     visits = TREE_OF_THOUGHTS_GAME24_FIDELITY.search_steps
-    builder = MethodProgramBuilder(identity, entrypoint="generate")
+    builder = method
     builder.agent(
         "generate",
         "tot.game24.generate",
         _GENERATE_AGENT_ID,
         ("record_generation",),
-        view_handler=_tot_generate_view,
+        view=_tot_generate_view,
         max_visits=visits,
     )
     builder.compute(
@@ -194,7 +191,7 @@ def build_tot_game24_method_program() -> MethodProgram:
         "tot.game24.evaluate",
         _EVALUATE_AGENT_ID,
         ("select",),
-        view_handler=_tot_evaluate_view,
+        view=_tot_evaluate_view,
         max_visits=visits,
     )
     builder.compute(
@@ -212,20 +209,31 @@ def build_tot_game24_method_program() -> MethodProgram:
         max_visits=visits,
     )
     builder.return_node("return", "tot.game24.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=("tot.search.frontier", "model.invocation"),
-        metric_names=("task_success", "model_call_count"),
-        artifact_kinds=("tot_search_trace",),
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=("tot.search.frontier", "model.invocation"),
+        metrics=("task_success", "model_call_count"),
+        artifacts=("tot_search_trace",),
     )
+    return builder
 
 
-TOT_GAME24_METHOD_PROGRAM = build_tot_game24_method_program()
+METHOD_CONFIGURER = build_tot_game24_method_program
+METHOD_ENTRYPOINT = "generate"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "TOT_GAME24_METHOD_PROGRAM",
-    "build_tot_game24_method_program",
-    "tot_game24_initial_state",
+    'build_tot_game24_method_program',
+    'tot_game24_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'tree-of-thoughts', "version": "paper-protocol", "semantic_contract": 'tree-of-thoughts' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

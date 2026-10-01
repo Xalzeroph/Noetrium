@@ -12,7 +12,7 @@ from noetrium_platform.evidence.observability.logging.composition import (
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
 from noetrium_platform.evidence.observability.logging.record.api import ExceptionDescriptorPort, LogLevel
 from noetrium_platform.evidence.observability.logging.storage.runtime import InMemoryLogStore
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 
@@ -40,11 +40,12 @@ def address() -> DiagnosticAddress:
 
 def compose_test_logging(
     store: InMemoryLogStore,
+    state_root,
     *,
     exception_descriptor: ExceptionDescriptorBinding | None = None,
     metrics=None,
 ):
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(state_root)
     return compose_logging_system(
         sink=LogSinkBinding(
             store,
@@ -63,9 +64,9 @@ def compose_test_logging(
     )
 
 
-def test_logging_system_binds_internal_writer_and_unified_query() -> None:
+def test_logging_system_binds_internal_writer_and_unified_query(tmp_path) -> None:
     store = InMemoryLogStore()
-    composition = compose_test_logging(store)
+    composition = compose_test_logging(store, tmp_path / "meta")
     logging = composition.logging
     assert {
         (edge.requirement.requirement_id, edge.offer.owner.key)
@@ -94,17 +95,18 @@ class _MetricSink:
         return None
 
 
-def test_logging_composition_activates_registry_observations_when_metrics_are_bound() -> None:
+def test_logging_composition_activates_registry_observations_when_metrics_are_bound(tmp_path) -> None:
     store = InMemoryLogStore()
-    composition = compose_test_logging(store, metrics=_MetricSink())
+    composition = compose_test_logging(store, tmp_path / "meta", metrics=_MetricSink())
     assert composition.observations is not None
     assert len(composition.observations.bindings()) > 0
 
 
-def test_exception_policy_is_injected_at_logging_composition() -> None:
+def test_exception_policy_is_injected_at_logging_composition(tmp_path) -> None:
     store = InMemoryLogStore()
     logging = compose_test_logging(
         store,
+        tmp_path / "meta",
         exception_descriptor=ExceptionDescriptorBinding(
             MarkerExceptionDescriptor(),
             "tests.marker-exception-descriptor.v1",
@@ -118,9 +120,9 @@ def test_exception_policy_is_injected_at_logging_composition() -> None:
     assert row.exception.safe_message == "custom-safe"
 
 
-def test_logging_binding_rejects_unregistered_system_identity() -> None:
+def test_logging_binding_rejects_unregistered_system_identity(tmp_path) -> None:
     store = InMemoryLogStore()
-    logging = compose_test_logging(store).logging
+    logging = compose_test_logging(store, tmp_path / "meta").logging
     with pytest.raises(KeyError):
         logging.bind(
             logger="platform.test",

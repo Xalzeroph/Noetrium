@@ -13,7 +13,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -26,8 +25,8 @@ from noetrium_platform.foundation.kernel.kernel import (
 
 from .child_machine import (
     ChildResearchMachineExecution,
+    ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
-    RegisteredChildResearchMachineExecutor,
 )
 
 
@@ -43,10 +42,6 @@ def _sha(value: object, field_name: str) -> str:
         field_name,
     )
 
-
-class ChildBatchExecutionMode(StrEnum):
-    SERIAL = "serial"
-    CONCURRENT = "concurrent"
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,7 +63,7 @@ class ChildResearchMachineBatchItem:
             "item_digest",
             canonical_digest({
                 "participant_id": self.participant_id,
-                "request": thaw_json(self.request.as_payload()),
+                "request_digest": self.request.request_digest,
             }),
         )
 
@@ -81,7 +76,7 @@ class ChildResearchMachineBatchRequest:
     parent_machine_id: str
     selection_digest: str
     items: tuple[ChildResearchMachineBatchItem, ...]
-    require_concurrent: bool = False
+    dispatch_parallelism: int = 1
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -110,21 +105,21 @@ class ChildResearchMachineBatchRequest:
             raise ValueError(
                 "all child batch requests must share parent_machine_id"
             )
-        if type(self.require_concurrent) is not bool:
-            raise TypeError("child batch require_concurrent must be boolean")
-        if self.require_concurrent and len(self.items) < 2:
+        if type(self.dispatch_parallelism) is not int or self.dispatch_parallelism < 1:
+            raise ValueError("child batch dispatch_parallelism must be positive")
+        if self.dispatch_parallelism > len(self.items):
             raise ValueError(
-                "concurrent child batch requires at least two items"
+                "child batch dispatch_parallelism cannot exceed item count"
             )
         object.__setattr__(
             self,
             "request_digest",
             canonical_digest({
-                "schema": "noetrium.child-research-machine-batch-request.v1",
+                "schema": "noetrium.child-research-machine-batch-request.v2",
                 "batch_id": self.batch_id,
                 "parent_machine_id": self.parent_machine_id,
                 "selection_digest": self.selection_digest,
-                "require_concurrent": self.require_concurrent,
+                "dispatch_parallelism": self.dispatch_parallelism,
                 "items": tuple(
                     (row.participant_id, row.item_digest) for row in self.items
                 ),
@@ -137,19 +132,23 @@ class ChildResearchMachineBatchMechanicsResult:
     """Provider mechanics output before platform validation/projection."""
 
     request_digest: str
-    mode: ChildBatchExecutionMode
+    dispatch_parallelism: int
     executions: tuple[ChildResearchMachineExecution, ...]
     evidence_digests: tuple[str, ...] = ()
     receipt: JsonValue = None
 
     def __post_init__(self) -> None:
         _sha(self.request_digest, "child batch mechanics request_digest")
-        if not isinstance(self.mode, ChildBatchExecutionMode):
-            raise TypeError(
-                "child batch mechanics mode must be ChildBatchExecutionMode"
+        if type(self.dispatch_parallelism) is not int or self.dispatch_parallelism < 1:
+            raise ValueError(
+                "child batch mechanics dispatch_parallelism must be positive"
             )
-        if type(self.executions) is not tuple:
-            raise TypeError("child batch mechanics executions must be a tuple")
+        if type(self.executions) is not tuple or not self.executions:
+            raise ValueError("child batch mechanics executions must be a non-empty tuple")
+        if self.dispatch_parallelism > len(self.executions):
+            raise ValueError(
+                "child batch mechanics dispatch_parallelism exceeds execution count"
+            )
         if any(
             not isinstance(row, ChildResearchMachineExecution)
             for row in self.executions
@@ -170,6 +169,10 @@ class ChildResearchMachineBatchMechanicsResult:
         if len(evidence) != len(set(evidence)):
             raise ValueError(
                 "child batch mechanics evidence digests must be unique"
+            )
+        if self.dispatch_parallelism > 1 and not evidence:
+            raise ValueError(
+                "parallel child batch mechanics requires dispatch evidence"
             )
         object.__setattr__(self, "evidence_digests", evidence)
         object.__setattr__(self, "receipt", freeze_json(self.receipt))
@@ -195,6 +198,9 @@ class ChildResearchMachineBatchMechanicsPort(Protocol):
     @property
     def identity_digest(self) -> str: ...
 
+    @property
+    def child_executor_identity_digest(self) -> str: ...
+
     def execute_batch(
         self,
         request: ChildResearchMachineBatchRequest,
@@ -206,23 +212,24 @@ class ChildResearchMachineBatchExecution:
     """Deterministic projection over independently authoritative child cuts."""
 
     request_digest: str
-    mode: ChildBatchExecutionMode
+    dispatch_parallelism: int
     executions: tuple[ChildResearchMachineExecution, ...]
     evidence_digests: tuple[str, ...]
     mechanics_identity_digest: str
     receipt: JsonValue = None
+    receipt_digest: str = field(init=False)
     execution_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         _sha(self.request_digest, "child batch execution request_digest")
-        if not isinstance(self.mode, ChildBatchExecutionMode):
-            raise TypeError(
-                "child batch execution mode must be ChildBatchExecutionMode"
-            )
+        if type(self.dispatch_parallelism) is not int or self.dispatch_parallelism < 1:
+            raise ValueError("child batch execution dispatch_parallelism must be positive")
         if type(self.executions) is not tuple or not self.executions:
             raise ValueError(
                 "child batch execution requires non-empty executions"
             )
+        if self.dispatch_parallelism > len(self.executions):
+            raise ValueError("child batch execution dispatch_parallelism exceeds execution count")
         if any(
             not isinstance(row, ChildResearchMachineExecution)
             for row in self.executions
@@ -241,6 +248,8 @@ class ChildResearchMachineBatchExecution:
                 "child batch execution evidence digests must be unique"
             )
         object.__setattr__(self, "evidence_digests", evidence)
+        if self.dispatch_parallelism > 1 and not evidence:
+            raise ValueError("parallel child batch execution requires dispatch evidence")
         mechanics = _sha(
             self.mechanics_identity_digest,
             "child batch mechanics identity_digest",
@@ -249,11 +258,16 @@ class ChildResearchMachineBatchExecution:
         object.__setattr__(self, "receipt", freeze_json(self.receipt))
         object.__setattr__(
             self,
+            "receipt_digest",
+            canonical_digest(self.receipt),
+        )
+        object.__setattr__(
+            self,
             "execution_digest",
             canonical_digest({
-                "schema": "noetrium.child-research-machine-batch-execution.v1",
+                "schema": "noetrium.child-research-machine-batch-execution.v2",
                 "request_digest": self.request_digest,
-                "mode": self.mode.value,
+                "dispatch_parallelism": self.dispatch_parallelism,
                 "children": tuple(
                     {
                         "machine_id": row.execution.machine_id,
@@ -271,7 +285,7 @@ class ChildResearchMachineBatchExecution:
                 ),
                 "evidence_digests": evidence,
                 "mechanics_identity_digest": mechanics,
-                "receipt": thaw_json(self.receipt),
+                "receipt_digest": self.receipt_digest,
             }),
         )
 
@@ -284,191 +298,85 @@ class ChildResearchMachineBatchExecution:
         return tuple(row.result for row in self.executions)
 
 
-class ChildResearchMachineBatchExecutor:
-    """Validate one logical ready set and project its child Machine cuts."""
+def execute_child_research_machine_batch(
+    executor: ChildResearchMachineExecutor,
+    mechanics: ChildResearchMachineBatchMechanicsPort,
+    request: ChildResearchMachineBatchRequest,
+) -> ChildResearchMachineBatchExecution:
+    """Execute one batch through the single child-machine executor."""
 
-    def __init__(
-        self,
-        mechanics: ChildResearchMachineBatchMechanicsPort,
-    ) -> None:
-        if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
-            raise TypeError(
-                "child batch executor requires ChildResearchMachineBatchMechanicsPort"
-            )
-        self._mechanics = mechanics
-        require_sha256(
-            mechanics.identity_digest,
-            "child batch mechanics identity_digest",
+    if not isinstance(executor, ChildResearchMachineExecutor):
+        raise TypeError("child batch requires ChildResearchMachineExecutor")
+    if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
+        raise TypeError(
+            "child batch requires ChildResearchMachineBatchMechanicsPort"
+        )
+    if not isinstance(request, ChildResearchMachineBatchRequest):
+        raise TypeError(
+            "child batch requires ChildResearchMachineBatchRequest"
+        )
+    require_sha256(
+        mechanics.identity_digest,
+        "child batch mechanics identity_digest",
+    )
+    if (
+        mechanics.child_executor_identity_digest
+        != executor.identity_digest
+    ):
+        raise ValueError(
+            "child batch mechanics is bound to another child executor"
         )
 
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "executor": "child-research-machine-batch",
-            "mechanics_identity_digest": self._mechanics.identity_digest,
-        })
+    result = mechanics.execute_batch(request)
+    if not isinstance(result, ChildResearchMachineBatchMechanicsResult):
+        raise TypeError(
+            "child batch mechanics must return "
+            "ChildResearchMachineBatchMechanicsResult"
+        )
+    if result.request_digest != request.request_digest:
+        raise ValueError("child batch mechanics request identity mismatch")
+    if result.dispatch_parallelism != request.dispatch_parallelism:
+        raise ValueError(
+            "child batch mechanics dispatch_parallelism drifted from request"
+        )
+    if len(result.executions) != len(request.items):
+        raise ValueError(
+            "child batch execution cardinality drifted from request"
+        )
 
-    def execute(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchExecution:
-        if not isinstance(request, ChildResearchMachineBatchRequest):
-            raise TypeError(
-                "child batch executor requires ChildResearchMachineBatchRequest"
-            )
-        result = self._mechanics.execute_batch(request)
-        if not isinstance(result, ChildResearchMachineBatchMechanicsResult):
-            raise TypeError(
-                "child batch mechanics must return "
-                "ChildResearchMachineBatchMechanicsResult"
-            )
-        if result.request_digest != request.request_digest:
-            raise ValueError("child batch mechanics request identity mismatch")
-        if request.require_concurrent:
-            if result.mode is not ChildBatchExecutionMode.CONCURRENT:
-                raise ValueError(
-                    "child batch requires concurrent mechanics"
-                )
-            if not result.evidence_digests:
-                raise ValueError(
-                    "concurrent child batch requires concurrency evidence"
-                )
-        if len(result.executions) != len(request.items):
+    for item, execution in zip(
+        request.items,
+        result.executions,
+        strict=True,
+    ):
+        expected = item.request
+        if execution.execution.machine_id != expected.child_machine_id:
             raise ValueError(
-                "child batch execution cardinality drifted from request"
+                "child batch execution order/child identity mismatch"
             )
+        link = execution.link
+        if link.parent_machine_id != request.parent_machine_id:
+            raise ValueError("child batch link parent identity mismatch")
+        if link.child_machine_id != expected.child_machine_id:
+            raise ValueError("child batch link child identity mismatch")
 
-        for item, execution in zip(
-            request.items,
-            result.executions,
-            strict=True,
-        ):
-            expected = item.request
-            if execution.execution.machine_id != expected.child_machine_id:
-                raise ValueError(
-                    "child batch execution order/child identity mismatch"
-                )
-            link = execution.link
-            if link.parent_machine_id != request.parent_machine_id:
-                raise ValueError(
-                    "child batch link parent identity mismatch"
-                )
-            if link.child_machine_id != expected.child_machine_id:
-                raise ValueError(
-                    "child batch link child identity mismatch"
-                )
-
-        return ChildResearchMachineBatchExecution(
-            request_digest=request.request_digest,
-            mode=result.mode,
-            executions=result.executions,
-            evidence_digests=result.evidence_digests,
-            mechanics_identity_digest=self._mechanics.identity_digest,
-            receipt=result.receipt,
-        )
-
-
-class BatchCapableRegisteredChildResearchMachineExecutor:
-    """Compose ordinary registered-child execution with an independent batch seam."""
-
-    def __init__(
-        self,
-        executor: RegisteredChildResearchMachineExecutor,
-        mechanics: ChildResearchMachineBatchMechanicsPort,
-    ) -> None:
-        if not isinstance(executor, RegisteredChildResearchMachineExecutor):
-            raise TypeError(
-                "batch-capable child executor requires registered child executor"
-            )
-        if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
-            raise TypeError(
-                "batch-capable child executor requires child batch mechanics"
-            )
-        self._executor = executor
-        self._batch = ChildResearchMachineBatchExecutor(mechanics)
-
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "executor": "batch-capable-registered-child-research-machine",
-            "single_executor_identity_digest": self._executor.identity_digest,
-            "batch_executor_identity_digest": self._batch.identity_digest,
-        })
-
-    def execute(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        return self._executor.execute(request)
-
-    def step_once(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        return self._executor.step_once(request)
-
-    def execute_batch(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchExecution:
-        return self._batch.execute(request)
-
-
-class RegisteredSerialChildResearchBatchMechanics(
-    ChildResearchMachineBatchMechanicsPort
-):
-    """Reference mechanics preserving the batch contract without concurrency.
-
-    This adapter is useful when a method only needs ready-set identity/batching.
-    Methods that require physical overlap must set require_concurrent=True and
-    bind another mechanics provider; this serial reference then fails closed.
-    """
-
-    def __init__(
-        self,
-        executor: RegisteredChildResearchMachineExecutor,
-    ) -> None:
-        if not isinstance(executor, RegisteredChildResearchMachineExecutor):
-            raise TypeError(
-                "serial child batch mechanics requires registered child executor"
-            )
-        self._executor = executor
-
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "mechanics": "registered-serial-child-research-batch",
-            "child_executor_identity_digest": self._executor.identity_digest,
-        })
-
-    def execute_batch(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchMechanicsResult:
-        executions = tuple(
-            self._executor.execute(item.request) for item in request.items
-        )
-        return ChildResearchMachineBatchMechanicsResult(
-            request_digest=request.request_digest,
-            mode=ChildBatchExecutionMode.SERIAL,
-            executions=executions,
-            receipt={
-                "mechanics": "registered-serial-child-research-batch",
-                "count": len(executions),
-            },
-        )
+    return ChildResearchMachineBatchExecution(
+        request_digest=request.request_digest,
+        dispatch_parallelism=result.dispatch_parallelism,
+        executions=result.executions,
+        evidence_digests=result.evidence_digests,
+        mechanics_identity_digest=mechanics.identity_digest,
+        receipt=result.receipt,
+    )
 
 
 __all__ = [
-    "BatchCapableRegisteredChildResearchMachineExecutor",
-    "ChildBatchExecutionMode",
 
     "ChildResearchMachineBatchExecution",
-    "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
     "ChildResearchMachineBatchPort",
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
-    "RegisteredSerialChildResearchBatchMechanics",
+    "execute_child_research_machine_batch",
 ]

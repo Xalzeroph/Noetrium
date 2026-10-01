@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from research.reproductions.memgpt_classic import (
+from research.reproductions.memgpt_classic.fidelity import (
     MEMGPT_CLASSIC_FIDELITY,
+)
+from research.reproductions.memgpt_classic.semantics import (
     MemGPTCoreMemory,
     MemGPTMemoryQuery,
     MemGPTMemoryTier,

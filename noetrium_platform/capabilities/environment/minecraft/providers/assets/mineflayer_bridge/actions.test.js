@@ -443,6 +443,42 @@ test('collect_block delegates the full target batch to native Mineflayer plugins
   assert.equal(toolCalls, 2)
 })
 
+test('collect_block resolves requested resources through native block drops', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const position = new Vec3(2, 64, 0)
+  let live = true
+  const source = { name: 'stone', position, drops: [35] }
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.findBlocks = options => {
+    assert.equal(options.matching(source), true)
+    return [position]
+  }
+  bot.blockAt = () => live ? { ...source } : { name: 'air', position, drops: [] }
+  bot.tool.equipForBlock = async block => {
+    assert.equal(block.name, 'stone')
+    bot.heldItem = { name: 'wooden_pickaxe', type: 900, count: 1, slot: 0 }
+  }
+  bot.collectBlock.collect = async targets => {
+    assert.equal(targets.length, 1)
+    assert.equal(targets[0].name, 'stone')
+    await bot.tool.equipForBlock(targets[0])
+    live = false
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'cobblestone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true, JSON.stringify(result))
+  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
+  assert.equal(result.outcome.requested_resource, 'cobblestone')
+  assert.deepEqual(result.outcome.source_blocks, ['stone'])
+  assert.equal(result.outcome.inventory_delta.cobblestone, 1)
+})
+
 test('collect_block fails closed when the native collector cannot harvest', async () => {
   const items = []
   const bot = fakeBot(items)
@@ -509,6 +545,85 @@ test('drop capture records relevant raw protocol packet order without changing a
 })
 
 
+test('goto records a partial applied effect when navigation moved but missed the target', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    bot.entity.position = new Vec3(3, 64, 0)
+    return { distance: 7, within_radius: false }
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'partial')
+    assert.equal(result.effect_disposition, 'applied')
+    assert.equal(result.verified, false)
+    assert.equal(result.outcome.moved, 3)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto proves not_applied when navigation ends without displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => ({ distance: 10, within_radius: false })
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'rejected')
+    assert.equal(result.effect_disposition, 'not_applied')
+    assert.equal(result.verified, false)
+    assert.equal(result.outcome.moved, 0)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto preserves applied certainty when pathfinder fails after displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    bot.entity.position = new Vec3(2, 64, 0)
+    const error = new Error('No path to goal')
+    error.code = 'NoPath'
+    throw error
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'partial')
+    assert.equal(result.effect_disposition, 'applied')
+    assert.equal(result.outcome.moved, 2)
+    assert.equal(result.outcome.navigation_error.code, 'NoPath')
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
+test('goto proves not_applied when pathfinder fails before displacement', async () => {
+  const bot = fakeBot([])
+  runtime.bindBot(bot)
+  const original = runtime.gotoPos
+  runtime.gotoPos = async () => {
+    const error = new Error('No path to goal')
+    error.code = 'NoPath'
+    throw error
+  }
+  try {
+    const result = await movement.goto({ position: { x: 10, y: 64, z: 0 }, radius: 1.5 })
+    assert.equal(result.outcome.status, 'rejected')
+    assert.equal(result.effect_disposition, 'not_applied')
+    assert.equal(result.outcome.moved, 0)
+  } finally {
+    runtime.gotoPos = original
+  }
+})
+
+
 test('goto_entity delegates moving targets to runtime GoalFollow navigation', async () => {
   const bot = fakeBot([])
   const target = { id: 2, name: 'zombie', isValid: true, position: new Vec3(4, 64, 0) }
@@ -531,6 +646,50 @@ test('goto_entity delegates moving targets to runtime GoalFollow navigation', as
   }
 })
 
+
+test('collect_block selects safe resource sources instead of rejecting nearer unsafe blocks', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const unsafePos = new Vec3(0, 63, 0)
+  const safePos = new Vec3(3, 64, 0)
+  let safeLive = true
+  const blocks = [
+    { name: 'stone', position: unsafePos, drops: [35], safe: false },
+    { name: 'stone', position: safePos, drops: [35], safe: true }
+  ]
+  bot.registry.items = { 35: { id: 35, name: 'cobblestone' } }
+  bot.pathfinder.movements.safeToBreak = block => Boolean(block.safe)
+  bot.findBlocks = options => blocks
+    .filter(block => options.matching(block))
+    .slice(0, options.count)
+    .map(block => block.position)
+  bot.blockAt = position => {
+    if (position.equals(unsafePos)) return { ...blocks[0] }
+    if (position.equals(safePos)) return safeLive ? { ...blocks[1] } : { name: 'air', position, drops: [], safe: true }
+    return { name: 'air', position, drops: [], safe: true }
+  }
+  bot.tool.equipForBlock = async block => {
+    assert.equal(block.position.equals(safePos), true)
+    bot.heldItem = { name: 'wooden_pickaxe', type: 900, count: 1, slot: 0 }
+  }
+  bot.collectBlock.collect = async targets => {
+    assert.equal(targets.length, 1)
+    assert.equal(targets[0].position.equals(safePos), true)
+    await bot.tool.equipForBlock(targets[0])
+    safeLive = false
+    items.push({ name: 'cobblestone', type: 35, count: 1, slot: 1 })
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'cobblestone', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, true, JSON.stringify(result))
+  assert.equal(result.outcome.code, 'BLOCKS_COLLECTED')
+  assert.deepEqual(result.outcome.source_blocks, ['stone'])
+  assert.equal(result.outcome.inventory_delta.cobblestone, 1)
+})
 
 test('collect_block rejects unsafe targets before invoking the native collector', async () => {
   const bot = fakeBot([])
@@ -570,4 +729,36 @@ test('read-only observe_entities without action_id bypasses action recovery iden
   child.kill()
   assert.ok(output.includes('node-test-observe'))
   assert.ok(!output.includes('ACTION_RECOVERY_ACTION_ID_REQUIRED'))
+})
+
+test('collect_block preserves native NoPath evidence and proves no effect', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const position = new Vec3(4, 64, 0)
+  const live = { name: 'oak_log', position, drops: [9] }
+  bot.registry.items = { 9: { id: 9, name: 'oak_log' } }
+  bot.findBlocks = () => [position]
+  bot.blockAt = () => ({ ...live })
+  bot.collectBlock.collect = async () => {
+    const error = new Error('No path to the goal!')
+    error.name = 'NoPath'
+    error.code = 'NoPath'
+    throw error
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'oak_log', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, false)
+  assert.equal(result.effect_disposition, 'not_applied')
+  assert.equal(result.outcome.code, 'COLLECTION_FAILED')
+  assert.equal(result.outcome.broken.length, 0)
+  assert.equal(result.outcome.collected_count, 0)
+  assert.equal(result.outcome.errors[0].phase, 'collectblock')
+  assert.equal(result.outcome.errors[0].name, 'NoPath')
+  assert.equal(result.outcome.errors[0].code, 'NoPath')
+  assert.equal(result.outcome.errors[0].message, 'No path to the goal!')
+  assert.match(result.outcome.errors[0].stack, /No path to the goal!/)
 })

@@ -1,27 +1,23 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
 from collections.abc import Mapping, Sequence
 from decimal import Decimal, InvalidOperation
 import re
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-)
-from noetrium.api import (
-    MethodEvent,
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import SELF_CONSISTENCY_GSM8K_FIDELITY
 from research.reproductions.chain_of_thought_gsm8k.prompt import (
@@ -52,7 +48,7 @@ def self_consistency_gsm8k_initial_state(*, task_id: str, question: str) -> Json
     }
 
 
-def _reasoner_view(request: MethodNodeRequest) -> JsonObject:
+def _reasoner_view(request: MethodCall) -> JsonObject:
     f = SELF_CONSISTENCY_GSM8K_FIDELITY
     question = request.state.get("question")
     sample_index = request.state.get("sample_index")
@@ -106,7 +102,7 @@ def extract_gsm8k_sample_answer(completion: str) -> str:
     return format(number.normalize(), "f")
 
 
-def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_sample(request: MethodCall) -> MethodNodeResult:
     f = SELF_CONSISTENCY_GSM8K_FIDELITY
     completion = _completion(request.previous_value)
     answer = extract_gsm8k_sample_answer(completion)
@@ -122,14 +118,14 @@ def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
     if type(sample_index) is not int:
         raise TypeError("Self-Consistency sample_index must be integer")
     next_index = sample_index + 1
-    return MethodNodeResult(
+    return dict(
         value={"sample_index": sample_index, "answer": answer},
         state_update={
             "sample_index": next_index,
             "samples": samples,
         },
         events=(
-            MethodEvent(
+            method_event(
                 "self-consistency.reasoning-paths",
                 {
                     "sample_index": sample_index,
@@ -146,7 +142,7 @@ def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _aggregate(request: MethodNodeRequest) -> MethodNodeResult:
+def _aggregate(request: MethodCall) -> MethodNodeResult:
     raw = request.state.get("samples")
     if not isinstance(raw, Sequence) or isinstance(raw, (str, bytes, bytearray)):
         raise TypeError("Self-Consistency samples must be a sequence")
@@ -167,7 +163,7 @@ def _aggregate(request: MethodNodeRequest) -> MethodNodeResult:
         counts,
         key=lambda answer: (counts[answer], -first_index[answer]),
     )
-    return MethodNodeResult(
+    return dict(
         value={
             "selected_answer": selected,
             "vote_count": counts[selected],
@@ -178,7 +174,7 @@ def _aggregate(request: MethodNodeRequest) -> MethodNodeResult:
             "selected_vote_count": counts[selected],
         },
         events=(
-            MethodEvent(
+            method_event(
                 "self-consistency.answer-histogram",
                 {
                     "selected_answer": selected,
@@ -191,14 +187,14 @@ def _aggregate(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     answer = request.state.get("selected_answer")
     votes = request.state.get("selected_vote_count")
     if not isinstance(answer, str) or not answer:
         raise ValueError("Self-Consistency selected answer is missing")
     if type(votes) is not int or votes <= 0:
         raise ValueError("Self-Consistency selected vote count is invalid")
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "selected_answer": answer,
@@ -209,7 +205,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_self_consistency_gsm8k_method_program() -> MethodProgram:
+def build_self_consistency_gsm8k_method_program(method, ) -> None:
     f = SELF_CONSISTENCY_GSM8K_FIDELITY
     configuration: JsonObject = {
         "publication_lane_digest": f.publication.lane_digest,
@@ -223,22 +219,14 @@ def build_self_consistency_gsm8k_method_program() -> MethodProgram:
         "top_k": f.top_k,
         "aggregation": f.aggregation,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="self-consistency",
-            implementation_version="iclr-2023-final",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="self-consistency.gsm8k.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="sample")
+
+    builder = method
     builder.agent(
         "sample",
         "self-consistency.gsm8k.sample",
         _REASONER,
         ("record_sample",),
-        view_handler=_reasoner_view,
+        view=_reasoner_view,
         max_visits=f.reasoning_path_count,
     )
     builder.route(
@@ -255,28 +243,39 @@ def build_self_consistency_gsm8k_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "self-consistency.gsm8k.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "self-consistency.reasoning-paths",
             "self-consistency.answer-histogram",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "model_call_count",
             "selected_vote_count",
         ),
-        artifact_kinds=("self_consistency_samples",),
+        artifacts=("self_consistency_samples",),
     )
+    return builder
 
 
-SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM = build_self_consistency_gsm8k_method_program()
+METHOD_CONFIGURER = build_self_consistency_gsm8k_method_program
+METHOD_ENTRYPOINT = "sample"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM",
-    "build_self_consistency_gsm8k_method_program",
-    "extract_gsm8k_sample_answer",
-    "self_consistency_gsm8k_initial_state",
+    'build_self_consistency_gsm8k_method_program',
+    'extract_gsm8k_sample_answer',
+    'self_consistency_gsm8k_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'self-consistency', "version": "paper-protocol", "semantic_contract": 'self-consistency' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

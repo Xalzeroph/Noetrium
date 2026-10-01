@@ -5,6 +5,7 @@ from noetrium_platform.composition.research_graph_frontier import (
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphFailureProvenance,
     ResearchGraphNode,
     ResearchGraphNodeResult,
     ResearchGraphNodeState,
@@ -92,6 +93,11 @@ def test_frontier_propagates_failure_without_rescanning_unrelated_subgraph() -> 
         ResearchGraphNodeState.FAILED,
         failure_type="InjectedFailure",
         failure_message="fixture",
+        failure_provenance=ResearchGraphFailureProvenance(
+            qualified_type="tests.InjectedFailure",
+            error_digest=canonical_digest({"failure": "fixture"}),
+            safe_message="fixture",
+        ),
     )
     frontier.record_terminal(failed)
 

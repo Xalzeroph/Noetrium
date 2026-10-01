@@ -56,7 +56,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=("Matched execution requires the released AgeMem training/checkpoint revision and exact five benchmark cuts.", "Step-wise GRPO claims require real model training receipts rather than paper-reported numbers."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 
 __all__ = ["REPRODUCTION"]

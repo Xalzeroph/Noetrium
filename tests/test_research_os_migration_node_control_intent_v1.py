@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import (
     ResearchGraphNodeControlHalt,
@@ -46,28 +47,28 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _portfolio(revision: int) -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio(revision: int) -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.node(
         "a",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         config={"revision": revision},
     )
     builder.node(
         "b",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
     )
     builder.depends("b", "a")
-    return api.ResearchPortfolio("migration-control", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("migration-control", (builder.freeze(),))
 
 
 def _revision(
-    portfolio: api.ResearchPortfolio,
+    portfolio: research_os_api.ResearchPortfolio,
     *,
-    parent: api.ResearchGraphRevision | None = None,
+    parent: research_os_api.ResearchGraphRevision | None = None,
     message: str,
-) -> api.ResearchGraphRevision:
-    return api.ResearchGraphRevision(
+) -> research_os_api.ResearchGraphRevision:
+    return research_os_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         () if parent is None else (parent.revision_digest,),

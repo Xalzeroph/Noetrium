@@ -40,13 +40,28 @@ class ParticipantConcern(StrEnum):
 
 
 class MemoryConcern(StrEnum):
+    """Standard semantic axes for programmable Memory Machines.
+
+    These are semantic labels, not fixed algorithms. A paper may replace every
+    implementation behind them or use custom concerns for genuinely new work.
+    """
+
+    ENCODING = "encoding"
     WRITE = "write"
-    RETRIEVAL = "retrieval"
+    UPDATE = "update"
+    ASSOCIATION = "association"
     INDEX = "index"
+    RETRIEVAL = "retrieval"
+    RERANKING = "reranking"
+    ACCESS = "access"
     TRUST = "trust"
     CONSOLIDATION = "consolidation"
+    DECAY = "decay"
     RETENTION = "retention"
     PROJECTION = "projection"
+    SCOPE = "scope"
+    MIGRATION = "migration"
+    RECONCILIATION = "reconciliation"
     RECOVERY = "recovery"
 
 

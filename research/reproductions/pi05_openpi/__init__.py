@@ -1,16 +1,4 @@
-from .binding import build_pi05_action_command, build_pi05_embodiment_spec
-from .fidelity import (
-    PI05_OPENPI_FIDELITY,
-    PI05_OPENPI_REPOSITORY,
-    PI05_OPENPI_SOURCE_COMMIT,
-    Pi05OpenPIFidelity,
-)
+"""Paper-local reproduction package; composed only through Research OS."""
+from .definition import REPRODUCTION
 
-__all__ = [
-    "PI05_OPENPI_FIDELITY",
-    "PI05_OPENPI_REPOSITORY",
-    "PI05_OPENPI_SOURCE_COMMIT",
-    "Pi05OpenPIFidelity",
-    "build_pi05_action_command",
-    "build_pi05_embodiment_spec",
-]
+__all__ = ("REPRODUCTION",)

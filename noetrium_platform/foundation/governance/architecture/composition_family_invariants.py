@@ -8,19 +8,27 @@ from .source_scan import SourceInvariantViolation, imports, violation
 def audit_composition_family_firewall(root: Path) -> list[SourceInvariantViolation]:
     rows: list[SourceInvariantViolation] = []
     composition = root / "noetrium_platform" / "composition"
+    retired_paths = (
+        composition / "context_action.py",
+        composition / "workflows" / "context_action",
+    )
+    for path in retired_paths:
+        if path.exists():
+            rows.append(
+                violation(
+                    root,
+                    path,
+                    "retired_context_action_path",
+                    1,
+                    "retired context_action composition path must not return",
+                )
+            )
     checks = (
-        (composition / "context_action.py", "composition_context_action_firewall", (
-            "noetrium_platform.capabilities.participant.agent.api", "noetrium_platform.capabilities.participant.capability.api", "noetrium_platform.composition.agent_turn",
-            "noetrium_platform.composition.participants.agent", "noetrium_platform.composition.participants.capability",
-            "noetrium_platform.composition.registries.agent", "noetrium_platform.composition.registries.capability",
-            "noetrium_platform.composition.workflows.agent_turn",
-        )),
-        (composition / "agent_turn.py", "composition_agent_turn_firewall", (
-            "noetrium_platform.capabilities.environment.api", "noetrium_platform.capabilities.participant.method.api", "noetrium_platform.composition.context_action",
-            "noetrium_platform.composition.participants.environment", "noetrium_platform.composition.participants.method",
-            "noetrium_platform.composition.registries.environment", "noetrium_platform.composition.registries.method",
-            "noetrium_platform.composition.workflows.context_action",
-        )),
+        (
+            composition / "agent_turn.py",
+            "composition_agent_turn_firewall",
+            (),
+        ),
     )
     for path, invariant, forbidden in checks:
         if not path.exists():

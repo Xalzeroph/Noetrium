@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchBindingResolutionContext,
@@ -28,6 +29,9 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
     ResearchOSExperimentReconciliationRegistry,
     ResearchOSExperimentReconciliationResolverPort,
 )
+from noetrium_platform.composition.research_method_participant_binding import (
+    resolve_exact_method_participant,
+)
 from noetrium_platform.composition.research_os_experiment_trial_execution import (
     ResearchOSExperimentTrialProviderRegistration,
     ResearchOSExperimentTrialProviderRegistry,
@@ -37,7 +41,7 @@ from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.foundation.portfolio.api import PortfolioCatalogPort
+from noetrium_platform.foundation.portfolio.api import ProjectManifest
 from noetrium_platform.research.experimentation.api import (
     resolve_research_requirements,
 )
@@ -79,25 +83,20 @@ def _dedupe_by_key(rows, *, key, digest, label: str):
 class RepositoryFleetOwnerSources:
     """Owner-system resolvers consumed by the generic repository materializer."""
 
-    portfolio: PortfolioCatalogPort
+    manifest_factory: object
     capabilities: ResearchCapabilityBindingResolverPort
-    participants: ResearchParticipantBindingResolverPort
     models: ResearchModelRoleBindingResolverPort
     trial_providers: ResearchOSExperimentTrialProviderResolverPort
     reconciliation: ResearchOSExperimentReconciliationResolverPort
 
     def __post_init__(self) -> None:
+        if not callable(self.manifest_factory):
+            raise TypeError("repository fleet owner source manifest_factory must be callable")
         for field_name, value, port in (
-            ("portfolio", self.portfolio, PortfolioCatalogPort),
             (
                 "capabilities",
                 self.capabilities,
                 ResearchCapabilityBindingResolverPort,
-            ),
-            (
-                "participants",
-                self.participants,
-                ResearchParticipantBindingResolverPort,
             ),
             ("models", self.models, ResearchModelRoleBindingResolverPort),
             (
@@ -210,9 +209,10 @@ class RepositoryFleetAuthorityMaterializer:
             ):
                 raise ValueError("ProjectManifest owner requirement identity drifted")
 
-            manifest = self._sources.portfolio.project(study.project_id)
-            # This validates project/study coverage and every Study-selected
-            # capability/method/configuration key without choosing a provider.
+            manifest = self._sources.manifest_factory(lane)
+            if type(manifest) is not ProjectManifest:
+                raise TypeError("repository manifest_factory must return ProjectManifest")
+            # Validate project/study coverage and every Study-selected requirement.
             resolve_research_requirements(study, manifest)
             if manifest.semantic_digest in seen:
                 continue
@@ -297,9 +297,10 @@ class RepositoryFleetAuthorityMaterializer:
                 )
 
             for requirement in study.binding_requirements.participants:
-                resolved = self._sources.participants.resolve(
+                resolved = resolve_exact_method_participant(
+                    lane.program,
                     requirement,
-                    context,
+                    context.resolution.project_subject,
                 )
                 participant_rows.append(
                     ResearchParticipantBindingRegistration(
@@ -378,7 +379,7 @@ class RepositoryFleetAuthorityMaterializer:
             models,
         )
 
-        revision = api.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             fleet.portfolio.portfolio_id,
             fleet.portfolio.portfolio_digest,
             (),
@@ -397,13 +398,26 @@ class RepositoryFleetAuthorityMaterializer:
         reconciliation_rows = []
         for lane in fleet.lanes:
             node = graph.node(lane.program.program_id + "::reproduction")
-            closure = closures.resolve(
-                graph_id=graph.plan.graph_id,
-                graph_digest=graph.plan.graph_digest,
-                research_revision_digest=revision.revision_digest,
-                node=node,
-            )
-            trial = self._sources.trial_providers.resolve(closure)
+            try:
+                closure = closures.resolve(
+                    graph_id=graph.plan.graph_id,
+                    graph_digest=graph.plan.graph_digest,
+                    research_revision_digest=revision.revision_digest,
+                    node=node,
+                )
+            except Exception:
+                # Partial owner materialization is intentional. The canonical
+                # fleet authority audit records the exact Research-binding gap
+                # for this lane without preventing independent lanes from
+                # reaching preflight/execution.
+                continue
+            try:
+                trial = self._sources.trial_providers.resolve(closure)
+            except Exception:
+                # Missing/unsupported Trial providers remain absent authority;
+                # registry.resolve() will surface one precise LookupError during
+                # the per-lane audit.
+                continue
             trial_rows.append(
                 ResearchOSExperimentTrialProviderRegistration(
                     trial.provider_identity,
@@ -413,16 +427,19 @@ class RepositoryFleetAuthorityMaterializer:
                     trial.verifier_identity_digest,
                 )
             )
-            reconciliation = self._sources.reconciliation.resolve(closure)
             protocol_digest = closure.research_plan.trial_protocol_identity.digest()
             provider_ids = {
                 row.provider_id
                 for row in closure.research_plan.experiment_plan.bindings
             }
             if provider_ids != {trial.provider_identity}:
-                raise ValueError(
-                    "Trial provider owner result does not match Research-selected provider"
-                )
+                # An owner that returns a provider inconsistent with the frozen
+                # Research binding is not admitted as partial authority.
+                continue
+            try:
+                reconciliation = self._sources.reconciliation.resolve(closure)
+            except Exception:
+                continue
             reconciliation_rows.append(
                 ResearchOSExperimentReconciliationRegistration(
                     trial.provider_identity,

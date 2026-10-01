@@ -4,6 +4,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineJournalPort,
     MachineSnapshotStorePort,
     canonical_digest,
+    canonical_text,
 )
 from noetrium_platform.research.execution.machines import (
     ProgramNodeResult,
@@ -46,7 +47,7 @@ def _execute_agent_turn(request, surface: object, frame: TrialProgramFrame) -> P
     frame.operation_results.extend(rows)
     if result.agent_generation is not None:
         frame.context = frame.context.with_generation("agent", result.agent_generation)
-    frame.context_text = str(result.output)
+    frame.context_text = canonical_text(result.output)
     frame.primary_result = result
     result_digest = canonical_digest({
         "output": result.output,
@@ -76,7 +77,7 @@ _AGENT_TURN_OPERATIONS = (
         _execute_agent_turn,
         canonical_digest({
             "operation": "workflow.agent-turn.execute",
-            "implementation_revision": 1,
+            "implementation_revision": 2,
         }),
     ),
 )
@@ -92,7 +93,7 @@ AGENT_TURN_TRIAL_CONFIGURATION_DIGEST = runtime_program_trial_configuration_dige
 
 def agent_turn_trial_protocol(
     *,
-    journal: MachineJournalPort | None = None,
+    journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
 ) -> RuntimeProgramTrialProtocol:
     return RuntimeProgramTrialProtocol(

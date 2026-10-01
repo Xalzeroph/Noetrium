@@ -59,8 +59,8 @@ REPRODUCTION = ReproductionDefinition(
             "best-candidate benchmark evaluation loop",
         ),
         platform_owned=(
-            "OptimizationMachine journal authority",
-            "ResearchProgram hosting",
+            "Method-owned optimization component on the shared Machine journal",
+            "Method-owned component hosting",
             "candidate execution/evaluation binding",
             "checkpoint and replay",
             "evidence and artifact lineage",
@@ -68,18 +68,19 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
-            path="research/reproductions/agentsquare/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/agentsquare/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/agentsquare/program.py",
+            kind=ReproductionAssetKind("fidelity"),
+            path="research/reproductions/agentsquare/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("study"),
             path="research/reproductions/agentsquare/study.py",
         ),
     ),
+    primary_executable="research/reproductions/agentsquare/program.py",
     reported_results=(
         ReportedResult(
             claim_id="agentsquare_average_gain",
@@ -159,11 +160,7 @@ REPRODUCTION = ReproductionDefinition(
         "no matched six-benchmark AgentSquare execution evidence has yet been produced",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_agentsquare_optimization_program_v1.py",
-        "tests/test_scientific_agentsquare_webshop_cut_v1.py",
-        "tests/test_scientific_agentsquare_six_benchmark_studies_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_agentsquare_webshop_cut_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

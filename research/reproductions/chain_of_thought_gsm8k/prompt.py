@@ -1,6 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
+from research.reproductions._support import canonical_digest
 
 
 COT_GSM8K_PROMPT_BUNDLE_ID = "cot.gsm8k.neurips2022.appendix-table20"

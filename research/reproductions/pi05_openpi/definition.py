@@ -34,10 +34,6 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/pi05_openpi/binding.py',
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/pi05_openpi/fidelity.py',
         ),
@@ -50,7 +46,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=(),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_pi05_openpi_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -6,7 +6,7 @@ Do not edit it manually; run python scripts/update_generated_docs.py.
 ## How downstream projects use Noetrium
 
 1. Import only the unified noetrium.api Research OS surface.
-2. Author methods, benchmarks, metrics, experiments, analyses, and portfolio graphs through ResearchProgramBuilder.
+2. Start from ResearchPortfolioBuilder; Program/Method/Memory DSLs are reached through that root.
 3. Control live research through ResearchOS; lower platform APIs are composition-only internals.
 4. Run python scripts/update_generated_docs.py after changing registry topology or the Product API.
 
@@ -14,12 +14,13 @@ Example:
 
     from noetrium import api
 
-    program = api.ResearchProgramBuilder("paper")
-    os = api.ResearchOS(port)
+    portfolio = api.ResearchPortfolioBuilder("research")
+    program = portfolio.program("paper")
+    os = api.open_project(".")
 
 - Registered systems: 31
 - Public API modules: 1
-- Public symbols: 157
+- Public symbols: 2
 - Registry digest: 08d68ed5eec97297020d8747da32973664283da1e23e84313f1599bffe99f0f1
 
 ## Capability domains
@@ -39,7 +40,7 @@ Example:
 | platform | 1 | 0 | 0 |
 | portfolio | 1 | 0 | 0 |
 | reliability | 3 | 0 | 0 |
-| research_os | 1 | 1 | 157 |
+| research_os | 1 | 1 | 2 |
 | resource | 2 | 0 | 0 |
 | runtime | 1 | 0 | 0 |
 | scope | 1 | 0 | 0 |
@@ -399,7 +400,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.product.api ?w^~)?t ArtifactBlobRef, EmbodiedSimulatorBackendPort, SimulatorObservation, SimulatorStep, ResearchBranch, ResearchControlAction, ResearchControlReceipt, ResearchControlRequest, ResearchDefinition, ResearchDefinitionKind, ResearchDependency, ResearchExecutionTarget, ResearchGraphRevision, ResearchImpactState, ResearchImplementation, ResearchMethodProgramBindingKind, ResearchMachineProgramImplementation, ResearchMethodProgramImplementation, ResearchInputBinding, ResearchNode, ResearchNodeImpact, ResearchNodeKind, ResearchPortfolioDependency, ResearchPortfolioBuilder, ResearchNodeRef, ResearchOS, ResearchOutputSpec, ResearchPortfolio, ResearchProgram, ResearchProgramBuilder, ResearchRevisionDiff, ResearchTag, ResearchValueKind, ActionKind, ActionRequest, ActionResult, ActionSpec, AgentMethodSpec, AgentPhaseSpec, BenchmarkAssignmentMode, BenchmarkTaskSet, CapabilityDescriptor, CapabilityPort, CapabilityRequest, CapabilityResult, CapabilitySelectionReference, CapabilitySelectionView, ChildFailurePolicy, ChildMachineLink, ChildResearchMachineBatchItem, ChildResearchMachineBatchPort, ChildResearchMachineBatchRequest, ChildResearchMachineExecution, ChildResearchMachineRequest, DomainProgramBuilder, EffectCertainty, EffectClass, EffectReceipt, EmbodiedActionCommand, EmbodiedCaptureReceipt, EmbodiedEvent, EmbodiedEventKind, EmbodimentKind, EmbodimentSpec, EnvironmentForkReceipt, EnvironmentReplayError, EnvironmentReplayReceipt, EnvironmentSessionOpener, ExecutionForkReceipt, ExecutionSourceCut, ExecutionStateAnchor, EnvironmentConcern, EnvironmentProgramBuilder, EnvironmentSession, EpisodeSpec, EvaluationConcern, EvaluationProgramBuilder, ExecutionContext, ExperimentConcern, ExperimentProgramBuilder, ExperimentTrialProtocolIdentity, GuardDecision, GuardVerdict, MachineJournalPort, MachineKind, MachineResearchProgram, MachineResearchProgramBuilder, MachineSnapshotStorePort, MachineStatus, MeasurementDefinition, MeasurementValueKind, MemoryConcern, MemoryProgramBuilder, MethodAgentRequest, MethodAgentResult, MethodEvent, MethodExecutionClass, MethodIdentity, MethodNodeKind, MethodNodeRequest, MethodNodeResult, MethodNodeSpec, MethodProgram, MethodProgramBuilder, MethodProgramIdentity, MethodRunResult, MethodRunStatus, MethodRuntimeContext, MethodRuntimePort, MethodWorkflow, ModelRoleUsage, OptimizationConcern, OptimizationProgramBuilder, ParticipantConcern, ParticipantProgramBuilder, ProgramNode, ProgramNodeRequest, ProgramNodeResult, ProgramRule, ProgramRuleSet, ReplayLevel, ResearchHostOperation, ResearchProgramHost, ResearchRunProgramBuilder, ResearchStudyDefinition, SemanticProjectionSnapshot, SemanticSimilarityQuery, SemanticSimilarityQueryPort, SensorModality, SensorSpec, SoftwareWorldPort, SoftwareActionTimeoutError, SoftwareActionKind, RunConcern, RuntimeConcern, RuntimeModule, RuntimeModuleBuilder, RuntimeProgramBuilder, Study, StudyConcurrencyPolicy, StudyModel, StudyParticipant, TensorContentRef, TensorContentStorePort, TrialBudget, candidate_program_capability_payload, bind_execution_fork, fork_environment_session, replay_environment_prefix, environment_action_capability_payload, environment_branch_action_spec, environment_fork_action_payload, environment_query_capability_payload, environment_replay_action_payload, environment_reset_capability_payload, materialize_capability_selection_view, program_execution_capability_payload
+- noetrium_platform.product.api ?w^~)?t ResearchPortfolioBuilder, ResearchPortfolio
 
 ### resource
 

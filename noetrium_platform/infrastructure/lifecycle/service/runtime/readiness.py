@@ -8,7 +8,6 @@ from threading import Lock
 from urllib.parse import urlsplit
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
-    Deadline,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskFailureScope,
@@ -60,7 +59,6 @@ class ProcessAliveReadinessProbe:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         handle = self._task_group.submit(
             ExecutionSpec(
                 task_id=f"service-process-readiness:{contract.service_id}:{sequence}",
@@ -71,15 +69,8 @@ class ProcessAliveReadinessProbe:
             process,
             contract,
             backend,
-            deadline=deadline,
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
-            raise TimeoutError(
-                f"service {contract.service_id} did not remain alive before readiness timeout"
-            ) from exc
+        return handle.result()
 
 
 class HttpEndpointReadinessProbe:
@@ -157,8 +148,12 @@ class HttpEndpointReadinessProbe:
             if writer is not None:
                 writer.close()
                 try:
-                    await writer.wait_closed()
-                except OSError:
+                    async with asyncio.timeout(self.request_timeout_s):
+                        await writer.wait_closed()
+                except (OSError, TimeoutError):
+                    # Readiness is determined by the response status line.
+                    # Peer TCP teardown is cleanup, not readiness authority, and
+                    # must never turn a successful probe into an unbounded wait.
                     pass
 
     async def _wait_ready_async(
@@ -196,7 +191,6 @@ class HttpEndpointReadinessProbe:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         handle = self._task_group.submit(
             ExecutionSpec(
                 task_id=f"service-http-readiness:{contract.service_id}:{sequence}",
@@ -207,15 +201,8 @@ class HttpEndpointReadinessProbe:
             process,
             contract,
             backend,
-            deadline=deadline,
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
-            raise TimeoutError(
-                f"service {contract.service_id} readiness timed out"
-            ) from exc
+        return handle.result()
 
 
 __all__ = ["HttpEndpointReadinessProbe", "ProcessAliveReadinessProbe"]

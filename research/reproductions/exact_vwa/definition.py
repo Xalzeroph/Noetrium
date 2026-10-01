@@ -38,10 +38,6 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/exact_vwa/program.py',
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/exact_vwa/branch.py',
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/exact_vwa/fidelity.py',
         ),
@@ -63,7 +59,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('public VWA executable history used here post-dates the paper', 'exact hosted GPT-4o and embedding deployment identities remain unresolved', 'matched browser/reset/replay infrastructure is not yet deployment-bound'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_exact_vwa_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

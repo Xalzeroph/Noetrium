@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .aci import SweAgentTurn
 from .fidelity import SWE_AGENT_PAPER_ERA_FIDELITY
@@ -93,7 +90,7 @@ def swe_agent_paper_era_initial_state(
     }
 
 
-def _agent_view(request: MethodNodeRequest) -> JsonObject:
+def _agent_view(request: MethodCall) -> JsonObject:
     history = _history(request.state.get("history", ()))
     projection = project_paper_era_history(history)
     return {
@@ -114,7 +111,7 @@ def _agent_operation(value: JsonValue) -> SweAgentTurn:
     return SweAgentTurn(discussion, command)
 
 
-def _prepare_command(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_command(request: MethodCall) -> MethodNodeResult:
     turn = _agent_operation(request.previous_value)
     history = _history(request.state.get("history", ()))
     assistant_row: JsonObject = {
@@ -124,7 +121,7 @@ def _prepare_command(request: MethodNodeRequest) -> MethodNodeResult:
         "command": turn.command,
         "is_demo": False,
     }
-    return MethodNodeResult(
+    return dict(
         value={"command": turn.command},
         state_update={
             "history": (*history, assistant_row),
@@ -154,7 +151,7 @@ def _observation(value: JsonValue) -> tuple[str, bool, JsonValue]:
     return text, done, artifact
 
 
-def _record_observation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_observation(request: MethodCall) -> MethodNodeResult:
     command = _text(request.state.get("pending_command"), "pending command")
     text, done, artifact = _observation(request.previous_value)
     history = _history(request.state.get("history", ()))
@@ -176,7 +173,7 @@ def _record_observation(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if artifact is not None:
         update["submission_artifact"] = artifact
-    return MethodNodeResult(
+    return dict(
         value={
             "command": command,
             "observation": text,
@@ -195,13 +192,13 @@ def _record_observation(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _route_terminal(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_terminal(request: MethodCall) -> MethodNodeResult:
     turn = _count(request.state, "turn")
     submitted = request.state.get("submitted") is True
     environment_done = request.state.get("environment_done") is True
     host_limit = turn >= _HOST_MAX_TURNS
     terminal = submitted or environment_done or host_limit
-    return MethodNodeResult(
+    return dict(
         value={
             "terminal": terminal,
             "submitted": submitted,
@@ -214,7 +211,7 @@ def _route_terminal(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     value: dict[str, JsonValue] = {
         "submitted": request.state.get("submitted") is True,
         "environment_done": request.state.get("environment_done") is True,
@@ -229,10 +226,10 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if "submission_artifact" in request.state:
         value["submission_artifact"] = request.state["submission_artifact"]
-    return MethodNodeResult(value=value)
+    return dict(value=value)
 
 
-def build_swe_agent_paper_era_method_program() -> MethodProgram:
+def build_swe_agent_paper_era_method_program(method, ) -> None:
     configuration: JsonObject = {
         "paper_era_commit": SWE_AGENT_PAPER_ERA_FIDELITY.audited_repository_commit,
         "parser": SWE_AGENT_PAPER_ERA_FIDELITY.parser,
@@ -246,22 +243,14 @@ def build_swe_agent_paper_era_method_program() -> MethodProgram:
         "submit_command": SWE_AGENT_PAPER_ERA_FIDELITY.submit_command,
         "host_max_turns": _HOST_MAX_TURNS,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="swe-agent-paper-era",
-            implementation_version=SWE_AGENT_PAPER_ERA_FIDELITY.audited_repository_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="swe-agent-paper-era.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="agent")
+
+    builder = method
     builder.agent(
         "agent",
         "swe-agent.model.turn",
         _AGENT_ID,
         ("prepare_command",),
-        view_handler=_agent_view,
+        view=_agent_view,
         max_visits=_HOST_MAX_TURNS,
     )
     builder.compute(
@@ -276,9 +265,9 @@ def build_swe_agent_paper_era_method_program() -> MethodProgram:
         "swe-agent.command.execute",
         _SOFTWARE_COMMAND_CAPABILITY,
         ("record_observation",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=_HOST_MAX_TURNS,
-        evidence_obligations=("software.command.effect",),
+        evidence=("software.command.effect",),
     )
     builder.compute(
         "record_observation",
@@ -295,25 +284,36 @@ def build_swe_agent_paper_era_method_program() -> MethodProgram:
         max_visits=_HOST_MAX_TURNS,
     )
     builder.return_node("return", "swe-agent.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_SOFTWARE_COMMAND_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_SOFTWARE_COMMAND_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "swe-agent.trajectory",
             "swe-agent.model-view",
             "software.command.effect",
         ),
-        metric_names=("task_resolved", "turn_count", "command_count"),
-        artifact_kinds=("swe_agent_trajectory", "prediction.patch"),
+        metrics=("task_resolved", "turn_count", "command_count"),
+        artifacts=("swe_agent_trajectory", "prediction.patch"),
     )
+    return builder
 
 
-SWE_AGENT_PAPER_ERA_METHOD_PROGRAM = build_swe_agent_paper_era_method_program()
+METHOD_CONFIGURER = build_swe_agent_paper_era_method_program
+METHOD_ENTRYPOINT = "agent"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "SWE_AGENT_PAPER_ERA_METHOD_PROGRAM",
-    "build_swe_agent_paper_era_method_program",
-    "swe_agent_paper_era_initial_state",
+    'build_swe_agent_paper_era_method_program',
+    'swe_agent_paper_era_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'swe-agent', "version": "paper-protocol", "semantic_contract": 'swe-agent' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vilomem_cvpr2026",
-  "package_digest": "edfba0d4e3374fdb0ac129e1534cb64a873a4f63bfd99432140f539be2762a4f",
-  "definition_digest": "d6b6820150436f699bd1dc43ee5cf54d80c9215f8950d081381007c7683fc905",
+  "package_digest": "f8331b3b80832c68580d0e021bea28664ae7e8a615885b58be3cc66485bb4bf4",
+  "definition_digest": "9cd7aa6ce6b55c31ad73184bf34e6a4fe041640cf5b55e9e9647cf16d19d1bb9",
   "source_registry_digest": "5800084d54705cb425925baff25d1b4265d9ff1079e122cdf75b3705ff0ca64c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -103,13 +103,13 @@
       "kind": "method_program",
       "path": "research/reproductions/vilomem_cvpr2026/program.py",
       "declaration_digest": "1d545bd8f4496881f7ccc77fbf6afa76859230ac2e01d0fac59cf4e32ea3373d",
-      "content_sha256": "435deab537ab8d0f459dbdabb860057c949a4281d614c6a9afb06ccab07be5a2"
+      "content_sha256": "0a979bcff4763f1c9f461a315475fed9dc12c30b71900acd793dd4aab2153ae0"
     },
     {
       "kind": "study",
       "path": "research/reproductions/vilomem_cvpr2026/study.py",
       "declaration_digest": "1564ac5698202faa455eedd753fbb486713937409c3ff3620b44457b6ff9c102",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/vilomem_cvpr2026/program.py",
@@ -215,25 +215,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_03.py",
-      "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "vilomem_cvpr2026",
-    "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
+    "program_digest": "8ec0befcac506c28b53a6877f6dab1f3020b39fafb69af72df9e90915640083f",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:vilomem_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

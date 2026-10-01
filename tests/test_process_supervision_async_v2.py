@@ -139,7 +139,7 @@ def test_async_process_supervisor_escalates_terminate_to_kill_without_blocking_w
 
 
 
-def test_process_command_admission_deadline_prevents_late_spawn(tmp_path) -> None:
+def test_process_command_runtime_timeout_starts_after_admission(tmp_path) -> None:
     import asyncio
     import sys
     from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import AsyncProcessCommandRunner
@@ -153,13 +153,13 @@ def test_process_command_admission_deadline_prevents_late_spawn(tmp_path) -> Non
         )
     )
     group = runtime.open_task_group(
-        "process-command-admission-deadline",
+        "process-command-admission-wait",
         failure_policy=TaskFailurePolicy.COLLECT_ALL,
     )
 
     async def occupy_async_lane(context):
         context.checkpoint()
-        await asyncio.sleep(30)
+        await asyncio.sleep(0.75)
 
     blocker = group.submit(
         ExecutionSpec(
@@ -169,26 +169,30 @@ def test_process_command_admission_deadline_prevents_late_spawn(tmp_path) -> Non
         ),
         occupy_async_lane,
     )
-    marker = tmp_path / "late-spawn.txt"
+    marker = tmp_path / "spawn-after-admission.txt"
     runner = AsyncProcessCommandRunner(
         group,
         cleanup_timeout_seconds=0.02,
     )
     started = time.monotonic()
     try:
-        with pytest.raises(TaskDeadlineExceeded):
-            runner.execute(
-                (sys.executable, "-c", f"from pathlib import Path; Path({str(marker)!r}).write_text('spawned')"),
-                timeout_seconds=0.05,
-            )
-        assert time.monotonic() - started < 0.75
-        time.sleep(0.1)
-        assert not marker.exists(), "deadline-expired command spawned after caller failure"
+        handle = runner.execute(
+            (
+                sys.executable,
+                "-c",
+                f"from pathlib import Path; Path({str(marker)!r}).write_text('spawned')",
+            ),
+            timeout_seconds=0.5,
+        )
+        result = handle.result(2.0)
+        assert result.return_code == 0
+        assert not result.timed_out
+        assert marker.read_text() == "spawned"
+        assert time.monotonic() - started >= 0.5
     finally:
         blocker.cancel()
         group.close(cancel_pending=True)
         runtime.close()
-
 
 def test_process_command_rejects_non_finite_or_unbounded_timeouts() -> None:
     from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import AsyncProcessCommandRunner

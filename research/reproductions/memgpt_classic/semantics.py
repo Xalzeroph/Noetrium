@@ -1,10 +1,9 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, freeze_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-
-from noetrium.api import JsonObject, JsonValue, freeze_json
 
 from .fidelity import MEMGPT_CLASSIC_FIDELITY
 

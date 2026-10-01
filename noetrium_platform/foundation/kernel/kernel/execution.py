@@ -19,6 +19,7 @@ class OperationFailure(RuntimeError):
 
     def __init__(self, result: OperationResult[JsonValue]) -> None:
         self.result = result
+        self.failure_id = result.failure_id
         super().__init__(
             f"operation {result.operation_id} invocation {result.invocation_id} failed "
             f"({result.failure_id or 'unrecorded'})"

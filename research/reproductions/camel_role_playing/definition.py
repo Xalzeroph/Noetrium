@@ -65,6 +65,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/camel_role_playing/study.py',
         ),
     ),
+    primary_executable="research/reproductions/camel_role_playing/program.py",
     reported_results=(
         ReportedResult(
             claim_id='camel_ai_society_human_win',
@@ -110,11 +111,7 @@ REPRODUCTION = ReproductionDefinition(
         'human pairwise rater assignment/order metadata is not fully reconstructable from the released source cut',
     ),
     evidence_refs=(),
-    scientific_tests=(
-        'tests/test_scientific_camel_role_playing_fidelity_v1.py',
-        'tests/test_scientific_camel_method_program_v1.py',
-        'tests/test_scientific_camel_ai_society_benchmark_v1.py',
-    ),
+    scientific_tests=('tests/test_scientific_camel_role_playing_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

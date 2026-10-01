@@ -50,11 +50,11 @@ class DirectoryEventMethodEvidence:
             canonical_bytes(payload),
         )
 
-    def record_result(self, result: MethodRunResult) -> None:
+    def record_result(self, result: MethodRunResult):
         if not isinstance(result, MethodRunResult):
             raise TypeError("method evidence result must be typed")
         payload = {
-            "schema": "noetrium.method-evidence.result.v1",
+            "schema": "noetrium.method-evidence.result.v2",
             "run_id": result.run_id,
             "run_digest": result.run_digest,
             "status": result.status.value,
@@ -65,17 +65,36 @@ class DirectoryEventMethodEvidence:
                 {"kind": event.kind, "payload": event.payload}
                 for event in result.events
             ),
+            "checkpoint_id": (
+                None if result.checkpoint is None else result.checkpoint.checkpoint_id
+            ),
+            "interrupt": (
+                None
+                if result.interrupt is None
+                else {
+                    "interrupt_id": result.interrupt.interrupt_id,
+                    "node_id": result.interrupt.node_id,
+                    "payload": result.interrupt.payload,
+                }
+            ),
+            "failure": result.failure,
             "effect_receipts": tuple(asdict(receipt) for receipt in result.effect_receipts),
             "step_count": result.step_count,
             "visit_counts": result.visit_counts,
             "evidence_status": result.evidence_status.value,
+            "binding_plan_digest": result.binding_plan_digest,
+            "runtime_binding_digest": result.runtime_binding_digest,
+            "schema_digest": result.schema_digest,
             "failure_code": result.failure_code,
             "failure_phase": result.failure_phase,
+            "failure_id": result.failure_id,
+            "diagnostics": result.diagnostics,
         }
         atomic_replace_bytes(
             self.root / "results" / f"{self._safe(result.run_id)}.json",
             canonical_bytes(payload),
         )
+        return None
 
     def validate_result(
         self,

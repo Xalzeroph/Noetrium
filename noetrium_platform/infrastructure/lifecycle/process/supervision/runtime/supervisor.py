@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel import write_all_file_descriptor
+
 import asyncio
 import os
 from pathlib import Path
@@ -208,14 +210,7 @@ class AsyncProcessSupervisor(ProcessSupervisorPort):
             os.close(env_read_fd)
             try:
                 payload = guardian_runtime.encode_child_environment(environment)
-                view = memoryview(payload)
-                while view:
-                    written = os.write(env_write_fd, view)
-                    if written <= 0:
-                        raise OSError(
-                            "interactive guardian child-environment pipe made no progress"
-                        )
-                    view = view[written:]
+                write_all_file_descriptor(env_write_fd, payload)
             except BaseException:
                 try:
                     process.kill()

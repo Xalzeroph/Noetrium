@@ -9,7 +9,13 @@ from noetrium_platform.capabilities.model.api.project import (
     ModelCapabilityRequirement,
     ProjectModelBinding,
 )
-from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json, require_sha256
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    JsonValue,
+    canonical_digest,
+    freeze_json,
+    require_sha256,
+)
 
 
 def _text(value: object, field_name: str) -> str:
@@ -53,6 +59,7 @@ class ModelCapabilityInvocation(Generic[InputT]):
     capability_id: str
     input_schema_id: str
     invocation_id: str
+    context: ExecutionContext
     payload: InputT
     request_digest: str = field(init=False)
 
@@ -61,6 +68,10 @@ class ModelCapabilityInvocation(Generic[InputT]):
         _text(self.capability_id, "model capability invocation capability_id")
         _text(self.input_schema_id, "model capability invocation input_schema_id")
         _text(self.invocation_id, "model capability invocation invocation_id")
+        if not isinstance(self.context, ExecutionContext):
+            raise TypeError(
+                "model capability invocation context must be ExecutionContext"
+            )
         if not isinstance(self.payload, ModelCapabilityInput):
             raise TypeError("model capability payload must implement ModelCapabilityInput")
         if self.payload.schema_id != self.input_schema_id:
@@ -74,6 +85,7 @@ class ModelCapabilityInvocation(Generic[InputT]):
                     "capability_id": self.capability_id,
                     "input_schema_id": self.input_schema_id,
                     "invocation_id": self.invocation_id,
+                    "context": self.context,
                     "payload_digest": self.payload.digest(),
                 }
             ),
@@ -85,6 +97,8 @@ class ModelCapabilityInvocation(Generic[InputT]):
         requirement: ModelCapabilityRequirement,
         invocation_id: str,
         payload: InputT,
+        *,
+        context: ExecutionContext,
     ) -> "ModelCapabilityInvocation[InputT]":
         if not isinstance(requirement, ModelCapabilityRequirement):
             raise TypeError("model capability requirement must be typed")
@@ -95,6 +109,7 @@ class ModelCapabilityInvocation(Generic[InputT]):
             capability_id=requirement.capability_id,
             input_schema_id=requirement.input_schema_id,
             invocation_id=invocation_id,
+            context=context,
             payload=payload,
         )
 
@@ -105,7 +120,11 @@ class ModelCapabilityResponse(Generic[OutputT]):
     binding_digest: str
     output_schema_id: str
     output: OutputT
+    operational_deployment_id: str | None = None
+    operational_deployment_generation: str | None = None
+    operational_dispatch_digest: str | None = None
     response_digest: str = field(init=False)
+
     def __post_init__(self) -> None:
         require_sha256(self.request_digest, "model capability response request_digest")
         require_sha256(self.binding_digest, "model capability response binding_digest")
@@ -114,6 +133,28 @@ class ModelCapabilityResponse(Generic[OutputT]):
             raise TypeError("model capability output must implement ModelCapabilityOutput")
         if self.output.schema_id != self.output_schema_id:
             raise ValueError("model capability output schema does not match response schema")
+        operational = (
+            self.operational_deployment_id,
+            self.operational_deployment_generation,
+            self.operational_dispatch_digest,
+        )
+        if any(value is not None for value in operational):
+            if not all(value is not None for value in operational):
+                raise ValueError(
+                    "model capability operational provenance must be complete or absent"
+                )
+            _text(
+                self.operational_deployment_id,
+                "model capability operational_deployment_id",
+            )
+            require_sha256(
+                self.operational_deployment_generation,
+                "model capability operational_deployment_generation",
+            )
+            require_sha256(
+                self.operational_dispatch_digest,
+                "model capability operational_dispatch_digest",
+            )
         object.__setattr__(
             self,
             "response_digest",
@@ -122,6 +163,11 @@ class ModelCapabilityResponse(Generic[OutputT]):
                 "binding_digest": self.binding_digest,
                 "output_schema_id": self.output_schema_id,
                 "output_digest": self.output.digest(),
+                "operational_deployment_id": self.operational_deployment_id,
+                "operational_deployment_generation": (
+                    self.operational_deployment_generation
+                ),
+                "operational_dispatch_digest": self.operational_dispatch_digest,
             }),
         )
 

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "foreact_cvpr2026",
-  "package_digest": "595b6f64085fdda3e05c3fe0b35e3414ef76a0cda24b53897a250e9bf6e4ec25",
-  "definition_digest": "4c4f653a0e8a0ee83ef80201410c057919aeb5e1147665289ac6ebf6e02deb97",
+  "package_digest": "44e05612881614ae8d855f8da0fed257059cea5651066fbb909155ed5030df9d",
+  "definition_digest": "b66be746de5f5612d66b7bf2ef8253574b35a77565c4cb6cd45fff8b1bb8ed9a",
   "source_registry_digest": "d4af5fa79a4ea9d41bf67a7f2f4cacdb317f4a546024a54ac52ad3517b7d135e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/foreact_cvpr2026/program.py",
       "declaration_digest": "887158d34ec5b6023c1786306dc4aa001a3d07a97a4cb2b8f2210fc79f1bfd74",
-      "content_sha256": "931239bb4a5c317371ef63b9578ef5fe0b535eedf78c2daff2fdfb88eced7b47"
+      "content_sha256": "73ca9a08cdd5af4efe032d247486b1dbd03b849d1a12d2503ee8902b242198d9"
     },
     {
       "kind": "study",
       "path": "research/reproductions/foreact_cvpr2026/study.py",
       "declaration_digest": "e4c173a73f1e575c51422e791e8921c906d16ce57654f2416c3c543d2c93c43b",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/foreact_cvpr2026/program.py",
@@ -180,15 +180,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "foreact_cvpr2026",
-    "program_digest": "0bcd82980326e78a34c4df7bbabff3496533bed75e5ad585f53d24bfd22e7dd1",
+    "program_digest": "ea0d4540d48f9145306784ee78f17f67bce7ad012a3fba8100c0e05fd8a754be",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -199,6 +199,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

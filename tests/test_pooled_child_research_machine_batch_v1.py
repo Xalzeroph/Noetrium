@@ -13,8 +13,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.research.execution.machines import (
-    BatchCapableRegisteredChildResearchMachineExecutor,
-    ChildBatchExecutionMode,
     ChildResearchHostRegistry,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchRequest,
@@ -35,6 +33,17 @@ def _pool(*, max_children: int) -> ResearchExecutionPool:
             max_blocking_io_in_flight=max_children,
         ),
         experiment_admission_budget=AdmissionBudget(
+            max_total_in_flight=max_children,
+            max_in_flight_per_group=max_children,
+            max_in_flight_per_tenant=max_children,
+            max_in_flight_per_resource=max_children,
+            max_blocking_io_in_flight=max_children,
+        ),
+        machine_concurrency_budget=ConcurrencyBudget(
+            max_blocking_io_workers=max_children,
+            max_blocking_io_in_flight=max_children,
+        ),
+        machine_admission_budget=AdmissionBudget(
             max_total_in_flight=max_children,
             max_in_flight_per_group=max_children,
             max_in_flight_per_tenant=max_children,
@@ -77,13 +86,14 @@ def _executor(*, max_children: int):
         execution_pool=pool,
     )
     return (
-        BatchCapableRegisteredChildResearchMachineExecutor(single, mechanics),
+        single,
+        mechanics,
         journal,
         pool,
     )
 
 
-def _request(count: int, *, require_concurrent: bool = True):
+def _request(count: int, *, dispatch_parallelism: int | None = None):
     parent = "method:pooled-parent"
     items = tuple(
         ChildResearchMachineBatchItem(
@@ -106,22 +116,22 @@ def _request(count: int, *, require_concurrent: bool = True):
             "ready_set": tuple(row.participant_id for row in items),
         }),
         items=items,
-        require_concurrent=require_concurrent,
+        dispatch_parallelism=(count if dispatch_parallelism is None else dispatch_parallelism),
     )
 
 
 def test_pooled_child_batch_produces_authority_bound_concurrency_evidence() -> None:
-    executor, journal, pool = _executor(max_children=2)
+    executor, mechanics, journal, pool = _executor(max_children=2)
     try:
-        batch = executor.execute_batch(_request(2))
+        batch = executor.execute_batch(_request(2), mechanics)
 
-        assert batch.mode is ChildBatchExecutionMode.CONCURRENT
+        assert batch.dispatch_parallelism == 2
         assert len(batch.evidence_digests) == 1
-        assert batch.receipt["worker_count"] == 2
-        assert batch.receipt["atomic_ready_set"] is True
+        assert batch.receipt["dispatch_parallelism"] == 2
+        assert batch.receipt["dispatch_strategy"] == "bounded-rolling-window"
         assert (
             batch.receipt["resource_authority"]
-            == "research-execution-pool/experiment"
+            == "research-execution-pool/machine"
         )
         assert len(batch.receipt["intervals"]) == 2
         assert tuple(row.child_machine_id for row in batch.links) == (
@@ -135,25 +145,36 @@ def test_pooled_child_batch_produces_authority_bound_concurrency_evidence() -> N
 
 
 def test_pooled_child_batch_fails_closed_without_partial_child_execution() -> None:
-    executor, journal, pool = _executor(max_children=2)
+    executor, mechanics, journal, pool = _executor(max_children=2)
     try:
         with pytest.raises(
             AdmissionRejected,
             match="batch exceeds configured capacity",
         ):
-            executor.execute_batch(_request(3))
+            executor.execute_batch(_request(3), mechanics)
 
         assert journal.commits("participant:pooled:0") == ()
         assert journal.commits("participant:pooled:1") == ()
         assert journal.commits("participant:pooled:2") == ()
-        assert pool.experiment_admission_snapshot().in_flight == 0
+        assert pool.machine_admission_snapshot().in_flight == 0
     finally:
         pool.close()
 
 
-def test_concurrent_batch_identity_rejects_singleton_ready_set() -> None:
-    with pytest.raises(
-        ValueError,
-        match="requires at least two items",
-    ):
-        _request(1, require_concurrent=True)
+def test_batch_identity_rejects_parallelism_above_ready_set_cardinality() -> None:
+    with pytest.raises(ValueError, match="cannot exceed item count"):
+        _request(1, dispatch_parallelism=2)
+
+
+def test_pooled_child_batch_runs_larger_ready_set_in_bounded_rolling_window() -> None:
+    executor, mechanics, journal, pool = _executor(max_children=2)
+    try:
+        batch = executor.execute_batch(_request(4, dispatch_parallelism=2), mechanics)
+        assert batch.dispatch_parallelism == 2
+        assert batch.receipt["initial_batch_size"] == 2
+        assert batch.receipt["refill_count"] == 2
+        assert batch.receipt["dispatch_parallelism"] == 2
+        assert len(batch.executions) == 4
+        assert all(len(journal.commits(f"participant:pooled:{index}")) == 2 for index in range(4))
+    finally:
+        pool.close()

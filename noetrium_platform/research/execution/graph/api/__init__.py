@@ -1,5 +1,6 @@
 from .contracts import (
     ResearchGraphExecutionReport,
+    ResearchGraphFailureProvenance,
     ResearchGraphNode,
     ResearchGraphNodeExecutorPort,
     ResearchGraphNodeResult,
@@ -48,6 +49,7 @@ __all__ = [
     "ResearchGraphExecutionConflict",
     "ResearchGraphExecutionNotFound",
     "ResearchGraphExecutionReport",
+    "ResearchGraphFailureProvenance",
     "ResearchGraphExecutionSnapshot",
     "ResearchGraphExecutionStorePort",
     "ResearchGraphLeaseRenewal",

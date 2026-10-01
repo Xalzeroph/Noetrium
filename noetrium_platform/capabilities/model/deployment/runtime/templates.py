@@ -11,12 +11,13 @@ def sglang_deployment(
     deployment_id: str,
     scope: ScopeIdentity,
     model_id: str,
-    python_environment_id: str,
+    container_digest: str,
     cwd: Path,
     port: int,
     host: str = "127.0.0.1",
     tensor_parallel: int = 1,
     gpu_devices: tuple[str, ...] = (),
+    gpu_memory_reservation_bytes: tuple[int, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
     if type(port) is not int or not 1 <= port <= 65535:
@@ -27,9 +28,10 @@ def sglang_deployment(
         service_id=f"model:{deployment_id}",
         model_id=model_id,
         engine="sglang",
-        executable="{python}",
+        container_digest=container_digest,
+        executable="/usr/bin/python3",
         argv=(
-            "{python}",
+            "/usr/bin/python3",
             "-m",
             "sglang.launch_server",
             "--model-path",
@@ -43,8 +45,8 @@ def sglang_deployment(
             *extra_args,
         ),
         cwd=cwd,
-        python_environment_id=python_environment_id,
         gpu_devices=gpu_devices,
+        gpu_memory_reservation_bytes=gpu_memory_reservation_bytes,
         readiness_url=f"http://{host}:{port}/health",
     )
 
@@ -54,7 +56,7 @@ def vllm_deployment(
     deployment_id: str,
     scope: ScopeIdentity,
     model_id: str,
-    python_environment_id: str,
+    container_digest: str,
     cwd: Path,
     port: int,
     host: str = "127.0.0.1",
@@ -63,6 +65,7 @@ def vllm_deployment(
     pipeline_parallel: int = 1,
     data_parallel_rpc_port: int | None = None,
     gpu_devices: tuple[str, ...] = (),
+    gpu_memory_reservation_bytes: tuple[int, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
     if type(port) is not int or not 1 <= port <= 65535:
@@ -105,6 +108,9 @@ def vllm_deployment(
         "--data-parallel-rpc-port",
         "-dpp",
         "--device-ids",
+        "--served-model-name",
+        "--gpu-memory-utilization",
+        "--device-memory-utilization",
     )
     for argument in extra_args:
         if any(
@@ -139,13 +145,14 @@ def vllm_deployment(
         service_id=f"model:{deployment_id}",
         model_id=model_id,
         engine="vllm",
-        executable="{python}",
+        container_digest=container_digest,
+        executable="/usr/local/bin/vllm",
         argv=(
-            "{python}",
-            "-m",
-            "vllm.entrypoints.openai.api_server",
-            "--model",
+            "/usr/local/bin/vllm",
+            "serve",
             "{model_path}",
+            "--served-model-name",
+            model_id,
             "--host",
             host,
             "--port",
@@ -154,8 +161,8 @@ def vllm_deployment(
             *extra_args,
         ),
         cwd=cwd,
-        python_environment_id=python_environment_id,
         gpu_devices=gpu_devices,
+        gpu_memory_reservation_bytes=gpu_memory_reservation_bytes,
         readiness_url=f"http://{host}:{port}/health",
     )
 

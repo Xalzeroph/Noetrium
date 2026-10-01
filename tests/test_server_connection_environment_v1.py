@@ -25,7 +25,7 @@ from noetrium_platform.infrastructure.lifecycle.server.identity.providers import
     SSHServerFileTransfer,
 )
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.infrastructure.lifecycle.host.composition import compose_local_host
 from noetrium_platform.infrastructure.lifecycle.server.identity.composition import (
     compose_environment_server_identity,
@@ -58,8 +58,8 @@ class _ProcessRunner:
         return handle
 
 
-def test_server_identity_composition_records_the_host_route_binding() -> None:
-    meta = build_in_memory_platform_meta()
+def test_server_identity_composition_records_the_host_route_binding(tmp_path: Path) -> None:
+    meta = build_platform_meta(tmp_path / "meta")
     host = compose_local_host(planner=meta.capability_composition)
     concurrency_runtime = build_concurrency_runtime()
     task_group = concurrency_runtime.open_task_group("test-server-identity-composition")

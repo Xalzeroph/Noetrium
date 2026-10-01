@@ -140,12 +140,12 @@ def test_minimal_downstream_project_uses_one_noetrium_api(tmp_path: Path) -> Non
     package = root / "src" / "example_project"
     package.mkdir(parents=True)
     (package / "app.py").write_text(
-        "from noetrium.api import ProjectManifest, ResearchApplicationPort\n",
+        "from noetrium.api import research_os\n",
         encoding="utf-8",
     )
     (package / "provider.py").write_text(
         "from noetrium import api\n"
-        "EnvironmentSpec = api.EnvironmentSpec\n",
+        "ResearchPortfolioBuilder = api.ResearchPortfolioBuilder\n",
         encoding="utf-8",
     )
     report = audit_downstream_project_imports(root)
@@ -154,6 +154,27 @@ def test_minimal_downstream_project_uses_one_noetrium_api(tmp_path: Path) -> Non
     assert ("noetrium.api", DownstreamImportKind.NOETRIUM_API) in observed
     assert ("noetrium", DownstreamImportKind.NOETRIUM_API) in observed
     assert not (root / "noetrium_platform").exists()
+
+
+def test_downstream_project_import_audit_ignores_platform_owned_state(tmp_path: Path) -> None:
+    root = tmp_path / "downstream"
+    package = root / "src" / "example_project"
+    package.mkdir(parents=True)
+    (package / "app.py").write_text(
+        "from noetrium import api\n",
+        encoding="utf-8",
+    )
+    state = root / ".noetrium" / "tmp"
+    state.mkdir(parents=True)
+    (state / "probe.py").write_text(
+        "from noetrium_platform.foundation.kernel.kernel import Machine\n",
+        encoding="utf-8",
+    )
+
+    report = audit_downstream_project_imports(root)
+
+    assert report.passed, report.violations
+    assert all(not row.path.startswith(".noetrium/") for row in report.observations)
 
 
 def test_downstream_project_private_platform_import_and_vendoring_fail_closed(tmp_path: Path) -> None:

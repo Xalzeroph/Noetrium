@@ -3,14 +3,14 @@ from __future__ import annotations
 from noetrium_platform.composition.managed_observability import (
     build_managed_observability,
 )
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 
 
 def test_managed_observability_builds_durable_default_authorities(tmp_path) -> None:
     pool = ResearchExecutionPool()
     group = pool.open_orchestration_group("observability-test")
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(tmp_path / "meta")
     managed = build_managed_observability(
         tmp_path / "observability",
         task_group=group,
@@ -36,7 +36,7 @@ def test_managed_observability_builds_durable_default_authorities(tmp_path) -> N
 def test_managed_observability_close_is_idempotent(tmp_path) -> None:
     pool = ResearchExecutionPool()
     group = pool.open_orchestration_group("observability-close-test")
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(tmp_path / "meta")
     managed = build_managed_observability(
         tmp_path / "observability",
         task_group=group,

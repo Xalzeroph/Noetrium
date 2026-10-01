@@ -1,24 +1,22 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-)
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import LITS_MATH500_RELEASE_FIDELITY
 
@@ -147,7 +145,7 @@ def _ucb(
     return mean + math.sqrt(math.log(parent_visits + 1.0) / (visits + 1.0))
 
 
-def _select(request: MethodNodeRequest) -> MethodNodeResult:
+def _select(request: MethodCall) -> MethodNodeResult:
     nodes = _node_map(request.state)
     candidates = tuple(
         row
@@ -158,7 +156,7 @@ def _select(request: MethodNodeRequest) -> MethodNodeResult:
         < LITS_MATH500_RELEASE_FIDELITY.max_steps
     )
     if not candidates:
-        return MethodNodeResult(
+        return dict(
             value={"search_exhausted": True},
             next_node="return",
         )
@@ -171,14 +169,14 @@ def _select(request: MethodNodeRequest) -> MethodNodeResult:
         ),
     )
     selected_id = _text(selected.get("node_id"), "selected node")
-    return MethodNodeResult(
+    return dict(
         value={"selected_node_id": selected_id},
         state_update={"selected_node_id": selected_id},
         next_node="policy",
     )
 
 
-def _policy_view(request: MethodNodeRequest) -> JsonObject:
+def _policy_view(request: MethodCall) -> JsonObject:
     nodes = _node_map(request.state)
     selected_id = _text(request.state.get("selected_node_id"), "selected_node_id")
     selected = nodes[selected_id]
@@ -229,7 +227,7 @@ def _policy_actions(value: JsonValue) -> tuple[tuple[str, bool], ...]:
     return tuple(rows)
 
 
-def _expand(request: MethodNodeRequest) -> MethodNodeResult:
+def _expand(request: MethodCall) -> MethodNodeResult:
     actions = _policy_actions(request.previous_value)
     nodes_tuple = _rows(request.state.get("nodes", ()), "nodes")
     nodes = _node_map(request.state)
@@ -274,7 +272,7 @@ def _expand(request: MethodNodeRequest) -> MethodNodeResult:
     parent["expanded"] = True
     parent["children"] = tuple(row["node_id"] for row in children)
     updated = (*_replace_node(nodes_tuple, selected_id, parent), *children)
-    return MethodNodeResult(
+    return dict(
         value={
             "candidate_node_ids": tuple(row["node_id"] for row in children),
         },
@@ -292,7 +290,7 @@ def _expand(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _reward_view(request: MethodNodeRequest) -> JsonObject:
+def _reward_view(request: MethodCall) -> JsonObject:
     nodes = _node_map(request.state)
     candidate_ids = tuple(
         _text(row, "candidate node id")
@@ -327,7 +325,7 @@ def _reward_scores(value: JsonValue, expected: int) -> tuple[float, ...]:
     return scores
 
 
-def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
+def _backpropagate(request: MethodCall) -> MethodNodeResult:
     nodes_tuple = _rows(request.state.get("nodes", ()), "nodes")
     nodes = _node_map(request.state)
     candidate_ids = tuple(
@@ -366,7 +364,7 @@ def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
         current = parent if isinstance(parent, str) and parent else None
 
     iteration = _integer(request.state.get("iteration", 0), "iteration") + 1
-    return MethodNodeResult(
+    return dict(
         value={
             "iteration": iteration,
             "best_node_id": best_id,
@@ -393,13 +391,13 @@ def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _advance(request: MethodNodeRequest) -> MethodNodeResult:
+def _advance(request: MethodCall) -> MethodNodeResult:
     iteration = _integer(request.state.get("iteration", 0), "iteration")
     nodes = _node_map(request.state)
     best_id = _text(request.state.get("best_node_id"), "best_node_id")
     terminal = nodes[best_id].get("terminal") is True
     exhausted = iteration >= LITS_MATH500_RELEASE_FIDELITY.search_iterations
-    return MethodNodeResult(
+    return dict(
         value={
             "iteration": iteration,
             "terminal": terminal,
@@ -409,7 +407,7 @@ def _advance(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     nodes = _node_map(request.state)
     best_id = _text(request.state.get("best_node_id"), "best_node_id")
     best = nodes[best_id]
@@ -417,7 +415,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     value = (
         _number(best.get("value_sum", 0.0), "value_sum") / max(1, visits)
     )
-    return MethodNodeResult(
+    return dict(
         value={
             "answer": best.get("text", ""),
             "best_node_id": best_id,
@@ -438,7 +436,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_lits_math500_method_program() -> MethodProgram:
+def build_lits_math500_method_program(method, ) -> None:
     fidelity = LITS_MATH500_RELEASE_FIDELITY
     configuration: JsonObject = {
         "source_repository": fidelity.source.repository,
@@ -455,16 +453,8 @@ def build_lits_math500_method_program() -> MethodProgram:
         "max_steps": fidelity.max_steps,
         "model_binding_semantics": fidelity.model_binding_semantics,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="lits-math500",
-            implementation_version=fidelity.source.commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="lits.math500.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="select")
+
+    builder = method
     builder.route(
         "select",
         "lits.mcts.select",
@@ -477,7 +467,7 @@ def build_lits_math500_method_program() -> MethodProgram:
         "lits.policy.generate",
         _POLICY_AGENT_ID,
         ("expand",),
-        view_handler=_policy_view,
+        view=_policy_view,
         max_visits=fidelity.search_iterations,
     )
     builder.compute(
@@ -492,7 +482,7 @@ def build_lits_math500_method_program() -> MethodProgram:
         "lits.reward.evaluate",
         _REWARD_AGENT_ID,
         ("backpropagate",),
-        view_handler=_reward_view,
+        view=_reward_view,
         max_visits=fidelity.search_iterations,
     )
     builder.compute(
@@ -510,25 +500,36 @@ def build_lits_math500_method_program() -> MethodProgram:
         max_visits=fidelity.search_iterations,
     )
     builder.return_node("return", "lits.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
             "lits.search-tree",
             "lits.policy-generation",
             "lits.reward-evaluation",
             "model.invocation",
         ),
-        metric_names=("search_iterations", "model_call_count"),
-        artifact_kinds=("lits_search_tree", "lits_reasoning_trace"),
+        metrics=("search_iterations", "model_call_count"),
+        artifacts=("lits_search_tree", "lits_reasoning_trace"),
     )
+    return builder
 
 
-LITS_MATH500_METHOD_PROGRAM = build_lits_math500_method_program()
+METHOD_CONFIGURER = build_lits_math500_method_program
+METHOD_ENTRYPOINT = "select"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "LITS_MATH500_METHOD_PROGRAM",
-    "build_lits_math500_method_program",
-    "lits_math500_initial_state",
+    'build_lits_math500_method_program',
+    'lits_math500_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'lits', "version": "paper-protocol", "semantic_contract": 'lits' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

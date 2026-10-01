@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.egolifeqa import (
     EGOLIFEQA_BENCHMARK_ID,
     EgoLifeQATaskRecord,
@@ -13,7 +11,7 @@ def build_worldmm_egolifeqa_subject_cut(
     *,
     question_file_content_sha256: str,
     subject_id: str = "A1_JAKE",
-) -> BenchmarkTaskSet:
+):
     task_set = bind_egolifeqa_subject_cut(
         records,
         question_file_content_sha256=question_file_content_sha256,

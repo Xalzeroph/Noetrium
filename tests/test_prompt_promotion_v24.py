@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from noetrium_platform.capabilities.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence, PromptPublicationError, PromptQualification, default_block_policies, default_output_schemas, default_prompt_specs
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, PromptPromotionEvidence, PromptPublicationError, PromptQualification, default_block_policies, default_output_schemas, default_prompt_specs
 
 MODEL=("m","rev","sglang","1","bfloat16",None,262144,"tok")
 SUITE="c"*64
@@ -42,9 +42,9 @@ class PromptPromotionV24Tests(unittest.TestCase):
             with self.assertRaises(PromptPublicationError): r.load_active()
             self.assertEqual((root/"ACTIVE").read_text().strip(),"g1")
 
-    def test_direct_publish_path_is_forbidden(self):
+    def test_direct_publish_path_is_absent(self):
         with tempfile.TemporaryDirectory() as td:
             r=make_prompt_registry(Path(td))
-            with self.assertRaises(PromptPublicationError): r.publish("g",default_prompt_specs(),default_block_policies(),default_output_schemas())
+            self.assertFalse(hasattr(r, "publish"))
 
 if __name__=='__main__': unittest.main()

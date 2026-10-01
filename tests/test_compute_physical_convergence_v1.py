@@ -15,15 +15,11 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import (
     ComputePhysicalConvergencePending,
-    InMemoryComputeInventory,
-    SQLiteComputeScheduler,
+    ComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeaseConflict
-from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
-    ManualLeaseClock,
-)
-from tests.resource_compute_support import in_memory_compute_scheduler
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
+from tests.resource_compute_support import TestComputeInventory, compute_scheduler
 
 
 class MutableGpuObserver:
@@ -59,8 +55,8 @@ def _scope() -> ScopeIdentity:
     return ScopeIdentity(ScopeKind.PROJECT, "gpu-crash-window")
 
 
-def _inventory() -> InMemoryComputeInventory:
-    inventory = InMemoryComputeInventory()
+def _inventory() -> TestComputeInventory:
+    inventory = TestComputeInventory()
     inventory.register_host(
         ComputeHost(
             "gpu-node",
@@ -83,26 +79,20 @@ def _clock() -> ManualLeaseClock:
 def _scheduler(
     tmp_path,
     *,
-    durable: bool,
-    inventory: InMemoryComputeInventory,
+    inventory: TestComputeInventory,
     observer=None,
     filename: str,
 ):
     clock = _clock()
-    if durable:
-        scheduler = SQLiteComputeScheduler(
+    return (
+        ComputeScheduler(
             tmp_path / filename,
             inventory,
             clock=clock,
             gpu_runtime_observer=observer,
-        )
-    else:
-        scheduler = in_memory_compute_scheduler(
-            inventory,
-            resource_authority=InMemoryResourceLeaseRegistry(clock=clock),
-            gpu_runtime_observer=observer,
-        )
-    return scheduler, clock
+        ),
+        clock,
+    )
 
 
 def _requirement() -> ComputeRequirement:
@@ -117,15 +107,12 @@ def _requirement() -> ComputeRequirement:
     )
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
     tmp_path,
-    durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=_inventory(),
         observer=observer,
         filename="compute-quarantine.sqlite",
@@ -172,10 +159,8 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
     assert replacement.lease_fencing_token > first.lease_fencing_token
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_expired_gpu_generation_quarantines_only_its_exact_device(
     tmp_path,
-    durable: bool,
 ) -> None:
     class TwoGpuObserver:
         def snapshot(self) -> GpuRuntimeSnapshot:
@@ -193,7 +178,7 @@ def test_expired_gpu_generation_quarantines_only_its_exact_device(
                 processes_complete=True,
             )
 
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(
         ComputeHost(
             "gpu-node",
@@ -208,7 +193,6 @@ def test_expired_gpu_generation_quarantines_only_its_exact_device(
     )
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=inventory,
         observer=TwoGpuObserver(),
         filename="compute-exact-gpu-quarantine.sqlite",
@@ -234,15 +218,12 @@ def test_expired_gpu_generation_quarantines_only_its_exact_device(
     assert replacement.gpu_ids == ("GPU-1",)
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_exact_owner_release_ignores_foreign_gpu_reoccupation(
     tmp_path,
-    durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
     scheduler, _clock_value = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=_inventory(),
         observer=observer,
         filename="compute-normal-release.sqlite",
@@ -263,15 +244,12 @@ def test_exact_owner_release_ignores_foreign_gpu_reoccupation(
     assert scheduler.allocations() == ()
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_exclusive_recovery_release_ignores_foreign_gpu_reoccupation(
     tmp_path,
-    durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
     scheduler, _clock_value = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=_inventory(),
         observer=observer,
         filename="compute-recovery-gpu.sqlite",
@@ -289,15 +267,12 @@ def test_exclusive_recovery_release_ignores_foreign_gpu_reoccupation(
     assert scheduler.allocations() == ()
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_exclusive_recovery_release_does_not_depend_on_global_gpu_visibility(
     tmp_path,
-    durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
     scheduler, _clock_value = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=_inventory(),
         observer=observer,
         filename="compute-recovery-unknown.sqlite",
@@ -314,15 +289,12 @@ def test_exclusive_recovery_release_does_not_depend_on_global_gpu_visibility(
     assert scheduler.allocations() == ()
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
     tmp_path,
-    durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=_inventory(),
         observer=observer,
         filename="compute-unknown.sqlite",
@@ -345,16 +317,13 @@ def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
         scheduler.reconcile_expired()
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
     tmp_path,
-    durable: bool,
 ) -> None:
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("cpu-node", _scope(), 2, 4096))
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=inventory,
         observer=None,
         filename="cpu-quarantine.sqlite",
@@ -390,16 +359,13 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
 
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_quarantined_compute_generation_does_not_globally_block_spare_capacity(
     tmp_path,
-    durable: bool,
 ) -> None:
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("cpu-wide", _scope(), 4, 8192))
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=inventory,
         observer=None,
         filename="compute-spare.sqlite",
@@ -429,16 +395,13 @@ def test_quarantined_compute_generation_does_not_globally_block_spare_capacity(
     }
 
 
-@pytest.mark.parametrize("durable", [False, True])
 def test_stale_recovery_release_cannot_delete_replacement_generation(
     tmp_path,
-    durable: bool,
 ) -> None:
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("cpu-reuse", _scope(), 2, 4096))
     scheduler, clock = _scheduler(
         tmp_path,
-        durable=durable,
         inventory=inventory,
         observer=None,
         filename="compute-reuse.sqlite",

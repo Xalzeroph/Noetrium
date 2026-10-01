@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from collections.abc import Callable, Mapping
-import asyncio
+import socket
 import hashlib
 from pathlib import Path
 from threading import Lock
@@ -44,7 +44,13 @@ class MinecraftServerServiceError(RuntimeError):
 
 
 class MinecraftTcpReadinessProbe:
-    """TCP readiness whose network wait is owned by the ASYNC_IO lane."""
+    """TCP readiness whose network wait is owned by a BLOCKING_IO worker.
+
+    The caller may itself be executing on the capability ASYNC_IO loop. A
+    synchronous wait on a child task submitted back to that same event loop
+    deadlocks the loop even when admission capacity remains. Socket readiness
+    is therefore isolated on the blocking-I/O provider.
+    """
 
     def __init__(
         self,
@@ -63,41 +69,62 @@ class MinecraftTcpReadinessProbe:
         self._sequence = 0
         self._sequence_lock = Lock()
 
-    async def _wait_ready_async(self, context, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
-        last_error = "not-probed"
+    def _wait_ready(
+        self,
+        context,
+        process,
+        contract: ServiceLaunchContract,
+        backend: ServiceProcessLivenessPort,
+    ) -> str:
+        del backend
         while True:
             context.checkpoint()
-            if not backend.alive(process):
-                raise MinecraftServerServiceError(
-                    f"Minecraft server process exited before TCP readiness: {self.host}:{self.port}"
-                )
-            writer = None
+            connection = None
             try:
-                connect_timeout = min(1.0, self.poll_interval_s + 0.5)
-                async with asyncio.timeout(connect_timeout):
-                    _reader, writer = await asyncio.open_connection(self.host, self.port)
-                payload = f"{contract.digest()}:{process.pid}:{process.start_identity}:{self.host}:{self.port}"
-                return "minecraft-tcp-ready:" + hashlib.sha256(payload.encode("utf-8")).hexdigest()
-            except (OSError, TimeoutError) as exc:
-                last_error = f"{type(exc).__name__}:{exc}"
+                remaining = context.remaining_seconds
+                connect_timeout = min(
+                    1.0,
+                    self.poll_interval_s + 0.5,
+                    1.0 if remaining is None else max(0.001, remaining),
+                )
+                connection = socket.create_connection(
+                    (self.host, self.port),
+                    timeout=connect_timeout,
+                )
+                payload = (
+                    f"{contract.digest()}:{process.pid}:{process.start_identity}:"
+                    f"{self.host}:{self.port}"
+                )
+                return "minecraft-tcp-ready:" + hashlib.sha256(
+                    payload.encode("utf-8")
+                ).hexdigest()
+            except (OSError, TimeoutError):
+                pass
             finally:
-                if writer is not None:
-                    writer.close()
-                    try:
-                        await writer.wait_closed()
-                    except OSError:
-                        pass
+                if connection is not None:
+                    connection.close()
             remaining = context.remaining_seconds
-            delay = self.poll_interval_s if remaining is None else min(self.poll_interval_s, remaining)
+            delay = (
+                self.poll_interval_s
+                if remaining is None
+                else min(self.poll_interval_s, remaining)
+            )
             if delay <= 0:
                 context.checkpoint()
-            await asyncio.sleep(delay)
+            if context.wait(delay):
+                context.checkpoint()
 
     def wait_ready(self, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
+        # Liveness may itself require blocking provider I/O (Docker/procfs). Never
+        # call it from the ASYNC_IO event loop: that creates an ASYNC_IO ->
+        # BLOCKING_IO synchronous dependency inside the same capability domain.
+        if not backend.alive(process):
+            raise MinecraftServerServiceError(
+                f"Minecraft server process exited before TCP readiness: {self.host}:{self.port}"
+            )
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         readiness_identity = canonical_digest(
             {
                 "service_id": contract.service_id,
@@ -111,22 +138,21 @@ class MinecraftTcpReadinessProbe:
         handle = self._task_group.submit(
             ExecutionSpec(
                 task_id=f"minecraft-tcp-readiness:{readiness_identity}:{sequence}",
-                lane_kind=ExecutionLaneKind.ASYNC_IO,
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
                 failure_scope=TaskFailureScope.CALLER,
             ),
-            self._wait_ready_async,
+            self._wait_ready,
             process,
             contract,
             backend,
-            deadline=deadline,
+            deadline=Deadline.after(contract.readiness_timeout_s),
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
+        evidence = handle.result()
+        if not backend.alive(process):
             raise MinecraftServerServiceError(
-                f"Minecraft server TCP readiness timed out for {self.host}:{self.port}"
-            ) from exc
+                f"Minecraft server process exited after TCP readiness: {self.host}:{self.port}"
+            )
+        return evidence
 
 
 class MinecraftServerReadinessProbe:
@@ -192,11 +218,6 @@ class MinecraftServerReadinessProbe:
                 context.checkpoint()
             if context.wait(delay):
                 context.checkpoint()
-            if context.remaining_seconds is not None and context.remaining_seconds <= 0:
-                context.checkpoint()
-                raise MinecraftServerServiceError(
-                    f"Minecraft RCON readiness timed out: {last_error}"
-                )
 
     def wait_ready(
         self,
@@ -208,7 +229,6 @@ class MinecraftServerReadinessProbe:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         readiness_identity = canonical_digest(
             {
                 "service_id": contract.service_id,
@@ -229,15 +249,8 @@ class MinecraftServerReadinessProbe:
             contract,
             backend,
             tcp_evidence,
-            deadline=deadline,
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
-            raise MinecraftServerServiceError(
-                f"Minecraft RCON readiness timed out: {self.rcon_command}"
-            ) from exc
+        return handle.result()
 
 
 def build_server_service_contract(

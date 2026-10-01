@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+from functools import wraps
 import math
+from pathlib import Path
+import threading
 from time import time
 
 from noetrium_platform.capabilities.environment.catalog.api import (
@@ -13,6 +17,9 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     ExecutionEnvironmentCatalogPort,
 )
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+)
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceIdentity,
@@ -85,6 +92,15 @@ def _lease_id(instance: EnvironmentInstance) -> str:
     return f"environment-instance:{instance.instance_id}:generation:{instance.generation}"
 
 
+def _coordinated(method):
+    @wraps(method)
+    def invoke(self, *args, **kwargs):
+        with self._coordination_fence():
+            return method(self, *args, **kwargs)
+
+    return invoke
+
+
 class EnvironmentInstanceLeaseAuthority:
     """Cross-authority coordinator for reusable environment checkout leases.
 
@@ -103,13 +119,52 @@ class EnvironmentInstanceLeaseAuthority:
         leases: ResourceLeasePort,
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
         reconcile_on_start: bool = True,
+        coordination_lock_path: str | Path | None = None,
     ) -> None:
         self.catalog = catalog
         self.ownership = ownership
         self.leases = leases
         self.policy = policy
+        self._coordination_thread_lock = threading.RLock()
+        self._coordination_depth = 0
+        self._coordination_lock_path = (
+            None
+            if coordination_lock_path is None
+            else Path(coordination_lock_path).resolve()
+        )
+        if self._coordination_lock_path is not None:
+            self._coordination_lock_path.parent.mkdir(parents=True, exist_ok=True)
         if reconcile_on_start:
             self.reconcile()
+
+    @contextmanager
+    def _coordination_fence(self):
+        """Fence catalog/lease cross-authority mutations as one admission unit.
+
+        Durable environment state and durable resource leases intentionally live
+        in separate authorities. Their composite transition therefore needs one
+        host-visible fence so reconciliation cannot observe the valid midpoint
+        where a catalog generation is IN_USE but its lease is not committed yet.
+        The thread RLock also makes the same guarantee inside one process.
+        """
+
+        with self._coordination_thread_lock:
+            if self._coordination_depth:
+                self._coordination_depth += 1
+                try:
+                    yield
+                finally:
+                    self._coordination_depth -= 1
+                return
+            self._coordination_depth = 1
+            try:
+                if self._coordination_lock_path is None:
+                    yield
+                else:
+                    with InterprocessFileLock(self._coordination_lock_path):
+                        yield
+            finally:
+                self._coordination_depth = 0
 
     def _binding_rows(self, instance_id: str) -> tuple[EnvironmentBinding, ...]:
         return tuple(
@@ -158,6 +213,7 @@ class EnvironmentInstanceLeaseAuthority:
             raise
         return EnvironmentInstanceLeaseHandle(acquisition, lease)
 
+    @_coordinated
     def acquire_reusable_instance(
         self,
         profile_id: str,
@@ -181,6 +237,24 @@ class EnvironmentInstanceLeaseAuthority:
         )
         return self._acquire_lease(acquisition)
 
+    @_coordinated
+    def provision_reusable_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceLeaseHandle:
+        acquisition = self.catalog.provision_reusable_instance(
+            instance,
+            binding_id=binding_id,
+            role=role,
+            scope=scope,
+        )
+        return self._acquire_lease(acquisition)
+
+    @_coordinated
     def recover_reusable_instance(
         self,
         profile_id: str,
@@ -202,11 +276,16 @@ class EnvironmentInstanceLeaseAuthority:
             scope=scope,
         )
         handle = self._acquire_lease(acquisition)
-        old_resource = _instance_resource(old_instance.instance_id)
-        for lease in self.leases.active_for(old_resource):
-            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token)
+        # Recovery migrates the catalog binding to a fresh CLEAN generation, but
+        # it does not prove that the old physical environment has converged.
+        # Keep every active lease for the abandoned generation fenced until it
+        # expires naturally or an exclusive shutdown/recovery path proves that
+        # physical ownership is gone. Releasing it here would make logical
+        # capacity reusable underneath a potentially live old provider.
+        _ = old_instance
         return handle
 
+    @_coordinated
     def renew(
         self,
         handle: EnvironmentInstanceLeaseHandle,
@@ -226,12 +305,44 @@ class EnvironmentInstanceLeaseAuthority:
         )
         return EnvironmentInstanceLeaseHandle(handle.acquisition, renewed)
 
+    @_coordinated
     def renew_many(
         self,
         handles: tuple[EnvironmentInstanceLeaseHandle, ...],
     ) -> tuple[EnvironmentInstanceLeaseHandle, ...]:
-        return tuple(self.renew(handle) for handle in handles)
+        if type(handles) is not tuple:
+            raise TypeError("environment instance batch renewal requires a tuple")
+        if not handles:
+            return ()
+        instances = {
+            row.instance_id: row
+            for row in self.catalog.instances()
+        }
+        for handle in handles:
+            current = instances.get(handle.instance.instance_id)
+            if current is None:
+                raise KeyError(handle.instance.instance_id)
+            if (
+                current.state is not EnvironmentInstanceState.IN_USE
+                or current.generation != handle.instance.generation
+            ):
+                raise RuntimeError(
+                    "environment instance generation is no longer authoritative"
+                )
+        renewed = self.leases.renew_many(
+            tuple(handle.lease for handle in handles),
+            ttl_seconds=self.policy.ttl_seconds,
+        )
+        if len(renewed) != len(handles):
+            raise RuntimeError(
+                "environment instance batch renewal cardinality drifted"
+            )
+        return tuple(
+            EnvironmentInstanceLeaseHandle(handle.acquisition, lease)
+            for handle, lease in zip(handles, renewed, strict=True)
+        )
 
+    @_coordinated
     def release(
         self,
         handle: EnvironmentInstanceLeaseHandle,
@@ -266,7 +377,7 @@ class EnvironmentInstanceLeaseAuthority:
         # may partially succeed before a crash/failure, so retries accept the
         # exact same DIRTY generation with zero or fewer remaining bindings.
         for row in rows:
-            self.catalog.unbind(row.role, row.scope)
+            self.catalog.unbind_if_bound(row.role, row.scope)
 
         try:
             self.leases.release(
@@ -296,6 +407,7 @@ class EnvironmentInstanceLeaseAuthority:
             cleanliness=cleanliness,
         )
 
+    @_coordinated
     def shutdown_cleanup(
         self,
         *,
@@ -313,7 +425,7 @@ class EnvironmentInstanceLeaseAuthority:
 
         bindings = self.catalog.bindings()
         for row in bindings:
-            self.catalog.unbind(row.role, row.scope)
+            self.catalog.unbind_if_bound(row.role, row.scope)
 
         released: list[str] = []
         for lease in self.leases.active_leases(
@@ -333,6 +445,7 @@ class EnvironmentInstanceLeaseAuthority:
             tuple(sorted(set(released))),
         )
 
+    @_coordinated
     def reconcile(
         self,
         *,
@@ -341,9 +454,21 @@ class EnvironmentInstanceLeaseAuthority:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("environment lease reconciliation time must be finite")
+        lease_now = None if now is None else now_epoch_s
         self.leases.reconcile_expired(
             resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+            now=lease_now,
         )
+        active_by_instance: dict[str, list[ResourceLease]] = {}
+        for lease in self.leases.active_leases(
+            resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+            now=lease_now,
+        ):
+            active_by_instance.setdefault(
+                lease.resource.resource_id,
+                [],
+            ).append(lease)
+
         dirtied: list[str] = []
         released: list[str] = []
 
@@ -353,8 +478,7 @@ class EnvironmentInstanceLeaseAuthority:
             by_instance.setdefault(binding.instance_id, []).append(binding)
 
         for instance in self.catalog.instances():
-            resource = _instance_resource(instance.instance_id)
-            active = self.leases.active_for(resource)
+            active = tuple(active_by_instance.get(instance.instance_id, ()))
             rows = tuple(by_instance.get(instance.instance_id, ()))
             if instance.state is EnvironmentInstanceState.IN_USE:
                 expected_id = _lease_id(instance)
@@ -368,196 +492,32 @@ class EnvironmentInstanceLeaseAuthority:
                 if valid:
                     continue
                 for row in rows:
-                    self.catalog.unbind(row.role, row.scope)
-                # Missing/expired authority or binding drift makes the
-                # catalog generation unsafe to reuse. Any still-active lease
-                # remains fenced because normal reconciliation has no provider
-                # proof that its physical generation converged.
+                    self.catalog.unbind_if_bound(row.role, row.scope)
+                # Ordinary reconciliation has no provider/process convergence
+                # proof. Quarantine the generation by preserving any still-live
+                # Resource lease; its holder can no longer renew successfully
+                # once the catalog generation is DIRTY, so it will expire unless
+                # an exclusive recovery path retires it first.
                 self.catalog.mark_instance_dirty(instance.instance_id)
                 dirtied.append(instance.instance_id)
                 continue
 
-            if active:
-                # Catalog state alone is not physical-convergence proof. An
-                # active resource lease on a non-IN_USE instance is a split-
-                # authority condition: quarantine the generation instead of
-                # releasing a lease that may still fence live provider state.
-                # TTL expiry or exclusive shutdown/recovery owns retirement.
-                if instance.state is EnvironmentInstanceState.CLEAN:
-                    self.catalog.mark_instance_dirty(instance.instance_id)
-                    dirtied.append(instance.instance_id)
+            # CLEAN/DIRTY/DESTROYED catalog state cannot by itself prove that a
+            # physical generation attached to an active lease has disappeared.
+            # Remove stale bindings, but keep the lease fence. Only TTL expiry or
+            # shutdown_cleanup() after global workload convergence may release it.
+            for row in rows:
+                self.catalog.unbind_if_bound(row.role, row.scope)
 
         return EnvironmentInstanceReconciliation(
             tuple(sorted(set(dirtied))),
             tuple(sorted(set(released))),
         )
 
-
-
-from threading import Lock
-
-from noetrium_platform.foundation.kernel.concurrency.api import (
-    HeartbeatSchedulerPort,
-    HeartbeatSpec,
-    ScheduledTaskHandlePort,
-    TaskContextPort,
-    TaskGroupPort,
-)
-
-
-class EnvironmentInstanceLeaseHeartbeatError(RuntimeError):
-    """An environment checkout lease renewal lost authority or failed."""
-
-
-class EnvironmentInstanceLeaseHeartbeatGuard:
-    """Structured periodic renewal for one or more environment generations."""
-
-    def __init__(
-        self,
-        *,
-        authority: EnvironmentInstanceLeaseAuthority,
-        handles: tuple[EnvironmentInstanceLeaseHandle, ...],
-        task_group: TaskGroupPort,
-        heartbeat_scheduler: HeartbeatSchedulerPort,
-        lane_id: str,
-        lane_capacity: int | None = None,
-        policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
-    ) -> None:
-        if not handles:
-            raise ValueError("environment lease heartbeat requires handles")
-        instance_ids = tuple(handle.instance.instance_id for handle in handles)
-        if len(set(instance_ids)) != len(instance_ids):
-            raise ValueError("environment lease heartbeat instance ids must be unique")
-        if not lane_id.strip():
-            raise ValueError("environment lease heartbeat lane_id required")
-        if lane_capacity is not None and lane_capacity <= 0:
-            raise ValueError("environment lease heartbeat lane capacity must be positive")
-        self._authority = authority
-        self._handles = handles
-        self._task_group = task_group
-        self._heartbeat_scheduler = heartbeat_scheduler
-        self._lane_id = lane_id
-        self._lane_capacity = lane_capacity
-        self._policy = policy
-        self._lock = Lock()
-        self._scheduled: ScheduledTaskHandlePort | None = None
-        self._closing = False
-        self._closed = False
-
-    @property
-    def handles(self) -> tuple[EnvironmentInstanceLeaseHandle, ...]:
-        with self._lock:
-            return self._handles
-
-    def start(self) -> None:
-        with self._lock:
-            if self._closed:
-                raise EnvironmentInstanceLeaseHeartbeatError(
-                    "environment lease heartbeat is closed"
-                )
-            if self._closing:
-                raise EnvironmentInstanceLeaseHeartbeatError("environment lease heartbeat is closing")
-            if self._scheduled is not None:
-                return
-            instance_ids = tuple(
-                handle.instance.instance_id for handle in self._handles
-            )
-            self._scheduled = self._heartbeat_scheduler.register(
-                self._task_group.group_id,
-                HeartbeatSpec(
-                    heartbeat_id="environment-instance-lease:" + ",".join(instance_ids),
-                    lane_id=self._lane_id,
-                    interval_seconds=self._policy.renewal_interval_seconds,
-                    initial_delay_seconds=self._policy.renewal_interval_seconds,
-                    lane_capacity=self._lane_capacity,
-                ),
-                self._renew_once,
-            )
-
-    def _renew_once(self, context: TaskContextPort) -> None:
-        context.checkpoint()
-        with self._lock:
-            handles = self._handles
-        renewed = self._authority.renew_many(handles)
-        with self._lock:
-            self._handles = renewed
-        context.checkpoint()
-
-    def assert_healthy(self) -> None:
-        with self._lock:
-            scheduled = self._scheduled
-        if scheduled is None:
-            return
-        try:
-            scheduled.assert_healthy()
-            self._task_group.assert_healthy()
-        except BaseException as exc:
-            raise EnvironmentInstanceLeaseHeartbeatError(
-                f"environment lease heartbeat failed: {type(exc).__name__}: {exc}"
-            ) from exc
-
-    def close(self) -> None:
-        with self._lock:
-            if self._closed:
-                return
-            self._closing = True
-            scheduled = self._scheduled
-        if scheduled is not None:
-            # Teardown cancels future renewal authority. Historical heartbeat
-            # failure remains observable through assert_healthy()/task-group
-            # evidence, but must not permanently block exact-generation release.
-            # Any already-dispatched renewal is fenced by the allocation/lease
-            # generation and therefore cannot mutate a replacement generation.
-            scheduled.cancel()
-        with self._lock:
-            self._closed = True
-            self._closing = False
-
-
-class EnvironmentInstanceLeaseHeartbeatFactory:
-    def __init__(
-        self,
-        *,
-        authority: EnvironmentInstanceLeaseAuthority,
-        task_group: TaskGroupPort,
-        heartbeat_scheduler: HeartbeatSchedulerPort,
-        lane_id: str,
-        lane_capacity: int | None = None,
-        policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
-    ) -> None:
-        self._authority = authority
-        self._task_group = task_group
-        self._heartbeat_scheduler = heartbeat_scheduler
-        self._lane_id = lane_id
-        self._lane_capacity = lane_capacity
-        self._policy = policy
-
-    @property
-    def policy(self) -> EnvironmentInstanceLeasePolicy:
-        return self._policy
-
-    def create(
-        self,
-        handles: tuple[EnvironmentInstanceLeaseHandle, ...],
-    ) -> EnvironmentInstanceLeaseHeartbeatGuard:
-        return EnvironmentInstanceLeaseHeartbeatGuard(
-            authority=self._authority,
-            handles=handles,
-            task_group=self._task_group,
-            heartbeat_scheduler=self._heartbeat_scheduler,
-            lane_id=self._lane_id,
-            lane_capacity=self._lane_capacity,
-            policy=self._policy,
-        )
-
-
 __all__ = [
     "DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY",
     "EnvironmentInstanceLeaseAuthority",
     "EnvironmentInstanceLeaseHandle",
-    "EnvironmentInstanceLeaseHeartbeatError",
-    "EnvironmentInstanceLeaseHeartbeatFactory",
-    "EnvironmentInstanceLeaseHeartbeatGuard",
     "EnvironmentInstanceLeasePolicy",
     "EnvironmentInstanceReconciliation",
 ]

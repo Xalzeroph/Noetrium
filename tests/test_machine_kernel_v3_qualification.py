@@ -27,6 +27,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineProgramRef,
     MachineExecutor,
     MachineSnapshot,
+    MachineStateDelta,
     NIREnvelope,
     ProgramLock,
     TransitionProposal,
@@ -51,8 +52,8 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
 )
 from noetrium_platform.infrastructure.reliability.effect.runtime import (
     EffectReconciliationService,
-    InMemoryEffectIntentJournal,
-    SQLiteEffectIntentJournal,
+    memory_effect_intent_journal,
+    sqlite_effect_intent_journal,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -234,7 +235,7 @@ class _Provider:
 
 def test_effect_unknown_stays_unknown_and_uncommitted() -> None:
     intent = _intent()
-    journal = InMemoryEffectIntentJournal()
+    journal = memory_effect_intent_journal()
     journal.prepare(intent)
     provider = _Provider(EffectReconciliationProof(
         intent.request_id, EffectReconciliationDisposition.UNKNOWN, None,
@@ -248,7 +249,7 @@ def test_effect_unknown_stays_unknown_and_uncommitted() -> None:
 
 def test_effect_reconciliation_rejects_wrong_request_digest() -> None:
     intent = _intent()
-    journal = InMemoryEffectIntentJournal()
+    journal = memory_effect_intent_journal()
     journal.prepare(intent)
     wrong = _effect(_intent("b" * 64), EffectCertainty.EFFECT_CONFIRMED)
     provider = _Provider(EffectReconciliationProof(
@@ -261,7 +262,7 @@ def test_effect_reconciliation_rejects_wrong_request_digest() -> None:
 
 def test_effect_not_applied_requires_authoritative_no_effect() -> None:
     intent = _intent()
-    journal = InMemoryEffectIntentJournal()
+    journal = memory_effect_intent_journal()
     journal.prepare(intent)
     provider = _Provider(EffectReconciliationProof(
         intent.request_id, EffectReconciliationDisposition.NOT_APPLIED,
@@ -273,7 +274,7 @@ def test_effect_not_applied_requires_authoritative_no_effect() -> None:
 def test_effect_reconciliation_is_idempotent_after_restart(tmp_path) -> None:
     intent = _intent()
     path = tmp_path / "effects.sqlite"
-    first_journal = SQLiteEffectIntentJournal(path)
+    first_journal = sqlite_effect_intent_journal(path)
     first_journal.prepare(intent)
     first_provider = _Provider(EffectReconciliationProof(
         intent.request_id, EffectReconciliationDisposition.APPLIED,
@@ -289,7 +290,7 @@ def test_effect_reconciliation_is_idempotent_after_restart(tmp_path) -> None:
         def reconcile(self, intent, record):
             raise AssertionError("terminal reconciliation must not call provider")
 
-    reopened = SQLiteEffectIntentJournal(path)
+    reopened = sqlite_effect_intent_journal(path)
     second = EffectReconciliationService(reopened, _MustNotCall()).reconcile(
         intent.intent_id
     )
@@ -330,7 +331,7 @@ def test_worker_replay_is_idempotent_and_does_not_reinvoke_worker() -> None:
         def propose(self, envelope, state):
             calls.append(envelope.envelope_digest)
             proposal = TransitionProposal(
-                envelope.machine_id, envelope.command_id, state.revision, {"ok": True},
+                envelope.machine_id, envelope.command_id, state.revision, MachineStateDelta.set(("ok",), True),
             )
             return WorkerReply(
                 proposal,
@@ -354,7 +355,7 @@ def test_worker_rejects_bad_signature_without_commit() -> None:
     class Worker:
         def propose(self, envelope, state):
             proposal = TransitionProposal(
-                envelope.machine_id, envelope.command_id, state.revision, {"bad": True},
+                envelope.machine_id, envelope.command_id, state.revision, MachineStateDelta.set(("bad",), True),
             )
             return WorkerReply(proposal, "not-a-valid-signature")
     runtime = MachineExecutor(
@@ -377,7 +378,7 @@ def test_worker_rejects_unauthorized_scope() -> None:
         command=_command(scope=("admin.write",)),
     )
     proposal = TransitionProposal(
-        envelope.machine_id, envelope.command_id, 0, {},
+        envelope.machine_id, envelope.command_id, 0, MachineStateDelta(),
     )
     reply = WorkerReply(
         proposal, authenticator.sign(envelope.envelope_digest, proposal.proposal_digest)
@@ -392,7 +393,7 @@ def test_worker_rejects_wrong_program_digest() -> None:
         version=1, machine_kind=identity.kind, program_digest=canonical_digest("wrong"),
         command=_command(),
     )
-    proposal = TransitionProposal(envelope.machine_id, envelope.command_id, 0, {})
+    proposal = TransitionProposal(envelope.machine_id, envelope.command_id, 0, MachineStateDelta())
     reply = WorkerReply(
         proposal, authenticator.sign(envelope.envelope_digest, proposal.proposal_digest)
     )
@@ -406,7 +407,7 @@ def test_worker_rejects_expired_stale_proposal() -> None:
         version=1, machine_kind=identity.kind, program_digest=program.program_digest,
         command=_command(),
     )
-    proposal = TransitionProposal(envelope.machine_id, envelope.command_id, 1, {})
+    proposal = TransitionProposal(envelope.machine_id, envelope.command_id, 1, MachineStateDelta())
     reply = WorkerReply(
         proposal, authenticator.sign(envelope.envelope_digest, proposal.proposal_digest)
     )

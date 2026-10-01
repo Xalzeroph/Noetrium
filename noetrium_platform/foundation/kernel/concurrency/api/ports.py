@@ -50,6 +50,15 @@ class ExecutionPermitPort(Protocol):
         cancellation: CancellationTokenPort | None,
     ) -> ExecutionPermitLeasePort: ...
 
+    def try_acquire(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> ExecutionPermitLeasePort | None: ...
+
     def acquire_many(
         self,
         owner_group_id: str,
@@ -103,6 +112,16 @@ class ExecutorPort(Protocol):
         deadline: Deadline | None = None,
         **kwargs: Any,
     ) -> TaskHandlePort[T]: ...
+
+    def try_submit(
+        self,
+        spec: ExecutionSpec,
+        fn: Callable[..., T],
+        /,
+        *args: Any,
+        deadline: Deadline | None = None,
+        **kwargs: Any,
+    ) -> TaskHandlePort[T] | None: ...
 
 
 class SerialActorPort(Protocol):
@@ -168,6 +187,7 @@ class HeartbeatSchedulerPort(Protocol):
         deadline: Deadline | None = None,
         **kwargs: Any,
     ) -> ScheduledTaskHandlePort: ...
+    def assert_healthy(self) -> None: ...
     def snapshot(self) -> tuple[HeartbeatTopologySnapshot, ...]: ...
 
 
@@ -209,6 +229,18 @@ class ExecutionAuthorityProviderPort(Protocol):
         cancellation: CancellationTokenPort | None = None,
         **kwargs: Any,
     ) -> Any: ...
+
+    def try_submit(
+        self,
+        owner_group_id: str,
+        spec: ExecutionSpec,
+        fn: Callable[..., T],
+        /,
+        *args: Any,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+        **kwargs: Any,
+    ) -> Any | None: ...
 
     def submit_atomic_batch(
         self,

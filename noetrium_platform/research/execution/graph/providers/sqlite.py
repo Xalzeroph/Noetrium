@@ -26,6 +26,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionNotFound,
     ResearchGraphExecutionSnapshot,
+    ResearchGraphFailureProvenance,
     ResearchGraphLeaseRenewal,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
@@ -44,7 +45,7 @@ class SQLiteResearchGraphExecutionStore:
     effects, evidence and provider state stay in their lower canonical authorities.
     """
 
-    SCHEMA_VERSION = 3
+    SCHEMA_VERSION = 4
 
     def __init__(self, path: str | Path, *, timeout_seconds: float = 30.0) -> None:
         if timeout_seconds <= 0:
@@ -128,6 +129,7 @@ class SQLiteResearchGraphExecutionStore:
             "retry_not_before_ns INTEGER,"
             "failure_type TEXT,"
             "failure_message TEXT,"
+            "failure_provenance_json TEXT,"
             "blockers_json TEXT NOT NULL,"
             "PRIMARY KEY(execution_id,node_id),"
             "FOREIGN KEY(execution_id) REFERENCES research_graph_executions(execution_id)"
@@ -147,6 +149,7 @@ class SQLiteResearchGraphExecutionStore:
             "finished_at_ns INTEGER,"
             "failure_type TEXT,"
             "failure_message TEXT,"
+            "failure_provenance_json TEXT,"
             "PRIMARY KEY(execution_id,node_id,attempt_number),"
             "FOREIGN KEY(execution_id,node_id) "
             "REFERENCES research_graph_nodes(execution_id,node_id)"
@@ -196,6 +199,52 @@ class SQLiteResearchGraphExecutionStore:
             raise RuntimeError("research graph blockers are corrupt")
         return tuple(values)
 
+    @staticmethod
+    def _encode_failure_provenance(
+        provenance: ResearchGraphFailureProvenance,
+    ) -> str:
+        if not isinstance(provenance, ResearchGraphFailureProvenance):
+            raise TypeError("research graph failure provenance must be typed")
+        return json.dumps(
+            provenance.as_payload(),
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
+    @staticmethod
+    def _decode_failure_provenance(
+        raw: object,
+    ) -> ResearchGraphFailureProvenance | None:
+        if raw is None:
+            return None
+        value = json.loads(str(raw))
+        if not isinstance(value, dict):
+            raise RuntimeError("research graph failure provenance is corrupt")
+        provenance = ResearchGraphFailureProvenance(
+            qualified_type=str(value["qualified_type"]),
+            error_digest=str(value["error_digest"]),
+            safe_message=str(value["safe_message"]),
+            traceback_frames=tuple(
+                str(row) for row in value.get("traceback_frames", ())
+            ),
+            cause_chain=tuple(str(row) for row in value.get("cause_chain", ())),
+            failure_id=(
+                None
+                if value.get("failure_id") is None
+                else str(value["failure_id"])
+            ),
+            evidence_refs=tuple(
+                str(row) for row in value.get("evidence_refs", ())
+            ),
+            lower_refs=tuple(str(row) for row in value.get("lower_refs", ())),
+        )
+        expected = value.get("provenance_digest")
+        if expected is not None and str(expected) != provenance.provenance_digest:
+            raise RuntimeError(
+                "research graph failure provenance digest mismatch"
+            )
+        return provenance
+
     @classmethod
     def _decode_node(cls, row: tuple[object, ...]) -> ResearchGraphNodeExecutionRecord:
         return ResearchGraphNodeExecutionRecord(
@@ -210,7 +259,8 @@ class SQLiteResearchGraphExecutionStore:
             retry_not_before_ns=None if row[8] is None else int(row[8]),
             failure_type=None if row[9] is None else str(row[9]),
             failure_message=None if row[10] is None else str(row[10]),
-            blocked_by_node_ids=cls._decode_blockers(row[11]),
+            failure_provenance=cls._decode_failure_provenance(row[11]),
+            blocked_by_node_ids=cls._decode_blockers(row[12]),
         )
 
     @staticmethod
@@ -228,6 +278,9 @@ class SQLiteResearchGraphExecutionStore:
             finished_at_ns=None if row[9] is None else int(row[9]),
             failure_type=None if row[10] is None else str(row[10]),
             failure_message=None if row[11] is None else str(row[11]),
+            failure_provenance=SQLiteResearchGraphExecutionStore._decode_failure_provenance(
+                row[12]
+            ),
         )
 
     @staticmethod
@@ -423,7 +476,7 @@ class SQLiteResearchGraphExecutionStore:
         row = conn.execute(
             "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
             "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
-            "failure_type,failure_message,blockers_json "
+            "failure_type,failure_message,failure_provenance_json,blockers_json "
             "FROM research_graph_nodes WHERE execution_id=? AND node_id=?",
             (execution_id, node_id),
         ).fetchone()
@@ -447,7 +500,7 @@ class SQLiteResearchGraphExecutionStore:
         rows = conn.execute(
             "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
             "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
-            "failure_type,failure_message,blockers_json "
+            "failure_type,failure_message,failure_provenance_json,blockers_json "
             "FROM research_graph_nodes WHERE execution_id=? "
             f"AND node_id IN ({placeholders}) ORDER BY node_id",
             (execution_id, *ordered_ids),
@@ -470,7 +523,7 @@ class SQLiteResearchGraphExecutionStore:
         rows = conn.execute(
             "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
             "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
-            "failure_type,failure_message,blockers_json "
+            "failure_type,failure_message,failure_provenance_json,blockers_json "
             "FROM research_graph_nodes WHERE execution_id=? ORDER BY node_id",
             (execution_id,),
         ).fetchall()
@@ -994,7 +1047,7 @@ class SQLiteResearchGraphExecutionStore:
                 conn.execute(
                     "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
                     "lease_owner_id=NULL,lease_expires_at_ns=NULL,retry_not_before_ns=NULL,"
-                    "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                    "failure_type=NULL,failure_message=NULL,failure_provenance_json=NULL,blockers_json='[]' "
                     "WHERE execution_id=? AND node_id=?",
                     (ResearchGraphLiveNodeState.CANCELLED.value, execution_id, target),
                 )
@@ -1596,7 +1649,7 @@ class SQLiteResearchGraphExecutionStore:
                 "UPDATE research_graph_nodes SET "
                 "state=?,attempt_number=?,attempt_id=?,lease_owner_id=?,"
                 "lease_expires_at_ns=?,retry_not_before_ns=NULL,"
-                "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                "failure_type=NULL,failure_message=NULL,failure_provenance_json=NULL,blockers_json='[]' "
                 "WHERE execution_id=? AND node_id=?",
                 (
                     ResearchGraphLiveNodeState.CLAIMED.value,
@@ -2021,12 +2074,16 @@ class SQLiteResearchGraphExecutionStore:
         now_ns: int,
         failure_type: str,
         failure_message: str,
+        failure_provenance: ResearchGraphFailureProvenance,
     ) -> ResearchGraphNodeExecutionRecord:
         now_ns = self._require_now(now_ns)
         if type(failure_type) is not str or not failure_type.strip():
             raise ValueError("research graph failure_type must be non-empty")
         if type(failure_message) is not str or not failure_message.strip():
             raise ValueError("research graph failure_message must be non-empty")
+        if not isinstance(failure_provenance, ResearchGraphFailureProvenance):
+            raise TypeError("research graph failure_provenance must be typed")
+        provenance_json = self._encode_failure_provenance(failure_provenance)
         with self._transaction() as conn:
             current = self._node_tx(conn, execution_id, node_id)
             self._require_active(
@@ -2039,24 +2096,27 @@ class SQLiteResearchGraphExecutionStore:
             conn.execute(
                 "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
                 "lease_owner_id=NULL,lease_expires_at_ns=NULL,"
-                "failure_type=?,failure_message=? "
+                "failure_type=?,failure_message=?,failure_provenance_json=? "
                 "WHERE execution_id=? AND node_id=?",
                 (
                     ResearchGraphLiveNodeState.FAILED.value,
                     failure_type.strip(),
                     failure_message.strip(),
+                    provenance_json,
                     execution_id,
                     node_id,
                 ),
             )
             conn.execute(
                 "UPDATE research_graph_attempts SET state=?,finished_at_ns=?,"
-                "failure_type=?,failure_message=? WHERE attempt_id=?",
+                "failure_type=?,failure_message=?,failure_provenance_json=? "
+                "WHERE attempt_id=?",
                 (
                     ResearchGraphAttemptState.FAILED.value,
                     now_ns,
                     failure_type.strip(),
                     failure_message.strip(),
+                    provenance_json,
                     attempt_id,
                 ),
             )
@@ -2412,7 +2472,7 @@ class SQLiteResearchGraphExecutionStore:
                     )
             conn.execute(
                 "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=?,"
-                "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                "failure_type=NULL,failure_message=NULL,failure_provenance_json=NULL,blockers_json='[]' "
                 "WHERE execution_id=? AND node_id=?",
                 (
                     ResearchGraphLiveNodeState.RETRY_WAIT.value,
@@ -2424,7 +2484,7 @@ class SQLiteResearchGraphExecutionStore:
             for node_id in descendants:
                 conn.execute(
                     "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=NULL,"
-                    "failure_type=NULL,failure_message=NULL,blockers_json='[]' "
+                    "failure_type=NULL,failure_message=NULL,failure_provenance_json=NULL,blockers_json='[]' "
                     "WHERE execution_id=? AND node_id=?",
                     (
                         ResearchGraphLiveNodeState.PENDING.value,
@@ -2635,7 +2695,7 @@ class SQLiteResearchGraphExecutionStore:
             row = conn.execute(
                 "SELECT execution_id,node_id,attempt_number,attempt_id,owner_id,"
                 "state,claimed_at_ns,lease_expires_at_ns,started_at_ns,"
-                "finished_at_ns,failure_type,failure_message "
+                "finished_at_ns,failure_type,failure_message,failure_provenance_json "
                 "FROM research_graph_attempts "
                 "WHERE execution_id=? AND node_id=? AND attempt_number=?",
                 (execution_id, node_id, attempt_number),
@@ -2657,7 +2717,7 @@ class SQLiteResearchGraphExecutionStore:
             rows = conn.execute(
                 "SELECT execution_id,node_id,attempt_number,attempt_id,owner_id,"
                 "state,claimed_at_ns,lease_expires_at_ns,started_at_ns,"
-                "finished_at_ns,failure_type,failure_message "
+                "finished_at_ns,failure_type,failure_message,failure_provenance_json "
                 "FROM research_graph_attempts "
                 "WHERE execution_id=? AND node_id=? ORDER BY attempt_number",
                 (execution_id, node_id),

@@ -259,7 +259,7 @@ def _research_identity_command(
         "project_src,module_name=sys.argv[1:];"
         "sys.path.insert(0,project_src);"
         "module=importlib.import_module(module_name);"
-        "from noetrium import api;"
+        "from noetrium.api import research_os as api;"
         "portfolio=module.PORTFOLIO;programs=module.PROGRAMS;"
         "assert isinstance(portfolio,api.ResearchPortfolio);"
         "assert isinstance(programs,tuple) and programs==portfolio.programs;"

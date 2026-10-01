@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
+import json
 from enum import StrEnum
 
 from noetrium_platform.foundation.kernel.kernel.context import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel.canonical import canonical_text
 
 
 class RiskLevel(StrEnum):
@@ -66,4 +68,11 @@ class FailureEnvelope:
     recommended_recovery: RecoveryAction | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        # Canonical JSON normalization is the single serialization authority.
+        # It handles immutable Mapping carriers without dataclasses.asdict()'s
+        # deepcopy/pickle path and preserves the same enum/dataclass semantics
+        # used by durable platform identities and ledgers.
+        value = json.loads(canonical_text(self))
+        if not isinstance(value, dict):
+            raise TypeError("failure envelope canonical form must be an object")
+        return value

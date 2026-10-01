@@ -1,7 +1,7 @@
-from .ledger import DirectoryModelRequestLedger
+from .ledger import SQLiteModelRequestLedger
 from .recorder import ReconstructableModelRequestRecorder
 
 __all__ = [
-    "DirectoryModelRequestLedger",
+    "SQLiteModelRequestLedger",
     "ReconstructableModelRequestRecorder",
 ]

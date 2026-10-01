@@ -62,7 +62,7 @@ class ArchitectureSourceIndex:
         return any(
             part.startswith(".rsync-") or part in {
                 "__pycache__", ".git", ".venv", "venv", "node_modules",
-                ".pytest_cache", ".local", ".server-state", "build", "dist",
+                ".pytest_cache", ".local", ".server-state", ".noetrium", "build", "dist",
             }
             for part in path.parts
         )
@@ -105,11 +105,20 @@ class ArchitectureSourceIndex:
 
 
 
+    @staticmethod
+    def _import_edge_key(package_roots: tuple[str, ...]) -> tuple[str, ...]:
+        if type(package_roots) is not tuple or any(
+            type(root) is not str or not root.strip()
+            for root in package_roots
+        ):
+            raise TypeError("architecture package roots must be non-empty text tuple")
+        return tuple(sorted(set(package_roots)))
+
     def seed_import_edges(self, package_roots: tuple[str, ...], edges) -> None:
-        self._import_edge_sets[tuple(package_roots)] = tuple(edges)
+        self._import_edge_sets[self._import_edge_key(package_roots)] = tuple(edges)
 
     def import_edges(self, package_roots: tuple[str, ...]):
-        return self._import_edge_sets.get(tuple(package_roots))
+        return self._import_edge_sets.get(self._import_edge_key(package_roots))
 
     def seed_imports(self, rows) -> None:
         """Seed compact import facts without retaining syntax trees."""

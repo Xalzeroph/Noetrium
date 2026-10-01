@@ -166,7 +166,7 @@ def audit_repository_boundary(root: Path, *, include_release_manifest: bool = Tr
 
 _DOWNSTREAM_IMPORT_SCHEMA = "downstream-project-import-policy.v2"
 _DOWNSTREAM_SCAN_EXCLUDES = frozenset({
-    ".git", ".hg", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".tox",
+    ".git", ".hg", ".mypy_cache", ".noetrium", ".pytest_cache", ".ruff_cache", ".tox",
     ".venv", "__pycache__", "build", "dist", "node_modules", "venv",
 })
 

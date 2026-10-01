@@ -14,6 +14,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="video-ablated controls"),
         ReferenceBaseline(baseline_id="baseline_03",description="existing automatic web-agent judges"),
     ),
-    blockers=("Matched execution requires released video-task pairs, website state and frozen Ego2WebJudge model/configuration.", "Web and video execution must generate Machine Journal and evaluator receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    blockers=("Matched execution requires released video-task pairs, website state and frozen Ego2WebJudge model/configuration.", "Web and video execution must generate Machine Journal and evaluator receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 __all__=["REPRODUCTION"]

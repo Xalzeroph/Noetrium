@@ -2,12 +2,12 @@ from noetrium_platform.foundation.kernel.kernel import MachineCut
 from .catalog import ExperimentationCatalogPort
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage, ReplayLevel
 from noetrium_platform.research.experimentation.binding import (
-    ResearchBindingContribution, ResearchBindingRequirements, ResearchCapabilityBinding,
+    ResearchBindingAssuranceGap, ResearchBindingContribution, ResearchBindingRequirements, ResearchCapabilityBinding,
     ResearchModelRoleBinding, ResearchModelRoleRequirement, ResearchParticipantBinding,
     ResearchParticipantRequirement, ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    AgentStudySpec, AnalysisDefinition, AnalysisResult, BenchmarkAssignmentMode, BenchmarkCutSpec, BenchmarkTaskSet, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
+    materialize_research_study_spec, AgentStudySpec, AnalysisDefinition, AnalysisResult, AssignmentWorkload, BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkTaskSet, benchmark_cut_requirements, requires_benchmark_cut, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
     PostHocEvaluationDefinition, PostHocEvaluationResult, Study, StudyModel, StudyParticipant,
     MeasurementRecord, MeasurementValue, MeasurementValueKind, ParticipantSchedule, ResearchRevision, ResearchStudyDefinition, StudyExecutionPolicy, StudyFactorSpec, StudyIntervention,
     TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation,
@@ -53,6 +53,7 @@ from .construction import (
 
 __all__ = [
     "MachineCut",
+    "ResearchBindingAssuranceGap",
     "ResearchBindingContribution",
     "ResearchCapabilityBinding",
     "ResearchModelRoleBinding",
@@ -83,8 +84,14 @@ __all__ = [
     "Study",
     "StudyModel",
     "StudyParticipant",
-    "BenchmarkAssignmentMode",
+    "AssignmentWorkload",
+    "BenchmarkCutRequirement",
+    "BenchmarkCutRequirement",
     "BenchmarkCutSpec",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
     "BenchmarkTaskSet",
     "BenchmarkSourceKind",
     "BenchmarkSourcePort",
@@ -267,8 +274,14 @@ __all__ = [
     'Study',
     'StudyModel',
     'StudyParticipant',
-    'BenchmarkAssignmentMode',
+    'AssignmentWorkload',
+    'BenchmarkCutRequirement',
+    'BenchmarkCutRequirement',
     'BenchmarkCutSpec',
+    'benchmark_cut_requirements',
+    'requires_benchmark_cut',
+    'benchmark_cut_requirements',
+    'requires_benchmark_cut',
     'BenchmarkTaskSet',
     'BenchmarkSourceKind',
     'BenchmarkSourcePort',
@@ -378,8 +391,6 @@ __all__ = [
     'StudyObservationTableAdapter',
 ]
 
-from noetrium_platform.research.experimentation.lifecycle.api import RunCheckpointManifest
-__all__ = tuple(__all__) + ("RunCheckpointManifest",)
 
 from noetrium_platform.research.experimentation.lifecycle.api import StudyVariantSpec
 __all__ = tuple(__all__) + ("StudyVariantSpec",)
@@ -390,7 +401,6 @@ __all__ = tuple(__all__) + ("VariantKind",)
 
 from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyProtocol,
-    StudyConcurrencyPolicy,
     VariantBinding,
     StudyAssignment,
     StudyExecutionPlan,
@@ -398,7 +408,6 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 __all__ = tuple(__all__) + (
     "StudyProtocol",
-    "StudyConcurrencyPolicy",
     "VariantBinding",
     "StudyAssignment",
     "ExperimentPlan",
@@ -606,3 +615,44 @@ from noetrium_platform.research.experimentation.workbench.api import (
     candidate_program_capability_payload,
 )
 __all__ = tuple(__all__) + ("candidate_program_capability_payload",)
+
+# Adjacent Execution-layer Method aggregate absorbed by Experimentation.
+from noetrium_platform.research.execution.api import (
+    ResearchComponent,
+    ResearchComponentBuilder,
+    ResearchComponentCall,
+    ResearchComponentResult,
+    ResearchComponentTransition,
+    ResearchEvent,
+    ResearchMethod,
+    ResearchMethodBuilder,
+    ResearchMethodDSL,
+    ResearchMethodContractDSL,
+    ResearchMethodComponentsDSL,
+    ResearchMethodFlowDSL,
+    ResearchComponentDSL,
+    ResearchMemoryDSL,
+    ResearchMethodCall,
+    ResearchMethodTransition,
+)
+
+__all__ = tuple(__all__) + (
+    "ResearchComponent",
+    "ResearchComponentBuilder",
+    "ResearchComponentCall",
+    "ResearchComponentResult",
+    "ResearchComponentTransition",
+    "ResearchEvent",
+    "ResearchMethod",
+    "ResearchMethodBuilder",
+    "ResearchMethodDSL",
+    "ResearchMethodContractDSL",
+    "ResearchMethodComponentsDSL",
+    "ResearchMethodFlowDSL",
+    "ResearchComponentDSL",
+    "ResearchMemoryDSL",
+    "ResearchMethodCall",
+    "ResearchMethodTransition",
+)
+
+__all__ = tuple(__all__) + ("materialize_research_study_spec",)

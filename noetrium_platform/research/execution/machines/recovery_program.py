@@ -154,6 +154,7 @@ class RecoveryDeciderRegistryPort(Protocol):
 class RecoveryDeciderRegistry(RecoveryDeciderRegistryPort):
     def __init__(self) -> None:
         self._deciders: dict[str, tuple[RecoveryDecider, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -178,6 +179,7 @@ class RecoveryDeciderRegistry(RecoveryDeciderRegistryPort):
             if current is not None and current != value:
                 raise ValueError(f"recovery decider already registered: {decider}")
             self._deciders[decider] = value
+            self._identity_digest_cache = None
 
     def resolve(self, decider: str) -> RecoveryDecider:
         if type(decider) is not str or not decider.strip():
@@ -200,10 +202,15 @@ class RecoveryDeciderRegistry(RecoveryDeciderRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (name, digest)
-                for name, (_, digest) in sorted(self._deciders.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (name, implementation_digest)
+                    for name, (_, implementation_digest)
+                    in sorted(self._deciders.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 @dataclass(frozen=True, slots=True)

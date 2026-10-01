@@ -9,7 +9,7 @@ from typing import Mapping
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
     OperationalModelEndpointReplica,
-    OperationalModelEndpointReplicaSet,
+    ModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
 from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity, JsonValue
@@ -86,7 +86,7 @@ def decode_operational_model_serving_inventory(
         return OperationalModelServingInventory(
             model=model,
             served_model_name=served_model_name,
-            replica_set=OperationalModelEndpointReplicaSet(tuple(replicas)),
+            replica_set=ModelEndpointReplicaSet(tuple(replicas)),
         )
     except (TypeError, ValueError) as exc:
         raise OperationalModelServingInventoryReadError(

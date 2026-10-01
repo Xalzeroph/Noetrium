@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gorilla_apibench",
-  "package_digest": "3b81d6ad3a1255676b4df53641cb842ea6809eecb6e3d01a99c532fa6ad1552b",
-  "definition_digest": "7bb75baf3129e1c697f3983b449731de7aef93baa2e4c90ddce0510cfa1879ca",
+  "package_digest": "d11566712aed6179df767930e942f9b7f60b302b47b423801a37b43c214317b5",
+  "definition_digest": "feffa1ad7896b5a458c5d71edf243ee91d119d071f0ba1ae7af88f4439cba23e",
   "source_registry_digest": "12af179a73f250303055fd7d92e165bdfd93683099413c34b186517a898113e4",
   "lifecycle": "catalogued",
   "identity": {
@@ -69,12 +69,6 @@
       "path": "research/reproductions/gorilla_apibench/fidelity.py",
       "declaration_digest": "cecb2554355d8d4204fb6c60885750d5fb8fd76dcff0c4e95e7eb4f05211bf57",
       "content_sha256": "d9ceedabcd001a3b96cee14b0dbdb97e9503f88df58147d69fe368adddae368d"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/gorilla_apibench/selection.py",
-      "declaration_digest": "e18b313aad69ebc03da027a51d897c60933fefa9237b2774ecc6207a5f6b05da",
-      "content_sha256": "3848f8537ab690f03d3514f6d268f1700c75287d61f175471e79636b20d36e2c"
     }
   ],
   "primary_executable": null,
@@ -85,8 +79,8 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_gorilla_apibench_v1.py",
-      "content_sha256": "c75425461b3b33bb2b15703efbc62b5bac9ae212d32e9a6e82a7d9ab91636e1e"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {

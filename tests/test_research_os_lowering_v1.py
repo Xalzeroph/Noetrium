@@ -9,7 +9,6 @@ from noetrium_platform.composition.research_os_lowering import (
     ResearchImplementationResolutionError,
     ResearchOSLoweringTarget,
     compile_callable_machine_definition,
-    compile_callable_method_definition,
     compile_research_os_lowering,
 )
 from noetrium_platform.composition.research_os_graph import (
@@ -17,6 +16,7 @@ from noetrium_platform.composition.research_os_graph import (
 )
 from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 from noetrium_platform.foundation.kernel.kernel import (
+    OperationExecutor,
     ExecutionContext,
     InMemoryMachineJournal,
     MachineKind,
@@ -27,12 +27,25 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodRuntimeContext,
 )
 from noetrium_platform.research.execution.machines import ResearchProgramHost
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+from noetrium_platform.research.execution.workflow.runtime import (
+    KernelOperationDispatcher,
+    execute_bound_method_program,
+)
 from noetrium_platform.product import research_os as api
 
 
 def _method(payload=None):
     return payload
+
+
+def _method_return(call):
+    return {"value": call.input_value}
+
+
+def _configure_method(method):
+    method.configure({"research_definition_id": "method"})
+    method.return_node("invoke", "test.method.invoke", _method_return)
+    return method
 
 
 def _metric(payload=None):
@@ -54,7 +67,7 @@ def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
 
 def test_lowering_partitions_paper_implementation_from_platform_requirement() -> None:
     builder = api.ResearchProgramBuilder("paper")
-    builder.method("method", implementation=_method)
+    builder.method("method", _configure_method, entrypoint="invoke")
     builder.model("planner", config={"role": "planner"})
     builder.environment("world", config={"family": "minecraft"})
     builder.node(
@@ -70,7 +83,7 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
 
     assert node.target is ResearchOSLoweringTarget.METHOD_MACHINE
     assert tuple(row.definition_id for row in node.implementations) == ("method",)
-    assert node.implementations[0].implementation is _method
+    assert node.implementations[0].method.program.program_digest == node.method_programs[0].program.program_digest
     assert tuple(row.definition_id for row in node.method_programs) == ("method",)
     assert node.method_programs[0].program.program_identity.implementation.method_id == (
         "method"
@@ -85,7 +98,7 @@ def test_lowering_partitions_paper_implementation_from_platform_requirement() ->
 
 def test_lowering_covers_executable_machine_routes_and_platform_only_workbench() -> None:
     builder = api.ResearchProgramBuilder("paper")
-    builder.method("method", implementation=_method)
+    builder.method("method", _configure_method, entrypoint="invoke")
     builder.metric("metric", implementation=_metric)
     builder.node(
         "method-node",
@@ -134,24 +147,23 @@ def test_lowering_covers_executable_machine_routes_and_platform_only_workbench()
     )
     for node_id in ("analysis", "selection", "figure", "table"):
         node = lowering.node(f"paper::{node_id}")
-        assert node.target is ResearchOSLoweringTarget.WORKBENCH
+        assert node.target is ResearchOSLoweringTarget.ANALYSIS_MACHINE
         assert node.implementations == ()
         assert node.machine_programs == ()
 
 
-def test_paper_callable_without_canonical_machine_target_fails_closed() -> None:
+def test_analysis_callable_lowers_to_generic_analysis_machine() -> None:
     builder = api.ResearchProgramBuilder("paper")
     builder.metric("metric", implementation=_metric)
     builder.analysis("analysis", definitions=("metric",))
     portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
 
-    with pytest.raises(
-        ResearchImplementationResolutionError,
-        match="no canonical Machine lowering target",
-    ):
-        compile_research_os_lowering(
-            compile_research_portfolio_graph(_revision(portfolio), portfolio)
-        )
+    lowering = compile_research_os_lowering(
+        compile_research_portfolio_graph(_revision(portfolio), portfolio)
+    )
+    node = lowering.node("paper::analysis")
+    assert node.target is ResearchOSLoweringTarget.ANALYSIS_MACHINE
+    assert node.machine_programs[0].machine_kind is MachineKind.ANALYSIS
 
 
 def test_import_resolution_fails_closed_when_frozen_source_identity_drifted() -> None:
@@ -162,14 +174,14 @@ def test_import_resolution_fails_closed_when_frozen_source_identity_drifted() ->
         source_digest="0" * 64,
     )
     definition = api.ResearchDefinition(
-        "method",
-        api.ResearchDefinitionKind.METHOD,
+        "metric",
+        api.ResearchDefinitionKind.METRIC,
         declared,
     )
     node = api.ResearchNode(
-        "method-node",
-        api.ResearchNodeKind.METHOD,
-        ("method",),
+        "analysis-node",
+        api.ResearchNodeKind.ANALYSIS,
+        ("metric",),
     )
     program = api.ResearchProgram("paper", (definition,), (node,), ())
     portfolio = api.ResearchPortfolio("suite", (program,))
@@ -182,15 +194,32 @@ def test_import_resolution_fails_closed_when_frozen_source_identity_drifted() ->
         compile_research_os_lowering(compilation)
 
 
-def test_plain_method_callable_compiles_to_machine_backed_umm_program(tmp_path) -> None:
+def test_research_method_configurer_lowers_to_machine_backed_method_program(tmp_path) -> None:
     builder = api.ResearchProgramBuilder("paper")
-    builder.method("method", implementation=_method, config={"mode": "test"})
-    definition = builder.freeze().definitions[0]
+    builder.method(
+        "method",
+        _configure_method,
+        entrypoint="invoke",
+        config={"mode": "test"},
+    )
+    builder.node(
+        "method-node",
+        kind=api.ResearchNodeKind.METHOD,
+        definitions=("method",),
+    )
+    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    definition = portfolio.programs[0].definitions[0]
 
-    program = compile_callable_method_definition(definition)
+    lowering = compile_research_os_lowering(
+        compile_research_portfolio_graph(_revision(portfolio), portfolio)
+    )
+    lowered = lowering.node("paper::method-node").method_programs[0]
+    program = lowered.program
+
     assert program.program_identity.implementation.method_id == "method"
-    assert program.program_identity.implementation.artifact_digest == (
-        definition.implementation_digest
+    assert lowered.definition_id == definition.definition_id
+    assert lowering.node("paper::method-node").implementations[0].declared.method_digest == (
+        definition.implementation.method_digest
     )
     assert program.graph.entrypoint == "invoke"
     assert program.configuration["research_definition_id"] == "method"
@@ -198,12 +227,13 @@ def test_plain_method_callable_compiles_to_machine_backed_umm_program(tmp_path) 
     runtime = bind_standard_method_runtime(
         program,
         MethodRuntimeContext(
-            ExecutionContext("research-os-run", "trace", "method-node")
+            ExecutionContext("research-os-run", "trace", "method-node"),
+            dispatcher=KernelOperationDispatcher(OperationExecutor()),
         ),
         state_root=tmp_path / "method-state",
         machine_id="research-os:paper:method",
     )
-    result = UniversalMethodMachine(max_steps=4).run(
+    result = execute_bound_method_program(
         program,
         runtime=runtime,
         input_value={"candidate": 7},
@@ -215,10 +245,10 @@ def test_plain_method_callable_compiles_to_machine_backed_umm_program(tmp_path) 
     assert (tmp_path / "method-state" / "journal").is_dir()
 
 
-
 def test_plain_metric_callable_compiles_to_research_program_host() -> None:
     builder = api.ResearchProgramBuilder("paper")
     builder.metric("metric", implementation=_metric, config={"name": "score"})
+    builder.evaluation("evaluation", definitions=("metric",))
     definition = builder.freeze().definitions[0]
 
     lowered = compile_callable_machine_definition(
@@ -226,12 +256,12 @@ def test_plain_metric_callable_compiles_to_research_program_host() -> None:
         machine_kind=MachineKind.EVALUATION,
     )
     assert lowered.program.kind is MachineKind.EVALUATION
-    assert lowered.operation.implementation_digest == definition.implementation_digest
+    assert lowered.operations[0].implementation_digest == definition.implementation_digest
 
     host = ResearchProgramHost(
         host_id="research-os.evaluation.metric",
         program=lowered.program,
-        operations=(lowered.operation,),
+        operations=lowered.operations,
         journal=InMemoryMachineJournal(),
     )
     execution = host.execute(
@@ -265,6 +295,7 @@ def test_experiment_callable_is_not_misrepresented_as_one_node_experiment_machin
 def test_zero_argument_callable_signature_is_compiled_without_typeerror_guessing() -> None:
     builder = api.ResearchProgramBuilder("paper")
     builder.metric("metric", implementation=_benchmark)
+    builder.evaluation("evaluation", definitions=("metric",))
     definition = builder.freeze().definitions[0]
     lowered = compile_callable_machine_definition(
         definition,
@@ -273,7 +304,7 @@ def test_zero_argument_callable_signature_is_compiled_without_typeerror_guessing
     host = ResearchProgramHost(
         host_id="research-os.evaluation.zero-arg",
         program=lowered.program,
-        operations=(lowered.operation,),
+        operations=lowered.operations,
         journal=InMemoryMachineJournal(),
     )
     execution = host.execute(
@@ -311,7 +342,7 @@ class _FalseyResolver:
 
 def test_falsey_invalid_resolver_is_not_silently_replaced() -> None:
     builder = api.ResearchProgramBuilder("paper")
-    builder.method("method", implementation=_method)
+    builder.method("method", _configure_method, entrypoint="invoke")
     builder.node(
         "method-node",
         kind=api.ResearchNodeKind.METHOD,

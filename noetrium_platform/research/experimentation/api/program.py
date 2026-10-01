@@ -1,8 +1,9 @@
 """StudyExecutionPlan -> ExperimentProgram compilation and execution.
 
-Each concurrency-preserving batch is one Machine transition. Observations are
-stored in serializable Program state, so crash recovery resumes at the next
-uncommitted batch rather than replaying an opaque matrix runner.
+The Experiment Machine owns one completion-driven scheduling frontier. Child
+Trial/Workload Machines remain the durable unit of physical work, so replay can
+reuse completed assignments while the parent keeps all declared concurrency
+slots saturated instead of imposing fixed wave barriers.
 """
 from __future__ import annotations
 
@@ -10,17 +11,17 @@ from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
+from queue import Queue
+from typing import Protocol, runtime_checkable
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
-    Deadline,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskFailureScope,
     TaskGroupPort,
 )
 from noetrium_platform.foundation.kernel.kernel import (
-    InMemoryMachineJournal,
     JsonObject,
     MachineJournalPort,
     MachineSnapshotStorePort,
@@ -29,6 +30,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
 )
 from noetrium_platform.research.execution.api import (
+    ArtifactReference,
+    ScopeIdentity,
+    ScopeKind,
     ExperimentConcern,
     ExperimentProgramBuilder,
     ProgramHandlerRegistry,
@@ -39,20 +43,43 @@ from noetrium_platform.research.execution.api import (
     ResearchProgramHost,
     core_program_handlers,
 )
-from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     BoundStudyExecutionPort,
-    ExperimentWorkloadFailure,
-    FailureDisposition,
-    FailureScope,
     StudyExecutionPlan,
     StudyAssignment,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
     StudyExecutionUnit,
     StudyMatrixExecutionReport,
     StudyMetricAggregate,
     StudyMetricAggregationPort,
     StudyMetricObservation,
 )
+
+
+@runtime_checkable
+class _BoundStudyPreparationPort(Protocol):
+    """Optional preparation seam on the canonical Study execution adapter."""
+
+    def prepare_bound(
+        self,
+        unit: StudyExecutionUnit,
+        bindings: tuple[object, ...],
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None: ...
+
+    def prepare_bound_variant(
+        self,
+        assignment: StudyAssignment,
+        binding: object,
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None: ...
 
 
 class ExperimentBatchKind(StrEnum):
@@ -126,8 +153,6 @@ class CompiledExperimentProgram:
             "batch_plan_digest": self.batch_plan_digest,
             "batch_cursor": 0,
             "observations": (),
-            "assignment_attempts": {},
-            "attempt_failures": (),
             "aggregates": (),
         }
 
@@ -148,52 +173,28 @@ def _units(plan: StudyExecutionPlan) -> tuple[StudyExecutionUnit, ...]:
 
 def _compile_batches(plan: StudyExecutionPlan) -> tuple[ExperimentBatch, ...]:
     units = _units(plan)
-    policy = plan.protocol.concurrency_policy
-    batches: list[ExperimentBatch] = []
-    ordinal = 0
-    if not policy.parallel_assignments:
-        limit = policy.max_parallel_repetitions
-        for start in range(0, len(units), limit):
-            selected = units[start:start + limit]
-            digests = tuple(
-                assignment.assignment_digest
-                for unit in selected
-                for assignment in unit.assignments
-            )
-            batches.append(ExperimentBatch.create(
-                batch_id=f"batch:{ordinal}",
-                kind=ExperimentBatchKind.REPETITION_UNITS,
-                unit_repetitions=tuple(unit.repetition for unit in selected),
-                assignment_digests=digests,
-            ))
-            ordinal += 1
-        return tuple(batches)
-
-    repetition_limit = policy.max_parallel_repetitions
-    variant_limit = policy.max_parallel_assignments
-    for start in range(0, len(units), repetition_limit):
-        active = units[start:start + repetition_limit]
-        offsets = {unit.repetition: 0 for unit in active}
-        while True:
-            selected: list[StudyAssignment] = []
-            repetitions: list[int] = []
-            for unit in active:
-                offset = offsets[unit.repetition]
-                rows = unit.assignments[offset:offset + variant_limit]
-                if rows:
-                    selected.extend(rows)
-                    repetitions.extend([unit.repetition] * len(rows))
-                    offsets[unit.repetition] += len(rows)
-            if not selected:
-                break
-            batches.append(ExperimentBatch.create(
-                batch_id=f"batch:{ordinal}",
-                kind=ExperimentBatchKind.PARALLEL_ASSIGNMENTS,
-                unit_repetitions=tuple(repetitions),
-                assignment_digests=tuple(row.assignment_digest for row in selected),
-            ))
-            ordinal += 1
-    return tuple(batches)
+    if not units:
+        return ()
+    # Assignment independence is already encoded by the scientific plan. The
+    # compiler never freezes a machine-specific parallelism number into that
+    # plan; physical admission belongs to the runtime execution pool.
+    assignments = tuple(
+        assignment
+        for unit in units
+        for assignment in unit.assignments
+    )
+    return (
+        ExperimentBatch.create(
+            batch_id="frontier:0",
+            kind=ExperimentBatchKind.PARALLEL_ASSIGNMENTS,
+            unit_repetitions=tuple(
+                assignment.repetition for assignment in assignments
+            ),
+            assignment_digests=tuple(
+                assignment.assignment_digest for assignment in assignments
+            ),
+        ),
+    )
 
 
 def compile_experiment_program(plan: StudyExecutionPlan) -> CompiledExperimentProgram:
@@ -207,8 +208,8 @@ def compile_experiment_program(plan: StudyExecutionPlan) -> CompiledExperimentPr
     program = (
         ExperimentProgramBuilder.create(
             program_id=f"experiment:{plan.protocol.study_id}",
-            version="2",
-            state_schema="experiment.program-state.v2",
+            version="1",
+            state_schema="experiment.program-state.v1",
             entrypoint="advance",
         )
         .semantic(
@@ -235,6 +236,27 @@ def compile_experiment_program(plan: StudyExecutionPlan) -> CompiledExperimentPr
     return CompiledExperimentProgram(plan, program, batches, batch_plan_digest)
 
 
+def _artifact_reference_json(reference: ArtifactReference) -> JsonObject:
+    return {
+        "reference_id": reference.reference_id,
+        "scope_kind": reference.scope.kind.value,
+        "scope_id": reference.scope.scope_id,
+        "artifact_id": reference.artifact_id,
+        "generation": reference.generation,
+    }
+
+
+def _artifact_reference_from_json(value: object) -> ArtifactReference:
+    if not isinstance(value, Mapping):
+        raise TypeError("experiment artifact reference state must be an object")
+    return ArtifactReference(
+        str(value["reference_id"]),
+        ScopeIdentity(ScopeKind(str(value["scope_kind"])), str(value["scope_id"])),
+        str(value["artifact_id"]),
+        int(value["generation"]),
+    )
+
+
 def _observation_json(observation: StudyMetricObservation) -> JsonObject:
     assignment = observation.assignment
     return {
@@ -242,21 +264,75 @@ def _observation_json(observation: StudyMetricObservation) -> JsonObject:
         "variant_id": assignment.variant_id,
         "repetition": assignment.repetition,
         "seed": assignment.seed,
-        "task_id": assignment.task_id,
+        "workload": {
+            "task_ids": assignment.workload.task_ids,
+            "task_graph_edges": tuple(
+                (
+                    edge.source_task_id,
+                    edge.target_task_id,
+                    edge.relation.value,
+                )
+                for edge in assignment.workload.task_graph.edges
+            ),
+            "workload_digest": assignment.workload.workload_digest,
+        },
         "assignment_digest": assignment.assignment_digest,
         "metrics": tuple((name, float(value)) for name, value in observation.metrics),
+        "trial_request_digest": observation.trial_request_digest,
+        "trial_receipt_digest": observation.trial_receipt_digest,
+        "trial_receipt_reference": (
+            None
+            if observation.trial_receipt_reference is None
+            else _artifact_reference_json(observation.trial_receipt_reference)
+        ),
+        "measurement_record_digests": observation.measurement_record_digests,
+        "evidence_refs": tuple(
+            _artifact_reference_json(row) for row in observation.evidence_refs
+        ),
+        "verifier_receipt_digest": observation.verifier_receipt_digest,
+        "observation_digest": observation.observation_digest,
     }
 
 
 def _observation_from_json(value: object) -> StudyMetricObservation:
     if not isinstance(value, Mapping):
         raise TypeError("experiment observation state row must be an object")
+    workload_value = value.get("workload")
+    if not isinstance(workload_value, Mapping):
+        raise TypeError("experiment observation workload must be an object")
+    task_ids_value = workload_value.get("task_ids")
+    if not isinstance(task_ids_value, (tuple, list)):
+        raise TypeError("experiment observation workload task_ids must be a sequence")
+    edges_value = workload_value.get("task_graph_edges", ())
+    if not isinstance(edges_value, (tuple, list)):
+        raise TypeError(
+            "experiment observation workload task_graph_edges must be a sequence"
+        )
+    workload = AssignmentWorkload(
+        tuple(str(task_id) for task_id in task_ids_value),
+        TaskGraph(
+            tuple(
+                sorted(
+                    (
+                        TaskGraphEdge(
+                            str(row[0]),
+                            str(row[1]),
+                            TaskGraphRelation(str(row[2])),
+                        )
+                        for row in edges_value
+                    )
+                )
+            )
+        ),
+    )
+    if workload.workload_digest != workload_value.get("workload_digest"):
+        raise ValueError("experiment observation workload digest mismatch")
     assignment = StudyAssignment(
         study_id=value["study_id"],
         variant_id=value["variant_id"],
         repetition=value["repetition"],
         seed=value["seed"],
-        task_id=value.get("task_id"),
+        workload=workload,
     )
     if assignment.assignment_digest != value.get("assignment_digest"):
         raise ValueError("experiment observation assignment digest mismatch")
@@ -264,7 +340,33 @@ def _observation_from_json(value: object) -> StudyMetricObservation:
     if not isinstance(metrics_value, (tuple, list)):
         raise TypeError("experiment observation metrics must be a sequence")
     metrics = tuple((row[0], float(row[1])) for row in metrics_value)
-    return StudyMetricObservation(assignment, metrics)
+    receipt_reference_value = value.get("trial_receipt_reference")
+    observation = StudyMetricObservation(
+        assignment,
+        metrics,
+        trial_request_digest=value.get("trial_request_digest"),
+        trial_receipt_digest=value.get("trial_receipt_digest"),
+        trial_receipt_reference=(
+            None
+            if receipt_reference_value is None
+            else _artifact_reference_from_json(receipt_reference_value)
+        ),
+        measurement_record_digests=tuple(
+            str(row) for row in value.get("measurement_record_digests", ())
+        ),
+        evidence_refs=tuple(
+            _artifact_reference_from_json(row)
+            for row in value.get("evidence_refs", ())
+        ),
+        verifier_receipt_digest=value.get("verifier_receipt_digest"),
+    )
+    expected_observation_digest = value.get("observation_digest")
+    if (
+        expected_observation_digest is not None
+        and observation.observation_digest != expected_observation_digest
+    ):
+        raise ValueError("experiment observation provenance digest mismatch")
+    return observation
 
 
 def _aggregate_json(value: StudyMetricAggregate) -> JsonObject:
@@ -280,7 +382,7 @@ def _aggregate_json(value: StudyMetricAggregate) -> JsonObject:
 
 
 def _aggregate_from_json(value: object) -> StudyMetricAggregate:
-    if not isinstance(value, dict):
+    if not isinstance(value, Mapping):
         raise TypeError("experiment aggregate state row must be an object")
     return StudyMetricAggregate(
         study_id=value["study_id"],
@@ -291,31 +393,6 @@ def _aggregate_from_json(value: object) -> StudyMetricAggregate:
         sample_variance=value["sample_variance"],
         standard_error=value["standard_error"],
     )
-
-
-@dataclass(frozen=True, slots=True)
-class _ParallelOutcome:
-    item: object
-    value: object | None = None
-    error: BaseException | None = None
-
-    def __post_init__(self) -> None:
-        if (self.value is None) == (self.error is None):
-            raise ValueError("parallel outcome requires exactly one value or error")
-
-
-@dataclass(frozen=True, slots=True)
-class _BatchAttemptFailure:
-    assignment_digests: tuple[str, ...]
-    error: BaseException
-
-    def __post_init__(self) -> None:
-        if type(self.assignment_digests) is not tuple or not self.assignment_digests:
-            raise ValueError("batch attempt failure requires assignment digests")
-        if len(self.assignment_digests) != len(set(self.assignment_digests)):
-            raise ValueError("batch attempt failure assignment digests must be unique")
-        if not isinstance(self.error, BaseException):
-            raise TypeError("batch attempt failure requires BaseException")
 
 
 class ExperimentProgramBinding:
@@ -330,6 +407,7 @@ class ExperimentProgramBinding:
         execution_binding_digest: str,
         execution_id: str,
         task_group: TaskGroupPort | None = None,
+        frontier_capacity: int = 1,
     ) -> None:
         if not isinstance(compiled, CompiledExperimentProgram):
             raise TypeError("experiment binding requires CompiledExperimentProgram")
@@ -347,10 +425,18 @@ class ExperimentProgramBinding:
         )
         self.compiled = compiled
         self.adapter = adapter
+        self._preparation = (
+            adapter
+            if isinstance(adapter, _BoundStudyPreparationPort)
+            else None
+        )
         self.aggregation = aggregation
+        if type(frontier_capacity) is not int or frontier_capacity <= 0:
+            raise ValueError("experiment frontier_capacity must be a positive integer")
         self.execution_binding_digest = execution_binding_digest
         self.execution_id = execution_id
         self.task_group = task_group
+        self.frontier_capacity = frontier_capacity
         self._assignment_by_digest = {
             row.assignment_digest: row for row in compiled.plan.assignments
         }
@@ -361,93 +447,166 @@ class ExperimentProgramBinding:
             row.variant.variant_id: row for row in compiled.plan.bindings
         }
 
-    def _parallel_collect(
+    @staticmethod
+    def _prepare_once(
+        index: int,
+        items: tuple[object, ...],
+        prepare,
+        prepared: set[int],
+    ) -> None:
+        if prepare is None or index < 0 or index >= len(items) or index in prepared:
+            return
+        prepare(items[index])
+        prepared.add(index)
+
+    def _parallel(
         self,
         items: tuple[object, ...],
         fn,
         *,
         batch_id: str,
-    ) -> tuple[_ParallelOutcome, ...]:
-        """Execute every ready item and preserve successes even when siblings fail."""
+        limit: int,
+        prepare=None,
+    ) -> tuple[object, ...]:
+        if type(limit) is not int or limit <= 0:
+            raise ValueError("parallel experiment limit must be positive")
+        # Without a platform TaskGroup there is no parallel execution authority.
+        # Direct/internal bindings therefore degrade mechanically to one slot;
+        # formal ResearchOS execution always injects the platform-owned group.
+        effective_limit = 1 if self.task_group is None else limit
+        prepared: set[int] = set()
 
-        if len(items) <= 1:
-            rows: list[_ParallelOutcome] = []
-            for item in items:
-                try:
-                    rows.append(_ParallelOutcome(item, value=fn(item)))
-                except BaseException as exc:
-                    rows.append(_ParallelOutcome(item, error=exc))
-            return tuple(rows)
+        if len(items) <= 1 or effective_limit == 1:
+            values: list[object] = []
+            for index, item in enumerate(items):
+                self._prepare_once(index, items, prepare, prepared)
+                self._prepare_once(index + 1, items, prepare, prepared)
+                values.append(fn(item))
+            return tuple(values)
+
         if self.task_group is None:
             raise RuntimeError("parallel experiment batch requires TaskGroupPort")
-        timeout = (
-            self.compiled.plan.protocol.concurrency_policy
-            .repetition_timeout_seconds
-        )
         invocation = uuid4().hex
-        handles = tuple(
-            (
-                item,
-                self.task_group.submit(
-                    ExecutionSpec(
-                        task_id=f"experiment:{batch_id}:{invocation}:{index}",
-                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                        failure_scope=TaskFailureScope.CALLER,
-                    ),
-                    lambda _context, owned=item: fn(owned),
-                    deadline=Deadline.after(timeout),
+        completion: Queue[int] = Queue()
+        active: dict[int, object] = {}
+        values: list[object | None] = [None] * len(items)
+        errors: list[BaseException] = []
+        next_index = 0
+        prepared_upto = 0
+
+        def prepare_through(stop: int) -> None:
+            nonlocal prepared_upto
+            target = min(len(items), max(prepared_upto, stop))
+            if prepare is not None:
+                for candidate_index in range(prepared_upto, target):
+                    prepare(items[candidate_index])
+            prepared_upto = target
+
+        def submit(index: int) -> None:
+            if index >= prepared_upto:
+                prepare_through(index + 1)
+            item = items[index]
+
+            def run(_context, owned=item, owned_index=index):
+                try:
+                    return fn(owned)
+                finally:
+                    completion.put(owned_index)
+
+            active[index] = self.task_group.submit(
+                ExecutionSpec(
+                    task_id=f"experiment:{batch_id}:{invocation}:{index}",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    failure_scope=TaskFailureScope.CALLER,
                 ),
+                run,
             )
-            for index, item in enumerate(items)
-        )
-        rows: list[_ParallelOutcome] = []
-        for item, handle in handles:
-            try:
-                rows.append(
-                    _ParallelOutcome(
-                        item,
-                        value=handle.result(timeout=timeout),
-                    )
-                )
-            except BaseException as exc:
-                rows.append(_ParallelOutcome(item, error=exc))
-        return tuple(rows)
 
-    def _execute_batch_attempt(
+        # Publish preparation for both the active wave and one complete
+        # replacement wave before workers can begin consuming the active wave.
+        # The frontier is monotonic: every item crosses preparation exactly once
+        # instead of repeatedly rescanning an overlapping lookahead window.
+        #
+        # Preparation/submission is part of the same ownership boundary as the
+        # workers already admitted by this rolling frontier.  If either fails,
+        # the caller must not unwind into authority teardown while those workers
+        # are still live.  Cancel every admitted handle and wait for physical
+        # convergence before propagating the primary error.
+        try:
+            prepare_through(2 * effective_limit)
+            while next_index < len(items) and len(active) < effective_limit:
+                submit(next_index)
+                next_index += 1
+
+            while active:
+                index = completion.get()
+                handle = active.pop(index)
+                try:
+                    values[index] = handle.result()
+                except BaseException as exc:
+                    errors.append(exc)
+                if next_index < len(items):
+                    # Extend the replacement frontier before making the next slot
+                    # runnable so startup work always leads execution.
+                    prepare_through(next_index + effective_limit + 1)
+                    submit(next_index)
+                    next_index += 1
+        except BaseException as primary:
+            convergence_errors: list[BaseException] = []
+            remaining = tuple(active.values())
+            for handle in remaining:
+                try:
+                    handle.cancel()
+                except BaseException as exc:
+                    convergence_errors.append(exc)
+            for handle in remaining:
+                try:
+                    handle.result()
+                except BaseException:
+                    # A cancelled/racing worker may report its own task failure;
+                    # the rolling-frontier failure remains the causal primary.
+                    pass
+            active.clear()
+            if convergence_errors:
+                raise ExceptionGroup(
+                    f"experiment batch abort convergence failed: {batch_id}",
+                    [primary, *convergence_errors],
+                ) from primary
+            raise
+
+        if errors:
+            raise ExceptionGroup(f"experiment batch failed: {batch_id}", errors)
+        if any(value is None for value in values):
+            raise RuntimeError("experiment rolling scheduler lost a result")
+        return tuple(values)
+
+    def _parallel_assignments(
         self,
-        batch: ExperimentBatch,
-        pending_assignment_digests: tuple[str, ...],
-    ) -> tuple[
-        tuple[StudyMetricObservation, ...],
-        tuple[_BatchAttemptFailure, ...],
-    ]:
-        plan = self.compiled.plan
-        pending = set(pending_assignment_digests)
-        if not pending:
-            return (), ()
-        if not pending.issubset(set(batch.assignment_digests)):
-            raise ValueError("experiment pending assignment is outside current batch")
+        assignments: tuple[StudyAssignment, ...],
+        fn,
+        *,
+        batch_id: str,
+        prepare=None,
+    ) -> tuple[object, ...]:
+        # One scheduler authority: the platform execution pool supplies the
+        # mechanical frontier. Scientific Study code never caps repetitions or
+        # assignments with machine-specific numbers. ResourceCompetition and
+        # downstream resource leases remain free to admit fewer tasks at runtime.
+        return self._parallel(
+            assignments,
+            fn,
+            batch_id=batch_id,
+            limit=min(self.frontier_capacity, max(1, len(assignments))),
+            prepare=prepare,
+        )
 
+    def _execute_batch(self, batch: ExperimentBatch) -> tuple[StudyMetricObservation, ...]:
+        plan = self.compiled.plan
         if batch.kind is ExperimentBatchKind.REPETITION_UNITS:
-            units: list[StudyExecutionUnit] = []
-            for repetition in batch.unit_repetitions:
-                unit = self._units_by_repetition[repetition]
-                digests = {
-                    row.assignment_digest for row in unit.assignments
-                }
-                selected = digests.intersection(pending)
-                if selected and selected != digests:
-                    raise ValueError(
-                        "experiment repetition unit has mixed durable completion state"
-                    )
-                if selected:
-                    units.append(unit)
+            units = tuple(self._units_by_repetition[row] for row in batch.unit_repetitions)
 
             def execute(unit: StudyExecutionUnit):
-                bindings = tuple(
-                    self._binding_by_variant[row.variant_id]
-                    for row in unit.assignments
-                )
+                bindings = tuple(self._binding_by_variant[row.variant_id] for row in unit.assignments)
                 values = tuple(
                     self.adapter.execute_bound(
                         unit,
@@ -456,53 +615,44 @@ class ExperimentProgramBinding:
                         execution_id=self.execution_id,
                     )
                 )
-                expected = {
-                    row.assignment_digest for row in unit.assignments
-                }
-                actual = tuple(
-                    row.assignment.assignment_digest for row in values
-                )
-                if (
-                    len(actual) != len(set(actual))
-                    or set(actual) != expected
-                ):
-                    raise ValueError(
-                        "experiment unit did not return exact assignment observations"
-                    )
+                expected = {row.assignment_digest for row in unit.assignments}
+                actual = tuple(row.assignment.assignment_digest for row in values)
+                if len(actual) != len(set(actual)) or set(actual) != expected:
+                    raise ValueError("experiment unit did not return exact assignment observations")
                 return values
 
-            outcomes = self._parallel_collect(
-                tuple(units),
+            def prepare_unit(unit: StudyExecutionUnit) -> None:
+                if self._preparation is None:
+                    return
+                bindings = tuple(
+                    self._binding_by_variant[row.variant_id]
+                    for row in unit.assignments
+                )
+                self._preparation.prepare_bound(
+                    unit,
+                    bindings,
+                    plan.plan_digest,
+                    execution_id=self.execution_id,
+                )
+
+            groups = self._parallel(
+                units,
                 execute,
                 batch_id=batch.batch_id,
+                limit=self.frontier_capacity,
+                prepare=(
+                    prepare_unit
+                    if self._preparation is not None
+                    else None
+                ),
             )
-            observations: list[StudyMetricObservation] = []
-            failures: list[_BatchAttemptFailure] = []
-            for outcome in outcomes:
-                unit = outcome.item
-                if not isinstance(unit, StudyExecutionUnit):
-                    raise TypeError("experiment repetition outcome lost unit identity")
-                digests = tuple(
-                    row.assignment_digest for row in unit.assignments
-                )
-                if outcome.error is not None:
-                    failures.append(
-                        _BatchAttemptFailure(digests, outcome.error)
-                    )
-                else:
-                    values = outcome.value
-                    if not isinstance(values, tuple):
-                        raise TypeError(
-                            "experiment repetition outcome must be observation tuple"
-                        )
-                    observations.extend(values)
-            return tuple(observations), tuple(failures)
+            return tuple(
+                observation
+                for group in groups
+                for observation in group
+            )
 
-        assignments = tuple(
-            self._assignment_by_digest[digest]
-            for digest in batch.assignment_digests
-            if digest in pending
-        )
+        assignments = tuple(self._assignment_by_digest[digest] for digest in batch.assignment_digests)
 
         def execute_variant(assignment: StudyAssignment):
             return self.adapter.execute_bound_variant(
@@ -512,93 +662,39 @@ class ExperimentProgramBinding:
                 execution_id=self.execution_id,
             )
 
-        outcomes = self._parallel_collect(
+        def prepare_variant(assignment: StudyAssignment) -> None:
+            if self._preparation is None:
+                return
+            self._preparation.prepare_bound_variant(
+                assignment,
+                self._binding_by_variant[assignment.variant_id],
+                plan.plan_digest,
+                execution_id=self.execution_id,
+            )
+
+        observations = self._parallel_assignments(
             assignments,
             execute_variant,
             batch_id=batch.batch_id,
-        )
-        observations: list[StudyMetricObservation] = []
-        failures: list[_BatchAttemptFailure] = []
-        for outcome in outcomes:
-            assignment = outcome.item
-            if not isinstance(assignment, StudyAssignment):
-                raise TypeError("experiment assignment outcome lost assignment identity")
-            if outcome.error is not None:
-                failures.append(
-                    _BatchAttemptFailure(
-                        (assignment.assignment_digest,),
-                        outcome.error,
-                    )
-                )
-            else:
-                observation = outcome.value
-                if not isinstance(observation, StudyMetricObservation):
-                    raise TypeError(
-                        "bound assignment execution must return StudyMetricObservation"
-                    )
-                if observation.assignment != assignment:
-                    raise ValueError(
-                        "bound assignment observation identity drift"
-                    )
-                observations.append(observation)
-        return tuple(observations), tuple(failures)
-
-    @staticmethod
-    def _failure_document(
-        failure: _BatchAttemptFailure,
-        attempts: Mapping[str, int],
-        *,
-        exhausted: bool,
-    ) -> JsonObject:
-        exc = failure.error
-        if isinstance(exc, ExperimentWorkloadFailure):
-            phase = exc.phase
-            code = exc.code
-            scope = exc.scope.value
-            disposition = exc.disposition.value
-            message = str(exc)
-        else:
-            descriptor = describe_exception(exc)
-            phase = "experiment_assignment"
-            code = descriptor.error_type
-            scope = FailureScope.TASK.value
-            disposition = FailureDisposition.TERMINAL.value
-            message = descriptor.safe_message
-        return {
-            "assignment_digests": failure.assignment_digests,
-            "attempts": tuple(
-                (digest, attempts[digest])
-                for digest in failure.assignment_digests
+            prepare=(
+                prepare_variant
+                if self._preparation is not None
+                else None
             ),
-            "phase": phase,
-            "code": code,
-            "scope": scope,
-            "disposition": disposition,
-            "retry_exhausted": exhausted,
-            "message": message,
-        }
-
-    @staticmethod
-    def _is_retryable_failure(failure: _BatchAttemptFailure) -> bool:
-        exc = failure.error
-        return (
-            isinstance(exc, ExperimentWorkloadFailure)
-            and exc.scope is FailureScope.TASK
-            and exc.disposition is FailureDisposition.RETRYABLE
         )
+        return tuple(observations)
 
     def open_session(
         self,
         *,
-        journal: MachineJournalPort | None = None,
+        journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
         machine_id: str | None = None,
     ) -> ResearchMachineSessionPort:
-        owned_journal = journal if journal is not None else InMemoryMachineJournal()
         host = ResearchProgramHost(
             host_id="experiment.program",
             program=self.compiled.program,
-            journal=owned_journal,
+            journal=journal,
             snapshot_store=snapshot_store,
             base_handlers=self.handlers(),
             dependency_identity={
@@ -633,7 +729,7 @@ class ExperimentProgramBinding:
     def execute(
         self,
         *,
-        journal: MachineJournalPort | None = None,
+        journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
         machine_id: str | None = None,
     ) -> StudyMatrixExecutionReport:
@@ -650,21 +746,29 @@ class ExperimentProgramBinding:
         if session.status is MachineStatus.RUNNABLE:
             run = session.run_until_blocked(
                 command_id_prefix=f"{session.machine_id}:drive",
-                max_steps=(
-                    len(self.compiled.batches)
-                    * self.compiled.plan.protocol.concurrency_policy.max_assignment_attempts
-                    + 2
-                ),
+                max_steps=len(self.compiled.batches) + 2,
             )
             if run.status is not MachineStatus.COMPLETED:
+                detail = ""
+                if run.status is MachineStatus.FAILED:
+                    failure = session.semantic_state.get("program_failure")
+                    if isinstance(failure, Mapping):
+                        detail = (
+                            f"; failure_code={failure.get('code')}"
+                            f"; cursor={failure.get('cursor')}"
+                            f"; visit={failure.get('visit')}"
+                            f"; error_digest={failure.get('error_digest')}"
+                            f"; message={failure.get('message')}"
+                        )
                 raise RuntimeError(
-                    f"ExperimentProgram stopped with status={run.status.value}"
+                    f"ExperimentProgram stopped with status={run.status.value}{detail}"
                 )
         elif session.status is not MachineStatus.COMPLETED:
             raise RuntimeError(
                 f"ExperimentProgram is not executable: status={session.status.value}"
             )
-        session.checkpoint()
+        # Every accepted ExperimentProgram transition is already durable in
+        # the journal; automatic full-snapshot persistence here is redundant.
         return experiment_report_from_data(self.compiled, session.data)
 
     def handlers(self) -> ProgramHandlerRegistry:
@@ -676,195 +780,43 @@ class ExperimentProgramBinding:
                 raise ValueError("experiment Program state plan digest drift")
             if data.get("batch_plan_digest") != self.compiled.batch_plan_digest:
                 raise ValueError("experiment Program state batch plan drift")
-            policy = self.compiled.plan.protocol.concurrency_policy
-            if policy.assignment_retry_policy != "retryable-task-failures-v1":
-                raise ValueError(
-                    "standard ExperimentProgram does not implement "
-                    f"retry policy {policy.assignment_retry_policy!r}"
-                )
             cursor = data.get("batch_cursor", 0)
-            if (
-                type(cursor) is not int
-                or cursor < 0
-                or cursor >= len(self.compiled.batches)
-            ):
+            if type(cursor) is not int or cursor < 0 or cursor >= len(self.compiled.batches):
                 raise ValueError("experiment batch cursor is invalid")
             existing = data.get("observations", ())
             if not isinstance(existing, (tuple, list)):
                 raise TypeError("experiment observations state must be a sequence")
-            attempts_value = data.get("assignment_attempts", {})
-            if not isinstance(attempts_value, Mapping):
-                raise TypeError(
-                    "experiment assignment_attempts state must be a mapping"
-                )
-            attempts = {
-                str(key): int(value)
-                for key, value in attempts_value.items()
-            }
-            failure_history = data.get("attempt_failures", ())
-            if not isinstance(failure_history, (tuple, list)):
-                raise TypeError(
-                    "experiment attempt_failures state must be a sequence"
-                )
-
             batch = self.compiled.batches[cursor]
-            observed_digests = {
-                _observation_from_json(row).assignment.assignment_digest
-                for row in existing
-            }
-            pending = tuple(
-                digest
-                for digest in batch.assignment_digests
-                if digest not in observed_digests
-            )
-            if not pending:
-                raise ValueError(
-                    "experiment batch cursor points to already completed batch"
-                )
-
-            observations, failures = self._execute_batch_attempt(
-                batch,
-                pending,
-            )
-            actual = tuple(
-                row.assignment.assignment_digest for row in observations
-            )
-            if len(actual) != len(set(actual)):
-                raise ValueError(
-                    "experiment batch attempt returned duplicate observations"
-                )
-            if not set(actual).issubset(set(pending)):
-                raise ValueError(
-                    "experiment batch attempt returned foreign observation"
-                )
-
-            attempted = set(actual)
-            for failure in failures:
-                attempted.update(failure.assignment_digests)
-            if attempted != set(pending):
-                raise ValueError(
-                    "experiment batch attempt did not account for every pending assignment"
-                )
-            for digest in pending:
-                attempts[digest] = attempts.get(digest, 0) + 1
-
+            observations = self._execute_batch(batch)
+            actual = tuple(row.assignment.assignment_digest for row in observations)
+            if set(actual) != set(batch.assignment_digests) or len(actual) != len(batch.assignment_digests):
+                raise ValueError("experiment batch observation identity mismatch")
             encoded = tuple(_observation_json(row) for row in observations)
-            merged_observations = tuple(existing) + encoded
-            failure_rows: list[JsonObject] = []
-            terminal = False
-            for failure in failures:
-                retryable = self._is_retryable_failure(failure)
-                exhausted = any(
-                    attempts[digest] >= policy.max_assignment_attempts
-                    for digest in failure.assignment_digests
-                )
-                if not retryable or exhausted:
-                    terminal = True
-                failure_rows.append(
-                    self._failure_document(
-                        failure,
-                        attempts,
-                        exhausted=exhausted,
-                    )
-                )
-
-            common_update: JsonObject = {
-                "observations": merged_observations,
-                "assignment_attempts": attempts,
-                "attempt_failures": (
-                    tuple(failure_history) + tuple(failure_rows)
-                ),
-            }
-            attempt_event = {
-                "type": "experiment_batch_attempt",
-                "batch_id": batch.batch_id,
-                "batch_digest": batch.batch_digest,
-                "attempted_assignment_count": len(pending),
-                "completed_assignment_count": len(observations),
-                "failed_work_item_count": len(failures),
-                "terminal": terminal,
-            }
-            if terminal:
-                return ProgramNodeResult(
-                    value={
-                        "batch_id": batch.batch_id,
-                        "batch_digest": batch.batch_digest,
-                        "terminal_failure": True,
-                    },
-                    state_update=common_update,
-                    status=MachineStatus.FAILED,
-                    events=(attempt_event,),
-                )
-
-            now_observed = {
-                _observation_from_json(row).assignment.assignment_digest
-                for row in merged_observations
-            }
-            remaining = tuple(
-                digest
-                for digest in batch.assignment_digests
-                if digest not in now_observed
-            )
-            if remaining:
-                return ProgramNodeResult(
-                    value={
-                        "batch_id": batch.batch_id,
-                        "batch_digest": batch.batch_digest,
-                        "remaining_assignment_digests": remaining,
-                    },
-                    state_update=common_update,
-                    next_node="advance",
-                    events=(attempt_event,),
-                )
-
             next_cursor = cursor + 1
-            common_update["batch_cursor"] = next_cursor
             return ProgramNodeResult(
-                value={
+                value={"batch_id": batch.batch_id, "batch_digest": batch.batch_digest},
+                state_update={
+                    "batch_cursor": next_cursor,
+                    "observations": tuple(existing) + encoded,
+                },
+                next_node="aggregate" if next_cursor == len(self.compiled.batches) else "advance",
+                events=({
+                    "type": "experiment_batch_completed",
                     "batch_id": batch.batch_id,
                     "batch_digest": batch.batch_digest,
-                },
-                state_update=common_update,
-                next_node=(
-                    "aggregate"
-                    if next_cursor == len(self.compiled.batches)
-                    else "advance"
-                ),
-                events=(
-                    attempt_event,
-                    {
-                        "type": "experiment_batch_completed",
-                        "batch_id": batch.batch_id,
-                        "batch_digest": batch.batch_digest,
-                        "observation_count": len(batch.assignment_digests),
-                    },
-                ),
+                    "observation_count": len(observations),
+                },),
             )
 
         def aggregate(request: ProgramNodeRequest) -> ProgramNodeResult:
             rows = request.data.get("observations", ())
             if not isinstance(rows, (tuple, list)):
                 raise TypeError("experiment observations state must be a sequence")
-            decoded = tuple(_observation_from_json(row) for row in rows)
-            expected_order = tuple(
-                row.assignment_digest for row in self.compiled.plan.assignments
-            )
-            by_digest = {
-                row.assignment.assignment_digest: row for row in decoded
-            }
-            actual = tuple(
-                row.assignment.assignment_digest for row in decoded
-            )
-            if (
-                len(actual) != len(set(actual))
-                or set(actual) != set(expected_order)
-            ):
-                raise ValueError(
-                    "experiment cannot aggregate incomplete/duplicate observations"
-                )
-            observations = tuple(
-                by_digest[digest] for digest in expected_order
-            )
+            observations = tuple(_observation_from_json(row) for row in rows)
+            expected = {row.assignment_digest for row in self.compiled.plan.assignments}
+            actual = tuple(row.assignment.assignment_digest for row in observations)
+            if len(actual) != len(set(actual)) or set(actual) != expected:
+                raise ValueError("experiment cannot aggregate incomplete/duplicate observations")
             aggregates = self.aggregation.aggregate(
                 self.compiled.plan.protocol,
                 observations,
@@ -878,9 +830,6 @@ class ExperimentProgramBinding:
             return ProgramNodeResult(
                 value={"report_digest": report_digest},
                 state_update={
-                    "observations": tuple(
-                        _observation_json(row) for row in observations
-                    ),
                     "aggregates": tuple(_aggregate_json(row) for row in aggregates),
                     "report_digest": report_digest,
                 },
@@ -898,7 +847,7 @@ class ExperimentProgramBinding:
             execute_batch,
             implementation_digest=canonical_digest({
                 "operation": "experiment.execute_batch",
-                "implementation_revision": 2,
+                "implementation_revision": 1,
             }),
         )
         registry.register(
@@ -906,7 +855,7 @@ class ExperimentProgramBinding:
             aggregate,
             implementation_digest=canonical_digest({
                 "operation": "experiment.aggregate",
-                "implementation_revision": 2,
+                "implementation_revision": 1,
             }),
         )
         return registry
@@ -916,7 +865,7 @@ def experiment_report_from_data(
     compiled: CompiledExperimentProgram,
     data: object,
 ) -> StudyMatrixExecutionReport:
-    if not isinstance(data, dict):
+    if not isinstance(data, Mapping):
         raise TypeError("experiment Program data must be an object")
     if data.get("plan_digest") != compiled.plan.plan_digest:
         raise ValueError("experiment report state belongs to another plan")

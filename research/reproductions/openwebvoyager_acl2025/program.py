@@ -1,28 +1,50 @@
 from __future__ import annotations
-from noetrium.api import AgentMethodSpec, AgentPhaseSpec
+
 from .fidelity import OPENWEBVOYAGER_FIDELITY
 
 OPENWEBVOYAGER_PHASES = (
-    AgentPhaseSpec("imitate", "openwebvoyager.imitate", "Warm-start a multimodal web policy from imitation trajectories."),
-    AgentPhaseSpec("explore", "openwebvoyager.explore", "Explore real websites and collect new task trajectories."),
-    AgentPhaseSpec("judge", "openwebvoyager.judge", "Score trajectories with an external general-purpose judge."),
-    AgentPhaseSpec("filter", "openwebvoyager.filter", "Retain successful trajectories as improved training evidence."),
-    AgentPhaseSpec("optimize", "openwebvoyager.optimize", "Update the policy and continue the exploration-feedback-optimization cycle."),
+    {
+        "phase_id": 'imitate',
+        "role": 'openwebvoyager.imitate',
+        "instruction": 'Warm-start a multimodal web policy from imitation trajectories.',
+    },
+    {
+        "phase_id": 'explore',
+        "role": 'openwebvoyager.explore',
+        "instruction": 'Explore real websites and collect new task trajectories.',
+    },
+    {
+        "phase_id": 'judge',
+        "role": 'openwebvoyager.judge',
+        "instruction": 'Score trajectories with an external general-purpose judge.',
+    },
+    {
+        "phase_id": 'filter',
+        "role": 'openwebvoyager.filter',
+        "instruction": 'Retain successful trajectories as improved training evidence.',
+    },
+    {
+        "phase_id": 'optimize',
+        "role": 'openwebvoyager.optimize',
+        "instruction": 'Update the policy and continue the exploration-feedback-optimization cycle.',
+    },
 )
 
-OPENWEBVOYAGER_METHOD_PROGRAM = AgentMethodSpec(
-    method_id="openwebvoyager",
-    implementation_version="2025-paper-protocol",
-    schema_version="openwebvoyager.phase-workflow.v1",
-    phases=OPENWEBVOYAGER_PHASES,
-    configuration={
-        "paper_uri": OPENWEBVOYAGER_FIDELITY.paper_uri,
-        "venue": OPENWEBVOYAGER_FIDELITY.venue,
-        "year": OPENWEBVOYAGER_FIDELITY.year,
-        "benchmark_ids": OPENWEBVOYAGER_FIDELITY.benchmark_ids,
-    },
-    evidence_obligations=("openwebvoyager.phase-transcript", "openwebvoyager.model-receipts"),
-    metric_names=("task_success", "agent_phase_count"),
-    artifact_kinds=("openwebvoyager_trajectory",),
-).compile()
-__all__ = ["OPENWEBVOYAGER_METHOD_PROGRAM", "OPENWEBVOYAGER_PHASES"]
+METHOD_SPEC = {
+    "method_id": 'openwebvoyager',
+    "version": '2025-paper-protocol',
+    "semantic_contract": 'openwebvoyager.phase-workflow.v1',
+    "entrypoint": OPENWEBVOYAGER_PHASES[0]["phase_id"],
+}
+
+def configure_method(method):
+    method.configure({'paper_uri': OPENWEBVOYAGER_FIDELITY.paper_uri, 'venue': OPENWEBVOYAGER_FIDELITY.venue, 'year': OPENWEBVOYAGER_FIDELITY.year, 'benchmark_ids': OPENWEBVOYAGER_FIDELITY.benchmark_ids})
+    method.policy(evidence=('openwebvoyager.phase-transcript', 'openwebvoyager.model-receipts'), metrics=('task_success', 'agent_phase_count'), artifacts=('openwebvoyager_trajectory',))
+    method.phases(OPENWEBVOYAGER_PHASES, max_cycles=None)
+
+METHOD_CONFIGURER = configure_method
+METHOD_ENTRYPOINT = METHOD_SPEC["entrypoint"]
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = ["METHOD_SPEC", "configure_method", "METHOD_CONFIGURER", "METHOD_ENTRYPOINT", "METHOD_CONFIGURER_ARGS", "METHOD_CONFIGURER_KWARGS", 'OPENWEBVOYAGER_PHASES']

@@ -106,6 +106,27 @@ class DurableAdapter:
             raise AssertionError("provider recovery handle drift")
 
 
+class ReadinessFailureAdapter(DurableAdapter):
+    def __init__(
+        self,
+        provider_state: dict[str, object],
+        *,
+        stop_fails: bool = False,
+    ) -> None:
+        super().__init__(provider_state)
+        self.stop_fails = stop_fails
+        self.stop_calls = 0
+
+    def wait_ready(self, process, launch):
+        raise RuntimeError("synthetic readiness failure")
+
+    def stop(self, process, launch):
+        self.stop_calls += 1
+        if self.stop_fails:
+            raise RuntimeError("synthetic stop failure")
+        return super().stop(process, launch)
+
+
 class LegacyCrashAdapter:
     def __init__(self) -> None:
         self.start_calls = 0
@@ -172,6 +193,76 @@ class ServicePreparedStartRecoveryV146Tests(unittest.TestCase):
             with self.assertRaises(ServiceStartRecoveryRequired):
                 make_service_supervisor(state_store, second).start_exact(contract())
             self.assertEqual(second.start_calls, 0)
+
+    def test_readiness_failure_stops_exact_new_process_and_aborts_intent(self) -> None:
+        with TemporaryDirectory() as td:
+            state_store = FileServiceStateStore(Path(td) / "service.json")
+            provider: dict[str, object] = {}
+            adapter = ReadinessFailureAdapter(provider)
+
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "synthetic readiness failure",
+            ):
+                make_service_supervisor(
+                    state_store,
+                    adapter,
+                ).start_exact(contract())
+
+            self.assertEqual(adapter.stop_calls, 1)
+            self.assertNotIn("process", provider)
+            self.assertEqual(state_store.read().phase, ServicePhase.EXITED)
+            journal_store = DirectoryServiceStartIntentStore(
+                Path(state_store.reference()).with_name(
+                    Path(state_store.reference()).name + ".start-intents"
+                )
+            )
+            self.assertEqual(
+                journal_store.unresolved(
+                    contract().service_id,
+                    contract().digest(),
+                ),
+                (),
+            )
+            self.assertEqual(journal_store.all()[0].phase.value, "aborted")
+
+    def test_failed_readiness_cleanup_is_crash_recoverable(self) -> None:
+        with TemporaryDirectory() as td:
+            state_store = FileServiceStateStore(Path(td) / "service.json")
+            provider: dict[str, object] = {}
+            first = ReadinessFailureAdapter(
+                provider,
+                stop_fails=True,
+            )
+
+            with self.assertRaises(ExceptionGroup):
+                make_service_supervisor(
+                    state_store,
+                    first,
+                ).start_exact(contract())
+
+            self.assertEqual(state_store.read().phase, ServicePhase.STOPPING)
+            self.assertIn("process", provider)
+
+            second = ReadinessFailureAdapter(provider)
+            recovered = make_service_supervisor(
+                state_store,
+                second,
+            ).start_exact(contract())
+            self.assertEqual(recovered.state.phase, ServicePhase.EXITED)
+            self.assertNotIn("process", provider)
+            self.assertIn(
+                "service-start-recovery:readiness-failure-cleanup",
+                recovered.evidence_refs,
+            )
+
+            third = DurableAdapter(provider)
+            restarted = make_service_supervisor(
+                state_store,
+                third,
+            ).start_exact(contract())
+            self.assertEqual(restarted.state.phase, ServicePhase.RUNNING)
+            self.assertIsNotNone(restarted.state.process)
 
     def test_recovery_handle_repr_never_exposes_opaque_payload(self) -> None:
         handle = ServiceStartRecoveryHandle.from_payload("provider.v1", b"top-secret-token")

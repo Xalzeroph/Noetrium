@@ -22,11 +22,10 @@ from .surfaces import (
     workflow_surface_reuse_scope,
 )
 from .effect_intents import EffectIntentOperationPort
-from .dispatch import OperationDispatchPort, OperationExecutionPort
+from .dispatch import OperationDispatchPort, OperationEffectBinding, OperationExecutionPort
 from .graph import WorkflowGraph, WorkflowGraphError, WorkflowStep
 from .method_machine import (
     AsyncMethodAgentLoopPort,
-    AsyncOperationDispatchPort,
     MethodAgentLoopPort,
     MethodAgentRequest,
     MethodAgentResult,
@@ -38,11 +37,9 @@ from .method_machine import (
     MethodEvidenceStatus,
     MethodExecutionClass,
     MethodEvidencePort,
-    MethodCheckpointStorePort,
     MethodEvent,
     MethodGraph,
     MethodInterrupt,
-    MethodMachinePort,
     MethodNodeHandler,
     MethodNodeKind,
     MethodNodeRequest,
@@ -69,11 +66,11 @@ __all__ = [
     "ExecutionTrialProtocolPort",
     "ExecutionTrialProtocolKind",
     "AgentMethodSpec", "AgentPhaseSpec", "MethodWorkflow",
-"EffectIntentOperationPort", "OperationDispatchPort", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
+"EffectIntentOperationPort", "OperationDispatchPort", "OperationEffectBinding", "OperationExecutionPort", "TrialCycleExecution", "WorkflowGraph",
     "WorkflowGraphError", "WorkflowParticipantRequirementError", "WorkflowStep", "WorkflowSurfaceBindingContext", "WorkflowSurfaceFactory",
     "WorkflowSurfaceReuseScope", "workflow_surface_id", "workflow_surface_reuse_scope",
-    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodAgentTargetHandler", "MethodCapabilityTargetHandler", "MethodAgentViewHandler", "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
-    "MethodInterrupt", "MethodMachinePort", "MethodChildMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
+    "AsyncMethodAgentLoopPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult", "MethodAgentTargetHandler", "MethodCapabilityTargetHandler", "MethodAgentViewHandler", "MethodCheckpoint", "MethodEvidenceStatus", "MethodExecutionClass", "MethodEvidencePort", "MethodEvent", "MethodGraph",
+    "MethodInterrupt", "MethodChildMachinePort", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest", "MethodNodeResult",
     "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder", "MethodRunResult", "MethodRunStatus",
     "MethodRuntimeContext", "MethodRuntimePort", "MethodRuntimeRequirements",
     "MethodSchemaPort", "analyze_method_runtime_requirements",
@@ -82,6 +79,7 @@ __all__ = [
 from .runtime_binding import (
     MethodRuntimeBindingPlan,
     MethodRuntimePortInventory,
+    ProgramScopedCapabilityPort,
     plan_method_runtime_binding,
 )
 
@@ -89,22 +87,27 @@ from .runtime_binding import (
 _RUNTIME_BINDING_API_EXPORTS = (
     "MethodRuntimeBindingPlan",
     "MethodRuntimePortInventory",
+    "ProgramScopedCapabilityPort",
     "plan_method_runtime_binding",
 )
 __all__ += _RUNTIME_BINDING_API_EXPORTS
 
 from .runtime_services import (
     MethodEvidenceFactoryPort,
+    MethodProgramExecutorPort,
     MethodRuntimeBinderPort,
     require_method_evidence_factory,
+    require_method_program_executor,
     require_method_runtime_binder,
 )
 
 
 _RUNTIME_SERVICE_API_EXPORTS = (
     "MethodEvidenceFactoryPort",
+    "MethodProgramExecutorPort",
     "MethodRuntimeBinderPort",
     "require_method_evidence_factory",
+    "require_method_program_executor",
     "require_method_runtime_binder",
 )
 __all__ += _RUNTIME_SERVICE_API_EXPORTS
@@ -119,6 +122,7 @@ __all__ = (
     "MethodWorkflow",
     "EffectIntentOperationPort",
     "OperationDispatchPort",
+    "OperationEffectBinding",
     "OperationExecutionPort",
     "TrialCycleExecution",
     "WorkflowGraph",
@@ -131,7 +135,6 @@ __all__ = (
     "workflow_surface_id",
     "workflow_surface_reuse_scope",
     "AsyncMethodAgentLoopPort",
-    "AsyncOperationDispatchPort",
     "MethodAgentLoopPort",
     "MethodAgentRequest",
     "MethodAgentResult",
@@ -139,14 +142,12 @@ __all__ = (
     "MethodCapabilityTargetHandler",
     "MethodAgentViewHandler",
     "MethodCheckpoint",
-    "MethodCheckpointStorePort",
     "MethodEvidenceStatus",
     "MethodExecutionClass",
     "MethodEvidencePort",
     "MethodEvent",
     "MethodGraph",
     "MethodInterrupt",
-    "MethodMachinePort",
     "MethodChildMachinePort",
     "MethodNodeHandler",
     "MethodNodeKind",
@@ -167,8 +168,10 @@ __all__ = (
     "MethodRuntimePortInventory",
     "plan_method_runtime_binding",
     "MethodEvidenceFactoryPort",
+    "MethodProgramExecutorPort",
     "MethodRuntimeBinderPort",
     "require_method_evidence_factory",
+    "require_method_program_executor",
     "require_method_runtime_binder",
     "environment_action_capability_payload",
     "environment_branch_action_spec",

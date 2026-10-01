@@ -19,7 +19,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
 )
 from noetrium_platform.research.execution.policy.composition import (
@@ -81,7 +80,7 @@ def _gate(network: _Network) -> ResourceCompetitionAdmissionGate:
     gate.register_group(
         "work",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
     return gate
 
@@ -131,7 +130,7 @@ def test_default_policy_does_not_yield_or_fail_closed_on_soft_link_telemetry() -
     gate.register_group(
         "aggressive",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
 
     lease = gate.acquire(

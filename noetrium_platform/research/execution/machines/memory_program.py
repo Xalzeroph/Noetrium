@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+import heapq
 import re
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -32,7 +33,6 @@ from .program import (
 from .rule_program import (
     ProgramRule,
     ProgramRuleSet,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -55,8 +55,6 @@ class MemoryPresetSpec:
         ):
             if type(value) is not int or value < 0:
                 raise ValueError(f"memory preset {name} must be a non-negative integer")
-        if self.max_records < 1 or self.recall_limit < 1:
-            raise ValueError("memory preset capacities must be positive")
 
     @property
     def digest(self) -> str:
@@ -169,6 +167,13 @@ def memory_rule_set() -> ProgramRuleSet:
                 semantic=MemoryConcern.WRITE.value,
             ),
             ProgramRule(
+                "update",
+                "memory.update",
+                "memory.default.update",
+                priority=100,
+                semantic=MemoryConcern.UPDATE.value,
+            ),
+            ProgramRule(
                 "retrieve",
                 "memory.retrieve",
                 "memory.default.retrieve",
@@ -197,7 +202,6 @@ def memory_rule_set() -> ProgramRuleSet:
                 semantic=MemoryConcern.CONSOLIDATION.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 
@@ -296,10 +300,14 @@ def default_memory_operations() -> ProgramHandlerRegistry:
         rows = [row for row in _records(data) if row.record_id != record.record_id]
         rows.append(record)
         max_records = data.get("max_records")
-        if type(max_records) is not int or max_records < 1:
+        if type(max_records) is not int or max_records < 0:
             raise ValueError("memory max_records is invalid")
-        evicted = rows[:-max_records] if len(rows) > max_records else []
-        rows = rows[-max_records:]
+        if max_records == 0:
+            evicted = rows
+            rows = []
+        else:
+            evicted = rows[:-max_records] if len(rows) > max_records else []
+            rows = rows[-max_records:]
         next_sequence = max(sequence + 1, record.ordinal)
         return ProgramNodeResult(
             value={
@@ -321,6 +329,94 @@ def default_memory_operations() -> ProgramHandlerRegistry:
             artifact_refs=record.artifact_refs,
         )
 
+    def update(request: ProgramNodeRequest) -> ProgramNodeResult:
+        data = _data(request)
+        payload = _payload(request)
+        record_id = payload.get("record_id")
+        if type(record_id) is not str or not record_id.strip():
+            raise ValueError("memory.update requires record_id")
+        patch = payload.get("patch")
+        if not isinstance(patch, Mapping):
+            raise TypeError("memory.update patch must be an object")
+        allowed = {
+            "kind",
+            "content",
+            "generation",
+            "state_digest",
+            "tags",
+            "verified",
+            "artifact_refs",
+            "metadata",
+        }
+        unknown = set(patch) - allowed
+        if unknown:
+            raise ValueError(
+                "memory.update patch contains unsupported fields: "
+                + ",".join(sorted(str(value) for value in unknown))
+            )
+
+        rows = _records(data)
+        updated: list[MemoryRecord] = []
+        before_digest = None
+        after_record = None
+        for row in rows:
+            if row.record_id != record_id:
+                updated.append(row)
+                continue
+            before_digest = row.record_digest
+            values = {
+                "kind": row.kind,
+                "content": row.content,
+                "generation": row.generation,
+                "state_digest": row.state_digest,
+                "tags": row.tags,
+                "verified": row.verified,
+                "artifact_refs": row.artifact_refs,
+                "metadata": row.metadata,
+            }
+            values.update(dict(patch))
+            tags = values["tags"]
+            refs = values["artifact_refs"]
+            metadata = values["metadata"]
+            if not isinstance(tags, (tuple, list)):
+                raise TypeError("memory.update tags must be a sequence")
+            if not isinstance(refs, (tuple, list)):
+                raise TypeError("memory.update artifact_refs must be a sequence")
+            if not isinstance(metadata, Mapping):
+                raise TypeError("memory.update metadata must be an object")
+            after_record = MemoryRecord(
+                record_id=row.record_id,
+                kind=values["kind"],
+                content=values["content"],
+                generation=values["generation"],
+                state_digest=values["state_digest"],
+                tags=tuple(tags),
+                verified=values["verified"],
+                ordinal=row.ordinal,
+                artifact_refs=tuple(refs),
+                metadata=dict(metadata),
+            )
+            updated.append(after_record)
+        if after_record is None or before_digest is None:
+            raise KeyError(record_id)
+        return ProgramNodeResult(
+            value={
+                "record_id": record_id,
+                "before_record_digest": before_digest,
+                "record_digest": after_record.record_digest,
+            },
+            state_update={
+                "records": tuple(row.as_payload() for row in updated),
+            },
+            events=({
+                "type": "memory_record_updated",
+                "record_id": record_id,
+                "before_record_digest": before_digest,
+                "record_digest": after_record.record_digest,
+            },),
+            artifact_refs=after_record.artifact_refs,
+        )
+
     def retrieve(request: ProgramNodeRequest) -> ProgramNodeResult:
         data = _data(request)
         payload = _payload(request)
@@ -338,9 +434,32 @@ def default_memory_operations() -> ProgramHandlerRegistry:
         require_verified = payload.get("require_verified", True)
         if type(require_verified) is not bool:
             raise TypeError("memory require_verified must be boolean")
+        kinds = payload.get("kinds", ())
+        if isinstance(kinds, str) or not isinstance(kinds, (tuple, list)):
+            raise TypeError("memory retrieval kinds must be a text sequence")
+        if any(type(value) is not str or not value.strip() for value in kinds):
+            raise ValueError("memory retrieval kinds must be non-empty text")
+        metadata_filter = payload.get("metadata_filter", {})
+        if not isinstance(metadata_filter, Mapping):
+            raise TypeError("memory retrieval metadata_filter must be an object")
+        excluded = payload.get("exclude_record_ids", ())
+        if isinstance(excluded, str) or not isinstance(excluded, (tuple, list)):
+            raise TypeError(
+                "memory retrieval exclude_record_ids must be a text sequence"
+            )
+        if any(type(value) is not str or not value.strip() for value in excluded):
+            raise ValueError(
+                "memory retrieval exclude_record_ids must be non-empty text"
+            )
+        include_records = payload.get("include_records", False)
+        if type(include_records) is not bool:
+            raise TypeError("memory retrieval include_records must be boolean")
+        min_score = payload.get("min_score")
+        if min_score is not None and type(min_score) is not int:
+            raise TypeError("memory retrieval min_score must be integer or None")
         limit = payload.get("limit", data.get("recall_limit"))
-        if type(limit) is not int or limit < 1:
-            raise ValueError("memory retrieval limit must be positive")
+        if type(limit) is not int or limit < 0:
+            raise ValueError("memory retrieval limit must be non-negative")
         overlap_weight = data.get("token_overlap_weight", 5)
         generation_bonus = data.get("generation_bonus", 2)
         if type(overlap_weight) is not int or type(generation_bonus) is not int:
@@ -348,24 +467,47 @@ def default_memory_operations() -> ProgramHandlerRegistry:
 
         query = _tokens(query_text + " " + " ".join(tags))
         scored: list[tuple[int, int, MemoryRecord]] = []
+        kind_filter = set(kinds)
+        excluded_ids = set(excluded)
+        metadata_filter_dict = dict(metadata_filter)
         for index, record in enumerate(_records(data)):
             if require_verified and not record.verified:
+                continue
+            if kind_filter and record.kind not in kind_filter:
+                continue
+            if record.record_id in excluded_ids:
+                continue
+            if any(
+                record.metadata.get(key) != value
+                for key, value in metadata_filter_dict.items()
+            ):
                 continue
             overlap = len(query & _tokens(record.content + " " + " ".join(record.tags)))
             score = overlap * overlap_weight
             if generation is not None and record.generation == generation:
                 score += generation_bonus
             score += min(record.ordinal, 100) // 10
-            if score > 0 or not query:
+            if (score > 0 or not query) and (
+                min_score is None or score >= min_score
+            ):
                 scored.append((score, index, record))
-        scored.sort(key=lambda item: (-item[0], -item[1], item[2].record_id))
-        selected = scored[:limit]
+        rank_key = lambda item: (-item[0], -item[1], item[2].record_id)
+        selected = (
+            []
+            if limit == 0
+            else heapq.nsmallest(limit, scored, key=rank_key)
+        )
         rows = tuple(item[2] for item in selected)
         query_id = "memory-query:" + canonical_digest({
             "query_text": query_text,
             "generation": generation,
             "tags": tuple(tags),
             "require_verified": require_verified,
+            "kinds": tuple(kinds),
+            "metadata_filter": metadata_filter_dict,
+            "exclude_record_ids": tuple(excluded),
+            "include_records": include_records,
+            "min_score": min_score,
             "limit": limit,
             "record_digests": tuple(row.record_digest for row in rows),
         })
@@ -380,6 +522,11 @@ def default_memory_operations() -> ProgramHandlerRegistry:
                 "record_ids": tuple(row.record_id for row in rows),
                 "record_digests": tuple(row.record_digest for row in rows),
                 "scores": tuple(item[0] for item in selected),
+                "records": (
+                    tuple(row.as_payload() for row in rows)
+                    if include_records
+                    else ()
+                ),
                 "artifact_refs": artifact_refs,
             },
             events=({
@@ -479,6 +626,14 @@ def default_memory_operations() -> ProgramHandlerRegistry:
         write,
         implementation_digest=canonical_digest({
             "operation": "memory.default.write",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.update",
+        update,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.update",
             "implementation_revision": 1,
         }),
     )

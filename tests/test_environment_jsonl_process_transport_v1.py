@@ -161,16 +161,9 @@ def test_close_retains_exact_process_identity_until_physical_exit_is_proven() ->
 
 
 class _FailingSubmitGroup:
-    def __init__(self, *, fail_on: int) -> None:
-        self.fail_on = fail_on
-        self.calls = 0
-
-    def submit(self, *args, **kwargs):
+    def submit_atomic_batch(self, *args, **kwargs):
         del args, kwargs
-        self.calls += 1
-        if self.calls == self.fail_on:
-            raise RuntimeError("simulated drain task registration failure")
-        return _Result(value=None)
+        raise RuntimeError("simulated drain task registration failure")
 
 
 class _ImmediateTerminationSupervisor:
@@ -189,17 +182,16 @@ class _ImmediateTerminationSupervisor:
         return _Result(value=None)
 
 
-@pytest.mark.parametrize("fail_on", (1, 2))
-def test_partial_start_failure_rolls_back_spawned_process(fail_on: int) -> None:
+def test_atomic_drain_registration_failure_rolls_back_spawned_process() -> None:
     process = _LiveProcess()
     supervisor = _ImmediateTerminationSupervisor(process)
-    task_group = _FailingSubmitGroup(fail_on=fail_on)
+    task_group = _FailingSubmitGroup()
     transport = JsonlProcessTransport(
         spec=JsonlProcessSpec(("worker",), "."),
         operating_system=LocalOperatingSystemRoute(),
         task_group=task_group,
         process_supervisor=supervisor,
-        transport_identity=f"partial-start-{fail_on}",
+        transport_identity="atomic-start-failure",
         process_factory=lambda _command, **_options: process,
     )
 

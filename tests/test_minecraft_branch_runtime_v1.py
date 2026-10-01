@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from tests.resource_endpoint_support import TestEndpointAllocator
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 from dataclasses import replace
 import inspect
 
@@ -26,8 +30,6 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointProbeResult,
     NetworkEndpoint,
 )
-from noetrium_platform.infrastructure.resources.allocation.runtime import InMemoryEndpointAllocator
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceProcessIdentity,
     ServiceReadyObservation,
@@ -182,8 +184,8 @@ def _request() -> MinecraftBranchRuntimeRequest:
 
 
 def test_branch_runtime_binds_branch_endpoint_and_releases_in_reverse_order() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -235,8 +237,8 @@ def test_branch_runtime_binds_branch_endpoint_and_releases_in_reverse_order() ->
 
 
 def test_branch_runtime_rebinds_new_server_generation_with_prior_proof_cas() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    delegate = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    delegate = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -251,15 +253,12 @@ def test_branch_runtime_rebinds_new_server_generation_with_prior_proof_cas() -> 
             return getattr(delegate, name)
 
         def replace_bound(self, proof, *, expected_previous_binding_proof_digest: str):
-            current = delegate.get(proof.allocation_id)
-            assert current.binding_proof_digest == expected_previous_binding_proof_digest
-            updated = replace(
-                current,
-                binding_proof_digest=proof.digest(),
-                binding_evidence_ref=proof.evidence_ref,
-                bound_at_epoch_s=proof.observed_at_epoch_s,
+            updated = delegate.replace_bound(
+                proof,
+                expected_previous_binding_proof_digest=(
+                    expected_previous_binding_proof_digest
+                ),
             )
-            delegate._allocations[proof.allocation_id] = updated
             self.replacements.append(
                 (expected_previous_binding_proof_digest, proof.digest())
             )
@@ -316,8 +315,8 @@ def test_branch_runtime_rebinds_new_server_generation_with_prior_proof_cas() -> 
 
 
 def test_branch_runtime_fails_closed_without_authoritative_ready_at() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -365,8 +364,8 @@ def test_branch_runtime_fails_closed_without_authoritative_ready_at() -> None:
 
 
 def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    delegate = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    delegate = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -379,15 +378,12 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
         def __getattr__(self, name):
             return getattr(delegate, name)
         def replace_bound(self, proof, *, expected_previous_binding_proof_digest: str):
-            current = delegate.get(proof.allocation_id)
-            assert current.binding_proof_digest == expected_previous_binding_proof_digest
-            updated = replace(
-                current,
-                binding_proof_digest=proof.digest(),
-                binding_evidence_ref=proof.evidence_ref,
-                bound_at_epoch_s=proof.observed_at_epoch_s,
+            updated = delegate.replace_bound(
+                proof,
+                expected_previous_binding_proof_digest=(
+                    expected_previous_binding_proof_digest
+                ),
             )
-            delegate._allocations[proof.allocation_id] = updated
             self.replaced.append(proof.allocation_id)
             return updated
 
@@ -443,8 +439,8 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
 
 
 def test_branch_runtime_binds_recovery_root_outside_world_and_preserves_prepared_capability() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -508,8 +504,8 @@ def test_branch_runtime_binds_recovery_root_outside_world_and_preserves_prepared
 
 
 def test_branch_runtime_releases_endpoint_when_server_start_fails() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -552,8 +548,8 @@ def test_branch_runtime_releases_endpoint_when_server_start_fails() -> None:
 
 
 def test_branch_runtime_allocates_and_rebinds_rcon_endpoint_as_part_of_branch_transaction() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -601,8 +597,8 @@ def test_branch_runtime_allocates_and_rebinds_rcon_endpoint_as_part_of_branch_tr
 
 
 def test_branch_runtime_releases_all_endpoints_when_binding_confirmation_fails() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    delegate = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    delegate = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -670,8 +666,8 @@ def test_branch_runtime_rcon_template_requests_resource_owned_rcon_port() -> Non
 
 
 def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -736,8 +732,8 @@ def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
 
 
 def test_branch_runtime_stop_failure_keeps_endpoint_fenced_until_retry() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -792,8 +788,8 @@ def test_branch_runtime_stop_failure_keeps_endpoint_fenced_until_retry() -> None
 
 
 def test_branch_runtime_guard_close_failure_keeps_endpoint_fenced_until_retry() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
@@ -849,8 +845,8 @@ def test_branch_runtime_guard_close_failure_keeps_endpoint_fenced_until_retry() 
 
 
 def test_branch_runtime_session_close_failure_fences_lower_teardown_until_retry() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocations = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocations = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),

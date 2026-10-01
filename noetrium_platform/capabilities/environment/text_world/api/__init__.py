@@ -1,4 +1,4 @@
-from .contracts import TextWorldActionKind, TextWorldEnvironmentSpec
+from .contracts import TextWorldActionKind, TextWorldContextPolicy, TextWorldEnvironmentSpec
 from .ports import TextWorldPort
 
-__all__ = ["TextWorldActionKind", "TextWorldEnvironmentSpec", "TextWorldPort"]
+__all__ = ["TextWorldActionKind", "TextWorldContextPolicy", "TextWorldEnvironmentSpec", "TextWorldPort"]

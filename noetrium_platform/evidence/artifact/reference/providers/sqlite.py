@@ -12,9 +12,9 @@ from noetrium_platform.evidence.artifact.reference.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_integer, require_text
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -31,11 +31,19 @@ class SQLiteArtifactReferenceStore:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             self._ensure_schema(db)
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
@@ -146,14 +154,116 @@ class SQLiteArtifactReferenceStore:
             (scope.kind.value, scope.scope_id, reference_id),
         ).fetchone()
 
-    def resolve(self, reference_id: str, scope: ScopeIdentity) -> ArtifactReference:
-        if not reference_id.strip():
-            raise ValueError("artifact reference_id must be non-empty")
+    def resolve_many(
+        self,
+        keys: tuple[tuple[str, ScopeIdentity], ...],
+    ) -> tuple[ArtifactReference | None, ...]:
+        if type(keys) is not tuple:
+            raise TypeError("artifact reference resolve_many keys must be tuple")
+        if not keys:
+            return ()
+        for key in keys:
+            if (
+                type(key) is not tuple
+                or len(key) != 2
+                or type(key[0]) is not str
+                or not key[0].strip()
+                or type(key[1]) is not ScopeIdentity
+            ):
+                raise TypeError(
+                    "artifact reference resolve_many keys must be "
+                    "(reference_id, ScopeIdentity) pairs"
+                )
+        rows: list[ArtifactReference | None] = []
         with closing(self._connect_reader()) as db:
-            row = self._select(db, reference_id, scope)
-        if row is None:
+            for reference_id, scope in keys:
+                row = self._select(db, reference_id, scope)
+                rows.append(None if row is None else self._decode(row))
+        return tuple(rows)
+
+    def resolve(self, reference_id: str, scope: ScopeIdentity) -> ArtifactReference:
+        current = self.resolve_many(((reference_id, scope),))[0]
+        if current is None:
             raise ArtifactReferenceNotFound(reference_id)
-        return self._decode(row)
+        return current
+
+    def compare_and_set_many(
+        self,
+        mutations: tuple[tuple[str, ScopeIdentity, int, str], ...],
+    ) -> tuple[ArtifactReference, ...]:
+        if type(mutations) is not tuple:
+            raise TypeError("artifact reference CAS batch must be tuple")
+        if not mutations:
+            return ()
+        keys: list[tuple[str, str, str]] = []
+        for mutation in mutations:
+            if type(mutation) is not tuple or len(mutation) != 4:
+                raise TypeError("artifact reference CAS batch mutation must be 4-tuple")
+            reference_id, scope, expected_generation, artifact_id = mutation
+            if (
+                type(reference_id) is not str
+                or not reference_id.strip()
+                or type(scope) is not ScopeIdentity
+                or type(artifact_id) is not str
+                or not artifact_id.strip()
+                or isinstance(expected_generation, bool)
+                or type(expected_generation) is not int
+                or expected_generation < 0
+            ):
+                raise ValueError("artifact reference CAS inputs are invalid")
+            keys.append((scope.kind.value, scope.scope_id, reference_id))
+        if len(keys) != len(set(keys)):
+            raise ValueError("artifact reference CAS batch contains duplicate references")
+
+        results: list[ArtifactReference] = []
+        with self._writers.session() as db:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact reference",
+            ):
+                for reference_id, scope, expected_generation, artifact_id in mutations:
+                    row = self._select(db, reference_id, scope)
+                    if row is None:
+                        if expected_generation != 0:
+                            raise ArtifactReferenceConflict(
+                                f"missing reference {reference_id!r}; "
+                                f"expected generation {expected_generation}"
+                            )
+                        created = ArtifactReference(reference_id, scope, artifact_id, 1)
+                        db.execute(
+                            "INSERT INTO artifact_references VALUES(?,?,?,?,?,?)",
+                            self._encode(created),
+                        )
+                        results.append(created)
+                        continue
+                    current = self._decode(row)
+                    if current.generation != expected_generation:
+                        raise ArtifactReferenceConflict(
+                            "reference generation conflict: "
+                            f"expected {expected_generation}, actual {current.generation}"
+                        )
+                    if current.artifact_id == artifact_id:
+                        results.append(current)
+                        continue
+                    updated = ArtifactReference(
+                        reference_id, scope, artifact_id, current.generation + 1
+                    )
+                    db.execute(
+                        "UPDATE artifact_references "
+                        "SET artifact_id=?,generation=?,record_sha256=? "
+                        "WHERE scope_kind=? AND scope_id=? AND reference_id=?",
+                        (
+                            updated.artifact_id,
+                            updated.generation,
+                            self._record_digest(updated),
+                            scope.kind.value,
+                            scope.scope_id,
+                            reference_id,
+                        ),
+                    )
+                    results.append(updated)
+        return tuple(results)
 
     def compare_and_set(
         self,
@@ -163,66 +273,9 @@ class SQLiteArtifactReferenceStore:
         expected_generation: int,
         artifact_id: str,
     ) -> ArtifactReference:
-        if (
-            not reference_id.strip()
-            or not artifact_id.strip()
-            or isinstance(expected_generation, bool)
-            or expected_generation < 0
-        ):
-            raise ValueError("artifact reference CAS inputs are invalid")
-        with closing(self._connect_writer()) as db:
-            with immediate_sqlite_transaction(
-                db,
-                timeout_seconds=self.timeout_seconds,
-                label="artifact reference",
-            ):
-                row = self._select(db, reference_id, scope)
-                if row is None:
-                    if expected_generation != 0:
-                        raise ArtifactReferenceConflict(
-                            f"missing reference {reference_id!r}; "
-                            f"expected generation {expected_generation}"
-                        )
-                    created = ArtifactReference(
-                        reference_id,
-                        scope,
-                        artifact_id,
-                        1,
-                    )
-                    db.execute(
-                        "INSERT INTO artifact_references VALUES(?,?,?,?,?,?)",
-                        self._encode(created),
-                    )
-                    return created
-                current = self._decode(row)
-                if current.generation != expected_generation:
-                    raise ArtifactReferenceConflict(
-                        "reference generation conflict: "
-                        f"expected {expected_generation}, "
-                        f"actual {current.generation}"
-                    )
-                if current.artifact_id == artifact_id:
-                    return current
-                updated = ArtifactReference(
-                    reference_id,
-                    scope,
-                    artifact_id,
-                    current.generation + 1,
-                )
-                db.execute(
-                    "UPDATE artifact_references "
-                    "SET artifact_id=?,generation=?,record_sha256=? "
-                    "WHERE scope_kind=? AND scope_id=? AND reference_id=?",
-                    (
-                        updated.artifact_id,
-                        updated.generation,
-                        self._record_digest(updated),
-                        scope.kind.value,
-                        scope.scope_id,
-                        reference_id,
-                    ),
-                )
-                return updated
+        return self.compare_and_set_many(
+            ((reference_id, scope, expected_generation, artifact_id),)
+        )[0]
 
 
 __all__ = ["SQLiteArtifactReferenceStore"]

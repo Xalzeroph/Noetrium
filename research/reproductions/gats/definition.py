@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/gats/study.py',
         ),
     ),
+    primary_executable="research/reproductions/gats/program.py",
     reported_results=(
         ReportedResult(
             claim_id='paper_stress_gats_b20_success',
@@ -98,7 +99,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('main 100-task task generation is not seeded before random choice and shuffle in this source cut', 'stress-test GATSPlanner bypasses the paper layered world-model implementation and therefore cannot validate layered-world-model claims', 'no Noetrium execution evidence has yet been produced for the frozen stress Study'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_gats_stress_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

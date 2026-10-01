@@ -17,6 +17,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_04",description="R2A"),
         ReferenceBaseline(baseline_id="baseline_05",description="GC-TTT"),
     ),
-    blockers=("Matched simulation requires exact LIBERO suite cuts, frozen VLA checkpoints and experience-bank initialization.", "Real-world AgiBot-G1 claims require the physical platform protocol and full rollout evidence."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched simulation requires exact LIBERO suite cuts, frozen VLA checkpoints and experience-bank initialization.", "Real-world AgiBot-G1 claims require the physical platform protocol and full rollout evidence."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

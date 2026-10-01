@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.context import ExecutionContext
+from collections.abc import Mapping
+
+from noetrium_platform.foundation.kernel.kernel.context import execution_context_from_payload
 
 from .contracts import FailureEnvelope, RecoveryAction, RiskLevel
 
@@ -21,7 +23,10 @@ def failure_from_dict(data: dict[str, object]) -> FailureEnvelope:
     """Decode the current FailureEnvelope schema independently of storage backend."""
 
     raw = dict(data)
-    raw["context"] = ExecutionContext(**dict(raw["context"]))  # type: ignore[arg-type]
+    context = raw["context"]
+    if not isinstance(context, Mapping):
+        raise TypeError("failure context must be an object")
+    raw["context"] = execution_context_from_payload(context)  # type: ignore[arg-type]
     for name in _TUPLE_FIELDS:
         raw[name] = tuple(raw[name])  # type: ignore[arg-type]
     raw["data_integrity_risk"] = RiskLevel(raw["data_integrity_risk"])

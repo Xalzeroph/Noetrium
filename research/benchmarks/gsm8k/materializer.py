@@ -1,27 +1,37 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.composition.research_execution_content import (
+    ResearchContentPublication,
+    ResearchExecutionContentAuthorities,
+)
+from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonical_digest
+from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceResolution,
+    ResearchStudyDefinition,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistration,
 )
+from research.benchmarks.contracts import RepositoryBenchmarkTaskProjectionSpec
+
+from .verifier import GSM8KTaskVerifier
 
 from .cut import (
     GSM8K_ARCHIVED_COMMIT,
+    GSM8K_BENCHMARK_ID,
     GSM8K_FINAL_ANSWER_MARKER,
     GSM8K_SPLIT_COUNTS,
+    GSM8K_TASK_SCHEMA_ID,
     GSM8KTaskRecord,
     build_gsm8k_source,
     build_gsm8k_task_set,
 )
-
 
 GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1 = "e4c2ff4942b9a78bd74f04141224c11e28d12dc9"
 GSM8K_ARCHIVED_TEST_SHA256 = (
@@ -35,6 +45,8 @@ class GSM8KMaterializedTask:
     question: str
     answer: str
     final_answer: str
+
+GSM8K_REPOSITORY_TEST_INPUT = "benchmark.gsm8k.test_jsonl"
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +77,26 @@ def _final_answer(answer: str, index: int) -> str:
     if not value:
         raise ValueError(f"GSM8K row {index} has empty final answer")
     return value
+
+
+def _task_content_document(
+    *,
+    git_blob_sha1: str,
+    file_sha256: str,
+    split_id: str,
+    index: int,
+    question: str,
+    answer: str,
+) -> dict[str, object]:
+    return {
+        "source_commit": GSM8K_ARCHIVED_COMMIT,
+        "source_git_blob_sha1": git_blob_sha1,
+        "source_file_sha256": file_sha256,
+        "split_id": split_id,
+        "index": index,
+        "question": question,
+        "answer": answer,
+    }
 
 
 def register_gsm8k_materialization(
@@ -142,15 +174,14 @@ def materialize_gsm8k_jsonl_bytes(
             question_digest=hashlib.sha256(question.encode("utf-8")).hexdigest(),
             answer_digest=hashlib.sha256(answer.encode("utf-8")).hexdigest(),
             content_digest=canonical_digest(
-                {
-                    "source_commit": GSM8K_ARCHIVED_COMMIT,
-                    "source_git_blob_sha1": git_blob_sha1,
-                    "source_file_sha256": file_sha256,
-                    "split_id": split_id,
-                    "index": index,
-                    "question": question,
-                    "answer": answer,
-                }
+                _task_content_document(
+                    git_blob_sha1=git_blob_sha1,
+                    file_sha256=file_sha256,
+                    split_id=split_id,
+                    index=index,
+                    question=question,
+                    answer=answer,
+                )
             ),
         )
         tasks.append(GSM8KMaterializedTask(record, question, answer, final_answer))
@@ -203,13 +234,115 @@ def materialize_archived_gsm8k_test(path: str | Path) -> GSM8KMaterialization:
     )
 
 
+def repository_task_projection_spec() -> RepositoryBenchmarkTaskProjectionSpec:
+    return RepositoryBenchmarkTaskProjectionSpec(
+        benchmark_id=GSM8K_BENCHMARK_ID,
+        task_schema_id=GSM8K_TASK_SCHEMA_ID,
+        objective_path="question",
+        payload_fields=(
+            ("question", "question"),
+            ("split_id", "split_id"),
+            ("index", "index"),
+        ),
+    )
+
+
+def materialize_repository_task_verifier(
+    study: ResearchStudyDefinition,
+    *,
+    content: ResearchExecutionContentAuthorities,
+) -> GSM8KTaskVerifier:
+    """Bind the benchmark-owned artifact-only verifier to one exact Study."""
+
+    return GSM8KTaskVerifier.from_study(study, content=content)
+
+
+def materialize_repository_benchmark_authority(
+    authority_inputs: tuple[tuple[str, str], ...],
+    *,
+    content: ResearchExecutionContentAuthorities,
+) -> tuple[BenchmarkResolutionRegistration, ...]:
+    """Materialize the exact cut and publish its source/task bytes once."""
+
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError(
+            "GSM8K repository materialization requires "
+            "ResearchExecutionContentAuthorities"
+        )
+    path = dict(authority_inputs).get(GSM8K_REPOSITORY_TEST_INPUT)
+    if path is None:
+        return ()
+
+    source_path = Path(path).resolve(strict=True)
+    source_bytes = source_path.read_bytes()
+    materialized = materialize_gsm8k_jsonl_bytes(
+        source_bytes,
+        split_id="test",
+        expected_git_blob_sha1=GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1,
+        expected_file_sha256=GSM8K_ARCHIVED_TEST_SHA256,
+    )
+    scope = ScopeIdentity(ScopeKind.PLATFORM, "benchmark:gsm8k")
+    source_reference = content.publish(
+        reference_id=f"gsm8k:source:{materialized.file_sha256}",
+        scope=scope,
+        payload=source_bytes,
+        media_type="application/x-ndjson",
+        producer_component_id="research.benchmarks.gsm8k",
+    )
+    task_ids: list[str] = []
+    publications: list[ResearchContentPublication] = []
+    for task in materialized.tasks:
+        document = _task_content_document(
+            git_blob_sha1=materialized.git_blob_sha1,
+            file_sha256=materialized.file_sha256,
+            split_id=task.record.split_id,
+            index=task.record.index,
+            question=task.question,
+            answer=task.answer,
+        )
+        payload = canonical_bytes(document)
+        if hashlib.sha256(payload).hexdigest() != task.record.content_digest:
+            raise RuntimeError("GSM8K canonical task content digest drifted")
+        task_ids.append(task.record.task_id)
+        publications.append(
+            ResearchContentPublication(
+                reference_id=f"gsm8k:task:{task.record.content_digest}",
+                scope=scope,
+                payload=payload,
+                media_type="application/json",
+                producer_component_id="research.benchmarks.gsm8k",
+            )
+        )
+    published = content.publish_many(tuple(publications))
+    content_references = dict(zip(task_ids, published, strict=True))
+
+    cut = build_gsm8k_task_set(
+        tuple(task.record for task in materialized.tasks),
+        dataset_content_sha256=materialized.file_sha256,
+        source_reference=source_reference,
+        content_references=content_references,
+    )
+    bound = GSM8KMaterialization(
+        split_id=materialized.split_id,
+        git_blob_sha1=materialized.git_blob_sha1,
+        file_sha256=materialized.file_sha256,
+        tasks=materialized.tasks,
+        cut=cut,
+    )
+    return (register_gsm8k_materialization(bound),)
+
+
 __all__ = [
     "GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1",
     "GSM8K_ARCHIVED_TEST_SHA256",
+    "GSM8K_REPOSITORY_TEST_INPUT",
     "GSM8KMaterialization",
     "GSM8KMaterializedTask",
     "materialize_archived_gsm8k_test",
     "materialize_gsm8k_jsonl",
     "materialize_gsm8k_jsonl_bytes",
+    "materialize_repository_benchmark_authority",
+    "materialize_repository_task_verifier",
     "register_gsm8k_materialization",
+    "repository_task_projection_spec",
 ]

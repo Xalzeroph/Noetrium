@@ -1,4 +1,4 @@
-from .contracts import WebActionKind, WebEnvironmentSpec
+from .contracts import WebActionKind, WebContextPolicy, WebEnvironmentSpec
 from .ports import WebWorldPort
 
-__all__ = ["WebActionKind", "WebEnvironmentSpec", "WebWorldPort"]
+__all__ = ["WebActionKind", "WebContextPolicy", "WebEnvironmentSpec", "WebWorldPort"]

@@ -35,6 +35,10 @@ def _binding_proof_presence(
     return any(present), all(present)
 
 
+class EndpointAllocationConflict(RuntimeError):
+    """Endpoint allocation/binding authority no longer matches the caller view."""
+
+
 class EndpointProtocol(StrEnum):
     TCP = "tcp"
     UDP = "udp"
@@ -264,6 +268,7 @@ class EndpointReservationResult:
 
 __all__ = [
     "EndpointAllocation",
+    "EndpointAllocationConflict",
     "EndpointBindingProof",
     "EndpointAllocationRequest",
     "EndpointAllocationState",

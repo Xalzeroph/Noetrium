@@ -53,7 +53,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); workflow=root/'noetrium_platform/composition/workflows/context_action'; workflow.mkdir(parents=True)
             (workflow/'bad.py').write_text(
-                'from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal\n',
+                'from noetrium_platform.infrastructure.reliability.effect.runtime import sqlite_effect_intent_journal\n',
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
@@ -92,19 +92,15 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
             self.assertTrue(any(x.invariant=='retired_experiment_orchestration_path' for x in rows))
 
 
-    def test_composition_families_cannot_cross_import_specialized_domains(self):
+    def test_retired_context_action_family_cannot_return(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); composition=root/'noetrium_platform/composition'; composition.mkdir(parents=True)
             (composition/'context_action.py').write_text(
                 'from noetrium_platform.capabilities.participant.agent.api import AgentSession\n', encoding='utf-8'
             )
-            (composition/'agent_turn.py').write_text(
-                'from noetrium_platform.capabilities.participant.method.api import MethodSession\n', encoding='utf-8'
-            )
             rows=audit_source_invariants(root)
             invariants={x.invariant for x in rows}
-            self.assertIn('composition_context_action_firewall', invariants)
-            self.assertIn('composition_agent_turn_firewall', invariants)
+            self.assertIn('retired_context_action_path', invariants)
 
     def test_participant_bridge_cannot_import_unrelated_specialized_abi(self):
         with tempfile.TemporaryDirectory() as td:

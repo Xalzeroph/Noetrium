@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from prompt_os_test_support import make_promoted_prompt_registry
+
 import unittest
 
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
@@ -18,8 +20,7 @@ class PromptCompilePipelineV75Tests(unittest.TestCase):
         return PromptCompilePipeline()
 
     def planner(self):
-        registry = PromptRegistry()
-        registry.publish("g75", default_prompt_specs())
+        registry = make_promoted_prompt_registry(generation_id="g75")
         K = PromptBlockKind
         blocks = (
             PromptBlock(K.TASK, "collect wood", "d1", 1),

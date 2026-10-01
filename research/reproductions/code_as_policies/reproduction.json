@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "8bc37bcc6109f7f6d3593e515bcfe4d71cf8523d893119fcd8752ae724f636df",
-  "definition_digest": "5530735edb89956345e7651c7c7e7328f4ae400791789f5a58f1ec30833ec13c",
+  "package_digest": "80bec8cf74c28a3551e3212619641449754bb431ad4cf32735f91e94272918a2",
+  "definition_digest": "e1c98eba2ec31744d224b38d01392bbd427fe99e97a1f4f05ad1a928ae3c385b",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -132,19 +132,19 @@
       "kind": "method_program",
       "path": "research/reproductions/code_as_policies/program.py",
       "declaration_digest": "cf7888757baf793ef4738bfea7f799a48524d626c71341deaa402cdb79691b24",
-      "content_sha256": "8f03896922f584c08dd1ef29e9ba53329db6000329d18dc11bd5bef9231c05e0"
+      "content_sha256": "2dc04531a017f2e905829814aed9db82e50548c99786027b4bbf935e5a2204bb"
     },
     {
       "kind": "semantics",
       "path": "research/reproductions/code_as_policies/hierarchy.py",
       "declaration_digest": "cae4bde0014bbb0ba21313f290173b577d62e4b2ff19d7328475c93cc4a6b948",
-      "content_sha256": "1d5537ccbb3e88832775c34965990bcd6d296c9cb2c3d1d986a925ab7c811dc9"
+      "content_sha256": "46bee56462afbe5fa466ff4e7c76ef8ada928a537e4440bcc36201ca5f613c92"
     },
     {
       "kind": "study",
       "path": "research/reproductions/code_as_policies/study.py",
       "declaration_digest": "d614c87f5c66abe78e4ea8d57c037a9581641dc867d3b6889be7d4a79957fb20",
-      "content_sha256": "fee504f820fb4b18c4fbae9ba7e30e4de38d3fa16a9cea6da1cb0d477731dcfe"
+      "content_sha256": "24b5ad6a023bc2a9c442c361af81f165b919745ad95e3c87db2a40b7e99c826a"
     },
     {
       "kind": "support",
@@ -254,23 +254,19 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_code_as_policies_robocodegen_v1.py",
-      "content_sha256": "c722e042583bf4dae05eb6476a6140273f1478adbda67bb089763c4113d61dec"
-    },
-    {
-      "path": "tests/test_scientific_code_as_policies_v1.py",
-      "content_sha256": "e896c9da3a8b8454e64c795ba50cd27c02cf33a7bcbe4a5a05e7344f026de3a0"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "code_as_policies",
-    "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+    "program_digest": "dabb88e114f472175df4a9b0dea8e135ccc537a7e6e43a7db6c431c13ca12815",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
+        "e95fedc1af8986de6ac10666c2e472e1b79418cda562794b4cb335e8b927b4ae"
       ],
       "blockers": []
     },

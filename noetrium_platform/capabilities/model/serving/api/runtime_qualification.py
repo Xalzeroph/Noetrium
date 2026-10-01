@@ -31,7 +31,12 @@ def _require_digest_evidence_ref(value: str, field: str = "evidence_ref") -> str
 
 @dataclass(frozen=True, slots=True)
 class RuntimeQualificationReceipt:
-    """Immutable proof that a live deployment still satisfies its frozen qualification."""
+    """Immutable generation proof captured from a live qualified deployment.
+
+    ``valid_until`` bounds the evidence-capture window; it does not expire a
+    published qualification closure. Consumers invalidate on identity/generation
+    drift rather than elapsed wall-clock time.
+    """
 
     deployment_id: str
     stack_digest: str

@@ -7,8 +7,6 @@ internals to Capability systems.
 
 from noetrium_platform.foundation.api import (
     ComputeAllocation,
-    ComputeAllocationBatch,
-    ComputeAllocationRequest,
     ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
@@ -36,8 +34,6 @@ from noetrium_platform.foundation.api import (
 
 __all__ = [
     "ComputeAllocation",
-    "ComputeAllocationBatch",
-    "ComputeAllocationRequest",
     "ComputeBindingProof",
     "ComputeLeaseGuardFactoryPort",
     "ComputePlacementUnavailable",

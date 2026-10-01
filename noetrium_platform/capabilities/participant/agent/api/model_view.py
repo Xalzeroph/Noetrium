@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 import re
 from typing import Iterable, Mapping
@@ -11,17 +12,28 @@ AGENT_ACTION_HISTORY_VIEW_SCHEMA = "agent-action-history-view.v1"
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 
 
-def _canonical_object(value: Mapping[str, JsonValue]) -> Mapping[str, JsonValue]:
+def _canonical_record_bytes(value: Mapping[str, JsonValue]) -> bytes:
     if not isinstance(value, Mapping):
         raise TypeError("agent history records must be mappings")
-    decoded = json.loads(canonical_bytes(value))
-    if not isinstance(decoded, dict):
+    payload = canonical_bytes(value)
+    # Mapping input plus canonical encoding guarantees a JSON object; keep the
+    # bytes rather than decoding every historical row only to encode it again.
+    if not payload.startswith(b"{"):
         raise TypeError("agent history records must encode as JSON objects")
-    return decoded
+    return payload
 
 
-def _digest(records: tuple[Mapping[str, JsonValue], ...]) -> str:
-    return canonical_digest(records)
+def _digest_encoded_records(records: tuple[bytes, ...]) -> str:
+    """Digest a canonical JSON record tuple without re-normalizing each row."""
+
+    digest = hashlib.sha256()
+    digest.update(b"[")
+    for index, payload in enumerate(records):
+        if index:
+            digest.update(b",")
+        digest.update(payload)
+    digest.update(b"]")
+    return digest.hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,16 +126,23 @@ def project_action_history(
 
     if type(max_chars) is not int or max_chars < 0:
         raise ValueError("agent history projection max_chars must be non-negative")
-    source = tuple(_canonical_object(record) for record in records)
-    source_digest = _digest(source)
-    source_count = len(source)
+    encoded = tuple(_canonical_record_bytes(record) for record in records)
+    source_count = len(encoded)
+    source_digest = _digest_encoded_records(encoded)
     placeholder = "0" * 64
+    encoded_char_lengths = tuple(
+        len(payload.decode("utf-8"))
+        for payload in encoded
+    )
+    suffix_chars = [0] * (source_count + 1)
+    for index in range(source_count - 1, -1, -1):
+        suffix_chars[index] = suffix_chars[index + 1] + encoded_char_lengths[index]
 
     def candidate_length(included_count: int) -> int:
         start = source_count - included_count
-        return len(
+        empty_envelope = len(
             _render_history_envelope(
-                source[start:],
+                (),
                 source_count=source_count,
                 omitted_count=start,
                 source_digest=placeholder,
@@ -131,6 +150,9 @@ def project_action_history(
                 omitted_digest=placeholder,
             )
         )
+        array_payload = suffix_chars[start]
+        separators = max(0, included_count - 1)
+        return empty_envelope + array_payload + separators
 
     low, high = 0, source_count
     while low < high:
@@ -141,15 +163,20 @@ def project_action_history(
             high = middle - 1
     included_count = low
     first_index = source_count - included_count
-    included = source[first_index:]
-    omitted = source[:first_index]
-    included_digest = _digest(included)
-    omitted_digest = _digest(omitted)
+    included_encoded = encoded[first_index:]
+    omitted_encoded = encoded[:first_index]
+    included = tuple(
+        json.loads(payload)
+        for payload in included_encoded
+    )
+    omitted_count = len(omitted_encoded)
+    included_digest = _digest_encoded_records(included_encoded)
+    omitted_digest = _digest_encoded_records(omitted_encoded)
     receipt = AgentActionHistoryProjectionReceipt(
         schema_version=AGENT_ACTION_HISTORY_VIEW_SCHEMA,
         source_count=source_count,
         included_count=included_count,
-        omitted_count=len(omitted),
+        omitted_count=omitted_count,
         first_included_index=first_index if included else None,
         source_digest=source_digest,
         included_digest=included_digest,
@@ -158,7 +185,7 @@ def project_action_history(
     text = _render_history_envelope(
         included,
         source_count=source_count,
-        omitted_count=len(omitted),
+        omitted_count=omitted_count,
         source_digest=source_digest,
         included_digest=included_digest,
         omitted_digest=omitted_digest,

@@ -7,6 +7,7 @@ from .cut import (
     FLOW_PRACTICAL_SPLIT_ID,
     FLOW_PRACTICAL_TASKS,
     FlowPracticalTaskRecord,
+    bind_flow_practical_cut,
     build_flow_practical_source,
     build_flow_practical_task_set,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "FLOW_PRACTICAL_SPLIT_ID",
     "FLOW_PRACTICAL_TASKS",
     "FlowPracticalTaskRecord",
+    "bind_flow_practical_cut",
     "build_flow_practical_source",
     "build_flow_practical_task_set",
 ]

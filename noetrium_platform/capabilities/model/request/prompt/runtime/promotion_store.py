@@ -10,7 +10,7 @@ from .promotion_transaction import PromptPromotionTransaction
 from .promotion_validation import PromptPromotionValidator
 from .publication_common import PromptPublicationError, PromptPublicationLease
 from .runtime import ActivePromptBundle
-from noetrium_platform.capabilities.model.request.prompt.api import ActivePromptVerificationEvidence, PromptVerificationIntegrityError
+from noetrium_platform.capabilities.model.request.prompt.api.verification import ActivePromptVerificationEvidence, PromptVerificationIntegrityError
 
 
 class PromptPromotionStore:

@@ -14,6 +14,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="behavior-cloning only"),
         ReferenceBaseline(baseline_id="baseline_03",description="paper embodied planning baselines"),
     ),
-    blockers=("Matched reproduction requires the pinned RoboAgent checkpoint/code, exact ALFWorld and EmbodiedBench-ALFRED cuts, and simulator supervision pipeline.", "BC/DAgger/RL stage claims require complete training-data and optimization receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned RoboAgent checkpoint/code, exact ALFWorld and EmbodiedBench-ALFRED cuts, and simulator supervision pipeline.", "BC/DAgger/RL stage claims require complete training-data and optimization receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

@@ -35,6 +35,7 @@ def resolve_existing_capability_effect(
     request: CapabilityRequest,
     consumer_component: ComponentIdentity,
     completion_operation_id: str,
+    invocation_ordinal: int,
     prefix_operations: tuple[OperationResult[JsonValue], ...],
 ) -> CapabilityEffectExecution:
     if existing.intent.request_digest != probe.request_digest:
@@ -53,6 +54,7 @@ def resolve_existing_capability_effect(
         descriptor=descriptor,
         request=request,
         handle=existing.intent.recovery_handle,
+        invocation_ordinal=invocation_ordinal,
     )
     rows.append(operation)
     assert reconciliation.result is not None

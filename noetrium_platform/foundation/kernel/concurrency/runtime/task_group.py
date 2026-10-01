@@ -52,6 +52,7 @@ class StructuredTaskGroup:
         self,
         *,
         group_id: str,
+        instance_generation: int,
         execution: ExecutionAuthorityProviderPort,
         timers: TimerSchedulerProviderPort,
         default_queue_capacity: int,
@@ -63,6 +64,8 @@ class StructuredTaskGroup:
         group_id = str(group_id).strip()
         if not group_id:
             raise ValueError("task group id required")
+        if type(instance_generation) is not int or instance_generation <= 0:
+            raise ValueError("task group instance generation must be positive")
         if shutdown_timeout_seconds <= 0:
             raise ValueError("task group shutdown timeout must be positive")
         self._group_id = group_id
@@ -90,7 +93,7 @@ class StructuredTaskGroup:
             if deadline.expired:
                 raise TaskDeadlineExceeded(f"task group deadline already expired: {group_id}")
             handle = self._timers.schedule_once(
-                f"task-group-deadline:{group_id}",
+                f"task-group-deadline:{group_id}:{instance_generation}",
                 deadline.remaining_seconds,
                 lambda: self.cancel(f"task group deadline exceeded: {group_id}"),
             )
@@ -192,7 +195,8 @@ class StructuredTaskGroup:
         fn: Callable[..., T],
         args: tuple[Any, ...],
         kwargs: dict[str, Any],
-    ) -> TaskHandlePort[T]:
+        try_only: bool = False,
+    ) -> TaskHandlePort[T] | None:
         context = _TaskContext(
             self._group_id,
             record.task_id,
@@ -212,13 +216,21 @@ class StructuredTaskGroup:
             return value
 
         try:
-            raw = self._execution.submit(
+            submitter = (
+                self._execution.try_submit
+                if try_only
+                else self._execution.submit
+            )
+            raw = submitter(
                 self._group_id,
                 spec,
                 invoke,
                 deadline=record.deadline,
                 cancellation=self._provider_submission_cancellation,
             )
+            if raw is None:
+                self._state.discard_unstarted(record)
+                return None
         except TaskCancelled as exc:
             self._mark_cancelled(record.task_id, exc)
             raise
@@ -275,21 +287,50 @@ class StructuredTaskGroup:
             return self._submit_serial(spec, fn, *args, deadline=deadline, **kwargs)
         raise ValueError(f"unsupported execution lane: {spec.lane_kind}")
 
+    def try_submit(
+        self,
+        spec: ExecutionSpec,
+        fn: Callable[..., T],
+        /,
+        *args: Any,
+        deadline: Deadline | None = None,
+        **kwargs: Any,
+    ) -> TaskHandlePort[T] | None:
+        """Submit only when admission is immediately available."""
+
+        if spec.lane_kind is ExecutionLaneKind.BLOCKING_IO:
+            return self._submit_blocking(
+                spec, fn, *args, deadline=deadline, try_only=True, **kwargs
+            )
+        if spec.lane_kind is ExecutionLaneKind.ASYNC_IO:
+            return self._submit_async_io(
+                spec, fn, *args, deadline=deadline, try_only=True, **kwargs
+            )
+        if spec.lane_kind is ExecutionLaneKind.CPU:
+            return self._submit_cpu(
+                spec, fn, *args, deadline=deadline, try_only=True, **kwargs
+            )
+        if spec.lane_kind is ExecutionLaneKind.SERIAL:
+            return self._submit_serial(
+                spec, fn, *args, deadline=deadline, try_only=True, **kwargs
+            )
+        raise ValueError(f"unsupported execution lane: {spec.lane_kind}")
+
     def submit_atomic_batch(
         self,
         items: tuple[tuple[ExecutionSpec, Callable[..., T]], ...],
         *,
         deadline: Deadline | None = None,
     ) -> tuple[TaskHandlePort[T], ...]:
-        """Submit one all-or-none concurrent BLOCKING_IO ready set.
+        """Submit one all-or-none concurrent ready set on one concurrent I/O lane.
 
         Resource admission and provider capacity are reserved for the entire set
         before any user callable can begin. Unsupported lanes fail closed rather
         than silently degrading to sequential execution.
         """
 
-        if not isinstance(items, tuple) or len(items) < 2:
-            raise ValueError("atomic task batch requires at least two items")
+        if not isinstance(items, tuple) or not items:
+            raise ValueError("atomic task batch requires a non-empty tuple")
         specs: list[ExecutionSpec] = []
         functions: list[Callable[..., T]] = []
         for item in items:
@@ -300,9 +341,12 @@ class StructuredTaskGroup:
             spec, fn = item
             if not isinstance(spec, ExecutionSpec):
                 raise TypeError("atomic task batch requires ExecutionSpec values")
-            if spec.lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+            if spec.lane_kind not in {
+                ExecutionLaneKind.BLOCKING_IO,
+                ExecutionLaneKind.ASYNC_IO,
+            }:
                 raise ValueError(
-                    "atomic task batch currently supports BLOCKING_IO only"
+                    "atomic task batch requires BLOCKING_IO or ASYNC_IO"
                 )
             if not callable(fn):
                 raise TypeError("atomic task batch callable required")
@@ -311,6 +355,10 @@ class StructuredTaskGroup:
         task_ids = tuple(spec.task_id for spec in specs)
         if len(set(task_ids)) != len(task_ids):
             raise ValueError("atomic task batch task ids must be unique")
+        lane_kinds = {spec.lane_kind for spec in specs}
+        if len(lane_kinds) != 1:
+            raise ValueError("atomic task batch requires one shared execution lane")
+        lane_kind = next(iter(lane_kinds))
 
         with self._submission_scope():
             records: list[_TaskRecord] = []
@@ -319,7 +367,7 @@ class StructuredTaskGroup:
                     records.append(
                         self._reserve_task(
                             spec.task_id,
-                            ExecutionLaneKind.BLOCKING_IO,
+                            lane_kind,
                             None,
                             deadline,
                             spec.failure_scope,
@@ -343,18 +391,38 @@ class StructuredTaskGroup:
                     self.cancel,
                 )
 
-                def invoke(
-                    owned_record: _TaskRecord = record,
-                    owned_context: _TaskContext = context,
-                    owned_fn: Callable[..., T] = fn,
-                ) -> T:
-                    self._mark_running(owned_record.task_id)
-                    owned_context.checkpoint()
-                    value = owned_fn(owned_context)
-                    owned_context.checkpoint()
-                    return value
+                if lane_kind is ExecutionLaneKind.ASYNC_IO:
+                    async def invoke_async(
+                        owned_record: _TaskRecord = record,
+                        owned_context: _TaskContext = context,
+                        owned_fn: Callable[..., T] = fn,
+                    ) -> T:
+                        self._mark_running(owned_record.task_id)
+                        owned_context.checkpoint()
+                        value = owned_fn(owned_context)
+                        import inspect
+                        if not inspect.isawaitable(value):
+                            raise TypeError(
+                                "ASYNC_IO atomic batch callable must return an awaitable"
+                            )
+                        result = await value
+                        owned_context.checkpoint()
+                        return result
 
-                invocations.append(invoke)
+                    invocations.append(invoke_async)
+                else:
+                    def invoke_blocking(
+                        owned_record: _TaskRecord = record,
+                        owned_context: _TaskContext = context,
+                        owned_fn: Callable[..., T] = fn,
+                    ) -> T:
+                        self._mark_running(owned_record.task_id)
+                        owned_context.checkpoint()
+                        value = owned_fn(owned_context)
+                        owned_context.checkpoint()
+                        return value
+
+                    invocations.append(invoke_blocking)
 
             effective_deadlines = {
                 record.deadline.monotonic_deadline
@@ -377,7 +445,7 @@ class StructuredTaskGroup:
             try:
                 raws = self._execution.submit_atomic_batch(
                     self._group_id,
-                    ExecutionLaneKind.BLOCKING_IO,
+                    lane_kind,
                     tuple(invocations),
                     deadline=batch_deadline,
                     cancellation=self._provider_submission_cancellation,
@@ -434,8 +502,9 @@ class StructuredTaskGroup:
         /,
         *args: Any,
         deadline: Deadline | None = None,
+        try_only: bool = False,
         **kwargs: Any,
-    ) -> TaskHandlePort[T]:
+    ) -> TaskHandlePort[T] | None:
         with self._submission_scope():
             record = self._reserve_task(spec.task_id, ExecutionLaneKind.BLOCKING_IO, None, deadline, spec.failure_scope)
             return self._submit_contextual(
@@ -444,6 +513,7 @@ class StructuredTaskGroup:
                 fn=fn,
                 args=args,
                 kwargs=kwargs,
+                try_only=try_only,
             )
 
     def _submit_async_io(
@@ -453,8 +523,9 @@ class StructuredTaskGroup:
         /,
         *args: Any,
         deadline: Deadline | None = None,
+        try_only: bool = False,
         **kwargs: Any,
-    ) -> TaskHandlePort[T]:
+    ) -> TaskHandlePort[T] | None:
         with self._submission_scope():
             record = self._reserve_task(spec.task_id, ExecutionLaneKind.ASYNC_IO, None, deadline, spec.failure_scope)
             context = _TaskContext(
@@ -482,13 +553,21 @@ class StructuredTaskGroup:
                 return result
 
             try:
-                raw = self._execution.submit(
+                submitter = (
+                    self._execution.try_submit
+                    if try_only
+                    else self._execution.submit
+                )
+                raw = submitter(
                     self._group_id,
                     spec,
                     invoke,
                     deadline=record.deadline,
                     cancellation=self._provider_submission_cancellation,
                 )
+                if raw is None:
+                    self._state.discard_unstarted(record)
+                    return None
             except TaskCancelled as exc:
                 self._mark_cancelled(record.task_id, exc)
                 raise
@@ -522,8 +601,9 @@ class StructuredTaskGroup:
         /,
         *args: Any,
         deadline: Deadline | None = None,
+        try_only: bool = False,
         **kwargs: Any,
-    ) -> TaskHandlePort[T]:
+    ) -> TaskHandlePort[T] | None:
         with self._submission_scope():
             lane = self._execution.ensure_serial_lane(self._group_id, spec.lane_id or "", spec.capacity)
             record = self._reserve_task(spec.task_id, ExecutionLaneKind.SERIAL, lane.lane_id, deadline, spec.failure_scope)
@@ -533,6 +613,7 @@ class StructuredTaskGroup:
                 fn=fn,
                 args=args,
                 kwargs=kwargs,
+                try_only=try_only,
             )
 
     def _submit_cpu(
@@ -542,12 +623,18 @@ class StructuredTaskGroup:
         /,
         *args: Any,
         deadline: Deadline | None = None,
+        try_only: bool = False,
         **kwargs: Any,
-    ) -> TaskHandlePort[T]:
+    ) -> TaskHandlePort[T] | None:
         with self._submission_scope():
             record = self._reserve_task(spec.task_id, ExecutionLaneKind.CPU, None, deadline, spec.failure_scope)
             try:
-                raw = self._execution.submit(
+                submitter = (
+                    self._execution.try_submit
+                    if try_only
+                    else self._execution.submit
+                )
+                raw = submitter(
                     self._group_id,
                     spec,
                     fn,
@@ -556,6 +643,9 @@ class StructuredTaskGroup:
                     cancellation=self._provider_submission_cancellation,
                     **kwargs,
                 )
+                if raw is None:
+                    self._state.discard_unstarted(record)
+                    return None
             except TaskCancelled as exc:
                 self._mark_cancelled(record.task_id, exc)
                 raise
@@ -591,6 +681,8 @@ class StructuredTaskGroup:
         *args: Any,
         deadline: Deadline | None = None,
         capacity: int | None = None,
+        failure_scope: TaskFailureScope = TaskFailureScope.GROUP,
+        provider_task_id: str | None = None,
         **kwargs: Any,
     ) -> ScheduledTaskHandlePort:
         with self._submission_scope():
@@ -601,6 +693,7 @@ class StructuredTaskGroup:
                 lane_id=lane.lane_id,
                 deadline=effective,
                 deadline_owner=deadline_owner,
+                failure_scope=failure_scope,
             )
 
             if effective is not None and effective.expired:
@@ -654,6 +747,7 @@ class StructuredTaskGroup:
                             lane_id=current_record.lane_id,
                             capacity=capacity,
                             mailbox_policy=SerialMailboxPolicy.REJECT,
+                            failure_scope=failure_scope,
                         ),
                         invoke,
                         deadline=current_record.deadline,
@@ -689,8 +783,11 @@ class StructuredTaskGroup:
                 self._state.set_recurring_current(current_record, current)
 
             try:
+                provider_identity = spec.task_id if provider_task_id is None else str(provider_task_id).strip()
+                if not provider_identity:
+                    raise ValueError("scheduled provider task id required")
                 provider_spec = ScheduledTaskSpec(
-                    task_id=f"{self._group_id}/{spec.task_id}",
+                    task_id=f"{self._group_id}/{provider_identity}",
                     interval_seconds=spec.interval_seconds,
                     initial_delay_seconds=spec.initial_delay_seconds,
                 )
@@ -824,6 +921,9 @@ class StructuredTaskGroup:
     def _recurring_failure(self, task_id: str) -> BaseException | None:
         return self._state.recurring_failure(task_id)
 
+    def _retire_cancelled_recurring(self, task_id: str) -> None:
+        self._state.retire_cancelled_recurring(task_id)
+
     def cancel(self, reason: str) -> None:
         self._cancellation.cancel(reason)
         self._cancel_deadline_handle(self._lifecycle.take_group_deadline())
@@ -886,13 +986,20 @@ class StructuredTaskGroup:
             else:
                 observed_failure = None
             state, failure, _current = self._state.recurring_outcome(record.task_id)
-            if state is TaskState.FAILED:
+            if (
+                state is TaskState.FAILED
+                and record.failure_scope is TaskFailureScope.GROUP
+            ):
                 if failure is not None:
                     errors.append(failure)
                 elif observed_failure is not None:
                     errors.append(observed_failure)
                 else:
-                    errors.append(RuntimeError(f"failed recurring task has no failure evidence: {record.task_id}"))
+                    errors.append(
+                        RuntimeError(
+                            f"failed recurring task has no failure evidence: {record.task_id}"
+                        )
+                    )
         if errors:
             raise ExceptionGroup(f"task group failed: {self._group_id}", errors)
 

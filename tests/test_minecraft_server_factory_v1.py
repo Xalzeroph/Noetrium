@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -18,6 +20,7 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     build_server_service_contract,
 )
 from noetrium_platform.capabilities.environment.minecraft.providers.server_files import MinecraftServerPreparationError
+from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 
@@ -152,28 +155,24 @@ def test_server_readiness_requires_rcon_after_tcp_and_retries_connection_refused
     assert probe.rcon.attempts == 2  # type: ignore[attr-defined]
 
 
-def test_tcp_readiness_runs_network_connect_on_async_io_lane(monkeypatch, tmp_path: Path) -> None:
-    class Writer:
+def test_tcp_readiness_runs_network_connect_on_blocking_io_lane(monkeypatch, tmp_path: Path) -> None:
+    class Connection:
         def __init__(self) -> None:
             self.closed = False
-            self.waited = False
 
         def close(self) -> None:
             self.closed = True
 
-        async def wait_closed(self) -> None:
-            self.waited = True
+    connection = Connection()
+    calls: list[tuple[tuple[str, int], float]] = []
 
-    writer = Writer()
-    calls: list[tuple[str, int]] = []
-
-    async def open_connection(host: str, port: int):
-        calls.append((host, port))
-        return object(), writer
+    def create_connection(address: tuple[str, int], timeout: float):
+        calls.append((address, timeout))
+        return connection
 
     monkeypatch.setattr(
-        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.asyncio.open_connection",
-        open_connection,
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        create_connection,
     )
 
     class Backend:
@@ -181,6 +180,17 @@ def test_tcp_readiness_runs_network_connect_on_async_io_lane(monkeypatch, tmp_pa
             del process
             return True
 
+    delegate = make_task_group("minecraft-tcp-readiness")
+
+    class RecordingGroup:
+        def __init__(self):
+            self.specs = []
+
+        def submit(self, spec, fn, /, *args, **kwargs):
+            self.specs.append(spec)
+            return delegate.submit(spec, fn, *args, **kwargs)
+
+    group = RecordingGroup()
     spec = _spec(tmp_path)
     contract = build_server_service_contract(
         spec,
@@ -192,7 +202,7 @@ def test_tcp_readiness_runs_network_connect_on_async_io_lane(monkeypatch, tmp_pa
     probe = MinecraftTcpReadinessProbe(
         host=spec.host,
         port=spec.port,
-        task_group=make_task_group("minecraft-tcp-readiness"),
+        task_group=group,  # type: ignore[arg-type]
         poll_interval_s=0.001,
     )
 
@@ -203,22 +213,86 @@ def test_tcp_readiness_runs_network_connect_on_async_io_lane(monkeypatch, tmp_pa
     )
 
     assert evidence.startswith("minecraft-tcp-ready:")
-    assert calls == [(spec.host, spec.port)]
-    assert writer.closed is True
-    assert writer.waited is True
+    assert calls and calls[0][0] == (spec.host, spec.port)
+    assert connection.closed is True
+    assert len(group.specs) == 1
+    assert group.specs[0].lane_kind is ExecutionLaneKind.BLOCKING_IO
 
+
+def test_tcp_readiness_keeps_process_liveness_outside_probe_worker(monkeypatch, tmp_path: Path) -> None:
+    class Connection:
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        lambda address, timeout: Connection(),
+    )
+
+    class Backend:
+        calls = 0
+
+        def alive(self, process):
+            del process
+            self.calls += 1
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=1,
+    )
+    backend = Backend()
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        task_group=make_task_group("minecraft-readiness-no-nested-liveness"),
+        poll_interval_s=0.001,
+    )
+    assert probe.wait_ready(
+        SimpleNamespace(pid=9, start_identity="start"), contract, backend
+    ).startswith("minecraft-tcp-ready:")
+    assert backend.calls == 2
+
+
+def test_tcp_readiness_contract_timeout_is_enforced(monkeypatch, tmp_path: Path) -> None:
+    def unavailable(address: tuple[str, int], timeout: float):
+        del address, timeout
+        raise OSError("not ready")
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        unavailable,
+    )
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=0.05,
+    )
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        task_group=make_task_group("minecraft-readiness-deadline"),
+        poll_interval_s=0.005,
+    )
+    started = time.monotonic()
+    with pytest.raises(Exception):
+        probe.wait_ready(SimpleNamespace(pid=10, start_identity="start"), contract, Backend())
+    assert time.monotonic() - started < 1.0
 
 
 def test_tcp_readiness_identity_is_unique_across_probe_instances_sharing_one_group(tmp_path: Path, monkeypatch) -> None:
-    async def open_connection(host: str, port: int):
-        class Writer:
-            def close(self) -> None: pass
-            async def wait_closed(self) -> None: pass
-        return object(), Writer()
+    class Connection:
+        def close(self) -> None:
+            return None
 
     monkeypatch.setattr(
-        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.asyncio.open_connection",
-        open_connection,
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        lambda address, timeout: Connection(),
     )
 
     class Backend:

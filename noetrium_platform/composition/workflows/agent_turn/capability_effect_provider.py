@@ -113,16 +113,24 @@ class CapabilityEffectProviderOperations:
         descriptor: CapabilityDescriptor,
         request: CapabilityRequest,
         handle: PreparedEffectHandle,
+        invocation_ordinal: int = 0,
     ) -> tuple[CapabilityEffectReconciliationResult, OperationResult[JsonValue]]:
         dc = request.context.decision_cycle_id or request.context.span_id
         operation = self._dispatcher.dispatch(
             root_context=request.context,
-            operation_id=f"{dc}:capability.effect.reconcile:{handle.request_id}",
+            operation_id=(
+                f"{dc}:capability.effect.reconcile:{handle.request_id}:"
+                f"call:{invocation_ordinal}"
+            ),
             operation_type="capability.effect.reconcile",
             target=target,
             payload=handle,
             payload_schema="capability.effect.reconcile.v1",
-            idempotency_key=request.idempotency_key,
+            idempotency_key=(
+                None
+                if request.idempotency_key is None
+                else f"{request.idempotency_key}:reconcile:{invocation_ordinal}"
+            ),
             handler=lambda envelope: require_capability_reconciliation(
                 session.reconcile_prepared_capability(handle, envelope.context),
                 descriptor=descriptor,

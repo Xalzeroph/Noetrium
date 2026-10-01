@@ -1,4 +1,4 @@
-from .contracts import GuiActionKind, GuiEnvironmentSpec
+from .contracts import GuiActionKind, GuiContextPolicy, GuiEnvironmentSpec
 from .ports import GuiWorldPort
 
-__all__ = ["GuiActionKind", "GuiEnvironmentSpec", "GuiWorldPort"]
+__all__ = ["GuiActionKind", "GuiContextPolicy", "GuiEnvironmentSpec", "GuiWorldPort"]

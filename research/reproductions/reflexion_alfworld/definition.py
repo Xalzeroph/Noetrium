@@ -54,6 +54,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/reflexion_alfworld/study.py',
         ),
     ),
+    primary_executable="research/reproductions/reflexion_alfworld/program.py",
     reported_results=(
         ReportedResult(
             claim_id="reflexion_alfworld_completed_tasks",
@@ -95,7 +96,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('historical action/reflection model serving snapshots are not exact-current deployments', 'exact ALFWorld dataset/runtime deployment cut must be bound before matched execution'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_reflexion_alfworld_fidelity_v1.py', 'tests/test_scientific_reflexion_alfworld_v1.py', 'tests/test_scientific_reflexion_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_reflexion_alfworld_fidelity_v1.py', 'tests/test_scientific_reflexion_alfworld_v1.py'),
 )
 
 __all__ = ["REPRODUCTION"]

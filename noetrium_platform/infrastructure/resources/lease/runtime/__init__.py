@@ -1,5 +1,6 @@
 from .clock import LeaseClockUnavailable, LocalLeaseClock, ManualLeaseClock
-from .registry import InMemoryResourceLeaseRegistry
+from .registry import ResourceLeaseRegistry
+from .heartbeat import LeaseHeartbeatError, LeaseHeartbeatFactory, LeaseHeartbeatGuard
 from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLeaseClockConflict,
     ResourceLeaseConflict,
@@ -8,7 +9,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 )
 
 __all__ = [
-    "InMemoryResourceLeaseRegistry",
+    "ResourceLeaseRegistry",
+    "LeaseHeartbeatError",
+    "LeaseHeartbeatFactory",
+    "LeaseHeartbeatGuard",
     "LeaseClockUnavailable",
     "LocalLeaseClock",
     "ManualLeaseClock",

@@ -28,8 +28,8 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
-    ResearchMethodProgramBindingKind,
-    ResearchMethodProgramImplementation,
+    ResearchMachineProgramImplementation,
+    ResearchMethodImplementation,
     ResearchInputBinding,
     ResearchNode,
     ResearchNodeImpact,
@@ -87,7 +87,11 @@ def _decode_binding(value: object, field: str) -> ResearchInputBinding:
 def _decode_implementation(
     value: object,
     field: str,
-) -> ResearchImplementation | ResearchMethodProgramImplementation:
+) -> (
+    ResearchImplementation
+    | ResearchMethodImplementation
+    | ResearchMachineProgramImplementation
+):
     row = _object(value, field)
     implementation_type = _text(
         row.get("implementation_type"),
@@ -108,44 +112,98 @@ def _decode_implementation(
             ),
             field,
         )
-        implementation: ResearchImplementation | ResearchMethodProgramImplementation = (
-            ResearchImplementation(
-                _text(row["implementation_id"], field + ".implementation_id"),
-                _text(row["module"], field + ".module"),
-                _text(row["qualname"], field + ".qualname"),
-                _text(row["source_digest"], field + ".source_digest"),
-            )
+        implementation: (
+            ResearchImplementation
+            | ResearchMethodImplementation
+            | ResearchMachineProgramImplementation
+        ) = ResearchImplementation(
+            _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["module"], field + ".module"),
+            _text(row["qualname"], field + ".qualname"),
+            _text(row["source_digest"], field + ".source_digest"),
         )
-    elif implementation_type == "method_program":
+    elif implementation_type == "method":
+        fields = frozenset({
+            "implementation_type", "implementation_id", "method_id", "module", "qualname",
+            "source_digest", "method_digest", "entrypoint", "version",
+            "semantic_contract", "method_configuration", "execution",
+            "evidence", "metrics", "artifacts", "state_schema",
+            "input_schema", "output_schema", "configurer_args",
+            "configurer_kwargs", "implementation_digest",
+        })
+        _exact(row, fields, field)
+        implementation = ResearchMethodImplementation(
+            _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["method_id"], field + ".method_id"),
+            _text(row["module"], field + ".module"),
+            _text(row["qualname"], field + ".qualname"),
+            _text(row["source_digest"], field + ".source_digest"),
+            _text(row["method_digest"], field + ".method_digest"),
+            _text(row["entrypoint"], field + ".entrypoint"),
+            _text(row["version"], field + ".version"),
+            _text(row["semantic_contract"], field + ".semantic_contract"),
+            _object(row["method_configuration"], field + ".method_configuration"),
+            _text(row["execution"], field + ".execution"),
+            tuple(_array(row["evidence"], field + ".evidence")),
+            tuple(_array(row["metrics"], field + ".metrics")),
+            tuple(_array(row["artifacts"], field + ".artifacts")),
+            _text(row["state_schema"], field + ".state_schema"),
+            _text(row["input_schema"], field + ".input_schema"),
+            _text(row["output_schema"], field + ".output_schema"),
+            tuple(_array(row["configurer_args"], field + ".configurer_args")),
+            _object(row["configurer_kwargs"], field + ".configurer_kwargs"),
+        )
+    elif implementation_type == "research_machine_program":
         _exact(
             row,
             frozenset(
                 {
                     "implementation_type",
                     "implementation_id",
-                    "module",
-                    "qualname",
+                    "program_module",
+                    "program_qualname",
+                    "operations_module",
+                    "operations_qualname",
                     "program_digest",
-                    "binding_kind",
-                    "factory_args",
-                    "factory_kwargs",
+                    "machine_kind",
+                    "operations_digest",
+                    "operation_identities",
                     "implementation_digest",
                 }
             ),
             field,
         )
-        implementation = ResearchMethodProgramImplementation(
+        identities: list[tuple[str, str]] = []
+        for index, raw_identity in enumerate(
+            _array(
+                row["operation_identities"],
+                field + ".operation_identities",
+            )
+        ):
+            identity_field = (
+                field + f".operation_identities[{index}]"
+            )
+            pair = _array(raw_identity, identity_field)
+            if len(pair) != 2:
+                raise ValueError(
+                    f"{identity_field} must contain exactly two text values"
+                )
+            identities.append(
+                (
+                    _text(pair[0], identity_field + "[0]"),
+                    _text(pair[1], identity_field + "[1]"),
+                )
+            )
+        implementation = ResearchMachineProgramImplementation(
             _text(row["implementation_id"], field + ".implementation_id"),
-            _text(row["module"], field + ".module"),
-            _text(row["qualname"], field + ".qualname"),
+            _text(row["program_module"], field + ".program_module"),
+            _text(row["program_qualname"], field + ".program_qualname"),
+            _text(row["operations_module"], field + ".operations_module"),
+            _text(row["operations_qualname"], field + ".operations_qualname"),
             _text(row["program_digest"], field + ".program_digest"),
-            ResearchMethodProgramBindingKind(
-                _text(row["binding_kind"], field + ".binding_kind")
-            ),
-            tuple(
-                _array(row["factory_args"], field + ".factory_args")
-            ),
-            _object(row["factory_kwargs"], field + ".factory_kwargs"),
+            _text(row["machine_kind"], field + ".machine_kind"),
+            _text(row["operations_digest"], field + ".operations_digest"),
+            tuple(identities),
         )
     else:
         raise ValueError(
@@ -363,17 +421,17 @@ def decode_research_portfolio(raw: bytes) -> ResearchPortfolio:
     portfolio = ResearchPortfolio(
         _text(root["portfolio_id"], "research portfolio.portfolio_id"),
         tuple(
-            _decode_program(item, "research portfolio.programs[]")
-            for item in _array(root["programs"], "research portfolio.programs")
+            _decode_program(item, "research portfolio._programs[]")
+            for item in _array(root["programs"], "research portfolio._programs")
         ),
         tuple(
             _decode_portfolio_dependency(
                 item,
-                "research portfolio.dependencies[]",
+                "research portfolio._dependencies[]",
             )
             for item in _array(
                 root["dependencies"],
-                "research portfolio.dependencies",
+                "research portfolio._dependencies",
             )
         ),
     )
@@ -387,7 +445,7 @@ def _local_node_digests(
     portfolio: ResearchPortfolio,
 ) -> dict[ResearchNodeRef, str]:
     rows: dict[ResearchNodeRef, str] = {}
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         definitions = {
             definition.definition_id: definition
             for definition in program.definitions
@@ -415,10 +473,10 @@ def _incoming_edges(
 ) -> dict[ResearchNodeRef, tuple[tuple[ResearchNodeRef, str], ...]]:
     rows: dict[ResearchNodeRef, list[tuple[ResearchNodeRef, str]]] = {
         ResearchNodeRef(program.program_id, node.node_id): []
-        for program in portfolio.programs
+        for program in portfolio._programs
         for node in program.nodes
     }
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for dependency in program.dependencies:
             upstream = ResearchNodeRef(
                 program.program_id,
@@ -429,7 +487,7 @@ def _incoming_edges(
                 dependency.downstream_node_id,
             )
             rows[downstream].append((upstream, dependency.dependency_digest))
-    for dependency in portfolio.dependencies:
+    for dependency in portfolio._dependencies:
         rows[dependency.downstream].append(
             (dependency.upstream, dependency.dependency_digest)
         )

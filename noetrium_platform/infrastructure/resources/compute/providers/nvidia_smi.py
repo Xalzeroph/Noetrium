@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import shutil
-from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api.probe import CommandProbeError, CommandProbePort
 from noetrium_platform.infrastructure.resources.compute.api import (
@@ -48,20 +47,18 @@ class NvidiaSmiGpuRuntimeObserver:
     def snapshot(self) -> GpuRuntimeSnapshot:
         executable = shutil.which(self._executable)
         if executable is None:
-            return GpuRuntimeSnapshot(False, detail="nvidia-smi-unavailable", observed_at_epoch_s=time())
+            return GpuRuntimeSnapshot(False, detail="nvidia-smi-unavailable")
         devices = self._devices(executable)
         if devices is None:
-            return GpuRuntimeSnapshot(False, detail="nvidia-smi-query-failed", observed_at_epoch_s=time())
+            return GpuRuntimeSnapshot(False, detail="nvidia-smi-query-failed")
         processes = self._processes(executable)
         if processes is None:
             return GpuRuntimeSnapshot(
                 True, devices=devices, processes=(),
                 detail="nvidia-smi-process-query-failed", processes_complete=False,
-                observed_at_epoch_s=time(),
             )
         return GpuRuntimeSnapshot(
-            True, devices=devices, processes=processes, processes_complete=True,
-            observed_at_epoch_s=time(),
+            True, devices=devices, processes=processes, processes_complete=True
         )
 
     def _devices(self, executable: str) -> tuple[GpuDeviceStatus, ...] | None:

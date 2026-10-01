@@ -53,12 +53,6 @@ class SynchronizationAction(StrEnum):
     ABORT = "abort"
 
 
-class SynchronizationMode(StrEnum):
-    ASYNCHRONOUS = "asynchronous"
-    BARRIER_ALL = "barrier_all"
-    QUORUM = "quorum"
-
-
 @dataclass(frozen=True, slots=True)
 class SynchronizationPoint:
     point_id: str
@@ -230,6 +224,7 @@ class SynchronizationDeciderRegistryPort(Protocol):
 class SynchronizationDeciderRegistry(SynchronizationDeciderRegistryPort):
     def __init__(self) -> None:
         self._deciders: dict[str, tuple[SynchronizationDecider, str]] = {}
+        self._identity_digest_cache: str | None = None
         self._lock = RLock()
 
     def register(
@@ -254,6 +249,7 @@ class SynchronizationDeciderRegistry(SynchronizationDeciderRegistryPort):
                     f"synchronization decider already registered: {decider}"
                 )
             self._deciders[decider] = value
+            self._identity_digest_cache = None
 
     def resolve(self, decider: str) -> SynchronizationDecider:
         decider = _text(decider, "synchronization decider")
@@ -278,10 +274,15 @@ class SynchronizationDeciderRegistry(SynchronizationDeciderRegistryPort):
     @property
     def identity_digest(self) -> str:
         with self._lock:
-            return canonical_digest(tuple(
-                (name, digest)
-                for name, (_, digest) in sorted(self._deciders.items())
-            ))
+            cached = self._identity_digest_cache
+            if cached is None:
+                cached = canonical_digest(tuple(
+                    (name, implementation_digest)
+                    for name, (_, implementation_digest)
+                    in sorted(self._deciders.items())
+                ))
+                self._identity_digest_cache = cached
+            return cached
 
 
 @dataclass(frozen=True, slots=True)
@@ -323,136 +324,126 @@ class SynchronizationProgram:
 
 
 @dataclass(frozen=True, slots=True)
-class SynchronizationPresetSpec:
-    mode: SynchronizationMode
-    quorum: int | None = None
+class SynchronizationThresholdSpec:
+    minimum_arrivals: int = 1
+    minimum_fraction_numerator: int = 0
+    minimum_fraction_denominator: int = 1
+    spec_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
-        if not isinstance(self.mode, SynchronizationMode):
-            raise TypeError(
-                "synchronization preset mode must be SynchronizationMode"
-            )
-        if self.mode is SynchronizationMode.QUORUM:
-            if type(self.quorum) is not int or self.quorum < 1:
-                raise ValueError(
-                    "quorum synchronization requires positive quorum"
-                )
-        elif self.quorum is not None:
+        if type(self.minimum_arrivals) is not int or self.minimum_arrivals < 1:
             raise ValueError(
-                "quorum is valid only for QUORUM synchronization"
+                "synchronization minimum_arrivals must be a positive integer"
             )
+        if (
+            type(self.minimum_fraction_numerator) is not int
+            or self.minimum_fraction_numerator < 0
+        ):
+            raise ValueError(
+                "synchronization minimum_fraction_numerator must be non-negative"
+            )
+        if (
+            type(self.minimum_fraction_denominator) is not int
+            or self.minimum_fraction_denominator < 1
+        ):
+            raise ValueError(
+                "synchronization minimum_fraction_denominator must be positive"
+            )
+        if self.minimum_fraction_numerator > self.minimum_fraction_denominator:
+            raise ValueError("synchronization minimum fraction cannot exceed one")
+        object.__setattr__(
+            self,
+            "spec_digest",
+            canonical_digest({
+                "schema": "runtime.synchronization.threshold.v1",
+                "minimum_arrivals": self.minimum_arrivals,
+                "minimum_fraction_numerator": self.minimum_fraction_numerator,
+                "minimum_fraction_denominator": self.minimum_fraction_denominator,
+            }),
+        )
+
+    def required_arrivals(self, expected_count: int) -> int:
+        if type(expected_count) is not int or expected_count < 1:
+            raise ValueError(
+                "synchronization expected participant count must be positive"
+            )
+        fractional = (
+            expected_count * self.minimum_fraction_numerator
+            + self.minimum_fraction_denominator
+            - 1
+        ) // self.minimum_fraction_denominator
+        required = max(self.minimum_arrivals, fractional)
+        if required > expected_count:
+            raise ValueError(
+                "synchronization threshold exceeds expected participant count"
+            )
+        return required
 
     @property
     def decider_id(self) -> str:
-        suffix = (
-            ""
-            if self.quorum is None
-            else f":{self.quorum}"
-        )
-        return f"runtime.synchronization.standard:{self.mode.value}{suffix}"
+        return f"runtime.synchronization.threshold:{self.spec_digest[:24]}"
 
     @property
     def implementation_digest(self) -> str:
         return canonical_digest({
-            "handler_family": "runtime.synchronization.standard",
-            "mode": self.mode.value,
-            "quorum": self.quorum,
+            "handler_family": "runtime.synchronization.threshold",
+            "spec_digest": self.spec_digest,
             "implementation_revision": 1,
         })
 
 
-def standard_synchronization_decider(
-    spec: SynchronizationPresetSpec,
+def threshold_synchronization_decider(
+    spec: SynchronizationThresholdSpec,
 ) -> SynchronizationDecider:
-    if not isinstance(spec, SynchronizationPresetSpec):
+    if not isinstance(spec, SynchronizationThresholdSpec):
         raise TypeError(
-            "standard synchronization decider requires SynchronizationPresetSpec"
+            "threshold synchronization decider requires SynchronizationThresholdSpec"
         )
 
     def decide(request: SynchronizationRequest) -> SynchronizationDecision:
         point = request.point
         expected = point.expected_participant_ids
-        arrived = point.arrived_participant_ids
-
-        if spec.mode is SynchronizationMode.ASYNCHRONOUS:
-            if not arrived:
-                return SynchronizationDecision(
-                    SynchronizationAction.WAIT,
-                    reason_code="await-first-arrival",
-                    receipt={"mode": spec.mode.value},
-                )
-            return SynchronizationDecision(
-                SynchronizationAction.RELEASE,
-                arrived,
-                reason_code="asynchronous-arrival",
-                receipt={
-                    "mode": spec.mode.value,
-                    "arrived_count": len(arrived),
-                },
-            )
-
-        if spec.mode is SynchronizationMode.BARRIER_ALL:
-            if len(arrived) < len(expected):
-                return SynchronizationDecision(
-                    SynchronizationAction.WAIT,
-                    reason_code="await-all-participants",
-                    receipt={
-                        "mode": spec.mode.value,
-                        "arrived_count": len(arrived),
-                        "expected_count": len(expected),
-                    },
-                )
-            return SynchronizationDecision(
-                SynchronizationAction.RELEASE,
-                expected,
-                reason_code="barrier-complete",
-                receipt={
-                    "mode": spec.mode.value,
-                    "arrived_count": len(arrived),
-                    "expected_count": len(expected),
-                },
-            )
-
-        quorum = spec.quorum
-        if quorum is None:
-            raise RuntimeError("QUORUM synchronization lost quorum")
-        if quorum > len(expected):
-            raise ValueError(
-                "synchronization quorum exceeds expected participant count"
-            )
-        if len(arrived) < quorum:
+        arrived_set = set(point.arrived_participant_ids)
+        arrived = tuple(
+            participant_id
+            for participant_id in expected
+            if participant_id in arrived_set
+        )
+        required = spec.required_arrivals(len(expected))
+        receipt = {
+            "required_arrivals": required,
+            "minimum_arrivals": spec.minimum_arrivals,
+            "minimum_fraction_numerator": spec.minimum_fraction_numerator,
+            "minimum_fraction_denominator": spec.minimum_fraction_denominator,
+            "arrived_count": len(arrived),
+            "expected_count": len(expected),
+            "spec_digest": spec.spec_digest,
+        }
+        if len(arrived) < required:
             return SynchronizationDecision(
                 SynchronizationAction.WAIT,
-                reason_code="await-quorum",
-                receipt={
-                    "mode": spec.mode.value,
-                    "quorum": quorum,
-                    "arrived_count": len(arrived),
-                },
+                reason_code="await-arrival-threshold",
+                receipt=receipt,
             )
         return SynchronizationDecision(
             SynchronizationAction.RELEASE,
             arrived,
-            reason_code="quorum-reached",
-            receipt={
-                "mode": spec.mode.value,
-                "quorum": quorum,
-                "arrived_count": len(arrived),
-            },
+            reason_code="arrival-threshold-reached",
+            receipt=receipt,
         )
 
     return decide
 
 
-def synchronization_program_from_preset(
-    spec: SynchronizationPresetSpec,
+def synchronization_program_from_threshold(
+    spec: SynchronizationThresholdSpec,
     *,
     program_id: str = "runtime.synchronization.standard",
     version: str = "1",
 ) -> tuple[SynchronizationProgram, SynchronizationDeciderRegistry]:
-    if not isinstance(spec, SynchronizationPresetSpec):
+    if not isinstance(spec, SynchronizationThresholdSpec):
         raise TypeError(
-            "synchronization preset compiler requires SynchronizationPresetSpec"
+            "synchronization threshold compiler requires SynchronizationThresholdSpec"
         )
     program = SynchronizationProgram(
         program_id=program_id,
@@ -463,7 +454,7 @@ def synchronization_program_from_preset(
     registry = SynchronizationDeciderRegistry()
     registry.register(
         spec.decider_id,
-        standard_synchronization_decider(spec),
+        threshold_synchronization_decider(spec),
         implementation_digest=spec.implementation_digest,
     )
     return program, registry
@@ -733,15 +724,14 @@ __all__ = [
     "SynchronizationDecider",
     "SynchronizationDeciderRegistry",
     "SynchronizationDeciderRegistryPort",
-    "SynchronizationMode",
     "SynchronizationPoint",
-    "SynchronizationPresetSpec",
+    "SynchronizationThresholdSpec",
     "SynchronizationProgram",
     "SynchronizationRequest",
     "SynchronizationRuntimeBinding",
-    "standard_synchronization_decider",
+    "threshold_synchronization_decider",
     "synchronization_initial_data",
-    "synchronization_program_from_preset",
+    "synchronization_program_from_threshold",
     "synchronization_runtime_module",
     "synchronization_runtime_operations",
 ]

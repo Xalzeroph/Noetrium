@@ -5,9 +5,7 @@ from dataclasses import replace
 import pytest
 
 from noetrium import api
-from noetrium_platform.composition.research_os_experiment_artifacts import (
-    DirectoryResearchOSExperimentArtifactStoreFactory,
-)
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
     ResearchOSExperimentReconciliationRegistration,
@@ -20,7 +18,6 @@ from noetrium_platform.composition.research_os_experiment_trial_execution import
     ResearchOSExperimentTrialStudyExecutionResolver,
 )
 from noetrium_platform.composition.research_os_experiment import (
-    ResearchOSExperimentArtifactStoreBinding,
     ResearchOSExperimentClosure,
     ResearchOSExperimentRuntimeBinding,
     compile_research_os_experiment_closure,
@@ -35,7 +32,7 @@ from noetrium_platform.composition.research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSImmutableValueAuthority,
+    ResearchOSArtifactValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
 from noetrium_platform.composition.research_os_graph import (
@@ -53,6 +50,9 @@ from noetrium_platform.evidence.artifact.catalog.providers import (
 )
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
+)
+from noetrium_platform.evidence.artifact.retention.providers import (
+    SQLiteArtifactRetentionStore,
 )
 from noetrium_platform.foundation.portfolio.api import (
     ProjectCapabilityRequirement,
@@ -72,11 +72,11 @@ from noetrium_platform.research.experimentation.api import (
     resolve_research_requirements,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     BenchmarkTaskSet,
     ExperimentTrialProtocolIdentity,
     MeasurementDefinition,
     MeasurementProtocol,
-    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     ReplayLevel,
@@ -90,9 +90,6 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
-)
-from noetrium_platform.research.experimentation.lifecycle.run.runtime import (
-    DirectoryRunArtifactStore,
 )
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphReconciliationDisposition,
@@ -113,11 +110,11 @@ def _validate_experiment_report(payload):
 
 
 def _compiled_graph():
-    builder = api.ResearchProgramBuilder("paper")
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment("main", definitions=("study",))
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
-    revision = api.ResearchGraphRevision(
+    portfolio = research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
+    revision = research_os_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -155,17 +152,17 @@ def _study_definition(*, seeds=("seed-1",)) -> ResearchStudyDefinition:
         measurements,
         benchmark,
         None,
+        (AssignmentWorkload(("task-1",)),),
         ResearchBindingRequirements("trial-provider"),
         ExperimentTrialProtocolIdentity("trial.test", "c" * 64),
         ResearchRevision("research-os-revision", "d" * 64),
-        StudyExecutionPolicy.serial_shared_v1(
+        StudyExecutionPolicy(
             trial_budget=TrialBudget(
                 "standard",
                 max_steps=8,
                 max_seconds=60.0,
             ),
             replay_level=ReplayLevel.EXACT,
-            repetition_timeout_seconds=60.0,
         ),
     )
 
@@ -371,52 +368,7 @@ class _ExperimentReconciliation:
         )
 
 
-class _InlineActor:
-    actor_id = "research-os-experiment-test-writer"
-
-    def call(self, operation, fn, /, *args, **kwargs):
-        del operation
-        return fn(*args, **kwargs)
-
-
-class _ExperimentArtifactFactory:
-    identity_digest = canonical_digest(
-        {"factory": "test.execution-cut-artifact-store.v1"}
-    )
-
-    def __init__(self, root) -> None:
-        self.root = root
-        self._stores = {}
-
-    def resolve(self, closure, *, execution_cut_id):
-        store = self._stores.get(execution_cut_id)
-        if store is None:
-            store = DirectoryRunArtifactStore(
-                self.root / execution_cut_id,
-                run_id=execution_cut_id,
-                writer_actor=_InlineActor(),
-            )
-            self._stores[execution_cut_id] = store
-        store_identity = canonical_digest(
-            {
-                "store": "directory-run-artifact-store.v1",
-                "root": str((self.root / execution_cut_id).resolve()),
-                "run_id": execution_cut_id,
-            }
-        )
-        return ResearchOSExperimentArtifactStoreBinding(
-            closure.closure_digest,
-            execution_cut_id,
-            store,
-            self.identity_digest,
-            store_identity,
-        )
-
-
 class _ExperimentRuntimeBindings:
-    def __init__(self, artifact_factory) -> None:
-        self.artifact_factory = artifact_factory
-
     def resolve(self, closure):
         return ResearchOSExperimentRuntimeBinding(
             closure.closure_digest,
@@ -424,86 +376,20 @@ class _ExperimentRuntimeBindings:
             closure.research_plan.binding_digest,
             _BoundAdapter(),
             BasicStudyMetricAggregator(),
-            self.artifact_factory,
             _ExperimentReconciliation(),
             canonical_digest({"adapter": "test.bound-study-execution.v1"}),
             canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
-            self.artifact_factory.identity_digest,
             _ExperimentReconciliation.identity_digest,
         )
-
-
-def test_experiment_artifact_store_binding_is_execution_cut_local(tmp_path) -> None:
-    compilation = _compiled_graph()
-    node = compilation.node("paper::main")
-    definition = _study_definition()
-    resolution, binding = _resolution_and_binding(definition)
-    closure = compile_research_os_experiment_closure(
-        graph_id=compilation.plan.graph_id,
-        graph_digest=compilation.plan.graph_digest,
-        research_revision_digest=compilation.plan.research_revision_digest,
-        node=node,
-        definition=definition,
-        resolution=resolution,
-        binding=binding,
-    )
-    pool = ResearchExecutionPool()
-    group = pool.open_experiment_group(
-        "experiment-artifact-factory-test",
-        resource_id="experiment-artifact-factory-test",
-    )
-    factory = DirectoryResearchOSExperimentArtifactStoreFactory(
-        tmp_path / "run-artifacts",
-        task_group=group,
-    )
-    runtime_binding = ResearchOSExperimentRuntimeBinding(
-        closure.closure_digest,
-        closure.experiment_program.plan.plan_digest,
-        closure.research_plan.binding_digest,
-        _BoundAdapter(),
-        BasicStudyMetricAggregator(),
-        factory,
-        _ExperimentReconciliation(),
-        canonical_digest({"adapter": "test.bound-study-execution.v1"}),
-        canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
-        factory.identity_digest,
-        _ExperimentReconciliation.identity_digest,
-    )
-    left_cut = "1" * 64
-    right_cut = "2" * 64
-    try:
-        left = runtime_binding.bind_artifacts(
-            closure,
-            execution_cut_id=left_cut,
-        )
-        left_again = runtime_binding.bind_artifacts(
-            closure,
-            execution_cut_id=left_cut,
-        )
-        right = runtime_binding.bind_artifacts(
-            closure,
-            execution_cut_id=right_cut,
-        )
-
-        assert left.binding_digest == left_again.binding_digest
-        assert left.store_identity_digest == left_again.store_identity_digest
-        assert left.execution_cut_id == left_cut
-        assert right.execution_cut_id == right_cut
-        assert left.binding_digest != right.binding_digest
-        assert left.store_identity_digest != right.store_identity_digest
-        assert left.artifacts.run_id == left_cut
-        assert right.artifacts.run_id == right_cut
-    finally:
-        pool.close()
 
 
 def test_public_research_os_runs_exact_experiment_program_with_durable_machine_journal(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment("main", definitions=("study",))
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
 
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
@@ -522,13 +408,10 @@ def test_public_research_os_runs_exact_experiment_program_with_durable_machine_j
     revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
-    artifact_factory = _ExperimentArtifactFactory(
-        tmp_path / "run-artifacts"
-    )
     runtime = CanonicalResearchOSNodeRuntime(
         tmp_path / "machine-state",
         execution_pool=pool,
-        experiment_bindings=_ExperimentRuntimeBindings(artifact_factory),
+        experiment_bindings=_ExperimentRuntimeBindings(),
     )
     research_os = bind_portfolio_research_os(
         revisions,
@@ -548,7 +431,7 @@ def test_public_research_os_runs_exact_experiment_program_with_durable_machine_j
     try:
         revision = research_os.commit(portfolio, message="exact experiment")
         receipt = research_os.run(
-            api.ResearchExecutionTarget("experiment-execution", revision)
+            research_os_api.ResearchExecutionTarget("experiment-execution", revision)
         )
         assert receipt.state == "succeeded"
         assert (tmp_path / "machine-state" / "program-journal" / "machines").is_dir()
@@ -573,22 +456,16 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
         resolution=resolution,
         binding=binding,
     )
-    import tempfile
-    from pathlib import Path
-
-    with tempfile.TemporaryDirectory() as temp:
-        artifact_factory = _ExperimentArtifactFactory(Path(temp) / "run")
+    if True:
         runtime_binding = ResearchOSExperimentRuntimeBinding(
             closure.closure_digest,
             closure.experiment_program.plan.plan_digest,
             closure.research_plan.binding_digest,
             _BoundAdapter(),
             BasicStudyMetricAggregator(),
-            artifact_factory,
             _ExperimentReconciliation(),
             canonical_digest({"adapter": "test.bound-study-execution.v1"}),
             canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
-            artifact_factory.identity_digest,
             _ExperimentReconciliation.identity_digest,
         )
         object.__setattr__(runtime_binding, "study_plan_digest", "f" * 64)
@@ -600,19 +477,19 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
 def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment(
         "main",
         definitions=("study",),
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
 
@@ -628,15 +505,15 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             max_async_io_in_flight=2,
         ),
     )
-    artifact_factory = _ExperimentArtifactFactory(
-        tmp_path / "run-artifacts"
-    )
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
     artifact_blobs = DirectoryArtifactBlobStore(tmp_path / "value-blobs")
     artifact_registry = SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3")
-    authority = ResearchOSImmutableValueAuthority(
+    authority = ResearchOSArtifactValueAuthority(
         artifact_blobs,
         artifact_registry,
+        SQLiteArtifactRetentionStore(
+            tmp_path / "value-retention.sqlite3"
+        ),
     )
     research_os = bind_portfolio_research_os(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
@@ -647,7 +524,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             CanonicalResearchOSNodeRuntime(
                 tmp_path / "machine-state",
                 execution_pool=pool,
-                experiment_bindings=_ExperimentRuntimeBindings(artifact_factory),
+                experiment_bindings=_ExperimentRuntimeBindings(),
             ),
             ResearchOSValueRouter((authority,)),
             experiment_closures=_ClosureProvider(
@@ -660,7 +537,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     try:
         revision = research_os.commit(portfolio, message="artifact report")
         receipt = research_os.run(
-            api.ResearchExecutionTarget("experiment-output", revision)
+            research_os_api.ResearchExecutionTarget("experiment-output", revision)
         )
         assert receipt.state == "succeeded"
         compilation_cut = graph.active_cut("experiment-output")
@@ -670,7 +547,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             compilation_cut.cut_id,
             "paper::main",
             "report",
-            api.ResearchValueKind.ARTIFACT,
+            research_os_api.ResearchValueKind.ARTIFACT,
             graph.snapshot(compilation_cut.cut_id).node("paper::main").semantic_digest,
         )
         value_reference = authority.lookup(subject)
@@ -683,7 +560,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
         # Same immutable execution is replay/recovery-safe: sealed report files
         # are accepted only after exact content verification.
         second = research_os.run(
-            api.ResearchExecutionTarget("experiment-output", revision)
+            research_os_api.ResearchExecutionTarget("experiment-output", revision)
         )
         assert second.state == "succeeded"
         assert authority.resolve(authority.lookup(subject)) == report_ref
@@ -695,16 +572,16 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
 def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.metric("validate-report", implementation=_validate_experiment_report)
     builder.experiment(
         "main",
         definitions=("study",),
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -716,14 +593,14 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
         "evaluate",
         "main",
         bindings=(
-            api.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 "report",
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
 
@@ -740,12 +617,12 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
         ),
     )
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
-    artifact_factory = _ExperimentArtifactFactory(
-        tmp_path / "run-artifacts"
-    )
-    value_authority = ResearchOSImmutableValueAuthority(
+    value_authority = ResearchOSArtifactValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "value-blobs"),
         SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3"),
+        SQLiteArtifactRetentionStore(
+            tmp_path / "value-retention.sqlite3"
+        ),
     )
     research_os = bind_portfolio_research_os(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
@@ -756,7 +633,7 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
             CanonicalResearchOSNodeRuntime(
                 tmp_path / "machine-state",
                 execution_pool=pool,
-                experiment_bindings=_ExperimentRuntimeBindings(artifact_factory),
+                experiment_bindings=_ExperimentRuntimeBindings(),
             ),
             ResearchOSValueRouter((value_authority,)),
             experiment_closures=_ClosureProvider(
@@ -772,7 +649,7 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
             message="experiment to evaluation artifact edge",
         )
         receipt = research_os.run(
-            api.ResearchExecutionTarget(
+            research_os_api.ResearchExecutionTarget(
                 "experiment-evaluation",
                 revision,
             )
@@ -838,7 +715,6 @@ class _TrialProviderResolver:
         self.last_request = None
 
     def resolve(self, closure):
-        del closure
         self.provider.owner = self
         provider_identity = next(
             iter({
@@ -889,15 +765,10 @@ class _TrialProvider:
             intervention=request.intervention,
             revision=request.revision,
         )
-        records = (record,)
         return TrialExecutionReceipt(
             request.request_digest,
             request.assignment.assignment_digest,
-            records,
-            MeasurementSetOutcome.complete(
-                request.measurement_protocol,
-                records,
-            ),
+            (record,),
         )
 
 
@@ -939,11 +810,58 @@ def test_trial_provider_bridge_uses_execution_cut_as_trial_run_identity() -> Non
     assert providers.last_request.research_plan_digest == (
         closure.research_plan.research_plan_digest
     )
-    assert providers.last_request.task == closure.research_plan.task_for(
-        assignment.task_id
+    assert providers.last_request.task_definitions == tuple(
+        closure.research_plan.task_for(task_id)
+        for task_id in assignment.workload.task_ids
     )
     assert observation.assignment == assignment
     assert observation.metrics == (("score", 1.0),)
+
+
+def test_trial_study_adapter_binds_scientific_inputs_into_request_identity() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    providers = _TrialProviderResolver(
+        closure.research_plan.trial_protocol_identity
+    )
+    base = ResearchOSExperimentTrialStudyExecutionResolver(providers).resolve(
+        closure
+    ).adapter
+    bound = base.bind_scientific_inputs(
+        {"source_architecture": {"generation": 7, "nodes": ()}}
+    )
+    assignment = closure.research_plan.experiment_plan.assignments[0]
+    variant_binding = closure.research_plan.experiment_plan.binding_for(
+        assignment.variant_id
+    )
+    base_request = base._request(
+        assignment,
+        variant_binding,
+        closure.research_plan.experiment_plan.plan_digest,
+        execution_id="8" * 64,
+    )
+    bound_request = bound._request(
+        assignment,
+        variant_binding,
+        closure.research_plan.experiment_plan.plan_digest,
+        execution_id="8" * 64,
+    )
+    assert dict(bound_request.scientific_inputs) == {
+        "source_architecture": {"generation": 7, "nodes": ()}
+    }
+    assert base_request.scientific_inputs == {}
+    assert bound_request.request_digest != base_request.request_digest
 
 
 def test_trial_provider_bridge_rejects_protocol_drift_before_execution() -> None:

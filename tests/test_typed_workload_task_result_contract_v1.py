@@ -20,7 +20,7 @@ def _result() -> WorkloadTaskResult:
     return WorkloadTaskResult(
         task_id="task-1", family="family", success=True, utility=1.0,
         steps=2, duration_s=0.25, lineage_id="lineage-1",
-        method_receipt=_method_receipt(), diagnostics={"trace": {"ok": True}},
+        participant_receipts=(("method", _method_receipt()),), diagnostics={"trace": {"ok": True}},
     )
 
 

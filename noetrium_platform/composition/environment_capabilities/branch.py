@@ -118,19 +118,6 @@ def _action_spec(value: object, field: str) -> tuple[str, JsonValue]:
     return action_type, freeze_json(value["payload"])
 
 
-def _observation_payload(observation: Observation | None) -> JsonValue:
-    if observation is None:
-        return None
-    if not isinstance(observation, Observation):
-        raise TypeError("environment branch action observation must be Observation")
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": observation.payload,
-        "artifact_refs": observation.artifact_refs,
-    }
-
-
 def _effect_payload(effect: object) -> JsonValue:
     if effect is None:
         return None
@@ -313,7 +300,7 @@ class EnvironmentBranchCapabilityBinding:
             "accepted": action_result.accepted,
             "action_type": action_request.action_type,
             "action_payload": action_request.payload,
-            "observation": _observation_payload(observation),
+            "observation": semantic_observation_payload(observation),
             "effect": _effect_payload(action_result.effect),
             "proof": "portable_branch_state_digest_equality",
         }
@@ -328,6 +315,10 @@ class EnvironmentBranchCapabilityBinding:
                 "fork_receipt_digest": canonical_digest(receipt),
             },
             request_digest=request_digest,
+            evidence=observation_evidence(
+                observation,
+                schema="noetrium.environment.branch-action-evidence.v1",
+            ),
         )
 
     def _replay_action(
@@ -410,7 +401,7 @@ class EnvironmentBranchCapabilityBinding:
                 "accepted": action_result.accepted,
                 "action_type": action_request.action_type,
                 "action_payload": action_request.payload,
-                "observation": _observation_payload(observation),
+                "observation": semantic_observation_payload(observation),
                 "effect": _effect_payload(action_result.effect),
                 "proof": "fresh_open_plus_ordered_prefix_replay",
             },
@@ -422,6 +413,10 @@ class EnvironmentBranchCapabilityBinding:
                 "prefix_digest": replay.prefix_digest,
             },
             request_digest=request_digest,
+            evidence=observation_evidence(
+                observation,
+                schema="noetrium.environment.branch-action-evidence.v1",
+            ),
         )
 
 

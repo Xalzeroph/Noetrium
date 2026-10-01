@@ -50,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/tree_of_thoughts/study.py',
         ),
     ),
+    primary_executable="research/reproductions/tree_of_thoughts/program.py",
     reported_results=(
         ReportedResult(
             claim_id="tot_gpt4_game24",
@@ -85,7 +86,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('exact historical GPT-4 serving snapshot is not available as an immutable public model artifact',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_tree_of_thoughts_fidelity_v1.py', 'tests/test_scientific_tree_of_thoughts_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_tree_of_thoughts_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -36,11 +36,11 @@ _RESEARCH_OS_ARTIFACT_MEDIA_TYPE = "application/vnd.noetrium.research-os-value.v
 _RESEARCH_OS_ARTIFACT_PRODUCER = "research-os.value-authority"
 
 
-class ResearchOSImmutableValueAuthority:
-    """All immutable ResearchGraph values routed through canonical Blob CAS + catalog authority."""
+class ResearchOSArtifactValueAuthority:
+    """Artifact-valued ResearchGraph outputs backed by canonical Blob CAS + catalog authority."""
 
-    authority_id = "artifact.catalog+blob.scientific-values"
-    supported_kinds = frozenset(ResearchValueKind)
+    authority_id = "artifact.catalog+blob.research-values"
+    supported_kinds = frozenset({ResearchValueKind.ARTIFACT})
 
     def __init__(
         self,
@@ -65,12 +65,22 @@ class ResearchOSImmutableValueAuthority:
         self._retention = retention
 
     @staticmethod
+    def _require_artifact_subject(subject: ResearchOSValueSubject) -> None:
+        if type(subject) is not ResearchOSValueSubject:
+            raise TypeError("Research OS Artifact value subject must be typed")
+        if subject.kind is not ResearchValueKind.ARTIFACT:
+            raise ValueError(
+                "Research OS Artifact value authority cannot own semantic kind "
+                + subject.kind.value
+            )
+
+    @staticmethod
     def _artifact_id(subject: ResearchOSValueSubject) -> str:
         return f"research-os-value:{subject.subject_digest}"
 
     @staticmethod
     def _scope(subject: ResearchOSValueSubject) -> ScopeIdentity:
-        return ScopeIdentity(ScopeKind.RUN, subject.execution_cut_id)
+        return ScopeIdentity(ScopeKind.EXECUTION_CUT, subject.execution_cut_id)
 
     @staticmethod
     def _metadata(
@@ -100,7 +110,7 @@ class ResearchOSImmutableValueAuthority:
                 f"{subject.graph_node_id}:{subject.output_name}"
             ),
             media_type=ref.media_type,
-            retention=ArtifactRetention.RUN,
+            retention=ArtifactRetention.PROJECT,
             metadata=cls._metadata(
                 subject,
                 size_bytes=ref.size_bytes,
@@ -137,7 +147,7 @@ class ResearchOSImmutableValueAuthority:
     ) -> ArtifactRetentionState:
         return ArtifactRetentionState(
             artifact_id=artifact_id,
-            retention=ArtifactRetention.RUN,
+            retention=ArtifactRetention.PROJECT,
             pinned=True,
             generation=1,
             reason_refs=(subject.subject_digest,),
@@ -196,7 +206,7 @@ class ResearchOSImmutableValueAuthority:
             raise ValueError("Research OS immutable value producer operation drifted")
         if record.media_type != _RESEARCH_OS_ARTIFACT_MEDIA_TYPE:
             raise ValueError("Research OS immutable value media type drifted")
-        if record.retention is not ArtifactRetention.RUN:
+        if record.retention is not ArtifactRetention.PROJECT:
             raise ValueError("Research OS immutable value retention drifted")
         metadata = dict(record.metadata)
         if metadata.get("subject_digest") != subject.subject_digest:
@@ -214,8 +224,7 @@ class ResearchOSImmutableValueAuthority:
         subject: ResearchOSValueSubject,
         value: JsonValue,
     ) -> ResearchOSValueReference:
-        if type(subject) is not ResearchOSValueSubject:
-            raise TypeError("Research OS immutable value publish subject must be typed")
+        self._require_artifact_subject(subject)
         payload = canonical_bytes(freeze_json(value))
         ref = self._blobs.put(
             payload,
@@ -243,8 +252,7 @@ class ResearchOSImmutableValueAuthority:
         self,
         subject: ResearchOSValueSubject,
     ) -> ResearchOSValueReference:
-        if type(subject) is not ResearchOSValueSubject:
-            raise TypeError("Research OS immutable value lookup subject must be typed")
+        self._require_artifact_subject(subject)
         record = self._registry.get(self._artifact_id(subject))
         ref = self._validate_record(subject, record)
         self._ensure_retention(subject, record.artifact_id)
@@ -286,8 +294,7 @@ class ResearchOSImmutableValueAuthority:
         Physical blob GC is a separate proof-backed operation.
         """
 
-        if type(subject) is not ResearchOSValueSubject:
-            raise TypeError("Research OS execution release subject must be typed")
+        self._require_artifact_subject(subject)
         artifact_id = self._artifact_id(subject)
         try:
             record = self._registry.get(artifact_id)
@@ -307,7 +314,7 @@ class ResearchOSImmutableValueAuthority:
             raise ValueError(
                 "Research OS immutable value lost retention authority"
             ) from exc
-        if current.retention is not ArtifactRetention.RUN:
+        if current.retention is not ArtifactRetention.PROJECT:
             raise ValueError(
                 "Research OS immutable value execution release requires RUN retention"
             )
@@ -347,8 +354,8 @@ class ResearchOSImmutableValueAuthority:
     ) -> ResearchOSValueReference:
         if type(source) is not ResearchOSValueReference:
             raise TypeError("Research OS immutable value reuse source must be typed")
-        if type(target) is not ResearchOSValueSubject:
-            raise TypeError("Research OS immutable value reuse target must be typed")
+        self._require_artifact_subject(target)
+        self._require_artifact_subject(source.subject)
         if source.authority_id != self.authority_id:
             raise ValueError("Research OS immutable value reuse authority drifted")
         if target.kind is not source.subject.kind:
@@ -413,4 +420,4 @@ class ResearchOSImmutableValueAuthority:
         )
 
 
-__all__ = ["ResearchOSImmutableValueAuthority"]
+__all__ = ["ResearchOSArtifactValueAuthority"]

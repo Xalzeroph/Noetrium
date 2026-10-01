@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.moviechat_1k import (
     MOVIECHAT_1K_BENCHMARK_ID,
     MOVIECHAT_1K_TEST_SPLIT,
@@ -13,7 +11,7 @@ def build_moviechat_cvpr2024_test_cut(
     records: tuple[MovieChatVideoRecord, ...],
     *,
     dataset_content_sha256: str,
-) -> BenchmarkTaskSet:
+):
     resolution = bind_moviechat_1k_test_cut(
         records,
         dataset_content_sha256=dataset_content_sha256,

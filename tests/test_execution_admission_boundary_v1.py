@@ -16,7 +16,6 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
-    AdmissionMode,
 )
 
 
@@ -52,7 +51,7 @@ def test_rejected_submission_leaves_no_task_residue() -> None:
     blocker = runtime.open_task_group("blocker")
     rejected = runtime.open_task_group(
         "rejected",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
     )
     entered = Event()
     release = Event()

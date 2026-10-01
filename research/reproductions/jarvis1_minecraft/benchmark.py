@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.jarvis1_offline import (
     JARVIS1_ALL_SPLIT,
     JARVIS1_OFFLINE_BENCHMARK_ID,
@@ -9,7 +7,7 @@ from research.benchmarks.jarvis1_offline import (
 )
 
 
-def build_jarvis1_tpami2025_offline_benchmark() -> BenchmarkTaskSet:
+def build_jarvis1_tpami2025_offline_benchmark():
     task_set = build_jarvis1_offline_cut()
     if task_set.benchmark_id != JARVIS1_OFFLINE_BENCHMARK_ID:
         raise ValueError("JARVIS-1 benchmark authority drifted")

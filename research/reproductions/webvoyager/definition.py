@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/webvoyager/study.py',
         ),
     ),
+    primary_executable="research/reproductions/webvoyager/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -58,10 +59,7 @@ REPRODUCTION = ReproductionDefinition(
         'the official 643-task source bytes and verifier outputs must be materialized under immutable evidence authority before matched claims',
     ),
     evidence_refs=(),
-    scientific_tests=(
-        'tests/test_scientific_web_embodied_fidelity_v1.py',
-        'tests/test_scientific_webvoyager_method_program_v1.py',
-    ),
+    scientific_tests=('tests/test_scientific_web_embodied_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

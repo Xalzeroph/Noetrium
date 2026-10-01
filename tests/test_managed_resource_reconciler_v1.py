@@ -11,6 +11,9 @@ from noetrium_platform.infrastructure.resources.container.api import (
 from noetrium_platform.composition.environment_instance_leases import (
     EnvironmentInstanceReconciliation,
 )
+from noetrium_platform.infrastructure.resources.allocation.runtime import (
+    EndpointPhysicalConvergencePending,
+)
 
 
 class Recorder:
@@ -257,4 +260,61 @@ def test_abandoned_owner_takeover_reclaims_prestart_resources_without_ttl_wait()
         "environments",
         "endpoint-recover-release:endpoint-live",
         "compute-recover-release:compute-live",
+    ]
+
+
+class _RetryingStop:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def wait(self, timeout=None):
+        self.calls += 1
+        return self.calls >= 2
+
+
+def test_background_reconciler_retries_physical_convergence_without_failing_controller() -> None:
+    events: list[str] = []
+
+    class PendingOnceEndpoints:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def reconcile(self, *, now=None):
+            self.calls += 1
+            events.append(f"endpoints:{self.calls}")
+            if self.calls == 1:
+                raise EndpointPhysicalConvergencePending(("stale-endpoint",))
+            return ()
+
+    endpoints = PendingOnceEndpoints()
+    reconciler = ManagedResourceReconciler(
+        containers=Recorder(
+            "containers",
+            events,
+            DockerContainerReconciliation((), ()),
+        ),
+        environments=Recorder(
+            "environments",
+            events,
+            EnvironmentInstanceReconciliation((), ()),
+        ),
+        endpoints=endpoints,
+        compute=ComputeRecorder(events),
+    )
+
+    report = reconciler.run(
+        interval_seconds=0.001,
+        stop=_RetryingStop(),
+    )
+
+    assert report is not None
+    assert endpoints.calls == 2
+    assert events == [
+        "containers",
+        "environments",
+        "endpoints:1",
+        "containers",
+        "environments",
+        "endpoints:2",
+        "compute",
     ]

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lvagent_iccv2025",
-  "package_digest": "00d655da89f1d5ad515a9d10730b6c26fea3380bb31f4b4711d373110ec58df0",
-  "definition_digest": "f0c06386df47c869aebdcd2643c691d7669f53c9264f920dba9c07ff78096029",
+  "package_digest": "81a73bfb3db727614139027a82e0036f698e1a7dddb9fef5523b94adb3f55079",
+  "definition_digest": "4c1ae4d4be489587f92394339fe9362a3aad412ba018b7cc6a225bbe464dacb8",
   "source_registry_digest": "c265547efa25c65b88369b73d855b68becbf18f48656a3f63ac40fc95d7456a2",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -84,7 +84,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/lvagent_iccv2025/benchmark.py",
       "declaration_digest": "7ecae7639b72f7cf8d23890d9dbd892a4c3e8bc44e3fb48e69a6450c39a7ac3a",
-      "content_sha256": "fc8e9cb31d628273731bf9080a92d0356c8418f12a8e71ce24b41aafe9487690"
+      "content_sha256": "d06727da3c4c6848292602cad728b76fb475be61886f59e9d03f5a5309fd0b3e"
     },
     {
       "kind": "fidelity",
@@ -96,13 +96,13 @@
       "kind": "method_program",
       "path": "research/reproductions/lvagent_iccv2025/program.py",
       "declaration_digest": "087ac7586c183a73e6d0ac2634afe1ca5ca7ee7d2b21f30ff55aa0e6347afa45",
-      "content_sha256": "1c87516b3c4cd382c8a383d83d32cc0eef7ccc323d3694e1d2664b389e554f8c"
+      "content_sha256": "5abe9f1f93c6a34eb13e6ee65b10e0c85853a34c86341ca1781821411e16c91d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/lvagent_iccv2025/study.py",
       "declaration_digest": "9c4f18520eabc3f155029b9613611ffd07c53b52227777618158763d396f7757",
-      "content_sha256": "7df065e8d0e079d7a18a367b358c9c7c38b0bdcac45f0feffccb1846bb765257"
+      "content_sha256": "d341d8fc546d3b2a19de60b24e415c1e09038698e338585ae1565107e27624f6"
     }
   ],
   "primary_executable": "research/reproductions/lvagent_iccv2025/program.py",
@@ -160,15 +160,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
-      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lvagent_iccv2025",
-    "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
+    "program_digest": "4f25f34ed580aaba822445152ea2a0e08e81fdbfe14efaf7b1e6fb1a8aa2fa0b",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

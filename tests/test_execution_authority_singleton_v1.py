@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 _CANONICAL_DEFINITIONS = {
-    "UniversalMethodMachine": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
     "ResearchGraphScheduler": "noetrium_platform/composition/research_graph.py",
     "ResearchOSExperimentRuntimeBindingAuthority": (
         "noetrium_platform/composition/"
@@ -29,8 +28,9 @@ _FORBIDDEN_FUNCTION_NAMES = {
 }
 
 _ALLOWED_CALLERS = {
-    "UniversalMethodMachine": {
+    "execute_bound_method_program": {
         "noetrium_platform/composition/research_os_runtime.py",
+        "noetrium_platform/research/experimentation/workload/runtime/operation.py",
     },
     "ResearchGraphScheduler": {
         "noetrium_platform/composition/research_os_graph.py",

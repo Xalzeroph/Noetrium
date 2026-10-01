@@ -3,28 +3,40 @@ set -eu
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 ENV_BOOTSTRAP="$ROOT/deploy/build-environments.sh"
-STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$ROOT/.noetrium/deployment}"
-ENV_WORK_ROOT="$STATE_ROOT/environment-images"
+ROOTLESS_DOCKER="$ROOT/deploy/rootless-docker.sh"
+DATA_ROOT="${NOETRIUM_DATA_ROOT:-$ROOT/.noetrium}"
+STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$DATA_ROOT/deployment}"
+ENV_WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$DATA_ROOT/environment-images}"
 FLEET_STATE_ROOT="$STATE_ROOT/reproduction-fleet"
-BOOTSTRAP_READY=0
+PROJECTS_STATE_ROOT="$DATA_ROOT/projects"
+RUNTIME_FABRIC_ROOT="${NOETRIUM_RUNTIME_FABRIC_ROOT:-$DATA_ROOT/runtime-fabric}"
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [args]
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate|project|env|docker> [args]
 
   doctor     verify ordinary-user Docker/Compose access and environment registry
   build      build or reuse all active environment profiles
   plan       compile the repository reproduction fleet without starting work
   requirements emit the machine-readable owner authority prerequisite manifest
   preflight  materialize exact authority closure and admit the fleet without starting work
-  run        build/reuse environments and execute the fleet through one shared runtime
+  run        build/reuse environments and execute one or many Research OS projects through the shared portfolio runtime
+  inspect/pause/drain/interrupt/resume/retry/cancel/checkpoint/reconcile/migrate
+             control exactly one project Research OS without touching unrelated projects
+  project    create/sync/doctor/test downstream project sources; execution uses run
   env        pass remaining arguments to the low-level environment bootstrap
+  docker     manage the optional ordinary-user rootless Docker daemon
 
 Configuration:
-  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory
-  NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
+  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory  # optional advanced override
+  NOETRIUM_DATA_ROOT=/writable/noetrium-root
+  NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path  # optional sub-root override
+  NOETRIUM_BUILD_WORK_ROOT=/external/cache/path
+  NOETRIUM_RUNTIME_FABRIC_ROOT=/persistent/shared/runtime-fabric
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
-  NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
+  NOETRIUM_CONTROL_INPUT_ROOT=/read-only/authority-assets
+  NOETRIUM_DOCKER_DATA_ROOT=/data/noetrium/docker
+  NOETRIUM_DOCKER_RUNTIME_ROOT=/data/noetrium/docker-runtime
 EOF
 }
 
@@ -37,13 +49,32 @@ host_doctor() {
   command -v docker >/dev/null 2>&1 || die "Docker CLI is required on the host"
   docker info >/dev/null 2>&1 || die "ordinary user cannot reach the active Docker daemon"
   docker compose version >/dev/null 2>&1 || die "Docker Compose plugin is required"
-  mkdir -p "$ENV_WORK_ROOT" "$FLEET_STATE_ROOT"
+  export NOETRIUM_DOCKER_CAPABILITY_VERIFIED=1
+  mkdir -p "$DATA_ROOT" "$ENV_WORK_ROOT" "$FLEET_STATE_ROOT" "$PROJECTS_STATE_ROOT" "$RUNTIME_FABRIC_ROOT"
+
+  if [ -n "${NOETRIUM_DOCKER_DATA_ROOT:-}" ]; then
+    mkdir -p "$NOETRIUM_DOCKER_DATA_ROOT"
+    expected="$(CDPATH= cd -- "$NOETRIUM_DOCKER_DATA_ROOT" && pwd -P)"
+    actual="$(docker info --format '{{.DockerRootDir}}')"
+    actual_parent="$(dirname "$actual")"
+    actual_name="$(basename "$actual")"
+    if [ -d "$actual_parent" ]; then
+      actual="$(CDPATH= cd -- "$actual_parent" && pwd -P)/$actual_name"
+    fi
+    [ "$actual" = "$expected" ] || die "active DockerRootDir does not match NOETRIUM_DOCKER_DATA_ROOT: expected=$expected actual=$actual"
+  fi
 }
 
 authority_materializer_from_env_file() {
   file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
   [ -f "$file" ] || return 0
   sed -n 's/^NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=//p' "$file" | tail -n 1
+}
+
+control_input_root_from_env_file() {
+  file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
+  [ -f "$file" ] || return 0
+  sed -n "s/^NOETRIUM_CONTROL_INPUT_ROOT=//p" "$file" | tail -n 1
 }
 
 authority_materializer() {
@@ -65,39 +96,131 @@ emit_authority_requirements() {
   printf 'noetrium_authority_requirements=%s\n' "$path"
 }
 
-require_authority_materializer() {
+
+fleet_with_optional_materializer() {
   materializer="$(authority_materializer)"
   if [ -n "$materializer" ]; then
-    printf '%s\n' "$materializer"
-    return 0
+    fleet "$@" --authority-materializer "$materializer"
+  else
+    fleet "$@"
   fi
-  emit_authority_requirements
-  die "fleet authority materializer is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
-}
-
-fleet_with_materializer() {
-  materializer="$1"
-  shift
-  fleet "$@" --authority-materializer "$materializer"
 }
 
 environment_bootstrap() {
   NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" "$ENV_BOOTSTRAP" "$@"
-  BOOTSTRAP_READY=1
 }
 
 control_python() {
-  if [ "$BOOTSTRAP_READY" = "1" ]; then
-    NOETRIUM_BOOTSTRAP_REUSE=1 NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
-      "$ENV_BOOTSTRAP" control "$@"
-  else
-    NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" "$ENV_BOOTSTRAP" control "$@"
-    BOOTSTRAP_READY=1
+  input_root="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
+  if [ -z "$input_root" ]; then
+    input_root="$(control_input_root_from_env_file)"
   fi
+  if [ -n "$input_root" ]; then
+    export NOETRIUM_CONTROL_INPUT_ROOT="$input_root"
+  fi
+  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+    NOETRIUM_CONTROL_STATE_ROOT="$FLEET_STATE_ROOT" \
+    NOETRIUM_RUNTIME_FABRIC_ROOT="$RUNTIME_FABRIC_ROOT" \
+    "$ENV_BOOTSTRAP" control "$@"
 }
 
 fleet() {
   control_python scripts/run_reproduction_fleet.py "$@"
+}
+
+run_has_project_selector() {
+  for argument in "$@"; do
+    case "$argument" in
+      --project|--project=*)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
+project_root_from_args() {
+  project_root="."
+  expect_root=0
+  for argument in "$@"; do
+    if [ "$expect_root" = "1" ]; then
+      project_root="$argument"
+      expect_root=0
+      continue
+    fi
+    case "$argument" in
+      --project)
+        expect_root=1
+        ;;
+      --project=*)
+        project_root="${argument#--project=}"
+        ;;
+    esac
+  done
+  [ "$expect_root" = "0" ] || die "--project requires a path"
+  test -d "$project_root" || die "project root does not exist: $project_root"
+  test ! -L "$project_root" || die "project root must not be a symlink: $project_root"
+  (CDPATH= cd -- "$project_root" && pwd -P)
+}
+
+project_state_root_for() {
+  project_root="$1"
+  case "$project_root" in
+    /*) ;;
+    *) die "project state root requires an absolute project path: $project_root" ;;
+  esac
+  relative_project_root="${project_root#/}"
+  [ -n "$relative_project_root" ] || die "filesystem root cannot be a Research OS project"
+  printf '%s\n' "$PROJECTS_STATE_ROOT/$relative_project_root"
+}
+
+
+project_runtime_control() {
+  project_root="$1"
+  project_state_root="$2"
+  shift 2
+
+  NOETRIUM_CONTROL_PROJECT_ROOT="$project_root" \
+  NOETRIUM_CONTROL_HOST_RUNTIME=1 \
+  NOETRIUM_CONTROL_STATE_ROOT="$project_state_root" \
+  NOETRIUM_RUNTIME_FABRIC_ROOT="$RUNTIME_FABRIC_ROOT" \
+  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+    "$ENV_BOOTSTRAP" control "$@"
+}
+
+project_control() {
+  [ "$#" -gt 0 ] || die "project requires a Research OS lifecycle command"
+  action="$1"
+  project_root="$(project_root_from_args "$@")"
+  project_state_root="$(project_state_root_for "$project_root")"
+  mkdir -p "$project_state_root"
+
+  case "$action" in
+    doctor|test|sync)
+      set -- project "$@"
+      ;;
+    run|inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate)
+      ;;
+    *)
+      die "unsupported project control action: $action"
+      ;;
+  esac
+
+  if [ "$action" = "run" ]; then
+    project_runtime_control \
+      "$project_root" \
+      "$project_state_root" \
+      "$ROOT/scripts/run_project_control.py" \
+      --project-root "$project_root" \
+      --work-root "$ENV_WORK_ROOT" \
+      -- "$@"
+  else
+    project_runtime_control \
+      "$project_root" \
+      "$project_state_root" \
+      -c 'from noetrium_platform.composition.operator.wiring.research import main; import sys; raise SystemExit(main(sys.argv[1:]))' \
+      "$@"
+  fi
 }
 
 command="${1:-}"
@@ -119,7 +242,7 @@ case "$command" in
     ;;
   plan)
     host_doctor
-    fleet "$@"
+    fleet "$@" --state-root "$FLEET_STATE_ROOT"
     ;;
   requirements)
     host_doctor
@@ -127,22 +250,45 @@ case "$command" in
     ;;
   preflight)
     host_doctor
-    materializer="$(require_authority_materializer)"
-    fleet_with_materializer "$materializer" --preflight \
+    fleet_with_optional_materializer --preflight \
       --state-root "$FLEET_STATE_ROOT" "$@"
     ;;
   run)
+    # Help is a pure control-plane query. It must not touch Docker, build
+    # environment images, materialize project runtimes, or mutate state.
+    case "${1:-}" in
+      -h|--help)
+        usage
+        exit 0
+        ;;
+    esac
     host_doctor
-    materializer="$(require_authority_materializer)"
-    if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
+    if run_has_project_selector "$@"; then
+      project_control run "$@"
+    else
       environment_bootstrap build
+      fleet_with_optional_materializer --execute \
+        --state-root "$FLEET_STATE_ROOT" "$@"
     fi
-    fleet_with_materializer "$materializer" --execute \
-      --state-root "$FLEET_STATE_ROOT" "$@"
+    ;;
+  inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate)
+    host_doctor
+    project_control "$command" "$@"
+    ;;
+  project)
+    host_doctor
+    if [ "${1:-}" = "run" ]; then
+      die "project run was removed; use ./deploy/noetrium run --project <path>"
+    fi
+    project_control "$@"
     ;;
   env)
     host_doctor
     environment_bootstrap "$@"
+    ;;
+  docker)
+    [ "$#" -gt 0 ] || die "docker requires doctor|start|status|stop|env"
+    "$ROOTLESS_DOCKER" "$@"
     ;;
   help|-h|--help)
     usage

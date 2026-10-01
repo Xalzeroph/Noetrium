@@ -11,12 +11,13 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     MeasurementDefinition,
     MeasurementProtocol,
-    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     StudyAssignment,
+    StudyIntervention,
     StudyVariantSpec,
     TaskArtifactSpec,
     TaskDefinition,
@@ -37,7 +38,7 @@ from noetrium_platform.research.experimentation.lifecycle.study.providers.trial 
 )
 
 
-def _protocol() -> MeasurementProtocol:
+def _protocol(*additional: MeasurementDefinition) -> MeasurementProtocol:
     return MeasurementProtocol(
         "verifier-output",
         (
@@ -46,6 +47,7 @@ def _protocol() -> MeasurementProtocol:
                 "scalar-v1",
                 MeasurementValueKind.SCALAR,
             ),
+            *additional,
         ),
     )
 
@@ -102,23 +104,27 @@ def _artifact(
     )
 
 
-def _trial_request(task: TaskDefinition) -> TrialExecutionRequest:
+def _trial_request(
+    task: TaskDefinition,
+    protocol: MeasurementProtocol | None = None,
+) -> TrialExecutionRequest:
     assignment = StudyAssignment(
         "study",
         "control",
         0,
         "seed",
-        task.task_id,
+        AssignmentWorkload((task.task_id,)),
     )
+    intervention = StudyIntervention("control", ())
     variant = StudyVariantSpec(
         "control",
         VariantKind.CONTROL,
         "provider",
-        "3" * 64,
+        intervention.intervention_digest,
     )
     binding = VariantBinding(
         variant,
-        "4" * 64,
+        intervention.intervention_digest,
         "provider",
         "none",
         "control",
@@ -129,12 +135,12 @@ def _trial_request(task: TaskDefinition) -> TrialExecutionRequest:
         "5" * 64,
         OptionalIdentityFacet(),
         OptionalIdentityFacet(),
-        OptionalIdentityFacet("6" * 64),
+        intervention,
         assignment,
         binding,
-        _protocol(),
+        _protocol() if protocol is None else protocol,
         ExperimentTrialProtocolIdentity("trial.test", "7" * 64),
-        task,
+        (task,),
     )
 
 
@@ -196,12 +202,8 @@ def test_separate_verifier_requires_isolation_evidence() -> None:
     task = _task(TaskVerifierIsolation.SEPARATE)
     assert task.package is not None
     request = _handoff(task, _artifact(task.package.artifacts[0], "answer"))
-    unscored = MeasurementSetOutcome.unscored(
-        request.measurement_protocol,
-        reason_code="grader_failed",
-    )
     with pytest.raises(ValueError, match="isolation evidence"):
-        TaskVerifierReceipt(request, (), unscored)
+        TaskVerifierReceipt(request, ())
 
     evidence = ArtifactReference(
         "ref-isolation",
@@ -212,7 +214,6 @@ def test_separate_verifier_requires_isolation_evidence() -> None:
     receipt = TaskVerifierReceipt(
         request,
         (),
-        unscored,
         (evidence,),
     )
     assert receipt.request == request
@@ -222,14 +223,7 @@ def test_shared_verifier_does_not_invent_isolation_evidence_requirement() -> Non
     task = _task(TaskVerifierIsolation.SHARED)
     assert task.package is not None
     request = _handoff(task, _artifact(task.package.artifacts[0], "answer"))
-    receipt = TaskVerifierReceipt(
-        request,
-        (),
-        MeasurementSetOutcome.unscored(
-            request.measurement_protocol,
-            reason_code="refusal",
-        ),
-    )
+    receipt = TaskVerifierReceipt(request, ())
     assert receipt.evidence_refs == ()
 
 
@@ -239,10 +233,6 @@ def test_trial_runtime_fails_closed_when_declared_verifier_receipt_is_missing() 
         request.request_digest,
         request.assignment.assignment_digest,
         (),
-        MeasurementSetOutcome.unscored(
-            request.measurement_protocol,
-            reason_code="verifier_missing",
-        ),
     )
     plan = SimpleNamespace(measurement_protocol=request.measurement_protocol)
     with pytest.raises(ValueError, match="declares verifier"):
@@ -252,7 +242,7 @@ def test_trial_runtime_fails_closed_when_declared_verifier_receipt_is_missing() 
 def test_trial_request_binds_exact_task_package_identity() -> None:
     task = _task()
     request = _trial_request(task)
-    assert request.task == task
+    assert request.task_definitions == (task,)
     assert task.package is not None
 
     changed_task = TaskDefinition(
@@ -305,14 +295,9 @@ def test_core_orchestrates_verifier_after_artifact_only_execution_stage() -> Non
                 "artifact-isolation-proof",
                 1,
             )
-            measurements = (measurement,)
             return TaskVerifierReceipt(
                 verifier_request,
-                measurements,
-                MeasurementSetOutcome.complete(
-                    verifier_request.measurement_protocol,
-                    measurements,
-                ),
+                (measurement,),
                 (isolation,),
             )
 
@@ -325,9 +310,6 @@ def test_core_orchestrates_verifier_after_artifact_only_execution_stage() -> Non
     assert verifier.seen is not None
     assert final.verifier_receipt is not None
     assert final.measurements == final.verifier_receipt.measurements
-    assert final.verifier_artifact_cut == final.verifier_receipt.request.artifact_cut
-    assert final.verifier_artifact_cut is not None
-    assert final.verifier_artifact_cut.cut_digest
     assert final.evidence_refs == (
         execution_evidence,
         final.verifier_receipt.evidence_refs[0],
@@ -340,10 +322,106 @@ def test_declared_verifier_cannot_be_bypassed_with_provider_final_receipt() -> N
         request.request_digest,
         request.assignment.assignment_digest,
         (),
-        MeasurementSetOutcome.unscored(
-            request.measurement_protocol,
-            reason_code="not_verified",
-        ),
     )
     with pytest.raises(ValueError, match="execution-stage receipt"):
         TrialVerifierOrchestrator().finalize(request, provider_final)
+
+
+def test_trial_orchestrator_merges_disjoint_execution_and_verifier_measurements() -> None:
+    task = _task()
+    assert task.package is not None
+    protocol = _protocol(
+        MeasurementDefinition.scalar(
+            "runtime_calls",
+            schema_id="scalar-v1",
+            semantic_kind="resource_usage",
+        )
+    )
+    request = _trial_request(task, protocol)
+    answer = _artifact(task.package.artifacts[0], "answer-merge")
+    verifier_request = TaskVerifierRequest.for_trial(
+        trial_request=request,
+        artifacts=(answer,),
+    )
+    runtime_measurement = verifier_request.measurement(
+        "runtime_calls",
+        MeasurementValue(MeasurementValueKind.SCALAR, scalar=1.0),
+        producer_id="execution.runtime",
+        producer_revision_digest="c" * 64,
+        logical_time="execution:1",
+    )
+    stage = TrialExecutionStageReceipt(
+        request.request_digest,
+        request.assignment.assignment_digest,
+        measurements=(runtime_measurement,),
+        verifier_artifacts=(answer,),
+        evidence_refs=(answer.reference,),
+    )
+
+    class Verifier:
+        def __init__(self) -> None:
+            self.measurement = None
+
+        def verify(self, handoff: TaskVerifierRequest) -> TaskVerifierReceipt:
+            self.measurement = handoff.measurement(
+                "score",
+                MeasurementValue(MeasurementValueKind.SCALAR, scalar=0.75),
+                producer_id="verifier.task",
+                producer_revision_digest="d" * 64,
+                logical_time="verifier:1",
+                lineage_refs=(handoff.artifacts[0].reference,),
+            )
+            return TaskVerifierReceipt(
+                handoff,
+                (self.measurement,),
+                (handoff.artifacts[0].reference,),
+            )
+
+    verifier = Verifier()
+    final = TrialVerifierOrchestrator().finalize(request, stage, verifier=verifier)
+    assert {row.measurement_id for row in final.measurements} == {
+        "runtime_calls",
+        "score",
+    }
+    assert runtime_measurement in final.measurements
+    assert verifier.measurement in final.measurements
+
+
+def test_trial_orchestrator_rejects_measurement_authority_overlap() -> None:
+    task = _task()
+    assert task.package is not None
+    request = _trial_request(task)
+    answer = _artifact(task.package.artifacts[0], "answer-overlap")
+    handoff = TaskVerifierRequest.for_trial(trial_request=request, artifacts=(answer,))
+    stage_score = handoff.measurement(
+        "score",
+        MeasurementValue(MeasurementValueKind.SCALAR, scalar=0.5),
+        producer_id="execution.runtime",
+        producer_revision_digest="e" * 64,
+        logical_time="execution:score",
+    )
+    stage = TrialExecutionStageReceipt(
+        request.request_digest,
+        request.assignment.assignment_digest,
+        measurements=(stage_score,),
+        verifier_artifacts=(answer,),
+        evidence_refs=(answer.reference,),
+    )
+
+    class Verifier:
+        def verify(self, verifier_request: TaskVerifierRequest) -> TaskVerifierReceipt:
+            score = verifier_request.measurement(
+                "score",
+                MeasurementValue(MeasurementValueKind.SCALAR, scalar=1.0),
+                producer_id="verifier.task",
+                producer_revision_digest="f" * 64,
+                logical_time="verifier:score",
+            )
+            return TaskVerifierReceipt(
+                verifier_request,
+                (score,),
+                (verifier_request.artifacts[0].reference,),
+            )
+
+    with pytest.raises(ValueError, match="both own measurements: score"):
+        TrialVerifierOrchestrator().finalize(request, stage, verifier=Verifier())

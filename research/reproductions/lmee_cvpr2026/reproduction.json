@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lmee_cvpr2026",
-  "package_digest": "94e1f7d238819da11119789b5ddadbb718921120f70714137e3aacc721af63ac",
-  "definition_digest": "1218a9231b6787715217069bc68907d94d48764c055f4df833c5f678e7b1d946",
+  "package_digest": "692ad2805eeb56e180441740449a66754222d3764e01165829bf20d96d57501c",
+  "definition_digest": "8fb73d5a549b4bab6fbd83c8e496d9d9b3807a7ce9786551c4d37c4187d5c285",
   "source_registry_digest": "0c06631d708073137482085a4a65a99404c379adabfcd8e7a881fc5f860445be",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -96,13 +96,13 @@
       "kind": "method_program",
       "path": "research/reproductions/lmee_cvpr2026/program.py",
       "declaration_digest": "c98564396cc30edd61175dd5eac4bee696e554c3f8e61b03e688f4059361f3d8",
-      "content_sha256": "02e0cc904f9eca8c9b5685f133210e0c34c2716537c0f2bbcf2b7f205ba5ee88"
+      "content_sha256": "182db663f1424c6252bdcde8d4016a0a2863058a33fea3b39b35058d67853857"
     },
     {
       "kind": "study",
       "path": "research/reproductions/lmee_cvpr2026/study.py",
       "declaration_digest": "030228c569c98c677a3afa0e8816b09b11043025556c30224017b978c51620df",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/lmee_cvpr2026/program.py",
@@ -135,15 +135,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lmee_cvpr2026",
-    "program_digest": "56af943331571951c7be5af30341e9288dcb65e65a89a37aede1dfcdaedf7dc7",
+    "program_digest": "99997319a6987a70f62ff6f5cc4ef97648b3754f7654fc624284f13728996c66",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -154,6 +154,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

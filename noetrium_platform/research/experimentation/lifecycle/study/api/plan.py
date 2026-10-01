@@ -104,20 +104,35 @@ def _require_plan_assignments(
         raise TypeError("experiment plan assignments must contain StudyAssignment")
     if len({item.assignment_digest for item in assignments}) != len(assignments):
         raise ValueError("experiment plan assignments must be unique")
-    declared = {item.variant_id for item in protocol.variants}
-    seen_by_repetition: dict[int, set[str]] = {}
+    declared_variants = {item.variant_id for item in protocol.variants}
+    declared_workloads = {
+        item.workload_digest for item in protocol.assignment_workloads
+    }
+    expected = {
+        (variant_id, workload_digest)
+        for variant_id in declared_variants
+        for workload_digest in declared_workloads
+    }
+    seen_by_repetition: dict[int, set[tuple[str, str]]] = {}
     for item in assignments:
         if item.study_id != protocol.study_id:
             raise ValueError("experiment plan assignment belongs to another study")
-        if item.variant_id not in declared:
+        if item.variant_id not in declared_variants:
             raise ValueError("experiment plan assignment references an undeclared variant")
+        if item.workload.workload_digest not in declared_workloads:
+            raise ValueError("experiment plan assignment references an undeclared workload")
         if item.repetition >= protocol.repetitions:
             raise ValueError("experiment plan assignment repetition exceeds protocol")
-        seen_by_repetition.setdefault(item.repetition, set()).add(item.variant_id)
+        seen_by_repetition.setdefault(item.repetition, set()).add(
+            (item.variant_id, item.workload.workload_digest)
+        )
     if set(seen_by_repetition) != set(range(protocol.repetitions)):
         raise ValueError("experiment plan assignments do not cover every repetition")
-    if any(variants != declared for variants in seen_by_repetition.values()):
-        raise ValueError("experiment plan assignments do not cover every variant per repetition")
+    if any(rows != expected for rows in seen_by_repetition.values()):
+        raise ValueError(
+            "experiment plan assignments do not cover every variant/workload pair "
+            "per repetition"
+        )
     return assignments
 
 

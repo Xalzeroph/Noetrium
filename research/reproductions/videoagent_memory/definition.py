@@ -64,7 +64,7 @@ REPRODUCTION = ReproductionDefinition(
             "paper-era caption-range and early-stop quirks",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "MethodProgram host and child-machine links",
             "content-addressed video/memory artifacts",
             "model and embedding provider transport",
@@ -76,10 +76,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind.FIDELITY,
             path="research/reproductions/videoagent_memory/fidelity.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
-            path="research/reproductions/videoagent_memory/memory.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind.METHOD_PROGRAM,
@@ -152,10 +148,7 @@ REPRODUCTION = ReproductionDefinition(
         "separate offline evaluation.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_videoagent_memory_v1.py",
-        "tests/test_scientific_videoagent_egoschema_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -143,3 +143,12 @@ def test_capability_request_and_result_json_are_immutable_authority_values():
         request.payload["steps"][0]["name"] = "tampered"
     with pytest.raises(TypeError):
         result.diagnostics["trace"]["ok"] = False
+
+
+def test_capability_result_evidence_is_frozen_and_committed_by_digest() -> None:
+    evidence = {"raw": [{"sequence": 1, "payload": {"value": 2}}]}
+    result = CapabilityResult("echo", {"ok": True}, evidence=evidence)
+    before = result.digest()
+    evidence["raw"][0]["payload"]["value"] = 99
+    assert result.evidence["raw"][0]["payload"]["value"] == 2
+    assert result.digest() == before

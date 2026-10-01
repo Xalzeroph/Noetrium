@@ -3,12 +3,11 @@ from __future__ import annotations
 from contextlib import AbstractContextManager, contextmanager
 import math
 from pathlib import Path
-import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     abort_sqlite_writer,
+    DurableSQLiteWriterOwner,
     begin_immediate_sqlite_transaction,
-    open_durable_sqlite_writer,
     rollback_sqlite_writer,
 )
 
@@ -32,14 +31,19 @@ def _decode(row: tuple[object, ...]) -> EncodedEffectIntentRecord:
 class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJournalWriteSession"]):
     def __init__(self, backend: "SQLiteEffectJournalBackend") -> None:
         self.backend = backend
-        self.conn = backend.connect()
+        self._connection_session = backend.connection()
+        self.conn = self._connection_session.__enter__()
         try:
             begin_immediate_sqlite_transaction(
                 self.conn,
                 timeout_seconds=backend.timeout_seconds,
             )
-        except BaseException:
-            self.conn.close()
+        except BaseException as exc:
+            self._connection_session.__exit__(
+                type(exc),
+                exc,
+                exc.__traceback__,
+            )
             raise
         self._committed = False
 
@@ -82,7 +86,6 @@ class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJourna
         self._committed = True
 
     def __exit__(self, exc_type, exc, tb) -> bool:
-        del tb
         try:
             if exc_type is not None or not self._committed:
                 if isinstance(exc, BaseException):
@@ -94,7 +97,7 @@ class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJourna
                 else:
                     abort_sqlite_writer(self.conn)
         finally:
-            self.conn.close()
+            self._connection_session.__exit__(exc_type, exc, tb)
         return False
 
 
@@ -112,23 +115,25 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("effect journal timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
-        self._initialize()
-
-    def connect(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(
+        self._connections = DurableSQLiteWriterOwner(
             self.path,
             timeout_seconds=self.timeout_seconds,
         )
+        self._initialize()
+
+    @property
+    def connection_open_count(self) -> int:
+        return self._connections.open_count
 
     @contextmanager
     def connection(self):
-        """Own and close each backend connection, including read-only uses."""
+        """Borrow the process-owned durable writer session."""
 
-        conn = self.connect()
-        try:
+        with self._connections.session() as conn:
             yield conn
-        finally:
-            conn.close()
+
+    def close(self) -> None:
+        self._connections.close()
 
     def _initialize(self) -> None:
         with self.connection() as conn:
@@ -170,7 +175,7 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
                 else:
                     current_version = int(row[0])
                     if current_version != self.SCHEMA_VERSION:
-                        raise RuntimeError("unsupported SQLiteEffectIntentJournal schema")
+                        raise RuntimeError("unsupported sqlite_effect_intent_journal schema")
                 conn.commit()
             except BaseException as primary:
                 rollback_sqlite_writer(
@@ -208,6 +213,21 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
                 f"WHERE run_id=? AND lifetime_id IS ? AND phase IN ({placeholders})"
                 f"{exclusion} ORDER BY intent_id",
                 params,
+            ).fetchall()
+        return tuple(_decode(row) for row in rows)
+
+    def scan_run(
+        self,
+        *,
+        run_id: str,
+    ) -> tuple[EncodedEffectIntentRecord, ...]:
+        if type(run_id) is not str or not run_id.strip():
+            raise ValueError("effect journal run_id must be non-empty text")
+        with self.connection() as conn:
+            rows = conn.execute(
+                f"SELECT {_COLUMNS} FROM {_TABLE} "
+                "WHERE run_id=? ORDER BY intent_id",
+                (run_id,),
             ).fetchall()
         return tuple(_decode(row) for row in rows)
 

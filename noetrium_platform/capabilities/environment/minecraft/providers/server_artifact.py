@@ -127,7 +127,7 @@ class OfficialMinecraftServerArtifactProvider:
                 producer_component_id="environment.minecraft.server-artifact",
                 producer_operation_id=producer_operation_id,
                 media_type="application/java-archive",
-                retention=ArtifactRetention.PROJECT,
+                retention=ArtifactRetention.PERMANENT,
                 expected_sha1=info.sha1,
                 expected_size=info.size,
                 replace_existing=replace_existing,

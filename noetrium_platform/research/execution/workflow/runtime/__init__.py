@@ -1,12 +1,15 @@
 from .effect_intents import EffectIntentOperations, EFFECT_JOURNAL_IDENTITY
 from .operation_dispatch import KernelOperationDispatcher, WORKFLOW_RUNTIME_IDENTITY
 from .operation_policy import ProtectedOperationSemanticPolicy
-from .durable_operation_dispatch import DurableKernelOperationDispatcher, DurableOperationExecution
-from .method_machine import InMemoryMethodCheckpointStore, METHOD_MACHINE_IDENTITY, UniversalMethodMachine
-from .machine_transition_authority import MachineMethodTransitionAuthority
+from .durable_operation_dispatch import (
+    DurableKernelOperationDispatcher,
+    DurableOperationRecoveryRequired,
+    DurableOperationReplayRequired,
+)
+from .method_machine import METHOD_EXECUTION_IDENTITY, execute_bound_method_program, project_method_host_execution
 
 __all__ = [
-    "DurableKernelOperationDispatcher", "DurableOperationExecution", "EffectIntentOperations", "EFFECT_JOURNAL_IDENTITY",
+    "DurableKernelOperationDispatcher", "DurableOperationRecoveryRequired", "DurableOperationReplayRequired", "EffectIntentOperations", "EFFECT_JOURNAL_IDENTITY",
     "KernelOperationDispatcher", "ProtectedOperationSemanticPolicy", "WORKFLOW_RUNTIME_IDENTITY",
-    "InMemoryMethodCheckpointStore", "METHOD_MACHINE_IDENTITY", "UniversalMethodMachine", "MachineMethodTransitionAuthority",
+    "METHOD_EXECUTION_IDENTITY", "execute_bound_method_program", "project_method_host_execution",
 ]

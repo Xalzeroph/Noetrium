@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from research.reproductions.rap_reasoning import (
+from research.reproductions.rap_reasoning.fidelity import (
     RAP_FIDELITY,
+)
+from research.reproductions.rap_reasoning.search import (
     RAPReward,
     RAPSimulatedTransition,
     backpropagate_mean_rewards,

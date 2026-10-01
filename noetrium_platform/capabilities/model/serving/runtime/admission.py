@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import deque
+from collections import OrderedDict
 from dataclasses import dataclass
 from threading import Condition, Lock
 import time
@@ -69,7 +69,12 @@ class ModelAdmissionController:
         self.capacity = qualified_capacity
         self._active = 0
         self._active_by_owner: dict[str, int] = {}
-        self._waiters: deque[_Waiter] = deque()
+        self._waiters_by_owner: dict[str, OrderedDict[int, _Waiter]] = {}
+        self._waiters_by_ticket: dict[int, _Waiter] = {}
+        self._waiter_count = 0
+        self._waiter_selection_version = 0
+        self._waiter_selection_cache_version = -1
+        self._waiter_selection_cache_ticket: int | None = None
         self._next_ticket = 0
         self._grant_sequence = 0
         self._owner_last_grant: dict[str, int] = {}
@@ -96,20 +101,62 @@ class ModelAdmissionController:
             else "model admission cancelled"
         )
 
+    def _invalidate_waiter_selection(self) -> None:
+        self._waiter_selection_version += 1
+        self._waiter_selection_cache_ticket = None
+
+    def _enqueue_waiter(self, waiter: _Waiter) -> None:
+        queue = self._waiters_by_owner.get(waiter.owner_id)
+        if queue is None:
+            queue = OrderedDict()
+            self._waiters_by_owner[waiter.owner_id] = queue
+        if waiter.ticket in self._waiters_by_ticket:
+            raise RuntimeError("duplicate model admission waiter ticket")
+        queue[waiter.ticket] = waiter
+        self._waiters_by_ticket[waiter.ticket] = waiter
+        self._waiter_count += 1
+        self._invalidate_waiter_selection()
+
+    def _remove_waiter(self, waiter: _Waiter) -> bool:
+        queue = self._waiters_by_owner.get(waiter.owner_id)
+        if queue is None:
+            return False
+        removed = queue.pop(waiter.ticket, None)
+        if removed is None:
+            return False
+        self._waiters_by_ticket.pop(waiter.ticket, None)
+        self._waiter_count -= 1
+        if self._waiter_count < 0:
+            raise RuntimeError("model admission waiter accounting underflow")
+        if not queue:
+            self._waiters_by_owner.pop(waiter.owner_id, None)
+        self._invalidate_waiter_selection()
+        return True
+
     def _selected_waiter(self) -> _Waiter | None:
-        if self._active >= self.capacity or not self._waiters:
+        if self._active >= self.capacity or self._waiter_count == 0:
             return None
-        heads: dict[str, _Waiter] = {}
-        for waiter in self._waiters:
-            heads.setdefault(waiter.owner_id, waiter)
-        return min(
-            heads.values(),
+        if self._waiter_selection_cache_version == self._waiter_selection_version:
+            ticket = self._waiter_selection_cache_ticket
+            return None if ticket is None else self._waiters_by_ticket.get(ticket)
+        selected = min(
+            (
+                next(iter(queue.values()))
+                for queue in self._waiters_by_owner.values()
+                if queue
+            ),
             key=lambda waiter: (
                 self._active_by_owner.get(waiter.owner_id, 0),
                 self._owner_last_grant.get(waiter.owner_id, -1),
                 waiter.ticket,
             ),
+            default=None,
         )
+        self._waiter_selection_cache_version = self._waiter_selection_version
+        self._waiter_selection_cache_ticket = (
+            None if selected is None else selected.ticket
+        )
+        return selected
 
     def acquire(
         self,
@@ -128,7 +175,7 @@ class ModelAdmissionController:
                 raise ModelAdmissionClosed("model admission controller is closed")
             waiter = _Waiter(self._next_ticket, owner)
             self._next_ticket += 1
-            self._waiters.append(waiter)
+            self._enqueue_waiter(waiter)
             try:
                 while True:
                     if self._closed:
@@ -136,11 +183,15 @@ class ModelAdmissionController:
                     if self._cancelled(cancellation):
                         raise TaskCancelled(self._cancel_reason(cancellation))
                     if self._selected_waiter() is waiter:
-                        self._waiters.remove(waiter)
+                        if not self._remove_waiter(waiter):
+                            raise RuntimeError(
+                                "selected model admission waiter disappeared"
+                            )
                         self._active += 1
                         self._active_by_owner[owner] = self._active_by_owner.get(owner, 0) + 1
                         self._grant_sequence += 1
                         self._owner_last_grant[owner] = self._grant_sequence
+                        self._invalidate_waiter_selection()
                         admitted = True
                         self._cv.notify_all()
                         return AdmissionLease(self, owner)
@@ -155,10 +206,7 @@ class ModelAdmissionController:
                     self._cv.wait(wait_for)
             finally:
                 if not admitted:
-                    try:
-                        self._waiters.remove(waiter)
-                    except ValueError:
-                        pass
+                    self._remove_waiter(waiter)
                     self._cv.notify_all()
 
     def _release(self, owner_id: str) -> None:
@@ -173,6 +221,7 @@ class ModelAdmissionController:
             else:
                 self._active_by_owner[owner_id] = current - 1
             self._active -= 1
+            self._invalidate_waiter_selection()
             self._cv.notify_all()
 
     def close(self) -> None:
@@ -189,14 +238,16 @@ class ModelAdmissionController:
 
     def snapshot(self) -> AdmissionSnapshot:
         with self._cv:
-            waiting_by_owner: dict[str, int] = {}
-            for waiter in self._waiters:
-                waiting_by_owner[waiter.owner_id] = waiting_by_owner.get(waiter.owner_id, 0) + 1
+            waiting_by_owner = {
+                owner_id: len(queue)
+                for owner_id, queue in self._waiters_by_owner.items()
+                if queue
+            }
             owners = sorted(set(self._active_by_owner) | set(waiting_by_owner))
             return AdmissionSnapshot(
                 self.capacity,
                 self._active,
-                len(self._waiters),
+                self._waiter_count,
                 tuple(
                     ModelAdmissionOwnerSnapshot(
                         owner_id=owner,

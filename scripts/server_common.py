@@ -3,11 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from pathlib import Path
+from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.composition.concurrency import build_execution_concurrency_runtime
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.infrastructure.lifecycle.host.composition import compose_local_host
 from noetrium_platform.infrastructure.lifecycle.server.composition import (
     ServerManagementComposition,
@@ -56,6 +58,22 @@ def server_cli_concurrency_scope(scope_id: str) -> Iterator[TaskGroupPort]:
         runtime.close()
 
 
+def _server_platform_meta_root(
+    server_id: str,
+    environ: Mapping[str, str],
+) -> Path:
+    configured = str(environ.get("NOETRIUM_DEPLOYMENT_STATE_ROOT", "")).strip()
+    base = (
+        Path(configured).expanduser().absolute()
+        if configured
+        else Path(__file__).resolve().parents[1] / ".noetrium" / "deployment"
+    )
+    identity = canonical_digest(
+        {"schema": "noetrium.server-platform-meta.v1", "server_id": server_id}
+    )
+    return base / "server-management" / identity[:24]
+
+
 @dataclass(frozen=True, slots=True)
 class ServerOperatorSessionComposition:
     """Shared entrypoint composition for the profile-bound operator session."""
@@ -75,7 +93,7 @@ def compose_server_from_environment(
 ) -> ServerManagementComposition:
     """Compose the outer host/platform route once, then bind runtime/server."""
 
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(_server_platform_meta_root(server_id, environ))
     host = compose_local_host(planner=meta.capability_composition)
     identity = compose_environment_server_identity(
         operating_system=host.operating_system,

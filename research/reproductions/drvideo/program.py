@@ -1,27 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
     require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import DRVIDEO_REFERENCE_FIDELITY
 from .source import DRVIDEO_OFFICIAL_COMMIT
@@ -141,13 +136,13 @@ def drvideo_initial_state(
     }
 
 
-def _prepare_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_retrieval(request: MethodCall) -> MethodNodeResult:
     vector = request.state.get("retrieval_query_vector")
     if not isinstance(vector, Sequence) or isinstance(
         vector, (str, bytes, bytearray)
     ):
         raise TypeError("DrVideo retrieval query vector must be a sequence")
-    return MethodNodeResult(
+    return dict(
         value={
             "projection_digest": _text(
                 request.state.get("projection_digest"), "projection_digest"
@@ -167,7 +162,7 @@ def _prepare_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_retrieval(request: MethodCall) -> MethodNodeResult:
     result = _mapping(request.previous_value, "semantic retrieval result")
     for key in (
         "projection_digest",
@@ -200,13 +195,13 @@ def _record_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
         if frame_id not in selected:
             selected.append(frame_id)
 
-    return MethodNodeResult(
+    return dict(
         value={"retrieved_frame_ids": tuple(selected)},
         state_update={"retrieved_frame_ids": tuple(selected)},
     )
 
 
-def _document_view(request: MethodNodeRequest) -> tuple[JsonObject, ...]:
+def _document_view(request: MethodCall) -> tuple[JsonObject, ...]:
     return tuple(
         {
             "frame_id": _text(row.get("frame_id"), "document frame id"),
@@ -216,7 +211,7 @@ def _document_view(request: MethodNodeRequest) -> tuple[JsonObject, ...]:
     )
 
 
-def _initial_augmentation_view(request: MethodNodeRequest) -> JsonObject:
+def _initial_augmentation_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "initial_question_conditioned_augmentation",
         "question": _text(request.state.get("question"), "question"),
@@ -238,7 +233,7 @@ def _updates(value: object) -> tuple[dict[str, JsonValue], ...]:
 
 
 def _apply_updates(
-    request: MethodNodeRequest,
+    request: MethodCall,
     updates: tuple[dict[str, JsonValue], ...],
 ) -> tuple[tuple[JsonObject, ...], tuple[str, ...], tuple[str, ...]]:
     document = [
@@ -271,7 +266,7 @@ def _apply_updates(
     return tuple(document), tuple(caption_ids), tuple(vqa_ids)
 
 
-def _record_initial_augmentation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_initial_augmentation(request: MethodCall) -> MethodNodeResult:
     updates = _updates(request.previous_value)
     selected = tuple(request.state.get("retrieved_frame_ids", ()))
     if {row.get("frame_id") for row in updates} != set(selected):
@@ -281,7 +276,7 @@ def _record_initial_augmentation(request: MethodNodeRequest) -> MethodNodeResult
     if any(row.get("type") != "vqa" for row in updates):
         raise ValueError("DrVideo initial retrieved frames require VQA augmentation")
     document, caption_ids, vqa_ids = _apply_updates(request, updates)
-    return MethodNodeResult(
+    return dict(
         value={"augmented_frame_count": len(updates)},
         state_update={
             "document": document,
@@ -291,7 +286,7 @@ def _record_initial_augmentation(request: MethodNodeRequest) -> MethodNodeResult
     )
 
 
-def _planning_view(request: MethodNodeRequest) -> JsonObject:
+def _planning_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "planning",
         "question": _text(request.state.get("question"), "question"),
@@ -324,22 +319,22 @@ def _planning_decision(value: object) -> tuple[bool, str]:
     return ready, _text(explanation, "planning explanation", allow_empty=True)
 
 
-def _route_planning(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_planning(request: MethodCall) -> MethodNodeResult:
     ready, explanation = _planning_decision(request.previous_value)
     if ready:
-        return MethodNodeResult(
+        return dict(
             value={"ready": True, "explanation": explanation},
             state_update={"planning_explanation": explanation},
             next_node="answer",
         )
-    return MethodNodeResult(
+    return dict(
         value={"ready": False, "explanation": explanation},
         state_update={"planning_explanation": explanation},
         next_node="interaction",
     )
 
 
-def _interaction_view(request: MethodNodeRequest) -> JsonObject:
+def _interaction_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "interaction",
         "question": _text(request.state.get("question"), "question"),
@@ -362,7 +357,7 @@ def _interaction_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_interaction(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_interaction(request: MethodCall) -> MethodNodeResult:
     result = _mapping(request.previous_value, "interaction result")
     frames = _rows(result.get("frames", ()), "interaction frames")
     if len(frames) > DRVIDEO_REFERENCE_FIDELITY.maximum_added_frames_per_round:
@@ -392,19 +387,19 @@ def _record_interaction(request: MethodNodeRequest) -> MethodNodeResult:
         normalized.append({"frame_id": frame_id, "type": kind})
 
     if not normalized:
-        return MethodNodeResult(
+        return dict(
             value={"requests": ()},
             state_update={"pending_augmentation_requests": ()},
             next_node="answer",
         )
-    return MethodNodeResult(
+    return dict(
         value={"requests": tuple(normalized)},
         state_update={"pending_augmentation_requests": tuple(normalized)},
         next_node="augment",
     )
 
 
-def _adaptive_augmentation_view(request: MethodNodeRequest) -> JsonObject:
+def _adaptive_augmentation_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "adaptive_augmentation",
         "question": _text(request.state.get("question"), "question"),
@@ -421,7 +416,7 @@ def _adaptive_augmentation_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_adaptive_augmentation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_adaptive_augmentation(request: MethodCall) -> MethodNodeResult:
     updates = _updates(request.previous_value)
     pending = tuple(
         thaw_json(row)
@@ -449,7 +444,7 @@ def _record_adaptive_augmentation(request: MethodNodeRequest) -> MethodNodeResul
         },
     )
     max_rounds = _integer(request.state.get("max_rounds"), "max_rounds", minimum=1)
-    return MethodNodeResult(
+    return dict(
         value={"round": next_round, "augmented_frame_count": len(updates)},
         state_update={
             "document": document,
@@ -463,7 +458,7 @@ def _record_adaptive_augmentation(request: MethodNodeRequest) -> MethodNodeResul
     )
 
 
-def _answer_view(request: MethodNodeRequest) -> JsonObject:
+def _answer_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "answering",
         "question": _text(request.state.get("question"), "question"),
@@ -474,13 +469,13 @@ def _answer_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_answer(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_answer(request: MethodCall) -> MethodNodeResult:
     result = _mapping(request.previous_value, "answer result")
     answer = _text(result.get("answer"), "final answer")
     reasoning = _text(
         result.get("reasoning", ""), "final reasoning", allow_empty=True
     )
-    return MethodNodeResult(
+    return dict(
         value={"answer": answer, "reasoning": reasoning},
         state_update={
             "final_answer": answer,
@@ -489,8 +484,8 @@ def _record_answer(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "answer": _text(request.state.get("final_answer"), "final answer"),
             "reasoning": _text(
@@ -515,7 +510,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_drvideo_method_program() -> MethodProgram:
+def build_drvideo_method_program(method, ) -> None:
     fidelity = DRVIDEO_REFERENCE_FIDELITY
     configuration: JsonObject = {
         "paper": "CVPR 2025",
@@ -527,17 +522,9 @@ def build_drvideo_method_program() -> MethodProgram:
         "retrieval_metric": "cosine_similarity",
         "answering": "chain_of_thought",
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="drvideo",
-            implementation_version="cvpr-2025-paper-authoritative",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="drvideo.cvpr2025.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     loops = fidelity.max_agent_rounds
-    builder = MethodProgramBuilder(identity, entrypoint="prepare_retrieval")
+    builder = method
     builder.compute(
         "prepare_retrieval",
         "drvideo.document-retrieval.prepare",
@@ -549,8 +536,8 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.document-retrieval.query",
         _RETRIEVAL_CAPABILITY,
         ("record_retrieval",),
-        effect_class=EffectClass.PURE,
-        evidence_obligations=("drvideo.semantic-retrieval",),
+        effect='pure',
+        evidence=("drvideo.semantic-retrieval",),
     )
     builder.compute(
         "record_retrieval",
@@ -563,7 +550,7 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.document-augmentation.initial",
         _VISUAL_AGENT,
         ("record_initial_augment",),
-        view_handler=_initial_augmentation_view,
+        view=_initial_augmentation_view,
     )
     builder.compute(
         "record_initial_augment",
@@ -576,7 +563,7 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.agent.planning",
         _PLANNING_AGENT,
         ("route_planning",),
-        view_handler=_planning_view,
+        view=_planning_view,
         max_visits=loops,
     )
     builder.route(
@@ -591,7 +578,7 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.agent.interaction",
         _INTERACTION_AGENT,
         ("record_interaction",),
-        view_handler=_interaction_view,
+        view=_interaction_view,
         max_visits=loops,
     )
     builder.route(
@@ -606,7 +593,7 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.document-augmentation.adaptive",
         _VISUAL_AGENT,
         ("record_augment",),
-        view_handler=_adaptive_augmentation_view,
+        view=_adaptive_augmentation_view,
         max_visits=loops,
     )
     builder.route(
@@ -621,7 +608,7 @@ def build_drvideo_method_program() -> MethodProgram:
         "drvideo.answering.cot",
         _ANSWER_AGENT,
         ("record_answer",),
-        view_handler=_answer_view,
+        view=_answer_view,
     )
     builder.compute(
         "record_answer",
@@ -630,34 +617,45 @@ def build_drvideo_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "drvideo.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_RETRIEVAL_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_RETRIEVAL_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "drvideo.semantic-retrieval",
             "drvideo.document-augmentation",
             "drvideo.agent-feedback",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "retrieved_frame_count",
             "augmented_frame_count",
             "interaction_rounds",
         ),
-        artifact_kinds=(
+        artifacts=(
             "drvideo_document",
             "drvideo_feedback_trajectory",
         ),
     )
+    return builder
 
 
-DRVIDEO_METHOD_PROGRAM = build_drvideo_method_program()
+METHOD_CONFIGURER = build_drvideo_method_program
+METHOD_ENTRYPOINT = "prepare_retrieval"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "DRVIDEO_METHOD_PROGRAM",
-    "build_drvideo_method_program",
-    "drvideo_initial_state",
+    'build_drvideo_method_program',
+    'drvideo_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'drvideo', "version": "paper-protocol", "semantic_contract": 'drvideo' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

@@ -47,6 +47,6 @@ REPRODUCTION = ReproductionDefinition(
         "Matched execution requires repository images, execution feedback and the paper-era Claude service identity.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_recent_2025_2026_wave_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__ = ["REPRODUCTION"]

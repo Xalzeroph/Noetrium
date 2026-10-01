@@ -4,7 +4,7 @@ import hashlib
 import json
 import shutil
 import tempfile
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -38,14 +38,6 @@ _CUT_SCHEMA = "minecraft-world-cut.v1"
 _BRANCH_SCHEMA = "minecraft-world-branch.v1"
 
 
-class _CallableMetadataStore(MinecraftWorldCutMetadataStorePort):
-    def __init__(self, writer: Callable[[Path, bytes], None]) -> None:
-        self._writer = writer
-
-    def publish(self, path: str, payload: bytes) -> None:
-        self._writer(Path(path), payload)
-
-
 class FilesystemMinecraftWorldCutMetadataStore(MinecraftWorldCutMetadataStorePort):
     """Default durable metadata adapter for the local world-cut provider."""
 
@@ -63,7 +55,6 @@ class FilesystemMinecraftWorldCutProvider(MinecraftWorldCutPort):
         snapshot_root: str | Path,
         branch_root: str | Path,
         copier: MinecraftWorldCopier | None = None,
-        metadata_writer: Callable[[Path, bytes], None] | None = None,
         metadata_store: MinecraftWorldCutMetadataStorePort | None = None,
     ) -> None:
         self.quiescence = quiescence
@@ -74,14 +65,13 @@ class FilesystemMinecraftWorldCutProvider(MinecraftWorldCutPort):
         self.snapshot_root.mkdir(parents=True, exist_ok=True)
         self.branch_root.mkdir(parents=True, exist_ok=True)
         self.copier = copier or FilesystemMinecraftWorldCopier()
-        if metadata_writer is not None and metadata_store is not None:
-            raise ValueError("provide metadata_store or metadata_writer, not both")
-        if metadata_store is not None:
-            self.metadata_store = metadata_store
-        elif metadata_writer is not None:
-            self.metadata_store = _CallableMetadataStore(metadata_writer)
-        else:
-            self.metadata_store = FilesystemMinecraftWorldCutMetadataStore()
+        self.metadata_store = (
+            FilesystemMinecraftWorldCutMetadataStore()
+            if metadata_store is None
+            else metadata_store
+        )
+        if not callable(getattr(self.metadata_store, "publish", None)):
+            raise TypeError("metadata_store must expose publish(path, payload)")
 
     @staticmethod
     def _identity_path(root: Path, identity: str) -> Path:

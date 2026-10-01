@@ -4,6 +4,7 @@ import ast
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -50,10 +51,10 @@ def test_every_execution_capable_reproduction_enters_the_latest_research_os() ->
     assert tuple(row.package for row in executable) == expected
 
     portfolio = build_research()
-    assert isinstance(portfolio, api.ResearchPortfolio)
+    assert isinstance(portfolio, product_research_os.ResearchPortfolio)
     assert tuple(program.program_id for program in portfolio.programs) == expected
 
-    revision = api.ResearchGraphRevision(
+    revision = product_research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -91,11 +92,29 @@ def test_reproduction_packages_use_only_public_noetrium_surface() -> None:
                 modules = (() if node.module is None else (node.module,))
             else:
                 continue
-            if any(
-                module == "noetrium_platform"
-                or module.startswith("noetrium_platform.")
-                for module in modules
-            ):
+            forbidden = False
+            if isinstance(node, ast.ImportFrom) and node.module == "noetrium":
+                forbidden = any(alias.name != "api" for alias in node.names)
+            for module in modules:
+                if module in {
+                    "components",
+                    "orchestration",
+                    "noetrium_platform",
+                }:
+                    forbidden = True
+                elif module.startswith(
+                    ("components.", "orchestration.", "noetrium_platform.")
+                ):
+                    forbidden = True
+                elif module == "noetrium":
+                    forbidden = forbidden or isinstance(node, ast.Import)
+                elif (
+                    module.startswith("noetrium.")
+                    and module != "noetrium.api"
+                    and not module.startswith("noetrium.api.")
+                ):
+                    forbidden = True
+            if forbidden:
                 violations.append(path.relative_to(_root()).as_posix())
                 break
     assert violations == []

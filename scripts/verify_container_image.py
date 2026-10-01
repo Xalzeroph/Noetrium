@@ -11,9 +11,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-_SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-_ACTIONS = ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
+_PUBLIC_API_ROOTS = ("ResearchPortfolioBuilder", "ResearchPortfolio", "ResearchOS", "open_project")
 _MARKER = "CONTAINER_PRODUCT_SMOKE="
 _WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
 _DISTRIBUTION_LABEL = (
@@ -30,7 +29,16 @@ _QUALIFICATION_OWNER_ENV = (
 
 
 def _qualification_run_options() -> list[str]:
-    options = ["--rm", "--init", "--restart", "no", "--label", _QUALIFICATION_CHILD_LABEL]
+    options = [
+        "--rm",
+        "--init",
+        "--restart",
+        "no",
+        "--tmpfs",
+        "/tmp:rw,exec,nosuid,nodev,mode=1777",
+        "--label",
+        _QUALIFICATION_CHILD_LABEL,
+    ]
     for env_name, label_name in _QUALIFICATION_OWNER_ENV:
         value = os.environ.get(env_name, "").strip()
         if value:
@@ -53,7 +61,7 @@ class ContainerVerificationReceipt:
     schema: str
     qualification_scope: str
     npe_verified: bool
-    research_os_smoke_actions: tuple[str, ...]
+    public_api_roots: tuple[str, ...]
     image: str
     image_id: str
     source_sha: str
@@ -68,7 +76,6 @@ class ContainerVerificationReceipt:
     python_version: str
     package_version: str
     module_file: str
-    actions: tuple[str, ...]
     commands: tuple[CommandReceipt, ...]
 
 
@@ -161,64 +168,33 @@ if verified_files < 1:
 PY
 noetrium --help >/dev/null
 python - "$work" <<'PY'
-import json
-import sys
-from pathlib import Path
-from noetrium.api import (
-    ResearchExecutionTarget,
-    ResearchGraphRevision,
-    ResearchOS,
-)
-from noetrium_platform.product.research_os import bind_research_os
-from noetrium_platform.product.reference import ReferenceResearchOSPort
-
-root = Path(sys.argv[1])
-research_os = bind_research_os(ReferenceResearchOSPort())
-assert isinstance(research_os, ResearchOS)
-revision = ResearchGraphRevision(
-    "qualification",
-    "0" * 64,
-    (),
-    "container qualification",
-)
-target = ResearchExecutionTarget("container-reference", revision)
-for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
-    result = getattr(research_os, action)(target)
-    (root / f"{action}.json").write_text(
-        json.dumps(
-            {
-                "ok": True,
-                "command": action,
-                "result": {
-                    "action": result.action.value,
-                    "execution_id": result.target.execution_id,
-                    "research_revision_digest": (
-                        result.target.research_revision_digest
-                    ),
-                    "state": result.state,
-                    "control_revision_digest": result.control_revision_digest,
-                },
-            },
-            sort_keys=True,
-        ),
-        encoding="utf-8",
-    )
-PY
-python - "$work" <<'PY'
 import importlib.metadata
 import json
 import sys
 from pathlib import Path
 import noetrium
+from noetrium import api
+
 root = Path(sys.argv[1])
+expected = (
+    "ResearchPortfolioBuilder",
+    "ResearchPortfolio",
+    "ResearchOS",
+    "open_project",
+)
+if tuple(api.__all__) != expected:
+    raise SystemExit(f"public API roots drifted: {tuple(api.__all__)!r}")
+required_controls = ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
+if any(not hasattr(api.ResearchOS, name) for name in required_controls):
+    raise SystemExit("ResearchOS public control surface is incomplete")
+if not callable(api.open_project):
+    raise SystemExit("open_project is not callable")
+builder = api.ResearchPortfolioBuilder("container-qualification")
+if not callable(builder.program) or not callable(builder.freeze):
+    raise SystemExit("ResearchPortfolioBuilder public authoring surface is incomplete")
 provenance = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
-actions = ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
-for action in actions:
-    payload = json.loads((root / f"{action}.json").read_text(encoding="utf-8"))
-    if payload.get("ok") is not True or payload.get("command") != action:
-        raise SystemExit(f"invalid container lifecycle receipt: {action}")
 print("CONTAINER_PRODUCT_SMOKE=" + json.dumps({
-    "actions": actions,
+    "public_api_roots": expected,
     "module_file": noetrium.__file__,
     "package_version": importlib.metadata.version("noetrium"),
     "python_version": sys.version.split()[0],
@@ -252,8 +228,8 @@ def verify_container_image(
     python_runtime_identity_digest = (
         expected_python_runtime_identity_digest.strip().lower()
     )
-    if not _SHA40_RE.fullmatch(source_sha):
-        raise ValueError("expected source SHA must be a lowercase 40-character Git SHA")
+    if not _SHA256_RE.fullmatch(source_sha):
+        raise ValueError("expected source SHA must be a lowercase SHA-256 source-tree digest")
     if not _SHA256_RE.fullmatch(wheel_sha256):
         raise ValueError("expected wheel SHA256 must be lowercase hexadecimal")
     if not _SHA256_RE.fullmatch(distribution_sha256):
@@ -312,9 +288,9 @@ def verify_container_image(
     ])
     receipts.append(smoke_receipt)
     smoke = _parse_smoke(smoke_stdout)
-    actions = smoke.get("actions")
-    if actions != list(_ACTIONS):
-        raise RuntimeError("container smoke did not exercise the full lifecycle")
+    public_api_roots = smoke.get("public_api_roots")
+    if public_api_roots != list(_PUBLIC_API_ROOTS):
+        raise RuntimeError("container smoke did not verify the public four-root API")
     module_file = smoke.get("module_file")
     if not isinstance(module_file, str) or "/site-packages/" not in module_file.replace("\\", "/"):
         raise RuntimeError("container product import did not come from installed site-packages")
@@ -337,10 +313,10 @@ def verify_container_image(
         raise RuntimeError("container installed wheel RECORD was not verified")
 
     return ContainerVerificationReceipt(
-        schema="noetrium.container-verification.v4",
-        qualification_scope="research-os-smoke-only",
+        schema="noetrium.container-verification.v5",
+        qualification_scope="public-four-root-smoke",
         npe_verified=False,
-        research_os_smoke_actions=tuple(_ACTIONS),
+        public_api_roots=_PUBLIC_API_ROOTS,
         image=image,
         image_id=image_id,
         source_sha=source_sha,
@@ -355,7 +331,6 @@ def verify_container_image(
         python_version=python_version,
         package_version=package_version,
         module_file=module_file,
-        actions=tuple(actions),
         commands=tuple(receipts),
     )
 

@@ -141,9 +141,7 @@ REPRODUCTION = ReproductionDefinition(
         "runtime under Artifact authority.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_deps_minecraft_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

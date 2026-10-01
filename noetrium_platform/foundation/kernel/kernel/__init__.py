@@ -23,7 +23,9 @@ from .durable_closure import (
     durable_carrier_gc_eligible,
     validate_durable_carrier_closures,
 )
-from .context import ExecutionContext
+from .context import ExecutionContext, execution_context_from_payload, execution_context_payload
+from .retry import blocking_wait, retry_until_deadline
+from .durability import DurableSQLiteWriterOwner, immediate_sqlite_transaction, write_all_file_descriptor
 from .contracts import CapabilityDescriptor, ChildMachineLink, MachineAttempt, RunBinding
 from .delivery import (
     DeliveryReceipt, DeliveryStatus, InMemoryMachineInbox, InMemoryMachineOutbox,
@@ -54,10 +56,10 @@ from .canonical import (
     strict_finite_json_bytes, strict_finite_json_digest, strict_finite_json_text,
     strict_json_loads, thaw_json,
 )
-from .directory_supervision import DirectoryChildMachineSupervisor
+from .directory_supervision import ChildMachineSupervisor
 from .supervision import (
     ChildMachinePending, ChildMachineRecord, ChildMachineStatus,
-    ChildMachineSupervisorPort, InMemoryChildMachineSupervisor,
+    ChildMachineSupervisorPort,
 )
 from .inspection import JournalInspectionPort, JournalInspectionService, MachineHistoryInspection
 from .plugin import InMemoryPluginRegistry, PluginManifest, PluginRegistryPort, PluginSignatureVerifier
@@ -97,6 +99,9 @@ from .machine import (
     MachineSnapshot,
     ProgramLock,
     MachineStatus,
+    MachineStateDelta,
+    MachineStateMutation,
+    apply_machine_state_delta,
     TransitionProposal,
 )
 from .failure_materialization import FailureRecordReceipt, OperationFailureSink
@@ -123,15 +128,17 @@ from .durable_delivery import DirectoryMachineInbox, DirectoryMachineOutbox
 from .nir import NIREnvelope
 
 __all__ = [
-    "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
+    "ExecutionContext", "execution_context_payload", "execution_context_from_payload", "ComponentIdentity", "ImmutableModelIdentity",
+    "blocking_wait", "retry_until_deadline",
+    "write_all_file_descriptor", "DurableSQLiteWriterOwner", "immediate_sqlite_transaction",
     "LeaseClockPort", "LeaseClockReading", "LeaseClockUnavailable", "LocalLeaseClock", "ManualLeaseClock",
     "DurableCarrierClosureAuthority", "DurableCarrierReferenceClosure",
     "durable_carrier_closure_complete", "durable_carrier_gc_eligible", "validate_durable_carrier_closures",
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
     "MachineAuthorityPort", "MachineLease", "MachineLeaseBusy", "MachineLeaseClockConflict", "MachineLeaseLost",
     "CapabilityDescriptor", "ChildMachineLink", "MachineAttempt", "RunBinding",
-    "DirectoryChildMachineSupervisor", "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
-    "ChildMachineSupervisorPort", "InMemoryChildMachineSupervisor",
+    "ChildMachineSupervisor", "ChildMachinePending", "ChildMachineRecord", "ChildMachineStatus",
+    "ChildMachineSupervisorPort",
     "JournalInspectionPort", "JournalInspectionService", "MachineHistoryInspection",
     "InMemoryPluginRegistry", "PluginManifest", "PluginRegistryPort", "PluginSignatureVerifier",
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",

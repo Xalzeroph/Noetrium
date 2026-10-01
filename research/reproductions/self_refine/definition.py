@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/self_refine/study.py',
         ),
     ),
+    primary_executable="research/reproductions/self_refine/program.py",
     reported_results=(
         ReportedResult(
             claim_id="self_refine_average_absolute_gain",
@@ -74,7 +75,7 @@ REPRODUCTION = ReproductionDefinition(
         'paper-era spaCy/NLTK lexical feedback post-processing artifacts remain to be content-addressed for exact historical replay',
     ),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_reference_self_refine.py', 'tests/test_scientific_self_refine_v1.py', 'tests/test_scientific_self_refine_commongen_method_program_v1.py', 'tests/test_scientific_commongen_benchmark_v1.py'),
+    scientific_tests=('tests/test_scientific_reference_self_refine.py', 'tests/test_scientific_self_refine_v1.py'),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -69,6 +69,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/agentless_swebench/study.py",
         ),
     ),
+    primary_executable="research/reproductions/agentless_swebench/program.py",
     reported_results=(
         ReportedResult(
             claim_id="fse2025_swebench_lite_resolved",
@@ -100,9 +101,7 @@ REPRODUCTION = ReproductionDefinition(
         "exact released validation artifacts must be materialized under Artifact/Evidence authority before claim reproduction",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_agentless_method_program_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

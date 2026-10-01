@@ -54,6 +54,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/react_alfworld/trajectory.py',
         ),
     ),
+    primary_executable="research/reproductions/react_alfworld/program.py",
     reported_results=(
         ReportedResult(
             claim_id='react_palm_mean',
@@ -207,7 +208,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('the PaLM-540B paper lane is not publicly reproducible as an exact model cut', 'text-davinci-002 used by the released notebook is decommissioned', 'the exact ALFWorld json_2.1.1 dataset/environment must be deployment-bound before matched execution'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_react_alfworld_fidelity_v1.py', 'tests/test_scientific_react_alfworld_method_program_v1.py', 'tests/test_scientific_react_alfworld_protocol_v1.py'),
+    scientific_tests=(  ('tests/test_scientific_react_alfworld_protocol_v1.py',)),
 )
 
 __all__ = ["REPRODUCTION"]

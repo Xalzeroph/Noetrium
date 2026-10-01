@@ -10,9 +10,14 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from research.reproductions.adaptagent_acl2025.definition import (
     REPRODUCTION as ADAPTAGENT,
 )
+from research.reproductions.jarvis1_minecraft.definition import (
+    REPRODUCTION as JARVIS1,
+)
+from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.fleet import (
     ReproductionBenchmarkSelection,
     materialize_repository_execution_fleet,
+    materialize_runnable_repository_execution_fleet,
     resolve_repository_execution_requests,
 )
 from research.reproductions.research_os import (
@@ -165,6 +170,36 @@ def test_materialized_fleet_compiles_exact_study_and_bound_program(monkeypatch) 
     assert lane.binding.benchmark_split_id == "test"
     assert lane.study.benchmark_split_id == "test"
     assert lane.study.benchmark.cut_digest == lane.request.benchmark.cut_digest
-    assert lane.program == materialized.portfolio.programs[0]
+    assert lane.program.program_id == (
+        "adaptagent_acl2025." + lane.binding.binding_digest[:24]
+    )
+    assert lane.program in materialized.portfolio.programs
+    assert {row.program_id for row in materialized.portfolio.programs} == {
+        row.program.program_id for row in materialized.lanes
+    }
     assert len(lane.lane_digest) == 64
     assert len(materialized.materialization_digest) == 64
+
+
+def test_study_owned_split_does_not_require_external_split_selection(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        fleet_module,
+        "executable_reproduction_definitions",
+        lambda: (JARVIS1,),
+    )
+
+    partial = materialize_runnable_repository_execution_fleet(
+        RepositoryBenchmarkAuthority.discover()
+    )
+
+    assert partial.materialization is not None
+    assert partial.blockers == ()
+    assert partial.runnable_lane_count == 1
+    lane = partial.materialization.lanes[0]
+    assert lane.binding.benchmark_split_id is None
+    assert lane.study.benchmark_split_id == "all-185"
+    assert lane.program.program_id == (
+        "jarvis1_minecraft." + lane.binding.binding_digest[:24]
+    )

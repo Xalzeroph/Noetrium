@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import time
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
-from noetrium_platform.research.execution.api import MethodMachinePort, MethodRunStatus
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
+from noetrium_platform.research.execution.api import (
+    MethodProgramExecutorPort,
+    MethodRunStatus,
+)
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 
 from ..api import (
@@ -25,23 +28,46 @@ class WorkloadMethodBinding:
     def __init__(
         self,
         *,
-        machine: MethodMachinePort,
+        executor: MethodProgramExecutorPort,
         compiler: WorkloadMethodCompilerPort,
         result_adapter: WorkloadMethodResultAdapterPort,
         clock=time.monotonic,
     ) -> None:
-        if not callable(getattr(machine, "run", None)):
-            raise TypeError("workload binding machine must implement MethodMachinePort.run")
+        if not isinstance(executor, MethodProgramExecutorPort):
+            raise TypeError(
+                "workload binding executor must implement MethodProgramExecutorPort"
+            )
+        executor_identity = executor.identity_digest
+        if type(executor_identity) is not str or len(executor_identity) != 64:
+            raise TypeError(
+                "workload Method binding executor requires a stable identity digest"
+            )
         if not callable(getattr(compiler, "compile", None)):
             raise TypeError("workload binding compiler must implement compile")
         if not callable(getattr(result_adapter, "evaluate", None)):
             raise TypeError("workload binding result_adapter must implement evaluate")
         if not callable(clock):
             raise TypeError("workload binding clock must be callable")
-        self._machine = machine
+        compiler_identity = getattr(compiler, "digest", None)
+        adapter_identity = getattr(result_adapter, "digest", None)
+        for field_name, identity in (
+            ("compiler", compiler_identity),
+            ("result_adapter", adapter_identity),
+        ):
+            if type(identity) is not str or len(identity) != 64:
+                raise TypeError(
+                    f"workload Method binding {field_name} requires a stable identity digest"
+                )
+        self._executor = executor
         self._compiler = compiler
         self._result_adapter = result_adapter
         self._clock = clock
+        self.identity_digest = canonical_digest({
+            "binding": "workload-method-binding.v4",
+            "executor": executor_identity,
+            "compiler": compiler_identity,
+            "result_adapter": adapter_identity,
+        })
 
     def execute_one(
         self,
@@ -54,7 +80,7 @@ class WorkloadMethodBinding:
             raise TypeError("workload context must be ExecutionContext")
         invocation = self._compiler.compile(task, context)
         started = self._clock()
-        result = self._machine.run(
+        result = self._executor.execute(
             invocation.program,
             runtime=invocation.runtime,
             input_value=invocation.input_value,
@@ -72,10 +98,14 @@ class WorkloadMethodBinding:
             status=result.status.value,
             step_count=result.step_count,
             evidence_status=result.evidence_status.value,
+            evidence_reference=result.evidence_reference,
+            failure_id=result.failure_id,
         )
         diagnostics = dict(evaluation.diagnostics)
         diagnostics.setdefault("method_run_digest", result.run_digest)
         diagnostics.setdefault("method_program_digest", result.program_digest)
+        if result.failure_id is not None:
+            diagnostics.setdefault("failure_id", result.failure_id)
         return WorkloadTaskResult(
             task_id=task.task_id,
             family=task.family,
@@ -85,10 +115,11 @@ class WorkloadMethodBinding:
             steps=result.step_count,
             duration_s=duration,
             failure_reason=evaluation.failure_reason,
-            method_receipt=receipt,
+            participant_receipts=(("method", receipt),),
             completion_receipt=evaluation.completion_receipt,
             failure_scope=evaluation.failure_scope,
             diagnostics=diagnostics,
+            exports=evaluation.exports,
         )
 
 

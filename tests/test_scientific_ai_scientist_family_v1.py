@@ -1,8 +1,10 @@
-from research.reproductions.ai_scientist_v1 import (
+from research.reproductions.ai_scientist_v1.fidelity import (
     AI_SCIENTIST_V1_FIDELITY,
     AIScientistV1Stage,
 )
-from research.reproductions.ai_scientist_v2 import AI_SCIENTIST_V2_FIDELITY
+from research.reproductions.ai_scientist_v2.fidelity import (
+    AI_SCIENTIST_V2_FIDELITY,
+)
 
 
 def test_ai_scientist_v1_preserves_template_baseline_experiment_pipeline() -> None:

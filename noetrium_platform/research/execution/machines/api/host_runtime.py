@@ -55,6 +55,18 @@ class ResearchMachineSessionPort(Protocol):
     @property
     def previous_value(self) -> JsonValue: ...
 
+    @property
+    def visit_counts(self) -> tuple[tuple[str, int], ...]: ...
+
+    @property
+    def step_count(self) -> int: ...
+
+    @property
+    def semantic_state(self) -> JsonObject: ...
+
+    @property
+    def checkpoint_value(self) -> JsonValue: ...
+
     def start(
         self,
         initial_data: Mapping[str, JsonValue] | None = None,
@@ -81,7 +93,7 @@ class ResearchMachineSessionPort(Protocol):
         *,
         command_id_prefix: str,
         payload: JsonValue = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
     ) -> ResearchMachineRunPort: ...
 
     def checkpoint(self) -> MachineSnapshot: ...
@@ -93,6 +105,11 @@ class ResearchMachineSessionPort(Protocol):
 class ResearchProgramHostPort(Protocol):
     host_id: str
     program: ResearchProgram
+
+    def accepted_commits(
+        self,
+        machine_id: str,
+    ) -> tuple[MachineCommit, ...]: ...
 
     def open_session(
         self,

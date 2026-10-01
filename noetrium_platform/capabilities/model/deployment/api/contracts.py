@@ -37,11 +37,12 @@ class ModelDeploymentSpec:
     service_id: str
     model_id: str
     engine: str
+    container_digest: str
     executable: str
     argv: tuple[str, ...]
     cwd: Path
-    python_environment_id: str | None = None
     gpu_devices: tuple[str, ...] = ()
+    gpu_memory_reservation_bytes: tuple[int, ...] = ()
     environment: tuple[tuple[str, str], ...] = ()
     readiness_url: str | None = None
     readiness_timeout_s: float = 120.0
@@ -51,6 +52,30 @@ class ModelDeploymentSpec:
     tags: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        if (
+            type(self.container_digest) is not str
+            or len(self.container_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.container_digest)
+        ):
+            raise ValueError(
+                "model deployment container_digest must be lowercase SHA-256"
+            )
+        if (
+            not isinstance(self.gpu_memory_reservation_bytes, tuple)
+            or any(
+                type(value) is not int or value < 0
+                for value in self.gpu_memory_reservation_bytes
+            )
+        ):
+            raise ValueError(
+                "model deployment GPU memory reservations must be non-negative integers"
+            )
+        if self.gpu_memory_reservation_bytes and (
+            len(self.gpu_memory_reservation_bytes) != len(self.gpu_devices)
+        ):
+            raise ValueError(
+                "model deployment GPU memory reservations must align with gpu_devices"
+            )
         for field in ("readiness_timeout_s", "stop_timeout_s", "heartbeat_interval_s"):
             value = getattr(self, field)
             if (
@@ -67,7 +92,6 @@ class ModelDeploymentSelector:
     tags: tuple[str, ...] = ()
     model_id: str | None = None
     engine: str | None = None
-    python_environment_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +115,49 @@ class ModelDeploymentGeneration:
             or any(ch not in "0123456789abcdef" for ch in self.applied_runtime_digest)
         ):
             raise ValueError("model applied runtime generation must be lowercase SHA-256")
+
+
+
+
+@dataclass(frozen=True, slots=True)
+class ModelAppliedRuntimeIdentity:
+    """Exact read-only identity of one applied model-serving generation."""
+
+    deployment_id: str
+    desired_spec_digest: str
+    applied_runtime_digest: str
+    service_contract_digest: str
+    pid: int
+    process_start_marker: str
+    argv_digest: str
+
+    def __post_init__(self) -> None:
+        if type(self.deployment_id) is not str or not self.deployment_id.strip():
+            raise ValueError("model applied runtime deployment_id is required")
+        for name in (
+            "desired_spec_digest",
+            "applied_runtime_digest",
+            "service_contract_digest",
+            "argv_digest",
+        ):
+            value=getattr(self,name)
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(f"model applied runtime {name} must be lowercase SHA-256")
+        if type(self.pid) is not int or self.pid <= 0:
+            raise ValueError("model applied runtime pid must be positive")
+        if (
+            type(self.process_start_marker) is not str
+            or not self.process_start_marker
+        ):
+            raise ValueError("model applied runtime process_start_marker is required")
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest(self)
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,13 +217,6 @@ class ModelGpuProcessBinding:
 
 
 @dataclass(frozen=True, slots=True)
-class ModelEnvironmentUsage:
-    environment_id: str
-    deployment_ids: tuple[str, ...]
-    desired_running_deployment_ids: tuple[str, ...]
-
-
-@dataclass(frozen=True, slots=True)
 class ModelGpuAllocation:
     deployment_id: str
     gpu_devices: tuple[str, ...]
@@ -181,7 +241,6 @@ class ModelControlSnapshot:
     models: tuple[ManagedModelAsset, ...]
     deployment_specs: tuple[ModelDeploymentSpec, ...]
     deployments: tuple[ModelDeploymentStatus, ...]
-    environment_usage: tuple[ModelEnvironmentUsage, ...] = ()
     gpu_process_bindings: tuple[ModelGpuProcessBinding, ...] = ()
     gpu_allocations: tuple[ModelGpuAllocation, ...] = ()
     gpu_conflicts: tuple[ModelGpuConflict, ...] = ()
@@ -189,8 +248,8 @@ class ModelControlSnapshot:
 
 
 __all__ = [
-    "ModelControlSnapshot", "ModelControllerPhase", "ModelControllerState", "ModelDeploymentLogs",
+    "ModelAppliedRuntimeIdentity", "ModelControlSnapshot", "ModelControllerPhase", "ModelControllerState", "ModelDeploymentLogs",
     "ModelDeploymentGeneration", "ModelDeploymentSelector", "ModelDeploymentSpec", "ModelDeploymentStatus", "ModelDesiredState",
-    "ModelEnvironmentUsage", "ModelGpuAllocation", "ModelGpuConflict", "ModelGpuProcessBinding",
+    "ModelGpuAllocation", "ModelGpuConflict", "ModelGpuProcessBinding",
     "ModelLogTail", "ModelReconcileCycle", "ModelRuntimeState",
 ]

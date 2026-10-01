@@ -17,7 +17,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     capability_request_digest,
 )
 from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
-from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal
+from noetrium_platform.infrastructure.reliability.effect.runtime import memory_effect_intent_journal
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
@@ -146,19 +146,20 @@ def _spec():
     )
 
 
-def _runtime(journal):
+def _runtime(journal, operation_state_root):
     agents=FakeParticipantResolver(); agents.register("agent", "robot-agent", Agent)
     participants=FakeParticipantResolver(); participants.register("robot", "arm", Robot)
     return agent_turn_runtime(
         agents,
         runtime_plugins=participants,
         effect_journal=journal,
+        operation_state_root=operation_state_root,
     )
 
 
-def test_arbitrary_runtime_participant_can_export_crash_safe_capability_without_provider_wrapper():
+def test_arbitrary_runtime_participant_can_export_crash_safe_capability_without_provider_wrapper(tmp_path):
     RobotSession.execute_calls=RobotSession.reconcile_calls=0
-    runtime=_runtime(InMemoryEffectIntentJournal())
+    runtime=_runtime(memory_effect_intent_journal(), tmp_path / "operation-runtime")
     cycle=DecisionCycleIdentity("run","dc","session","task","trace")
     first=runtime.execute_cycle(_spec(),task="move",input_payload={"x":1},cycle_identity=cycle)
     second=runtime.execute_cycle(_spec(),task="move",input_payload={"x":1},cycle_identity=cycle)

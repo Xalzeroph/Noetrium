@@ -7,7 +7,6 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelFleetRuntimePort,
     ModelDeploymentSpec,
     ModelDesiredState,
-    ModelEnvironmentUsage,
     ModelGpuAllocation,
     ModelGpuConflict,
     ModelGpuProcessBinding,
@@ -28,20 +27,6 @@ class ModelResourceView:
         self._catalog = catalog
         self._fleet = fleet
         self._gpu_observer = gpu_observer
-
-    def environment_usage(self) -> tuple[ModelEnvironmentUsage, ...]:
-        owners: dict[str, list[ModelDeploymentSpec]] = {}
-        for spec in self._catalog.deployments():
-            if spec.python_environment_id is not None:
-                owners.setdefault(spec.python_environment_id, []).append(spec)
-        return tuple(
-            ModelEnvironmentUsage(
-                environment_id,
-                tuple(sorted(spec.deployment_id for spec in specs)),
-                tuple(sorted(spec.deployment_id for spec in specs if spec.desired_state is ModelDesiredState.RUNNING)),
-            )
-            for environment_id, specs in sorted(owners.items())
-        )
 
     def gpu_allocations(self) -> tuple[ModelGpuAllocation, ...]:
         return tuple(
@@ -108,7 +93,6 @@ class ModelResourceView:
             models=self._assets.models(),
             deployment_specs=self._catalog.deployments(),
             deployments=self._fleet.status_all(),
-            environment_usage=self.environment_usage(),
             gpu_process_bindings=self.gpu_process_bindings(),
             gpu_allocations=self.gpu_allocations(),
             gpu_conflicts=self.gpu_conflicts(),

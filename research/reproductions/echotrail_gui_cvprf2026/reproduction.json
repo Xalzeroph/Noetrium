@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "echotrail_gui_cvprf2026",
-  "package_digest": "4880c88af0194eeb459724e9d65b3efb68353baaaa55e461387d44ccbc8fd25f",
-  "definition_digest": "a416b11ff97033d65e18fcf6dca7379a84003038f816bf609c572e989cf77086",
+  "package_digest": "1e33ae08a6233f3f591e0299398d20dae0dd47723afa835dc96d9046fea74910",
+  "definition_digest": "bc8c424da294d11a35fd5f5302e7ed950b5474c464ac90e778e3d637b296d302",
   "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -82,13 +82,13 @@
       "kind": "method_program",
       "path": "research/reproductions/echotrail_gui_cvprf2026/program.py",
       "declaration_digest": "b7a759b4b613f85805ab6775a408b2d16fa091fa2d5b1388bab9bebce1b7e3f5",
-      "content_sha256": "ac59d9febe9b7ced1116c726256fd4b897ec68e2192a1eb68a9c4aa1ea9b5621"
+      "content_sha256": "0aee750043e163899ee96ab3e61649a67a9d69c716397931b5398334eee3627f"
     },
     {
       "kind": "study",
       "path": "research/reproductions/echotrail_gui_cvprf2026/study.py",
       "declaration_digest": "26bc46849903516528bc6c8eeabcabd535bf4fdc93cc61708c065f464831fd7c",
-      "content_sha256": "ee12dd89e191fe40731cc7f846b3ba78d345adc019a9e8bd1d305ba0a5d4c2ae"
+      "content_sha256": "581e6fc0af1b8d43edd642158aee7910601d5adef96157bcacb9fea39f29b5ad"
     }
   ],
   "primary_executable": "research/reproductions/echotrail_gui_cvprf2026/program.py",
@@ -123,17 +123,18 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "echotrail_gui_cvprf2026",
-    "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
+    "program_digest": "84a9aa9dde143e61c1288e978463c31bc246d8187f2bb6ee1f0fe1b22463a709",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:echotrail_gui_cvprf2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

@@ -6,7 +6,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionTopologySnapshot,
     ExecutionAdmissionPort,
 )
@@ -15,15 +14,13 @@ from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.research.execution.policy.composition import build_admission_scheduling_policy
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
+    CpuWorkerPoolProviderPort,
     ConcurrencyTopologySnapshot,
     Deadline,
     HeartbeatSchedulerPort,
     TaskFailurePolicy,
     TaskGroupPort,
     StructuredConcurrencyRuntimePort,
-)
-from noetrium_platform.foundation.kernel.concurrency.api.ports import (
-    CpuWorkerPoolProviderPort,
 )
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime as _build_kernel_concurrency_runtime
 from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeObserverPort
@@ -63,7 +60,7 @@ class ExecutionConcurrencyAuthorities:
         tenant_id: str | None = None,
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         resource_demand: ResourceCompetitionDemand | None = None,
     ) -> TaskGroupPort:
         # Register policy identity before exposing the task group. If platform
@@ -76,7 +73,10 @@ class ExecutionConcurrencyAuthorities:
         self.admission.register_group(
             group_id,
             identity=AdmissionIdentity(tenant_id=tenant_id, resource_id=resource_id),
-            intent=AdmissionIntent(priority=priority, mode=admission_mode),
+            intent=AdmissionIntent(
+                priority=priority,
+                queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
+            ),
         )
         try:
             if resource_demand is not None:
@@ -101,9 +101,33 @@ class ExecutionConcurrencyAuthorities:
         cancel_pending: bool = False,
         deadline: Deadline | None = None,
     ) -> None:
-        group.close(cancel_pending=cancel_pending, deadline=deadline)
-        self.concurrency.release_task_group(group.group_id)
-        self.admission.unregister_group(group.group_id)
+        errors: list[BaseException] = []
+        try:
+            group.close(cancel_pending=cancel_pending, deadline=deadline)
+        except BaseException as exc:
+            errors.append(exc)
+
+        released = False
+        try:
+            self.concurrency.release_task_group(group.group_id)
+        except BaseException as exc:
+            errors.append(exc)
+        else:
+            released = True
+
+        if released:
+            try:
+                self.admission.unregister_group(group.group_id)
+            except BaseException as exc:
+                errors.append(exc)
+
+        if errors:
+            if len(errors) == 1:
+                raise errors[0]
+            raise ExceptionGroup(
+                f"task group close/release failed: {group.group_id}",
+                errors,
+            )
 
     def topology_snapshot(self) -> ConcurrencyTopologySnapshot:
         return self.concurrency.topology_snapshot()

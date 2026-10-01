@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "dejavu_cvpr2026",
-  "package_digest": "a6d2315c265f2964f37f89c5717cdfdd25659be8080743cccbb2320703a59564",
-  "definition_digest": "8eae2b161866373bdc45f256ebe7f6dfc108428ce3d19edc858e9b9972ce9618",
+  "package_digest": "acbdef725cb66302d3d19b1d80d74ef087563bc00e855f0fb8ef8a620e0ab116",
+  "definition_digest": "16126fbec79c27b18e723e9c4f62c2fad038e2c78000798022f503d907ac0418",
   "source_registry_digest": "8a15c3477680e8e65e651bbb1e46b7e02110e2e05f265a2d49d43e0fd63a9fad",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -83,13 +83,13 @@
       "kind": "method_program",
       "path": "research/reproductions/dejavu_cvpr2026/program.py",
       "declaration_digest": "1ea36a7641c43c823ca4a1fd3c6331756d5cea96932772c335e1d1dd63f8479e",
-      "content_sha256": "653eede622be41d771afed63dfabba4acd560da9aa72ad334cbd9ee7c612cb02"
+      "content_sha256": "29b2cfccf623e29bcc35847f4f9d2e0e887b9e8322c2be2059b1fbf784a9ba4d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/dejavu_cvpr2026/study.py",
       "declaration_digest": "1dfab5d2d25402bd4c7253b699246f4171fd3b9238b6a276eaef2ea012baf052",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/dejavu_cvpr2026/program.py",
@@ -159,15 +159,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "dejavu_cvpr2026",
-    "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
+    "program_digest": "bd89b5ef83688f412b7d156ac49ab839c31cebc1815435a25f15b96b10dd5c63",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -178,6 +178,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

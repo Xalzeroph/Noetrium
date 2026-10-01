@@ -1,4 +1,6 @@
-from research.reproductions.autogen_agentchat import AUTOGEN_AGENTCHAT_FIDELITY
+from research.reproductions.autogen_agentchat.fidelity import (
+    AUTOGEN_AGENTCHAT_FIDELITY,
+)
 
 
 def test_early_autogen_preserves_conversable_mixed_capability_agents() -> None:

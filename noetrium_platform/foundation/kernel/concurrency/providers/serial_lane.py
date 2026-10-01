@@ -80,7 +80,7 @@ class SharedSerialExecutionLane:
         *,
         capacity: int,
         coordinator: "SharedSerialExecutionLaneFactory",
-        worker_index: int,
+        worker_index: int | None,
         shutdown_timeout_seconds: float,
     ) -> None:
         if not lane_id.strip():
@@ -92,7 +92,9 @@ class SharedSerialExecutionLane:
         self._lane_id = lane_id
         self._capacity = int(capacity)
         self._coordinator = coordinator
-        self._worker_index = int(worker_index)
+        self._worker_index = (
+            None if worker_index is None else int(worker_index)
+        )
         self._shutdown_timeout_seconds = float(shutdown_timeout_seconds)
         self._items: deque[_WorkItem] = deque()
         self._coalesced: dict[str, _WorkItem] = {}
@@ -101,6 +103,7 @@ class SharedSerialExecutionLane:
         self._scheduled = False
         self._running = False
         self._running_logical_count = 0
+        self._queued_logical_count = 0
         self._accepted_work_items_total = 0
         self._completed_work_items_total = 0
         self._failed_work_items_total = 0
@@ -118,6 +121,7 @@ class SharedSerialExecutionLane:
 
     def _enqueue(self, item: _WorkItem) -> bool:
         self._items.append(item)
+        self._queued_logical_count += len(item.futures)
         self._accepted_work_items_total += 1
         self._max_queue_depth = max(self._max_queue_depth, len(self._items))
         if self._scheduled:
@@ -214,6 +218,7 @@ class SharedSerialExecutionLane:
             item.args = args
             item.kwargs = kwargs
             item.futures.append(future)
+            self._queued_logical_count += 1
             self._coalesced_submissions_total += 1
             self._condition.notify_all()
         return _FutureHandle(future)
@@ -243,6 +248,7 @@ class SharedSerialExecutionLane:
                 existing.args = args
                 existing.kwargs = kwargs
                 existing.futures.append(future)
+                self._queued_logical_count += 1
                 self._coalesced_submissions_total += 1
                 self._condition.notify_all()
                 return _FutureHandle(future), False, None
@@ -269,6 +275,11 @@ class SharedSerialExecutionLane:
             self._running = True
             item = self._items.popleft()
             self._running_logical_count = len(item.futures)
+            self._queued_logical_count -= self._running_logical_count
+            if self._queued_logical_count < 0:
+                raise RuntimeError(
+                    f"serial lane logical queue accounting underflow: {self._lane_id}"
+                )
             if item.coalesce_key is not None:
                 current = self._coalesced.get(item.coalesce_key)
                 if current is item:
@@ -290,7 +301,9 @@ class SharedSerialExecutionLane:
 
     def topology_snapshot(self, *, owner_group_id: str, closed: bool) -> SerialLaneTopologySnapshot:
         with self._condition:
-            logical_outstanding = self._running_logical_count + sum(len(item.futures) for item in self._items)
+            logical_outstanding = (
+                self._running_logical_count + self._queued_logical_count
+            )
             return SerialLaneTopologySnapshot(
                 lane_id=self._lane_id,
                 owner_group_id=owner_group_id,
@@ -321,6 +334,7 @@ class SharedSerialExecutionLane:
             if cancel_pending:
                 while self._items:
                     item = self._items.popleft()
+                    self._queued_logical_count -= len(item.futures)
                     if item.coalesce_key is not None:
                         self._coalesced.pop(item.coalesce_key, None)
                     for future in item.futures:
@@ -356,43 +370,65 @@ class SharedSerialExecutionLaneFactory:
         self._shutdown_timeout_seconds = float(shutdown_timeout_seconds)
         self._condition = Condition()
         self._ready = tuple(deque() for _ in range(int(max_workers)))
+        self._worker_busy = [False for _ in range(int(max_workers))]
         self._lanes: list[SharedSerialExecutionLane] = []
         self._closed = False
-        self._next_worker = 0
-        self._threads = tuple(
-            Thread(
-                target=self._run,
-                args=(index,),
-                name=f"{thread_name_prefix}:{index}",
-                daemon=False,
-            )
-            for index in range(int(max_workers))
-        )
-        for thread in self._threads:
-            thread.start()
+        self._thread_name_prefix = str(thread_name_prefix)
+        # Serial capacity is a ceiling, not a reservation. Starting one native
+        # thread per possible worker at factory construction made every logical
+        # execution domain materialize host-CPU-count threads even when it never
+        # submitted SERIAL work. Keep the same fixed worker indices and permanent
+        # lane affinity, but materialize a worker only on first use of its index.
+        self._threads: list[Thread | None] = [None for _ in range(int(max_workers))]
 
     def create(self, lane_id: str, *, capacity: int) -> SharedSerialExecutionLane:
         with self._condition:
             if self._closed:
                 raise RuntimeError("serial lane factory is closed")
-            worker_index = self._next_worker
-            self._next_worker = (self._next_worker + 1) % len(self._threads)
             lane = SharedSerialExecutionLane(
                 lane_id,
                 capacity=capacity,
                 coordinator=self,
-                worker_index=worker_index,
+                worker_index=None,
                 shutdown_timeout_seconds=self._shutdown_timeout_seconds,
             )
             self._lanes.append(lane)
             return lane
 
+    def _ensure_worker_locked(self, worker_index: int) -> None:
+        thread = self._threads[worker_index]
+        if thread is not None:
+            return
+        thread = Thread(
+            target=self._run,
+            args=(worker_index,),
+            name=f"{self._thread_name_prefix}:{worker_index}",
+            daemon=False,
+        )
+        # Publish only a successfully started worker. A start failure therefore
+        # cannot leave a phantom worker that future submissions wait on forever.
+        thread.start()
+        self._threads[worker_index] = thread
+
     def _schedule(self, lane: SharedSerialExecutionLane) -> None:
         with self._condition:
             if self._closed:
                 raise RuntimeError("serial lane factory is closed")
+            if lane._worker_index is None:
+                # Bind on first actual work, not lane creation. This preserves
+                # permanent thread affinity while avoiding creation-order hot
+                # spots across otherwise idle workers.
+                lane._worker_index = min(
+                    range(len(self._threads)),
+                    key=lambda index: (
+                        1 if self._worker_busy[index] else 0,
+                        len(self._ready[index]),
+                        index,
+                    ),
+                )
+            self._ensure_worker_locked(lane._worker_index)
             self._ready[lane._worker_index].append(lane)
-            self._condition.notify_all()
+            self._condition.notify()
 
     def _run(self, worker_index: int) -> None:
         """Run one pinned serial worker until the factory closes.
@@ -408,8 +444,12 @@ class SharedSerialExecutionLaneFactory:
                 if not ready and self._closed:
                     return
                 lane = ready.popleft()
+                self._worker_busy[worker_index] = True
             item = lane._take_owned_item()
             if item is None:
+                with self._condition:
+                    self._worker_busy[worker_index] = False
+                    self._condition.notify_all()
                 continue
             completion_active = item.completion.set_running_or_notify_cancel()
             active = [future for future in item.futures if future.set_running_or_notify_cancel()]
@@ -433,8 +473,12 @@ class SharedSerialExecutionLaneFactory:
                     item.completion.set_result(None)
                     with lane._condition:
                         lane._completed_work_items_total += 1
-            if lane._finish_owned_item():
+            reschedule = lane._finish_owned_item()
+            if reschedule:
                 self._schedule(lane)
+            with self._condition:
+                self._worker_busy[worker_index] = False
+                self._condition.notify_all()
 
     def close(
         self,
@@ -455,6 +499,8 @@ class SharedSerialExecutionLaneFactory:
             self._closed = True
             self._condition.notify_all()
         for thread in self._threads:
+            if thread is None:
+                continue
             thread.join(timeout=effective.remaining_seconds)
             if thread.is_alive():
                 errors.append(TimeoutError(f"serial worker did not terminate before deadline: {thread.name}"))

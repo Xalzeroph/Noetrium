@@ -83,8 +83,7 @@ class ResearchMachineSession:
 
     @property
     def status(self) -> MachineStatus:
-        latest = self.machine.journal.latest(self.machine_id)
-        return MachineStatus.READY if latest is None else latest.accepted_status
+        return self.machine.status
 
     @property
     def snapshot(self) -> MachineSnapshot:
@@ -92,18 +91,14 @@ class ResearchMachineSession:
 
     @property
     def started(self) -> bool:
-        state = thaw_json(self._snapshot.state)
-        return isinstance(state, dict) and "_program" in state
+        return "_program" in self._snapshot.state
 
     @property
     def program_state(self) -> JsonObject | None:
-        state = thaw_json(self._snapshot.state)
-        if not isinstance(state, dict):
-            raise TypeError("machine state must decode to an object")
-        value = state.get("_program")
+        value = self._snapshot.state.get("_program")
         if value is None:
             return None
-        if not isinstance(value, dict):
+        if not isinstance(value, Mapping):
             raise TypeError("research program state must be an object")
         return value
 
@@ -113,7 +108,7 @@ class ResearchMachineSession:
         if state is None:
             return {}
         value = state.get("data", {})
-        if not isinstance(value, dict):
+        if not isinstance(value, Mapping):
             raise TypeError("research program data must be an object")
         return value
 
@@ -121,6 +116,40 @@ class ResearchMachineSession:
     def previous_value(self) -> JsonValue:
         state = self.program_state
         return None if state is None else state.get("previous_value")
+
+    @property
+    def visit_counts(self) -> tuple[tuple[str, int], ...]:
+        state = self.program_state
+        if state is None:
+            return ()
+        value = state.get("visits", {})
+        if not isinstance(value, Mapping):
+            raise TypeError("research program visits must be an object")
+        rows = tuple(
+            sorted((str(key), int(count)) for key, count in value.items())
+        )
+        if any(count < 0 for _key, count in rows):
+            raise ValueError("research program visit counts cannot be negative")
+        return rows
+
+    @property
+    def step_count(self) -> int:
+        return sum(count for _key, count in self.visit_counts)
+
+    @property
+    def semantic_state(self) -> JsonObject:
+        state = self.program_state
+        if state is None:
+            return {}
+        value = state.get("semantic", {})
+        if not isinstance(value, Mapping):
+            raise TypeError("research program semantic state must be an object")
+        return value
+
+    @property
+    def checkpoint_value(self) -> JsonValue:
+        state = self.program_state
+        return None if state is None else state.get("checkpoint_value")
 
     def _command(
         self,
@@ -141,7 +170,7 @@ class ResearchMachineSession:
 
     def _commit(self, command: MachineCommand) -> MachineCommit:
         commit = self.machine.step(command, self.interpreter)
-        self._snapshot = self.machine.open()
+        self._snapshot = self.machine.current_snapshot
         if self._snapshot.revision != commit.revision:
             raise RuntimeError("MachineExecutor snapshot did not advance to committed revision")
         return commit
@@ -197,14 +226,15 @@ class ResearchMachineSession:
         *,
         command_id_prefix: str,
         payload: JsonValue = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
     ) -> ResearchMachineRun:
         if type(command_id_prefix) is not str or not command_id_prefix.strip():
             raise ValueError("command_id_prefix is required")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("max_steps must be positive or None")
         commits: list[MachineCommit] = []
-        for ordinal in range(max_steps):
+        ordinal = 0
+        while max_steps is None or ordinal < max_steps:
             if self.status is not MachineStatus.RUNNABLE:
                 return ResearchMachineRun(tuple(commits), self.status, self.revision)
             commit = self.step(
@@ -214,8 +244,17 @@ class ResearchMachineSession:
             commits.append(commit)
             if commit.accepted_status in _TERMINAL:
                 return ResearchMachineRun(tuple(commits), commit.accepted_status, commit.revision)
-        raise RuntimeError(
-            f"research program exceeded run_until_blocked max_steps={max_steps}"
+            ordinal += 1
+        limit = self._commit(self._command(
+            command_id=f"{command_id_prefix}:limit:{self.revision}",
+            kind="program.limit",
+            payload={"max_steps": max_steps},
+        ))
+        commits.append(limit)
+        return ResearchMachineRun(
+            tuple(commits),
+            limit.accepted_status,
+            limit.revision,
         )
 
     def checkpoint(self) -> MachineSnapshot:

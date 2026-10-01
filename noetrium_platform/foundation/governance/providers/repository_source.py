@@ -21,7 +21,7 @@ from noetrium_platform.foundation.governance.api import (
 
 DEFAULT_EXCLUDED_DIRECTORIES = frozenset({
     ".git", ".venv", "venv", "node_modules", "__pycache__",
-    ".pytest_cache", ".local", ".server-state", "dist", "build",
+    ".pytest_cache", ".local", ".server-state", ".noetrium", "dist", "build",
 })
 DEFAULT_EXCLUDED_ROOT_FILES = frozenset({
     "RELEASE_MANIFEST.json",

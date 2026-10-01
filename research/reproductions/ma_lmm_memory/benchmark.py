@@ -1,7 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import BenchmarkTaskSet
+from research.reproductions._support import canonical_digest
 from research.benchmarks.lvu import (
     LVU_BENCHMARK_ID,
     LVUVideoRecord,
@@ -22,7 +20,7 @@ def build_ma_lmm_lvu_cut(
     records: tuple[LVUVideoRecord, ...],
     *,
     dataset_content_sha256: str,
-) -> BenchmarkTaskSet:
+):
     resolution = bind_lvu_cut(
         records,
         dataset_content_sha256=dataset_content_sha256,

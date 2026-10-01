@@ -19,17 +19,6 @@ class PythonEnvironmentOwnership(StrEnum):
     EXTERNAL = "external"
 
 
-class PythonEnvironmentRetired(RuntimeError):
-    """Terminal environment identity unavailable to mutable desired state."""
-
-    def __init__(self, environment_id: str) -> None:
-        self.environment_id = environment_id
-        super().__init__(
-            "Python environment identity is retired and cannot be reused: "
-            f"{environment_id}"
-        )
-
-
 @dataclass(frozen=True, slots=True)
 class PythonEnvironmentSpec:
     environment_id: str
@@ -125,7 +114,6 @@ __all__ = [
     "ManagedPythonEnvironment",
     "PythonEnvironmentCloneResult",
     "PythonEnvironmentOwnership",
-    "PythonEnvironmentRetired",
     "PythonEnvironmentSpec",
     "PythonEnvironmentState",
 ]

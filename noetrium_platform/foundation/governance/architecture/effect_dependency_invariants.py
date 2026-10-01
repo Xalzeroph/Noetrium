@@ -34,7 +34,7 @@ def audit_effect_dependency_invariants(root: Path) -> list[SourceInvariantViolat
     legacy = journal / "invariants.py"
     if legacy.exists():
         rows.append(violation(root, legacy, "effect_transition_authority", 1, "effect journal reintroduced domain transition invariants; keep them in effect_api.transitions"))
-    for name in ("memory.py", "persistent.py"):
+    for name in ("persistent.py",):
         path = journal / name
         if not path.exists():
             continue

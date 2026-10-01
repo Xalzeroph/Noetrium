@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "os_symphony_acl2026",
-  "package_digest": "c4f592d2ec86972a35970cfdfafa71ecfc4568e75458f3e37a5823adf1c90cd1",
-  "definition_digest": "7fa399213644ed7f7edcf9afcd794b2f1cc649d74c1f376e348d8063473eb2be",
+  "package_digest": "ccc88cc8009b2fda8c75cb06b7b8cd71c52c81d66701bb0839a7b114a725dd0d",
+  "definition_digest": "7f2612a841ac8f656e5cc669080565000903f3f6e3913e0c296f2d987dff2e07",
   "source_registry_digest": "fc096b46d72730d9dfe7cca9c304958c130cbd6207015f6b6fd8d51ca25b7584",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -95,13 +95,13 @@
       "kind": "method_program",
       "path": "research/reproductions/os_symphony_acl2026/program.py",
       "declaration_digest": "8fd38f886379b6b8c6de1780a5107aad3c24e60674bc26815e4a870426ce14cc",
-      "content_sha256": "5408ccd104c24f80f966c0d2eb292c4997360582160a877ab7684e03c38e1699"
+      "content_sha256": "98478c82cf597603a9c6c54855ee6d1e8511ecaebc2c42f5c6a93356352694c4"
     },
     {
       "kind": "study",
       "path": "research/reproductions/os_symphony_acl2026/study.py",
       "declaration_digest": "b9271c869d3aebc4d001d76b7299769ce029e54bb9590d016fbf8aefbd3bdb9a",
-      "content_sha256": "e0aa9cb99d76de5539e9d50148d9128e8f44ad8e3906be60370d1143b3d555a0"
+      "content_sha256": "925611d333a0a5bf35ce2a0c4720d7ae5743773e7155d1bb002b8c76d9b56e82"
     }
   ],
   "primary_executable": "research/reproductions/os_symphony_acl2026/program.py",
@@ -147,17 +147,18 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "os_symphony_acl2026",
-    "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
+    "program_digest": "f7671987e5f2e9f7d31c5489ce90a439944cfe3a1b0655c2f345d1016628277e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'macosarena' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:os_symphony_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

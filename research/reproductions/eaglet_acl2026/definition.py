@@ -33,6 +33,6 @@ REPRODUCTION=ReproductionDefinition(
     ),
     blockers=("Matched execution requires released planner data/configuration, teacher/model revisions and exact benchmark cuts.", "Training-cost claims require complete planner-training compute receipts."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 __all__=["REPRODUCTION"]

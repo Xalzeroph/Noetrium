@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
-  "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
+  "package_digest": "34d9ef7df6d8d03beb936a0f10c45035981e2cd1c167f9f6e4d4cb888588c96d",
+  "definition_digest": "de9091e77f878bb11023f65d3b3233be4e0f236d28010287b21b1236b48aea72",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -78,19 +78,13 @@
       "kind": "method_program",
       "path": "research/reproductions/lats_webshop/program.py",
       "declaration_digest": "7f7cf9987b3fa32dee860d29b42d0701f1a77addba002fed90c9c9a9a7e78fd7",
-      "content_sha256": "910430aa011b87a0d8afc1f2312c1adb3be64375902f88f68202fd0908ce8f57"
+      "content_sha256": "27ecbf1f1d97fa02f6daf36355b8682ac35c5a6db0407b3b9da89f586f24fde9"
     },
     {
       "kind": "study",
       "path": "research/reproductions/lats_webshop/study.py",
       "declaration_digest": "4af48b66163b64c9523672787dc94a839abc3020119df67c93e59877d1c08ec6",
-      "content_sha256": "7a7b8739982c9082c07a8bc6ea93173c734bb4e027fa92f8b4e9738ff593c4e2"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/lats_webshop/branch.py",
-      "declaration_digest": "f15dfa0d7b6d4712d4f1c7c2a5d594dec21d44fb4224fa7e9bd70bd435b18e4e",
-      "content_sha256": "570e71367e437469af8a6ad9ee60ff81e2f9d64584b5ef056aefc42282b1f1e4"
+      "content_sha256": "95d5bfe093fde8ff58826adcf53d5050943990ac5df3d79253233653934e8f2b"
     },
     {
       "kind": "support",
@@ -147,23 +141,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_lats_method_program_v1.py",
-      "content_sha256": "fda65f91329b8ea7e1b0b3f76e90da6864ceaddd97b601d0d59a4a6d27b70857"
-    },
-    {
       "path": "tests/test_scientific_lats_webshop_v1.py",
-      "content_sha256": "1b503f696c3c692981f2c54c59a8b7e03a5774e5ed5d30c50e0cb433476c013a"
-    },
-    {
-      "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
-      "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
+      "content_sha256": "837c3fd80b0224e8d931f74a9481bab2a7c6c13675552a7df1860bac670e587f"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lats_webshop",
-    "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+    "program_digest": "314b8c0b77df377a402a124d36a3301b81263f7c0fbd17d64089033872e5a9a9",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

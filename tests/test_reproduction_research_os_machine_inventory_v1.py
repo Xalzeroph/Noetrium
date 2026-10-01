@@ -32,40 +32,16 @@ def _definitions() -> tuple[ReproductionDefinition, ...]:
     return tuple(rows)
 
 
-def test_every_declared_research_program_asset_resolves_exact_machine_ir() -> None:
+def test_method_aggregate_has_no_legacy_peer_research_program_assets() -> None:
     definitions = _definitions()
-    packages: list[str] = []
-    asset_count = 0
-    program_count = 0
-
-    for definition in definitions:
-        assets = tuple(
-            row
-            for row in definition.assets
-            if row.kind is ReproductionAssetKind.RESEARCH_PROGRAM
-        )
-        if not assets:
-            continue
-        bindings = resolve_research_program_bindings(definition)
-        assert bindings
-        assert {row.asset.path for row in bindings} == {
-            row.path for row in assets
-        }
-        for binding in bindings:
-            module = importlib.import_module(binding.module)
-            program = getattr(module, binding.qualname)
-            assert type(program) is MachineResearchProgram
-            assert program.program_id == binding.program_id
-            assert program.kind.value == binding.machine_kind
-            assert program.program_digest == binding.program_digest
-        packages.append(definition.package)
-        asset_count += len(assets)
-        program_count += len(bindings)
-
-    assert packages
-    assert len(packages) == len(set(packages))
-    assert asset_count >= len(packages)
-    assert program_count >= asset_count
+    legacy_assets = tuple(
+        (definition.package, asset.path)
+        for definition in definitions
+        for asset in definition.assets
+        if asset.kind is ReproductionAssetKind.RESEARCH_PROGRAM
+    )
+    assert legacy_assets == ()
+    assert all(resolve_research_program_bindings(definition) == () for definition in definitions)
 
 
 def test_method_reproductions_bind_all_declared_child_machine_digests() -> None:

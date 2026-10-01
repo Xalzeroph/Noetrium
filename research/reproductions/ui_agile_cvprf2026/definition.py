@@ -19,6 +19,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_04",description="UI-R1-E"),
         ReferenceBaseline(baseline_id="baseline_05",description="Qwen2.5-VL"),
     ),
-    blockers=("Matched reproduction requires the pinned UI-AGILE training code/checkpoints, benchmark cuts and image preprocessing.", "Inference-time grounding claims require full candidate-generation/selection traces and timing receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned UI-AGILE training code/checkpoints, benchmark cuts and image preprocessing.", "Inference-time grounding claims require full candidate-generation/selection traces and timing receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

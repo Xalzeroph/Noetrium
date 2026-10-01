@@ -1,5 +1,15 @@
 from __future__ import annotations
 
+from tests.resource_endpoint_support import TestEndpointAllocator
+
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    LeaseHeartbeatError,
+    LeaseHeartbeatFactory,
+    ResourceLeaseRegistry,
+)
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 from contextlib import closing
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +22,7 @@ import pytest
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
     EndpointAllocationRequest,
+    EndpointAllocationConflict,
     EndpointLeasePolicy,
     EndpointAllocationState,
     EndpointBindingProof,
@@ -24,10 +35,7 @@ from noetrium_platform.foundation.kernel.concurrency.composition import build_co
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
     EndpointAllocationUnavailable,
-    EndpointLeaseHeartbeatError,
-    EndpointLeaseHeartbeatFactory,
     EndpointPhysicalConvergencePending,
-    InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
@@ -36,9 +44,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLease,
     ResourceOwner,
 )
-from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
@@ -64,7 +70,7 @@ def _sqlite_endpoint_store(path, *, clock=None, **kwargs):
 
 
 def _sqlite_resource_leases(path, *, clock=None, **kwargs):
-    return SQLiteResourceLeaseRegistry(
+    return ResourceLeaseRegistry(
         path,
         clock=_clock() if clock is None else clock,
         **kwargs,
@@ -153,8 +159,8 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry(clock=clock)
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry(clock=clock)
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,
@@ -213,8 +219,8 @@ def test_endpoint_recovery_release_ignores_foreign_reoccupation_after_expiry(
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry(clock=clock)
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry(clock=clock)
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,
@@ -257,8 +263,8 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry(clock=clock)
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry(clock=clock)
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,
@@ -297,8 +303,8 @@ def test_unbound_reservation_release_ignores_external_listener(
             lease_ttl_seconds=30.0,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry()
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry()
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,
@@ -329,8 +335,8 @@ def test_expired_unbound_reservation_retires_without_probe_authority(
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry(clock=clock)
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry(clock=clock)
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,
@@ -476,7 +482,7 @@ def test_concurrent_schema_bootstrap_is_idempotent() -> None:
             ).fetchone() == ("4",)
             assert conn.execute(
                 "SELECT value FROM resource_meta WHERE key='schema_version'"
-            ).fetchone() == (str(SQLiteResourceLeaseRegistry.SCHEMA_VERSION),)
+            ).fetchone() == (str(ResourceLeaseRegistry.SCHEMA_VERSION),)
 
 
 def _binding_proof(allocation, *, evidence_ref: str = "runtime-listener-evidence:1") -> EndpointBindingProof:
@@ -588,13 +594,18 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
         timer_name="atomic-heartbeat-failure-timer",
     )
     group = runtime.open_task_group("atomic-heartbeat-failure")
-    guard = EndpointLeaseHeartbeatFactory(
-        allocations=_FailingAllocations(),  # type: ignore[arg-type]
+    policy = EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01)
+    failing = _FailingAllocations()
+    guard = LeaseHeartbeatFactory(
+        renew=lambda rows: failing.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+        row_identity=lambda row: row.allocation_id,
+        heartbeat_namespace="endpoint-lease",
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="atomic-heartbeat-failure-writer",
+        interval_seconds=policy.renewal_interval_seconds,
         lane_capacity=8,
-        policy=EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01),
+        policy=policy,
     ).create((
         EndpointAllocation(
             allocation_id="allocation-a",
@@ -608,7 +619,7 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
     ))
     guard.start()
     assert renewed.wait(timeout=1.0)
-    with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
+    with pytest.raises(LeaseHeartbeatError, match="renew failed"):
         guard.assert_healthy()
     guard.close()
     heartbeat = runtime.topology_snapshot().heartbeats[0]
@@ -627,14 +638,13 @@ import pytest
 
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationRequest,
+    EndpointAllocationConflict,
     EndpointBindingProof,
     EndpointProbeResult,
     NetworkEndpoint,
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
-    EndpointAllocationConflict,
-    InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.providers import SQLiteEndpointAllocationStore
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
@@ -667,8 +677,8 @@ def _rebind_proof(allocation, generation: str, observed: float) -> EndpointBindi
 
 
 def _rebind_in_memory(name: str = "mem"):
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases, leases=leases, probe=_RebindAvailableProbe()
     )
     return allocator, allocator.allocate(_rebind_request(name))

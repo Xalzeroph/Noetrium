@@ -70,10 +70,8 @@ class ChildMachineSupervisorPort(Protocol):
     def list(self, parent_machine_id: str) -> tuple[ChildMachineRecord, ...]: ...
 
 
-class InMemoryChildMachineSupervisor(ChildMachineSupervisorPort):
-    """Strict lifecycle coordinator; it never writes a parent Journal."""
-
-    durability = "process_local"
+class _ChildMachineSupervisorState:
+    """Private lifecycle state transition helper for the durable supervisor."""
 
     def __init__(self) -> None:
         self._records: dict[str, ChildMachineRecord] = {}
@@ -154,5 +152,4 @@ __all__ = [
     "ChildMachineRecord",
     "ChildMachineStatus",
     "ChildMachineSupervisorPort",
-    "InMemoryChildMachineSupervisor",
 ]

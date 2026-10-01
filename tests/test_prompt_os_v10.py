@@ -1,3 +1,4 @@
+from prompt_os_test_support import make_promoted_prompt_registry
 from prompt_os_test_support import make_prompt_registry
 from pathlib import Path
 import json
@@ -9,7 +10,7 @@ import unittest
 
 from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity, canonical_bytes
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
-    CanaryObservation, CanarySuite, DurablePromptRegistry, OutputSchemaSpec, PromptBlock,
+    CanaryObservation, CanarySuite, PromptRegistry, OutputSchemaSpec, PromptBlock,
     PromptBlockKind, PromptCanary, PromptCompiler,
     PromptPublicationError, PromptPromotionEvidence, PromptQualification, PromptRegistry, build_execution_contract, default_block_policies,
     default_output_schemas, default_prompt_specs, evaluate_canaries,
@@ -18,7 +19,7 @@ from noetrium_platform.capabilities.model.request.prompt.runtime import (
 
 class PromptOSV10Tests(unittest.TestCase):
     def _bundle(self, prompt_id="planner.v6"):
-        r=PromptRegistry(); r.publish("g10",default_prompt_specs()); return r.get(prompt_id)
+        r=make_promoted_prompt_registry(generation_id="g10"); return r.get(prompt_id)
 
     def test_durable_publication_rejects_tamper(self):
         with tempfile.TemporaryDirectory() as td:
@@ -33,7 +34,7 @@ class PromptOSV10Tests(unittest.TestCase):
             with self.assertRaises(PromptPublicationError): store.load_active()
 
     def test_execution_contract_binds_dynamic_schema_model_and_generation(self):
-        r=PromptRegistry(); r.publish("g10",default_prompt_specs()); b=r.get("planner.v6"); K=PromptBlockKind
+        r=make_promoted_prompt_registry(generation_id="g10"); b=r.get("planner.v6"); K=PromptBlockKind
         blocks=(PromptBlock(K.TASK,"task","a",1),PromptBlock(K.VERIFIED_STATE,"state","b",2),PromptBlock(K.TOOL_CATALOG,"tools","c",3))
         compiled=PromptCompiler().compile(b,default_block_policies()["planner"],blocks)
         schema=default_output_schemas().require(b.output_schema)

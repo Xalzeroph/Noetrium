@@ -1,6 +1,8 @@
-from research.reproductions.hugginggpt import (
+from research.reproductions.hugginggpt.fidelity import (
     HUGGINGGPT_FIDELITY,
     HuggingGPTStage,
+)
+from research.reproductions.hugginggpt.task_graph import (
     build_hugginggpt_task,
     hugginggpt_ready_task_ids,
     unfold_hugginggpt_generated_arguments,

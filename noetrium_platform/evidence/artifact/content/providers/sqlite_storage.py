@@ -5,9 +5,9 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
 from noetrium_platform.evidence.artifact.content.api import (
@@ -40,11 +40,19 @@ class SQLiteArtifactStorageBindingStore:
         self.timeout_seconds = timeout_seconds
         self._placement_verifier = placement_verifier
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             self._ensure_schema(db)
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
@@ -184,12 +192,23 @@ class SQLiteArtifactStorageBindingStore:
             location=verified.location,
             generation=1,
         )
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,
                 label="artifact storage bind",
             ):
+                # Verification before the transaction proves the requested
+                # placement was valid when observed. Verify again after
+                # acquiring the write transaction so physical bytes cannot
+                # change in the verify->CAS window and leave a durable binding
+                # to content that was never committed as observed.
+                self._verify_placement(
+                    artifact_id=proposed.artifact_id,
+                    content_sha256=proposed.content_sha256,
+                    storage_provider_id=proposed.storage_provider_id,
+                    location=proposed.location,
+                )
                 row = db.execute(
                     f"SELECT {self._select_columns()} "
                     "FROM artifact_storage_bindings WHERE artifact_id=?",
@@ -205,6 +224,11 @@ class SQLiteArtifactStorageBindingStore:
                         "VALUES(?,?,?,?,?,?)",
                         self._encode(proposed),
                     )
+                    # Verify again while the authoritative CAS transaction is
+                    # still open. A physical placement may drift after the
+                    # preflight verify but before the logical binding commits.
+                    # Verification failure must roll back the new generation.
+                    self._verify_binding(proposed)
         return self.resolve(artifact_id)
 
     def _resolve_binding_record(self, artifact_id: str) -> ArtifactStorageBinding:
@@ -254,12 +278,18 @@ class SQLiteArtifactStorageBindingStore:
             storage_provider_id=storage_provider_id,
             location=location,
         )
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,
                 label="artifact storage relocate",
             ):
+                self._verify_placement(
+                    artifact_id=artifact_id,
+                    content_sha256=observed.content_sha256,
+                    storage_provider_id=verified.storage_provider_id,
+                    location=verified.location,
+                )
                 row = db.execute(
                     f"SELECT {self._select_columns()} "
                     "FROM artifact_storage_bindings WHERE artifact_id=?",
@@ -309,6 +339,10 @@ class SQLiteArtifactStorageBindingStore:
                             f"{artifact_id}: storage generation changed "
                             "during relocation"
                         )
+                    # Keep physical verification and logical generation advance
+                    # in one failure domain. Any verify-to-CAS race aborts this
+                    # transaction, preserving the previous binding generation.
+                    self._verify_binding(updated)
         return self.resolve(artifact_id)
 
 

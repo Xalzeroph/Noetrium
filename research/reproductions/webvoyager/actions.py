@@ -1,12 +1,8 @@
 from __future__ import annotations
+from research.reproductions._support import JsonInput
 
 import re
 from dataclasses import dataclass
-
-from noetrium.api import (
-    environment_action_capability_payload,
-)
-from noetrium.api import JsonInput
 
 from .fidelity import WEBVOYAGER_FIDELITY
 
@@ -65,39 +61,17 @@ class WebVoyagerAction:
         if self.terminal:
             raise ValueError("terminal WebVoyager answer is not an environment action")
         if self.kind == "Click":
-            return environment_action_capability_payload(
-                "click",
-                {"element_label": self.target},
-            )
+            return {"action_type": "click", "payload": {"element_label": self.target}}
         if self.kind == "Type":
-            return environment_action_capability_payload(
-                "type",
-                {
-                    "element_label": self.target,
-                    "text": self.content,
-                    "submit": WEBVOYAGER_FIDELITY.type_action_auto_enter,
-                },
-            )
+            return {"action_type": "type", "payload": {"element_label": self.target, "text": self.content, "submit": WEBVOYAGER_FIDELITY.type_action_auto_enter}}
         if self.kind == "Scroll":
-            return environment_action_capability_payload(
-                "scroll",
-                {
-                    "target": self.target,
-                    "direction": self.content,
-                },
-            )
+            return {"action_type": "scroll", "payload": {"target": self.target, "direction": self.content}}
         if self.kind == "Wait":
-            return environment_action_capability_payload(
-                "wait",
-                {"seconds": WEBVOYAGER_FIDELITY.wait_seconds},
-            )
+            return {"action_type": "wait", "payload": {"seconds": WEBVOYAGER_FIDELITY.wait_seconds}}
         if self.kind == "GoBack":
-            return environment_action_capability_payload("back", {})
+            return {"action_type": "back", "payload": {}}
         if self.kind == "Google":
-            return environment_action_capability_payload(
-                "navigate",
-                {"url": "https://www.google.com/"},
-            )
+            return {"action_type": "navigate", "payload": {"url": "https://www.google.com/"}}
         raise ValueError(f"WebVoyager action has no environment mapping: {self.kind}")
 
 

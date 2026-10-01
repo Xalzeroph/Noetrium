@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from noetrium_platform.capabilities.model.serving.api.admission import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
-    OperationalModelEndpointReplicaSet,
-    QualifiedModelEndpointReplicaSet,
+    AsyncJsonHttpTransportPort,
+    AsyncTextHttpTransportPort,
+    ModelEndpointReplicaSet,
     ModelEndpointPort,
     ModelEndpointRoute,
     QualifiedModelEndpointBinding,
@@ -11,16 +12,16 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
-    AdaptiveOperationalModelEndpointPool,
-    AdaptiveQualifiedModelEndpointPool,
+    AdaptiveModelEndpointPool,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
-    OpenAICompatibleModelEndpoint,
-    AsyncioJsonTransport,
+    NativeModelProviderEndpoint,
+    PooledModelHttpTransport,
+    VllmRuntimePressureObserver,
 )
 
 
-def build_openai_compatible_qualified_endpoint(
+def build_qualified_model_endpoint(
     binding: QualifiedModelEndpointBinding,
     *,
     api_key: str = "",
@@ -28,18 +29,25 @@ def build_openai_compatible_qualified_endpoint(
     task_group: TaskGroupPort,
     admission_registry: ModelAdmissionRegistryPort,
     observers: tuple[object, ...] = (),
+    transport: AsyncJsonHttpTransportPort | None = None,
 ) -> ModelEndpointPort:
     """Materialize one endpoint from a platform-qualified binding."""
 
-    headers: tuple[tuple[str, str], ...] = ()
-    if api_key:
-        headers = (("Authorization", f"Bearer {api_key}"),)
     admission = admission_registry.controller_for(
         deployment_id=binding.deployment_id,
         deployment_generation=binding.deployment_generation,
         qualified_capacity=binding.max_admitted_concurrency,
     )
-    return OpenAICompatibleModelEndpoint(
+    owned_transport = transport is None
+    resolved_transport = (
+        PooledModelHttpTransport(
+            max_connections=binding.max_admitted_concurrency,
+            max_keepalive_connections=binding.max_admitted_concurrency,
+        )
+        if transport is None
+        else transport
+    )
+    return NativeModelProviderEndpoint(
         route=ModelEndpointRoute(
             deployment_id=binding.deployment_id,
             deployment_generation=binding.deployment_generation,
@@ -47,57 +55,22 @@ def build_openai_compatible_qualified_endpoint(
             completion_path=binding.completion_path,
             timeout_s=binding.timeout_s if timeout_s is None else timeout_s,
         ),
-        transport=AsyncioJsonTransport(headers=headers),
+        transport=resolved_transport,
+        api_key=api_key,
         task_group=task_group,
         admission=admission,
         observers=observers,
+        owns_transport=owned_transport,
     )
 
 
 __all__ = [
-    "build_adaptive_operational_endpoint_pool",
-    "build_adaptive_qualified_endpoint_pool",
-    "build_openai_compatible_qualified_endpoint",
+    "build_qualified_model_endpoint",
 ]
 
 
-def build_adaptive_operational_endpoint_pool(
-    replica_set: OperationalModelEndpointReplicaSet,
-    *,
-    api_key: str = "",
-    task_group: TaskGroupPort,
-    admission_registry: ModelAdmissionRegistryPort,
-    observers: tuple[object, ...] = (),
-    selection_policy: ModelEndpointReplicaSelectionPolicyPort | None = None,
-) -> AdaptiveOperationalModelEndpointPool:
-    """Bind exact live routes without asserting qualification equivalence."""
-
-    headers: tuple[tuple[str, str], ...] = ()
-    if api_key:
-        headers = (("Authorization", f"Bearer {api_key}"),)
-
-    def factory(replica) -> ModelEndpointPort:
-        admission = admission_registry.controller_for(
-            deployment_id=replica.deployment_id,
-            deployment_generation=replica.deployment_generation,
-            qualified_capacity=replica.capacity,
-        )
-        return OpenAICompatibleModelEndpoint(
-            route=replica.route,
-            transport=AsyncioJsonTransport(headers=headers),
-            task_group=task_group,
-            admission=admission,
-            observers=observers,
-        )
-
-    return AdaptiveOperationalModelEndpointPool(
-        replica_set, factory, selection_policy=selection_policy
-    )
-
-
-
-def build_adaptive_qualified_endpoint_pool(
-    replica_set: QualifiedModelEndpointReplicaSet,
+def build_adaptive_model_endpoint_pool(
+    replica_set: ModelEndpointReplicaSet,
     *,
     api_key: str = "",
     timeout_s: float | None = None,
@@ -105,19 +78,70 @@ def build_adaptive_qualified_endpoint_pool(
     admission_registry: ModelAdmissionRegistryPort,
     observers: tuple[object, ...] = (),
     selection_policy: ModelEndpointReplicaSelectionPolicyPort | None = None,
-) -> AdaptiveQualifiedModelEndpointPool:
-    """Bind all qualified replicas to one adaptive operational dispatcher."""
+    transport: AsyncJsonHttpTransportPort | None = None,
+) -> AdaptiveModelEndpointPool:
+    """Bind one frozen endpoint replica set to the single adaptive dispatch machine."""
 
-    def factory(binding: QualifiedModelEndpointBinding) -> ModelEndpointPort:
-        return build_openai_compatible_qualified_endpoint(
-            binding,
-            api_key=api_key,
-            timeout_s=timeout_s,
-            task_group=task_group,
-            admission_registry=admission_registry,
-            observers=observers,
+    if not isinstance(replica_set, ModelEndpointReplicaSet):
+        raise TypeError("adaptive endpoint pool requires ModelEndpointReplicaSet")
+    if replica_set.qualified:
+        def factory(binding):
+            return build_qualified_model_endpoint(
+                binding, api_key=api_key, timeout_s=timeout_s,
+                task_group=task_group, admission_registry=admission_registry,
+                observers=observers,
+                transport=transport,
+            )
+    else:
+        def factory(replica):
+            admission = admission_registry.controller_for(
+                deployment_id=replica.deployment_id,
+                deployment_generation=replica.deployment_generation,
+                qualified_capacity=replica.capacity,
+            )
+            owned_transport = transport is None
+            resolved_transport = (
+                PooledModelHttpTransport(
+                    max_connections=replica.capacity,
+                    max_keepalive_connections=replica.capacity,
+                )
+                if transport is None
+                else transport
+            )
+            return NativeModelProviderEndpoint(
+                route=replica.route,
+                transport=resolved_transport,
+                task_group=task_group,
+                admission=admission,
+                api_key=api_key,
+                observers=observers,
+                owns_transport=owned_transport,
+            )
+
+    pressure_observer = None
+    if (
+        replica_set.qualified
+        and transport is not None
+        and isinstance(transport, AsyncTextHttpTransportPort)
+        and all(
+            binding.model.engine.strip().lower() == "vllm"
+            for binding in replica_set.members
         )
+    ):
+        pressure_observer = VllmRuntimePressureObserver(transport)
 
-    return AdaptiveQualifiedModelEndpointPool(
-        replica_set, factory, selection_policy=selection_policy
+    return AdaptiveModelEndpointPool(
+        replica_set,
+        factory,
+        selection_policy=selection_policy,
+        pressure_observer=pressure_observer,
+        pressure_task_group=(
+            task_group if pressure_observer is not None else None
+        ),
     )
+
+
+__all__ = [
+    "build_adaptive_model_endpoint_pool",
+    "build_qualified_model_endpoint",
+]

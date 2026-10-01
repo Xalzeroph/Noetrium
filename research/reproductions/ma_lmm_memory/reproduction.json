@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
-  "package_digest": "7f09608eef3c40ec3b266f64dcbf43b493a2e3823e814b04926eb8d02d857453",
-  "definition_digest": "f7fccd8528c77d41c4a07f5983a6d27a26aefc2026bad491a6c468cc824c9b3e",
+  "package_digest": "6712476372dbb74991fa358502320e08c7d4af3e6580e3ff5293b622676ee40d",
+  "definition_digest": "29369b9a64966b03813447bd3acde26146de18dae4b050feab20d2ae17ef1f53",
   "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -44,7 +44,7 @@
       "query-memory attention history semantics"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "artifact/evidence lineage",
       "model execution",
       "multimodal content identity and transport",
@@ -56,7 +56,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html"
     ],
-    "catalog_digest": "94486e8655aad2f867608bbcbe390c2bfc26ade5618cb6ae90803d35da6e3373"
+    "catalog_digest": "abc5c3a60619312b5d6f05ad7e160b25dbc40388f91c49b410889c3547792d58"
   },
   "source_lanes": [
     {
@@ -101,7 +101,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/ma_lmm_memory/benchmark.py",
       "declaration_digest": "c6c600a3b29a2fe50943a0b86eafb5eb016b1dfcfe687d67ade111f1e345aa10",
-      "content_sha256": "470f38ff9ec9e071d598aaa50b9ee563a66a521734f8a1fc951efa29584376ba"
+      "content_sha256": "13ab0933eb76097a19441503c9049d346a9148cb5e0e1d46696556e1f2bba719"
     },
     {
       "kind": "fidelity",
@@ -110,16 +110,16 @@
       "content_sha256": "e085034880f901dd47a03c4f546bd46d32c774ade0f8c4f5b066dda584ff0d29"
     },
     {
-      "kind": "research_program",
-      "path": "research/reproductions/ma_lmm_memory/memory.py",
-      "declaration_digest": "6e7103bc1fb6d71bd11e3ce80e879b283ad31d29ffdb68337207032bf2610310",
-      "content_sha256": "3d5e07fcc796d82ad85cce93c2a31aea6b9544013e9e74aaec6e578faf648606"
+      "kind": "method_program",
+      "path": "research/reproductions/ma_lmm_memory/program.py",
+      "declaration_digest": "e45ba36c9c2949be514240f8394d4f5e2c25a190abd4e7132c582d2116e506d7",
+      "content_sha256": "9af7f05706dcd193813b3922c02d0c690ea1d558cc128deb9de29f8364ea457e"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ma_lmm_memory/study.py",
       "declaration_digest": "94b64a35a1bd6c11b7e87572bfefd55c6c232774e6c11d8c5f85bd061db9c7b9",
-      "content_sha256": "cd7922e0288f8afae029eb2228a575d713bbd03dc465dbdca4f5230ba68c6b42"
+      "content_sha256": "e55a6ac112f19844ca8b6903f525103d4c2e1a397c19c8c16fc790354eb25f2e"
     },
     {
       "kind": "support",
@@ -128,7 +128,7 @@
       "content_sha256": "40a2a485606819772fb7888ea12d0d1a598d34df60d8fc12843f831ea9723e0d"
     }
   ],
-  "primary_executable": "research/reproductions/ma_lmm_memory/memory.py",
+  "primary_executable": "research/reproductions/ma_lmm_memory/program.py",
   "reported_results": [
     {
       "claim_id": "ma_lmm_lvu_average_top1",
@@ -194,15 +194,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_ma_lmm_memory_v1.py",
-      "content_sha256": "909083f97394d2aab8297a8ed41504d4d3dd54ffdf0300fb9c8af7cc3f1a904f"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ma_lmm_memory",
-    "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+    "program_digest": "7764c51f84278714afbedf3c6fe7801311775bdbf55a1aca7b5e072f7586ad95",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

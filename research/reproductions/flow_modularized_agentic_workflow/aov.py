@@ -1,9 +1,8 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, freeze_json, thaw_json
 
 from collections.abc import Mapping, Sequence
 import math
-
-from noetrium.api import JsonObject, JsonValue, freeze_json, thaw_json
 
 _FLOW_STATUSES = {"pending", "in_progress", "completed", "failed"}
 

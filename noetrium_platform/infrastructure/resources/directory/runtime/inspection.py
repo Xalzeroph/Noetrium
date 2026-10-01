@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import os
+import shutil
 
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryContentStats,
@@ -20,41 +21,20 @@ class LocalDirectoryInspector:
         self._directories = directories
 
     @staticmethod
-    def _capacity(
-        path: Path,
-    ) -> tuple[int, int, int, int | None, int | None]:
-        """Read byte and inode capacity from one filesystem snapshot.
-
-        One statvfs read avoids temporal skew between byte and inode headroom
-        and avoids performing the same filesystem syscall twice. f_bavail and
-        f_favail deliberately expose capacity available to the current user
-        rather than privileged filesystem reserves.
-        """
-
-        stat = os.statvfs(path)
-        fragment_size = int(stat.f_frsize)
-        if fragment_size <= 0:
-            fragment_size = int(stat.f_bsize)
-        total = max(0, int(stat.f_blocks) * fragment_size)
-        used = max(
-            0,
-            (int(stat.f_blocks) - int(stat.f_bfree)) * fragment_size,
-        )
-        free = max(0, int(stat.f_bavail) * fragment_size)
-        total_inodes = int(stat.f_files)
-        if total_inodes <= 0:
-            return total, used, free, None, None
-        return (
-            total,
-            used,
-            free,
-            total_inodes,
-            max(0, int(stat.f_favail)),
-        )
+    def _inode_capacity(path: Path) -> tuple[int | None, int | None]:
+        try:
+            stat = os.statvfs(path)
+        except OSError:
+            return None, None
+        total = int(stat.f_files)
+        if total <= 0:
+            return None, None
+        return total, max(0, int(stat.f_favail))
 
     def usage(self, kind: ManagedDirectoryKind) -> DirectoryUsage:
         path = self._directories.root(kind)
-        total, used, free, total_inodes, free_inodes = self._capacity(path)
+        total, used, free = shutil.disk_usage(path)
+        total_inodes, free_inodes = self._inode_capacity(path)
         return DirectoryUsage(
             path,
             total,
@@ -66,7 +46,8 @@ class LocalDirectoryInspector:
 
     def overview(self, kind: ManagedDirectoryKind) -> DirectoryOverview:
         path = self._directories.root(kind)
-        total, used, free, total_inodes, free_inodes = self._capacity(path)
+        total, used, free = shutil.disk_usage(path)
+        total_inodes, free_inodes = self._inode_capacity(path)
         return DirectoryOverview(
             path,
             sum(1 for _ in path.iterdir()),

@@ -172,7 +172,7 @@ class FakeRuntime:
         self.start_calls += 1
         self.live = True
         self.process = ServiceProcessIdentity(
-            1233 + self.start_calls,
+            1234 + self.start_calls,
             f"start:{self.start_calls}",
         )
         return ServiceStartOutcome(
@@ -202,7 +202,8 @@ class FakeFactory:
         self.environments = []
         self.log_root = log_root or Path("/tmp")
 
-    def open(self, contract, *, environment, readiness_url):
+    def open(self, spec, contract, *, environment, readiness_url):
+        del spec, readiness_url
         self.contracts.append(contract)
         self.environments.append(environment)
         return self.runtime
@@ -221,9 +222,9 @@ def build_models(directories, environments, factory, *, source_backends=(), gpu_
     deployment_registry = ModelDeploymentRegistry(directories.layout)
     applied_store = AppliedModelDeploymentStore(directories.layout)
     storage = LocalModelAssetStorage(directories.layout)
-    catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
+    catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
     assets = ModelAssetManager(asset_registry, DeploymentModelAssetReferences(catalog), storage, source_backends)
-    materializer = ModelLaunchMaterializer(assets, environments.lifecycle)
+    materializer = ModelLaunchMaterializer(assets)
     runtime = ModelDeploymentRuntime(applied_store, catalog, materializer, factory)
     fleet = ModelFleetRuntime(
         catalog,
@@ -376,10 +377,10 @@ class ManagementTests(unittest.TestCase):
                 service_id="model:example-deployment",
                 model_id="example-model",
                 engine="custom",
-                executable="{python}",
-                argv=("{python}", "-m", "server", "--model", "{model_path}"),
+                container_digest="d" * 64,
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server", "--model", "{model_path}"),
                 cwd=root,
-                python_environment_id="serve",
                 gpu_devices=("0", "1"),
             )
             models.deployment_catalog.put_deployment(spec)
@@ -392,9 +393,34 @@ class ManagementTests(unittest.TestCase):
             started = models.deployment_runtime.start(models.deployment_runtime.generation("example-deployment"))
             self.assertEqual(started.runtime_state, ModelRuntimeState.RUNNING)
             self.assertEqual(models.deployment_catalog.deployment("example-deployment").desired_state, ModelDesiredState.RUNNING)
-            self.assertIn(("CUDA_VISIBLE_DEVICES", "0,1"), factory.environments[-1])
             self.assertIn(str(model_dir), factory.contracts[-1].argv)
-            self.assertEqual(models.deployment_runtime.status("example-deployment").pid, 1234)
+            self.assertEqual(models.deployment_runtime.status("example-deployment").pid, 1235)
+            applied_identity = models.deployment_runtime.applied_identity(
+                "example-deployment"
+            )
+            self.assertEqual(applied_identity.pid, 1235)
+            self.assertEqual(applied_identity.process_start_marker, "start:1")
+            self.assertEqual(
+                applied_identity.service_contract_digest,
+                factory.contracts[-1].digest(),
+            )
+            from noetrium_platform.capabilities.model.serving.runtime.process_identity import (
+                ProcessIdentity,
+            )
+            self.assertEqual(
+                applied_identity.argv_digest,
+                ProcessIdentity.from_argv(
+                    started.pid,
+                    "start:1",
+                    factory.contracts[-1].argv,
+                ).argv_digest,
+            )
+            self.assertEqual(
+                applied_identity.applied_runtime_digest,
+                models.deployment_runtime.generation(
+                    "example-deployment"
+                ).applied_runtime_digest,
+            )
             stopped = models.deployment_runtime.stop(models.deployment_runtime.generation("example-deployment"))
             self.assertEqual(stopped.runtime_state, ModelRuntimeState.STOPPED)
 
@@ -415,10 +441,10 @@ class ManagementTests(unittest.TestCase):
                 service_id="model:example-deployment",
                 model_id="example-model",
                 engine="custom",
-                executable="{python}",
-                argv=("{python}", "-m", "server", "--port", "8000"),
+                container_digest="d" * 64,
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server", "--port", "8000"),
                 cwd=root,
-                python_environment_id="serve",
             )
             models.deployment_catalog.put_deployment(base)
             models.deployment_runtime.start(models.deployment_runtime.generation("example-deployment"))
@@ -428,10 +454,10 @@ class ManagementTests(unittest.TestCase):
                 service_id="model:example-deployment",
                 model_id="example-model",
                 engine="custom",
-                executable="{python}",
-                argv=("{python}", "-m", "server", "--port", "9000"),
+                container_digest="d" * 64,
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server", "--port", "9000"),
                 cwd=root,
-                python_environment_id="serve",
                 desired_state=ModelDesiredState.RUNNING,
             )
             models.deployment_catalog.put_deployment(updated)
@@ -453,18 +479,19 @@ class ManagementTests(unittest.TestCase):
             models.assets.register_model("m", PLATFORM_SCOPE, old_model)
             models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                 deployment_id="d", service_id="model:d", model_id="m", engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}", argv=("{python}", "-m", "server", "{model_path}"), cwd=root,
-                python_environment_id="serve",
+                executable="/usr/bin/python3", argv=("/usr/bin/python3", "-m", "server", "{model_path}"), cwd=root,
             ))
             models.deployment_runtime.start(models.deployment_runtime.generation("d"))
             applied_contract = factory.contracts[-1]
             models.assets.register_model("m", PLATFORM_SCOPE, new_model)
-            self.assertEqual(models.deployment_runtime.status("d").runtime_state, ModelRuntimeState.UPDATE_PENDING)
+            initial_pending = models.deployment_runtime.status("d")
+            self.assertEqual(initial_pending.runtime_state, ModelRuntimeState.UPDATE_PENDING)
             environments.lifecycle.remove("serve")
             pending = models.deployment_runtime.status("d")
             self.assertEqual(pending.runtime_state, ModelRuntimeState.UPDATE_PENDING)
-            self.assertTrue(pending.detail.startswith("desired-resource-missing:"))
+            self.assertEqual(pending.detail, initial_pending.detail)
             models.deployment_runtime.stop(models.deployment_runtime.generation("d"))
             self.assertEqual(factory.contracts[-1].digest(), applied_contract.digest())
 
@@ -510,9 +537,10 @@ class ManagementTests(unittest.TestCase):
             for name in ("a", "b"):
                 models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                     deployment_id=name, service_id=f"model:{name}", model_id="m", engine="custom",
+                    container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                    executable="{python}", argv=("{python}", "-m", "server"), cwd=root,
-                    python_environment_id="serve", gpu_devices=("0",), desired_state=ModelDesiredState.RUNNING,
+                    executable="/usr/bin/python3", argv=("/usr/bin/python3", "-m", "server"), cwd=root,
+                    gpu_devices=("0",), desired_state=ModelDesiredState.RUNNING,
                 ))
             conflicts = models.resources.gpu_conflicts()
             self.assertEqual(conflicts[0].gpu_device, "0")
@@ -542,13 +570,15 @@ class ManagementTests(unittest.TestCase):
             log_root = root / "captured"; log_root.mkdir()
             (log_root / "stdout.log").write_text("hello\nworld\n", encoding="utf-8")
             (log_root / "stderr.log").write_text("warning\n", encoding="utf-8")
-            gpu = GpuRuntimeSnapshot(True, processes=(GpuProcessStatus(1234, "GPU-1", 2048, "python"),))
+            gpu = GpuRuntimeSnapshot(True, processes=(GpuProcessStatus(1235, "GPU-1", 2048, "python"),))
             models = build_models(directories, environments, FakeFactory(log_root), gpu_observer=FakeGpuObserver(gpu))
             models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
             models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                 deployment_id="d", service_id="model:d", model_id="m", engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}", argv=("{python}", "-m", "server"), cwd=root, python_environment_id="serve",
+                executable="/usr/bin/python3", argv=("/usr/bin/python3", "-m", "server"), cwd=root,
+                gpu_devices=("GPU-1",),
             ))
             models.deployment_runtime.start(models.deployment_runtime.generation("d"))
             tail = models.deployment_logs.tail_logs("d", stream="stdout", max_bytes=6)
@@ -569,10 +599,10 @@ class ManagementTests(unittest.TestCase):
                 def run(self, argv, **kwargs):
                     seen["argv"] = tuple(argv)
                     seen["env"] = kwargs.get("environment")
-                    destination = Path(argv[argv.index("--local-dir") + 1])
+                    destination = root / "hf-cache-result"
                     destination.mkdir(parents=True)
                     (destination / "config.json").write_text("{}", encoding="utf-8")
-                    return LocalCommandResult(tuple(argv), 0, "", "")
+                    return LocalCommandResult(tuple(argv), 0, str(destination) + "\n", "")
 
             source = HuggingFaceCliModelSource(
                 storage,
@@ -584,15 +614,11 @@ class ManagementTests(unittest.TestCase):
             deployment_registry = ModelDeploymentRegistry(directories.layout)
             applied_store = AppliedModelDeploymentStore(directories.layout)
             factory = FakeFactory()
-            catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
+            catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
             assets = ModelAssetManager(asset_registry, DeploymentModelAssetReferences(catalog), storage, (source,))
-            materializer = ModelLaunchMaterializer(assets, environments.lifecycle)
+            materializer = ModelLaunchMaterializer(assets)
             runtime = ModelDeploymentRuntime(applied_store, catalog, materializer, factory)
-            fleet = ModelFleetRuntime(
-                catalog,
-                runtime,
-                DurableModelAutoRecoveryAuthority(directories.layout),
-            )
+            fleet = ModelFleetRuntime(catalog, runtime, DurableModelAutoRecoveryAuthority(directories.layout))
             logs = ModelDeploymentLogReader(applied_store, catalog, materializer, factory)
             resources = ModelResourceView(assets, catalog, fleet, FakeGpuObserver())
             controller = ModelDesiredStateController(
@@ -641,7 +667,7 @@ class ManagementTests(unittest.TestCase):
         self.assertEqual(snapshot.devices[0].memory_free_mb, 80896)
         self.assertEqual(snapshot.processes[0].pid, 123)
 
-    def test_fleet_reconcile_isolates_missing_desired_resources(self):
+    def test_fleet_reconcile_is_isolated_from_python_environment_churn(self):
         with TemporaryDirectory() as td:
             root = Path(td)
             directories = build_local_directory_authorities(layout(root))
@@ -654,14 +680,14 @@ class ManagementTests(unittest.TestCase):
             for deployment_id, env_id in (("good", "good"), ("bad", "gone")):
                 models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                     deployment_id=deployment_id, service_id=f"model:{deployment_id}", model_id="m", engine="custom",
+                    container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                    executable="{python}", argv=("{python}", "-m", "server"), cwd=root, python_environment_id=env_id,
-                    desired_state=ModelDesiredState.RUNNING,
+                    executable="/usr/bin/python3", argv=("/usr/bin/python3", "-m", "server"), cwd=root,                     desired_state=ModelDesiredState.RUNNING,
                 ))
             environments.lifecycle.remove("gone")
             states = {value.deployment_id: value.runtime_state for value in models.fleet.reconcile()}
             self.assertEqual(states["good"], ModelRuntimeState.RUNNING)
-            self.assertEqual(states["bad"], ModelRuntimeState.MISSING)
+            self.assertEqual(states["bad"], ModelRuntimeState.RUNNING)
 
     def test_optional_engine_templates_do_not_constrain_generic_launch_contract(self):
         root = Path("/srv/research")
@@ -669,35 +695,41 @@ class ManagementTests(unittest.TestCase):
             deployment_id="sg",
             scope=PLATFORM_SCOPE,
             model_id="m",
-            python_environment_id="e",
+            container_digest="d" * 64,
             cwd=root,
             port=30001,
             tensor_parallel=4,
         )
+        with self.assertRaisesRegex(
+            ValueError,
+            "platform-owned: --gpu-memory-utilization",
+        ):
+            vllm_deployment(
+                deployment_id="vl-invalid-memory",
+                scope=PLATFORM_SCOPE,
+                model_id="m",
+                container_digest="d" * 64,
+                cwd=root,
+                port=8001,
+                tensor_parallel=4,
+                gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
+                extra_args=("--gpu-memory-utilization", "0.97"),
+            )
         v = vllm_deployment(
             deployment_id="vl",
             scope=PLATFORM_SCOPE,
             model_id="m",
-            python_environment_id="e",
+            container_digest="d" * 64,
             cwd=root,
             port=8001,
             tensor_parallel=4,
             gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
-            extra_args=(
-                "--gpu-memory-utilization",
-                "0.97",
-                "--max-num-seqs",
-                "64",
-            ),
+            extra_args=("--max-num-seqs", "64"),
         )
         self.assertEqual(s.engine, "sglang")
         self.assertEqual(v.engine, "vllm")
         self.assertIn("--tp-size", s.argv)
         self.assertIn("--tensor-parallel-size", v.argv)
-        self.assertEqual(
-            v.argv[v.argv.index("--gpu-memory-utilization") + 1],
-            "0.97",
-        )
         self.assertEqual(v.argv[v.argv.index("--max-num-seqs") + 1], "64")
         self.assertEqual(
             v.gpu_devices,
@@ -708,7 +740,7 @@ class ManagementTests(unittest.TestCase):
             deployment_id="vl-dp",
             scope=PLATFORM_SCOPE,
             model_id="m",
-            python_environment_id="e",
+            container_digest="d" * 64,
             cwd=root,
             port=8002,
             tensor_parallel=2,
@@ -729,7 +761,7 @@ class ManagementTests(unittest.TestCase):
                 deployment_id="vl-escape",
                 scope=PLATFORM_SCOPE,
                 model_id="m",
-                python_environment_id="e",
+                container_digest="d" * 64,
                 cwd=root,
                 port=8003,
                 tensor_parallel=1,
@@ -759,16 +791,15 @@ class ManagementTests(unittest.TestCase):
             models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
             models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                 deployment_id="d", service_id="model:d", model_id="m", engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}", argv=("{python}", "-V"), cwd=root,
-                python_environment_id="env-a", desired_state=ModelDesiredState.RUNNING,
+                executable="/usr/bin/python3", argv=("/usr/bin/python3", "-V"), cwd=root,
+                desired_state=ModelDesiredState.RUNNING,
             ))
             candidates = models.resources.gpu_candidates(count=2, min_free_memory_mb=60000, max_utilization_percent=50)
             self.assertEqual(tuple(device.index for device in candidates), ("1", "0"))
             updated = models.deployment_catalog.set_gpu_devices("d", ("1", "0", "1"))
             self.assertEqual(updated.gpu_devices, ("1", "0"))
-            updated = models.deployment_catalog.set_python_environment("d", "env-b")
-            self.assertEqual(updated.python_environment_id, "env-b")
             self.assertFalse(factory.runtime.live)
 
 
@@ -780,7 +811,7 @@ class ManagementTests(unittest.TestCase):
             environments = build_environments(directories)
             asset_registry = ModelAssetRegistry(directories.layout)
             deployment_registry = ModelDeploymentRegistry(directories.layout)
-            catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
+            catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
             assets = ModelAssetManager(asset_registry, DeploymentModelAssetReferences(catalog), storage, ())
             source = root / "weights"; source.mkdir(); (source / "model.safetensors").write_bytes(b"weights")
             asset = assets.register_model("fast", PLATFORM_SCOPE, source, mode="copy", storage_pool="nvme")
@@ -817,8 +848,9 @@ class ManagementTests(unittest.TestCase):
                     deployment_id=deployment_id, service_id=f"model:{deployment_id}",
                 scope=PLATFORM_SCOPE,
                     model_id="a" if deployment_id == "chat-a" else "b", engine="custom",
-                    executable="{python}", argv=("{python}", "-V"), cwd=root,
-                    python_environment_id=env_id, tags=tags,
+                    container_digest="d" * 64,
+                    executable="/usr/bin/python3", argv=("/usr/bin/python3", "-V"), cwd=root,
+                    tags=tags,
                 ))
             selected = models.deployment_catalog.select(ModelDeploymentSelector(tags=("online",)))
             self.assertEqual(tuple(value.deployment_id for value in selected), ("chat-a",))
@@ -847,9 +879,9 @@ class ManagementTests(unittest.TestCase):
             models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
             models.deployment_catalog.put_deployment(ModelDeploymentSpec(
                 deployment_id="d", service_id="model:d", model_id="m", engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}", argv=("{python}", "-V"), cwd=root,
-                python_environment_id="serve",
+                executable="/usr/bin/python3", argv=("/usr/bin/python3", "-V"), cwd=root,
                 desired_state=ModelDesiredState.RUNNING,
             ))
             state = models.controller.run(interval_seconds=0.01, stop=Stop(), max_cycles=2)
@@ -947,11 +979,11 @@ def test_model_runtime_shutdown_preserves_desired_state_for_restart() -> None:
                 service_id="model:d",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server"),
                 cwd=root,
-                python_environment_id="serve",
             )
         )
 
@@ -994,11 +1026,11 @@ def test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_un
             service_id="model:d",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server", "--port", "8000"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server", "--port", "8000"),
             cwd=root,
-            python_environment_id="serve",
         )
         models.deployment_catalog.put_deployment(original)
         models.deployment_runtime.start(models.deployment_runtime.generation("d"))
@@ -1011,11 +1043,11 @@ def test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_un
                 service_id="model:d",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server", "--port", "9000"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server", "--port", "9000"),
                 cwd=root,
-                python_environment_id="serve",
                 desired_state=ModelDesiredState.RUNNING,
             )
         )
@@ -1055,11 +1087,11 @@ def test_model_remove_and_restart_require_physical_stop_convergence() -> None:
                 service_id="model:d",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server"),
                 cwd=root,
-                python_environment_id="serve",
             )
         )
         models.deployment_runtime.start(models.deployment_runtime.generation("d"))
@@ -1110,11 +1142,11 @@ def test_stale_model_generation_cannot_stop_or_remove_replacement_process() -> N
             service_id="model:d",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server", "--port", "8000"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server", "--port", "8000"),
             cwd=root,
-            python_environment_id="serve",
         )
         models.deployment_catalog.put_deployment(base)
         models.deployment_runtime.start(
@@ -1127,11 +1159,11 @@ def test_stale_model_generation_cannot_stop_or_remove_replacement_process() -> N
             service_id="model:d",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server", "--port", "9000"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server", "--port", "9000"),
             cwd=root,
-            python_environment_id="serve",
             desired_state=ModelDesiredState.RUNNING,
         )
         models.deployment_catalog.put_deployment(replacement)
@@ -1169,11 +1201,11 @@ def test_model_remove_retries_after_physical_stop_without_retargeting_generation
             service_id="model:remove-retry",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
             cwd=root,
-            python_environment_id="serve",
         )
         models.deployment_catalog.put_deployment(spec)
         models.deployment_runtime.start(
@@ -1207,6 +1239,63 @@ def test_model_remove_retries_after_physical_stop_without_retargeting_generation
             models.deployment_catalog.put_deployment(spec)
 
 
+def test_model_start_converges_live_cleared_process_tombstone_before_restart() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-cleared-live-restart"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        spec = ModelDeploymentSpec(
+            deployment_id="cleared-live-restart",
+            service_id="model:cleared-live-restart",
+            model_id="m",
+            engine="custom",
+            container_digest="d" * 64,
+            scope=PLATFORM_SCOPE,
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
+            cwd=root,
+            desired_state=ModelDesiredState.RUNNING,
+        )
+        models.deployment_catalog.put_deployment(spec)
+        first = models.deployment_runtime.start(
+            models.deployment_runtime.generation(spec.deployment_id)
+        )
+        first_process = factory.runtime.process
+        assert first_process is not None
+        store = models.deployment_runtime._applied_store
+        applied = store.read(spec.deployment_id)
+        assert applied is not None
+
+        store.clear(
+            spec.deployment_id,
+            expected_runtime_digest=applied.runtime_digest,
+        )
+        assert store.read(spec.deployment_id) is None
+        assert factory.runtime.live is True
+        assert (
+            models.deployment_runtime.status(spec.deployment_id).runtime_state
+            is ModelRuntimeState.STOPPED
+        )
+
+        restarted = models.deployment_runtime.start(
+            models.deployment_runtime.generation(spec.deployment_id)
+        )
+        assert restarted.runtime_state is ModelRuntimeState.RUNNING
+        assert factory.runtime.live is True
+        assert factory.runtime.start_calls == 2
+        assert factory.runtime.process is not None
+        assert factory.runtime.process != first_process
+        assert store.read(spec.deployment_id) is not None
+
+
 def test_model_deployment_retirement_purges_obsolete_process_tombstones() -> None:
     with TemporaryDirectory() as td:
         root = Path(td)
@@ -1225,11 +1314,11 @@ def test_model_deployment_retirement_purges_obsolete_process_tombstones() -> Non
             service_id="model:retirement-tombstone-gc",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
             cwd=root,
-            python_environment_id="serve",
             desired_state=ModelDesiredState.RUNNING,
         )
         models.deployment_catalog.put_deployment(spec)
@@ -1290,11 +1379,11 @@ def test_model_asset_lifecycle_fence_orders_deployment_before_retirement() -> No
             service_id="model:race-deployment-first",
             model_id=asset.model_id,
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
             cwd=root,
-            python_environment_id="serve",
         )
 
         desired = models.deployment_catalog._deployment_registry
@@ -1371,11 +1460,11 @@ def test_model_asset_lifecycle_fence_orders_retirement_before_deployment() -> No
             service_id="model:race-retirement-first",
             model_id=asset.model_id,
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
             cwd=root,
-            python_environment_id="serve",
         )
 
         storage = models.assets._storage
@@ -1732,11 +1821,11 @@ def test_stale_same_config_generation_cannot_stop_restarted_process() -> None:
             service_id="model:same-config",
             model_id="m",
             engine="custom",
+            container_digest="d" * 64,
             scope=PLATFORM_SCOPE,
-            executable="{python}",
-            argv=("{python}", "-m", "server"),
+            executable="/usr/bin/python3",
+            argv=("/usr/bin/python3", "-m", "server"),
             cwd=root,
-            python_environment_id="serve",
             desired_state=ModelDesiredState.RUNNING,
         )
         models.deployment_catalog.put_deployment(spec)
@@ -1789,11 +1878,11 @@ def test_model_stop_refuses_unowned_process_replacement() -> None:
                 service_id="model:process-drift",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server"),
                 cwd=root,
-                python_environment_id="serve",
             )
         )
         models.deployment_runtime.start(
@@ -1842,11 +1931,11 @@ def test_applied_clear_tombstone_survives_delete_commit_caller_error(
                 service_id="model:clear-crash",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server"),
                 cwd=root,
-                python_environment_id="serve",
                 desired_state=ModelDesiredState.RUNNING,
             )
         )
@@ -1924,11 +2013,11 @@ def test_cleared_applied_process_generation_cannot_be_resurrected() -> None:
                 service_id="model:no-resurrection",
                 model_id="m",
                 engine="custom",
+                container_digest="d" * 64,
                 scope=PLATFORM_SCOPE,
-                executable="{python}",
-                argv=("{python}", "-m", "server"),
+                executable="/usr/bin/python3",
+                argv=("/usr/bin/python3", "-m", "server"),
                 cwd=root,
-                python_environment_id="serve",
                 desired_state=ModelDesiredState.RUNNING,
             )
         )

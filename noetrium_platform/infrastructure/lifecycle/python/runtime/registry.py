@@ -12,7 +12,6 @@ from noetrium_platform.foundation.api import (
 from noetrium_platform.infrastructure.lifecycle.python.api import (
     ManagedPythonEnvironment,
     PythonEnvironmentOwnership,
-    PythonEnvironmentRetired,
     PythonEnvironmentState,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
@@ -46,7 +45,10 @@ class PythonEnvironmentRegistry:
     def ensure_not_retired(self, environment_id: str) -> None:
         self._validate_id(environment_id)
         if self._retired_path(environment_id).exists():
-            raise PythonEnvironmentRetired(environment_id)
+            raise RuntimeError(
+                "Python environment identity is retired and cannot be reused: "
+                f"{environment_id}"
+            )
 
     def is_retired(self, environment_id: str) -> bool:
         self._validate_id(environment_id)
@@ -83,7 +85,9 @@ class PythonEnvironmentRegistry:
     ) -> ManagedPythonEnvironment:
         self._validate_id(environment_id)
         if self.is_retired(environment_id):
-            raise PythonEnvironmentRetired(environment_id)
+            raise RuntimeError(
+                f"Python environment is retired: {environment_id}"
+            )
         return self._read(environment_id)
 
     def _read(

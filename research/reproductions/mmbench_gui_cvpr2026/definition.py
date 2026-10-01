@@ -12,6 +12,6 @@ REPRODUCTION=ReproductionDefinition(
     reference_baselines=(
         ReferenceBaseline(baseline_id="baseline_01",description="GUI agents evaluated in the final CVPR paper"),
     ),
-    blockers=("Matched execution requires the released benchmark revision plus six platform images/states and evaluator code.", "Cross-platform GUI results require executable environment receipts rather than static benchmark metadata."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    blockers=("Matched execution requires the released benchmark revision plus six platform images/states and evaluator code.", "Cross-platform GUI results require executable environment receipts rather than static benchmark metadata."),evidence_refs=(),scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 __all__=["REPRODUCTION"]

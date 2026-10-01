@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "015beccd4262cde19e9d0498f8eb74f6a9ce568147975a56f6440e21f7744b15",
-  "definition_digest": "44d9e76f1ec1e05d74601acc31536b1076bf4a32724990913f969d334996d904",
+  "package_digest": "77c972e3ad0d90dbac76d28aa7012d70fe1d1919c3b33149fc0143422f01012f",
+  "definition_digest": "1e0d9b065c36c78c8fa85319d59d9e7dca554795a0eb8412fb051543a4d502cf",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -96,7 +96,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/drvideo/benchmark.py",
       "declaration_digest": "0777d687777b35c882d6f0545a67fc4a7ce60c2c491a75e82235c586d34efe4a",
-      "content_sha256": "a442df1c111cf49e97e1ba89323d611147bdf1feee816932b4d9408ad03182d0"
+      "content_sha256": "89cbdb5f3aa26a17966c354ff4acb20b8abbfa7947d6ea8ae82bc3bf625bc78f"
     },
     {
       "kind": "fidelity",
@@ -108,13 +108,13 @@
       "kind": "method_program",
       "path": "research/reproductions/drvideo/program.py",
       "declaration_digest": "88f3fbe6f2d7ee1de5f0efad693a6aa9e5868f6290459749e2d1af2e15141901",
-      "content_sha256": "58457a815f465295995311bc9292afb759a79aa5a0000397980e783549e5c88d"
+      "content_sha256": "e74416b3963aeef09066f94b488962f1e72f5c702c1e2443e9224d9e2bc2d97c"
     },
     {
       "kind": "study",
       "path": "research/reproductions/drvideo/study.py",
       "declaration_digest": "cd0decac8df47526002be04df2c8565568544a5066eacd3e449a770f6a94fffb",
-      "content_sha256": "c01f97cb5809547b4f0c1909284a3b51752262d3595bf92c61644a5425cc0ee0"
+      "content_sha256": "b0a23edd02d869b79abd728e1ef74a940a0c02bff4ed86e5da3c2714bc00f984"
     },
     {
       "kind": "support",
@@ -242,15 +242,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_drvideo_v1.py",
-      "content_sha256": "ca66f34dc68df68d79aa0c3e58d034cf0922c16c8504cd1db5815457e2c13167"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "drvideo",
-    "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+    "program_digest": "ff1af7d70e5bc6973849aeb86f5611e42a3ff756f8e9c57e4bc607bd8964bc74",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -5,6 +5,27 @@ import math
 
 
 _GIB = 1024**3
+MAX_VLLM_GPU_MEMORY_UTILIZATION = 0.95
+VLLM_MEMORY_UTILIZATION_QUANTA = 1_000_000
+
+
+def vllm_gpu_memory_utilization_for_target_bytes(
+    target_bytes: int,
+    device_total_bytes: int,
+) -> float | None:
+    """Convert an absolute global device-memory ceiling into vLLM's fraction."""
+    if type(target_bytes) is not int or target_bytes <= 0:
+        raise ValueError("vLLM memory target must be a positive integer")
+    if type(device_total_bytes) is not int or device_total_bytes <= 0:
+        raise ValueError("vLLM device total memory must be a positive integer")
+    ratio = target_bytes / device_total_bytes
+    if ratio > MAX_VLLM_GPU_MEMORY_UTILIZATION:
+        return None
+    quantized = math.ceil(ratio * VLLM_MEMORY_UTILIZATION_QUANTA)
+    fraction = quantized / VLLM_MEMORY_UTILIZATION_QUANTA
+    if fraction > MAX_VLLM_GPU_MEMORY_UTILIZATION:
+        return None
+    return fraction
 
 
 @dataclass(frozen=True, slots=True)
@@ -263,6 +284,8 @@ def parse_vllm_engine_resource_args(
 
 
 __all__ = [
+    "MAX_VLLM_GPU_MEMORY_UTILIZATION",
     "VllmEngineResourceArgs",
     "parse_vllm_engine_resource_args",
+    "vllm_gpu_memory_utilization_for_target_bytes",
 ]

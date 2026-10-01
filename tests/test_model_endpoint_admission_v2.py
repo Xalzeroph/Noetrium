@@ -18,8 +18,8 @@ from noetrium_platform.capabilities.model.serving.endpoint import (
     ModelEndpointRoute,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import QualifiedModelEndpointBinding
-from noetrium_platform.capabilities.model.serving.endpoint.composition import build_openai_compatible_qualified_endpoint
-from noetrium_platform.capabilities.model.serving.endpoint.providers import OpenAICompatibleModelEndpoint
+from noetrium_platform.capabilities.model.serving.endpoint.composition import build_qualified_model_endpoint
+from noetrium_platform.capabilities.model.serving.endpoint.providers import NativeModelProviderEndpoint
 from noetrium_platform.capabilities.model.serving.runtime import (
     ModelAdmissionController,
     ModelAdmissionRegistry,
@@ -41,7 +41,7 @@ def _envelope(request_id: str = "request") -> ModelRequestEnvelope:
 def _request(request_id: str = "request") -> ModelEndpointRequest:
     return ModelEndpointRequest(
         request=_envelope(request_id), deployment_id="deployment", deployment_generation="a" * 64,
-        body={"model": "qwen", "messages": []},
+        body={"model": "qwen", "messages": [{"role": "user", "content": "x"}]},
     )
 
 
@@ -57,8 +57,9 @@ class _DelayedCancellationTransport:
         body: dict[str, object],
         *,
         timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
     ) -> JsonHttpResponse:
-        del url, body, timeout_s
+        del url, body, timeout_s, headers
         self.started.set()
         try:
             await asyncio.sleep(10.0)
@@ -80,14 +81,15 @@ class _StaticTransport:
         body: dict[str, object],
         *,
         timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
     ) -> JsonHttpResponse:
-        del url, body, timeout_s
+        del url, body, timeout_s, headers
         return JsonHttpResponse(200, self.body)
 
 
 def _endpoint(runtime, transport, admission, *, timeout_s: float = 1.0):
     group = runtime.open_task_group(f"model-endpoint-admission:{uuid4().hex}")
-    return OpenAICompatibleModelEndpoint(
+    return NativeModelProviderEndpoint(
         route=ModelEndpointRoute(
             "deployment",
             "a" * 64,
@@ -143,7 +145,7 @@ def test_boolean_token_counts_are_rejected() -> None:
     admission = ModelAdmissionController(1)
     transport = _StaticTransport(
         {
-            "choices": [{"text": "ok"}],
+            "choices": [{"message": {"content": "ok"}, "finish_reason": "stop"}],
             "usage": {"prompt_tokens": True, "completion_tokens": 1},
         }
     )
@@ -180,14 +182,15 @@ class _ConcurrentTransport:
         body: dict[str, object],
         *,
         timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
     ) -> JsonHttpResponse:
-        del url, body, timeout_s
+        del url, body, timeout_s, headers
         with self._lock:
             self.active += 1
             self.max_active = max(self.max_active, self.active)
         try:
             await asyncio.sleep(0.05)
-            return JsonHttpResponse(200, {"choices": [{"text": "ok"}]})
+            return JsonHttpResponse(200, {"choices": [{"message": {"content": "ok"}, "finish_reason": "stop"}]})
         finally:
             with self._lock:
                 self.active -= 1
@@ -262,6 +265,9 @@ def test_qualified_builder_uses_frozen_binding_concurrency() -> None:
     )
     binding = QualifiedModelEndpointBinding(
         role="planner",
+        capability_id="generation",
+        input_schema_id="model.generation.request.v1",
+        output_schema_id="model.generation.response.v1",
         deployment_id="deployment",
         deployment_generation="a" * 64,
         base_url="http://127.0.0.1:30000",
@@ -277,12 +283,12 @@ def test_qualified_builder_uses_frozen_binding_concurrency() -> None:
         chat_template_sha256=None,
     )
     try:
-        endpoint = build_openai_compatible_qualified_endpoint(
+        endpoint = build_qualified_model_endpoint(
             binding,
             task_group=group,
             admission_registry=registry,
         )
-        assert isinstance(endpoint, OpenAICompatibleModelEndpoint)
+        assert isinstance(endpoint, NativeModelProviderEndpoint)
         assert registry.calls == [("deployment", "a" * 64, 3)]
         assert registry.controller is not None
         assert registry.controller.capacity == 3

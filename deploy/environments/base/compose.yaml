@@ -1,0 +1,20 @@
+services:
+  platform-runtime:
+    build:
+      context: ../../..
+      dockerfile: deploy/environments/base/Dockerfile
+      args:
+        PYTHON_RUNTIME_IMAGE: ${PYTHON_RUNTIME_IMAGE:-python:3.12-slim-bookworm}
+        NOETRIUM_ENVIRONMENT_BASE_REVISION: ${NOETRIUM_ENVIRONMENT_BASE_REVISION:?base revision required}
+        NOETRIUM_ENVIRONMENT_BASE_BUILD_INPUT_DIGEST: ${NOETRIUM_ENVIRONMENT_BASE_BUILD_INPUT_DIGEST:?base build input digest required}
+        NOETRIUM_PYTHON_RUNTIME_IDENTITY_DIGEST: ${NOETRIUM_PYTHON_RUNTIME_IDENTITY_DIGEST:?python runtime identity required}
+    image: ${PLATFORM_ENVIRONMENT_BASE_IMAGE:-noetrium-env-base:local}
+    environment:
+      NOETRIUM_ENVIRONMENT_PROFILE: base
+      PLATFORM_STATE_DIR: /var/lib/noetrium
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "base"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s

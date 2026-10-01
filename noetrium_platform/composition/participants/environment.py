@@ -1,52 +1,33 @@
 from __future__ import annotations
 
 from noetrium_platform.capabilities.environment.api import EnvironmentIdentity
-from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
-from noetrium_platform.capabilities.participant.core.api import ParticipantResolverPort, ParticipantRuntimeEndpoint
-from noetrium_platform.capabilities.participant.core.api import ParticipantLifecycleAdapter
+from noetrium_platform.capabilities.participant.core.api import (
+    ParticipantImplementationIdentity,
+    ParticipantResolverPort,
+    ParticipantRuntimeEndpoint,
+)
 
 from .base import PolicyParticipantAdapter
+from .generic import RuntimeParticipantPolicy
 
 
-class EnvironmentParticipantPolicy:
-    kind = "environment"
-
-    @staticmethod
-    def _plugin(plugin: object) -> ParticipantRuntimeEndpoint:
-        if not isinstance(plugin, ParticipantRuntimeEndpoint):
-            raise TypeError("environment participant plugin does not satisfy ParticipantRuntimeEndpoint")
-        return plugin
-
-    @classmethod
-    def _identity(cls, plugin: object) -> EnvironmentIdentity:
-        identity = getattr(cls._plugin(plugin), "identity", None)
-        if not isinstance(identity, EnvironmentIdentity):
-            raise TypeError("environment participant implementation exposes the wrong domain identity")
-        return identity
-
-    def implementation_identity(self, plugin: object) -> ParticipantImplementationIdentity:
-        i = self._identity(plugin)
-        return ParticipantImplementationIdentity(
-            self.kind, i.environment_id, i.implementation_version, i.abi_version, i.schema_version, i.artifact_digest or None
-        )
-
-    def open_session(self, plugin: object, *, session_id: str, services: object) -> object:
-        return self._plugin(plugin).open_session(session_id=session_id, services=services)
-
-    def checkpoint(self, plugin: object, session: object, *, session_id: str) -> bytes:
-        del plugin, session_id
-        payload = session.checkpoint()
-        if not isinstance(payload, bytes):
-            raise TypeError("EnvironmentSession.checkpoint must return bytes")
-        return payload
-
-    def restore(self, plugin: object, session: object, payload: bytes, *, session_id: str) -> None:
-        del plugin, session_id
-        session.restore(payload)
+def _identity(plugin: ParticipantRuntimeEndpoint) -> ParticipantImplementationIdentity:
+    identity = getattr(plugin, "identity", None)
+    if not isinstance(identity, EnvironmentIdentity):
+        raise TypeError("environment participant implementation exposes the wrong domain identity")
+    return ParticipantImplementationIdentity(
+        "environment",
+        identity.environment_id,
+        identity.implementation_version,
+        identity.abi_version,
+        identity.schema_version,
+        identity.artifact_digest or None,
+    )
+def environment_participant_adapter(resolver: ParticipantResolverPort) -> PolicyParticipantAdapter:
+    return PolicyParticipantAdapter(
+        resolver,
+        RuntimeParticipantPolicy("environment", identity=_identity),
+    )
 
 
-def environment_participant_adapter(resolver: ParticipantResolverPort) -> ParticipantLifecycleAdapter:
-    return PolicyParticipantAdapter(resolver, EnvironmentParticipantPolicy())
-
-
-__all__ = ["EnvironmentParticipantPolicy", "environment_participant_adapter"]
+__all__ = ["environment_participant_adapter"]

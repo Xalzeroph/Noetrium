@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "react_alfworld",
-  "package_digest": "6d015027f43987b60b0aad5f43faadb11f998738d55b661f28e3b0883d48dc95",
-  "definition_digest": "f537f245a873bcfe3715b4e13fb0f4c7639b65a271d182bbb91b8860da727147",
+  "package_digest": "3b9939ad630025dc81dd70ec9a14ce37e2f7f88b0954ee0fa02358d9c34feede",
+  "definition_digest": "595f9cb4d662fdd70c12696084a769e102f259be1bb00a412f668703d05df730",
   "source_registry_digest": "b362f56e91e03c46aecc86932f05c8a6dd1eed18062a14b73ce3d15e8d5c5bde",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -78,7 +78,7 @@
       "kind": "method_program",
       "path": "research/reproductions/react_alfworld/program.py",
       "declaration_digest": "0f03adf8741751737af9287a287a135bfb9e586bbb963d90ca40b6a8c89c8d94",
-      "content_sha256": "79f0428dd63bc86b5a2ad93a810d8ef805487b29ab5eddef6113c4944902472d"
+      "content_sha256": "e88d6dbb3d7c0daf30615e959233dc2f79d9bb0186f3714ce3d6140551b63633"
     },
     {
       "kind": "semantics",
@@ -90,7 +90,7 @@
       "kind": "study",
       "path": "research/reproductions/react_alfworld/study.py",
       "declaration_digest": "34ade6fba9f9251ed86552f370e3f2227cb82e69b5959af121b2818fb97d9769",
-      "content_sha256": "2e1aacb6e20fac43e0f9e358aec0e7689626eb7a2e5570776db076b17f10de82"
+      "content_sha256": "8b807e974654bf827a4447302827789c3aa58ac8f6358f7bc390605d7a2ed395"
     },
     {
       "kind": "support",
@@ -355,14 +355,6 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_react_alfworld_fidelity_v1.py",
-      "content_sha256": "4bf82d92de46a99d791786f8ae2d99b4d1c272334f1a4852d50c5243c5f3fa2a"
-    },
-    {
-      "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-      "content_sha256": "dc5e549d5e7ba08e9a77ff127fbcc4a203b262858c6fe0ae859505674e097f61"
-    },
-    {
       "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
       "content_sha256": "841786650b37e1806f9353fdbf156dd09b22122f87df8bb6ae572cc75708df6a"
     }
@@ -371,12 +363,12 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "react_alfworld",
-    "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+    "program_digest": "61d64cbf895e754555637dff7d0209f8b347a9831fbeec5c691fa870a9f5c7c0",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
       ]
     },
     "benchmark_split_axis": {

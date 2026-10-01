@@ -1,6 +1,7 @@
-from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant
+from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant, materialize_research_study_spec, materialize_research_study_spec
+from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
-    StudyConcurrencyPolicy,
+    AssignmentWorkload,
     StudyAssignment,
     StudyExecutionUnit,
     StudyMatrixExecutionReport,
@@ -14,7 +15,8 @@ from noetrium_platform.research.experimentation.identity import ReplayLevel
 from .analysis import AnalysisDefinition, AnalysisResult, MeasurementCut
 from .benchmark import (
     BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution,
-    BenchmarkCutSpec, BenchmarkSourceSpec, BenchmarkTaskSet,
+    BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkSourceSpec, BenchmarkTaskSet,
+    benchmark_cut_requirements, requires_benchmark_cut,
     BenchmarkResolutionRegistration, BenchmarkResolutionRegistry,
     InMemoryBenchmarkSource,
     TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation,
@@ -22,7 +24,6 @@ from .benchmark import (
     TrialBudget,
 )
 from .design import (
-    BenchmarkAssignmentMode,
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     FactorLevelSpec, FactorSelection,
     ParticipantSchedule, ResearchRevision, ResearchStudyDefinition,
@@ -33,23 +34,14 @@ from .measurement import (
     MeasurementDefinition,
     MeasurementProtocol,
     MeasurementRecord,
-    MeasurementSetDisposition,
-    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
 )
 from .trial import (
-    TaskVerifierArtifact, TaskVerifierArtifactCut, TaskVerifierPort, TaskVerifierReceipt,
+    TaskVerifierArtifact, TaskVerifierPort, TaskVerifierReceipt,
     TaskVerifierRequest, TrialExecutionReceipt, TrialExecutionRequest,
     TrialExecutionStageReceipt, TrialMatrixExecutionReport,
-    TrialMeasurementProjectionPort, TrialMeasurementsUnscored,
-    TrialProviderPort, TrialTaskProjectionPort,
-)
-from .regrade import (
-    TaskVerifierArtifactBinding,
-    TaskVerifierRegradeDefinition,
-    TaskVerifierRegradeNotReady,
-    TaskVerifierRegradeProof,
+    TrialMeasurementProjectionPort, TrialPreparationPort, TrialProviderPort, TrialTaskProjectionPort,
 )
 from .research_read import StudyResearchReadPort, StudyResearchReadSnapshot
 from .ports import (
@@ -66,28 +58,26 @@ from .plan import (
 )
 
 __all__ = [
+    "materialize_research_study_spec",
     "AgentStudySpec",
     "Study",
-    "BenchmarkAssignmentMode",
+    "AssignmentWorkload",
     "DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID",
     "StudyModel",
     "StudyParticipant",
+    "PostHocEvaluationDefinition",
+    "PostHocEvaluationResult",
     "TaskVerifierArtifact",
-    "TaskVerifierArtifactCut",
-    "TaskVerifierArtifactBinding",
-    "TaskVerifierRegradeDefinition",
-    "TaskVerifierRegradeNotReady",
-    "TaskVerifierRegradeProof",
     "TaskVerifierPort",
     "TaskVerifierReceipt",
     "TaskVerifierRequest",
+    "TrialPreparationPort",
     "TrialProviderPort",
     "TrialTaskProjectionPort",
     "StudyResearchReadPort",
     "StudyResearchReadSnapshot",
     "TrialMatrixExecutionReport",
     "TrialMeasurementProjectionPort",
-    "TrialMeasurementsUnscored",
     "TrialExecutionRequest",
     "TrialExecutionReceipt",
     "TrialExecutionStageReceipt",
@@ -95,7 +85,13 @@ __all__ = [
     "AnalysisDefinition",
     "AnalysisResult",
     "MeasurementCut",
+    "BenchmarkCutRequirement",
+    "BenchmarkCutRequirement",
     "BenchmarkCutSpec",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
     "BenchmarkTaskSet",
     "BenchmarkSourceKind",
     "BenchmarkSourcePort",
@@ -121,13 +117,10 @@ __all__ = [
     "ParticipantSchedule",
     "FactorSelection",
     "FactorLevelSpec",
-    "StudyConcurrencyPolicy",
     "MeasurementContentReference",
     "MeasurementDefinition",
     "MeasurementProtocol",
     "MeasurementRecord",
-    "MeasurementSetDisposition",
-    "MeasurementSetOutcome",
     "MeasurementValue",
     "MeasurementValueKind",
     "StudyAssignment",

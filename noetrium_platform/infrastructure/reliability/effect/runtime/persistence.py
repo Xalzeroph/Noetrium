@@ -50,7 +50,13 @@ class EffectJournalPersistenceBackend(Protocol):
         phases: tuple[str, ...],
         exclude_intent_id: str | None = None,
     ) -> tuple[EncodedEffectIntentRecord, ...]: ...
+    def scan_run(
+        self,
+        *,
+        run_id: str,
+    ) -> tuple[EncodedEffectIntentRecord, ...]: ...
     def write_session(self) -> EffectJournalWriteSession: ...
+    def close(self) -> None: ...
 
 
 __all__ = [

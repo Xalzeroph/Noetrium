@@ -16,6 +16,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import EffectClass, JsonInput, JsonValue
 
+from .observation import observation_evidence, semantic_observation_payload
+
 _REQUEST_SCHEMA = "noetrium.environment.query-capability.request.v1"
 _RESULT_SCHEMA = "noetrium.environment.query-capability.result.v1"
 
@@ -27,19 +29,6 @@ def environment_query_capability_payload(
     if not isinstance(query_type, str) or not query_type.strip():
         raise ValueError("environment query capability query_type must be non-empty")
     return {"query_type": query_type, "payload": payload}
-
-
-def _observation_payload(observation: Observation | None) -> JsonValue:
-    if observation is None:
-        return None
-    if not isinstance(observation, Observation):
-        raise TypeError("environment query result observation must be Observation")
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": observation.payload,
-        "artifact_refs": observation.artifact_refs,
-    }
 
 
 class EnvironmentQueryCapabilityBinding:
@@ -110,12 +99,16 @@ class EnvironmentQueryCapabilityBinding:
             payload={
                 "supported": result.supported,
                 "payload": result.payload,
-                "observation": _observation_payload(observation),
+                "observation": semantic_observation_payload(observation),
             },
             generation=None if observation is None else observation.generation,
             artifacts=() if observation is None else observation.artifact_refs,
             diagnostics=dict(result.diagnostics),
             request_digest=request_digest,
+            evidence=observation_evidence(
+                observation,
+                schema="noetrium.environment.query-evidence.v1",
+            ),
         )
 
 

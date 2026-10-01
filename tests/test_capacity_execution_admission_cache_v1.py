@@ -12,9 +12,9 @@ class _CountingAdmissionAuthority(HierarchicalAdmissionAuthority):
         super().__init__(**kwargs)
         self.can_admit_calls = 0
 
-    def _can_admit(self, group_id, lane_kind):
+    def _can_admit(self, group_id, lane_kind, permit_count=1):
         self.can_admit_calls += 1
-        return super()._can_admit(group_id, lane_kind)
+        return super()._can_admit(group_id, lane_kind, permit_count)
 
 
 def test_selection_cache_avoids_repeated_full_scan_inside_poll_bucket():
@@ -49,6 +49,18 @@ def test_selection_cache_avoids_repeated_full_scan_inside_poll_bucket():
         for _ in range(100):
             authority._selected_waiter()
         assert authority.can_admit_calls <= len(threads) * 2
+
+        # Lazy ordering-key refreshes must remain bounded by the number of
+        # currently live scheduling shapes, not by historical grant/release
+        # count.
+        waiter = next(iter(authority._waiters.values()))
+        for _ in range(1000):
+            authority._push_waiter_order(waiter, time.monotonic())
+        assert len(authority._selection_heap) > 64
+        authority._selected_waiter()
+        assert len(authority._selection_heap) <= max(
+            64, len(authority._waiters_by_shape) * 4
+        )
 
     blocker.release()
     for thread in threads:

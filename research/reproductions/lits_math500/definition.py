@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/lits_math500/study.py',
         ),
     ),
+    primary_executable="research/reproductions/lits_math500/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -58,7 +59,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('the released MATH500 example does not freeze one concrete model provider/revision, so matched paper-result execution requires an explicit model lane selection',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_lits_math500_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

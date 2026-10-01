@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "e95db497db675159c9018e2de3fd83d1001d447340c7b7d8828eecc6fbe2f8cc",
-  "definition_digest": "7f10f0fdefdeb4cac0a428085c8ff847a63cf7407bdfdfb3398b428001692c44",
+  "package_digest": "460371ebc825aee9f594244029f5e95bcfb88a3724bb8556df5cd70da9d18487",
+  "definition_digest": "05d95881c2f34728d746896cd58aa0fafbf6097eca2394e310b43afe20566e9d",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -117,7 +117,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/voyager_minecraft/benchmark.py",
       "declaration_digest": "37ce346ce07d2b358a99fd6645f68140dae894c8473dc42724ff2f5ea89ccf7c",
-      "content_sha256": "8f794874218418f4ae0c4a730a4c1aebb06ba6220ec8dee4ecabd1017cda67e1"
+      "content_sha256": "46f2f9598baaa969727e0c4dfa50922d6c06ba23c2ecafc731839829478116cc"
     },
     {
       "kind": "fidelity",
@@ -129,31 +129,13 @@
       "kind": "method_program",
       "path": "research/reproductions/voyager_minecraft/program.py",
       "declaration_digest": "ffcf35749c06e5b1ec19466ccffb3be209f0a26a426f44e9f6f6dbe1a64ba78f",
-      "content_sha256": "f4773833ba2787a1994045218f32e453613bac98215d6c73c02b7ad476a0d2c9"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/voyager_minecraft/chest_memory.py",
-      "declaration_digest": "7d9b323435b33c8b71875d57de122d558176bb9724f7255ad18b02a549ec84ba",
-      "content_sha256": "60c4f007c6801c5ae5ba006763fbf6e524bab38bed3f6f7cb2c6998ee4b50b2f"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/voyager_minecraft/curriculum_memory.py",
-      "declaration_digest": "83f30b47264ea951218e4684dc8a317907da853ca594c4460a76222d4255359e",
-      "content_sha256": "cd3c60669eea55aa678250fa5a9d342e31c217b397e65edd0008915bba70c532"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/voyager_minecraft/skill_memory.py",
-      "declaration_digest": "da2f587fb34a70b329575107aea0f8a2f39665d3c657eaf5290e0a7f2200f73b",
-      "content_sha256": "4852ccf3bca87c16e8dffeb80cffc7985bc3e7babe47808025f6ba1afd57c348"
+      "content_sha256": "2e70d89a5e1db338d5d7166901349747b4cdc2fc09c0fbca60292bdd598f9f0a"
     },
     {
       "kind": "study",
       "path": "research/reproductions/voyager_minecraft/study.py",
       "declaration_digest": "c292ce512d0a20016b7c5e598fbc7d6d7704d526e7f81372f1fb32d03af7e7d1",
-      "content_sha256": "843d2d4e4f814c9887eddd8e58ef1cd3e24bb85c52178a4b9df779c5e7657cbc"
+      "content_sha256": "be7f94e23712d10a5e6bf9c52ddfeafb0dad696c506526b262677a0dbad2117e"
     },
     {
       "kind": "support",
@@ -227,39 +209,23 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_voyager_benchmark_study_v1.py",
-      "content_sha256": "2d9480a3de556858574ad553ce2fa0c2b34d2b1ccab1b4e654d49488bbc463e0"
-    },
-    {
-      "path": "tests/test_scientific_voyager_curriculum_memory_v1.py",
-      "content_sha256": "af1782216bf140bd04b908287519c9ad80e577e4798d09935949638230945f9c"
-    },
-    {
       "path": "tests/test_scientific_voyager_curriculum_v1.py",
       "content_sha256": "ce3d2b8416871b6e7d977e90478882a8336e83e61f47c5ae88c34c69b1696758"
     },
     {
-      "path": "tests/test_scientific_voyager_method_program_v1.py",
-      "content_sha256": "97859bb93c6e3cf2bbaed0e76a7a2e1ac5e4fee45b58a51dc0c1d69b0a05d3ac"
-    },
-    {
-      "path": "tests/test_scientific_voyager_skill_memory_v1.py",
-      "content_sha256": "4336b4b5f6420861fa2642b03598a8dc72e9ff9074d6d4607b3b66c85494d0de"
-    },
-    {
       "path": "tests/test_scientific_web_embodied_fidelity_v1.py",
-      "content_sha256": "daac277c2e414516ca7dce22ccb66819e1a1caffff88968c9fe32f6375ef59ad"
+      "content_sha256": "1c355192518f9bb7c79ac82d4234260deea7730b84aa0ca3b8470ba230cec3c9"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "voyager_minecraft",
-    "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+    "program_digest": "cbc21cb80b304a9d55df4f68f85e6cfe31a9333c2c372930d66ed99fa85da620",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "b030849b41612394d474220b2ca9a6a6572ef5997eb66729e59fcac019d6f708"
+        "191499d95aefcbb69e6458d1851dc4f786e9e0410a68a156882b6a4c16160100"
       ],
       "blockers": []
     },

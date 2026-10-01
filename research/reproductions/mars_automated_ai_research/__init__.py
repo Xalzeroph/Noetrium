@@ -1,13 +1,4 @@
-from .fidelity import (
-    MARS_ARTIFACT_FIDELITY,
-    MARS_GRADING_REPORT_BLOB_SHA1S,
-    MARS_PAPER_URI,
-    MarsArtifactFidelity,
-)
+"""Paper-local reproduction package; composed only through Research OS."""
+from .definition import REPRODUCTION
 
-__all__ = [
-    "MARS_ARTIFACT_FIDELITY",
-    "MARS_GRADING_REPORT_BLOB_SHA1S",
-    "MARS_PAPER_URI",
-    "MarsArtifactFidelity",
-]
+__all__ = ("REPRODUCTION",)

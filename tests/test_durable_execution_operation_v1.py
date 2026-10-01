@@ -16,18 +16,27 @@ def _command_id(value: str = "cmd-1") -> CommandId:
     return CommandId(value)
 
 
+
 def test_operation_reopens_and_replays_same_identity_after_restart(tmp_path: Path):
     path = tmp_path / "operations.sqlite3"
     first = OperationOwner(SQLiteOperationStore(path))
-    created, is_new = first.submit(_command_id(), operation_id=OperationId("op-first"), now_unix=10.0)
+    created, is_new = first.submit(
+        _command_id(),
+        operation_id=OperationId("op-first"),
+        now_unix=10.0,
+    )
     assert is_new and created.state is OperationState.CREATED
-    queued = first.queue(created.operation_id, now_unix=11.0)
+    queued = first.queue(created, now_unix=11.0)
+
     second = OperationOwner(SQLiteOperationStore(path))
-    replayed, is_new = second.submit(_command_id(), operation_id=OperationId("op-first"), now_unix=99.0)
+    replayed, is_new = second.submit(
+        _command_id(),
+        operation_id=OperationId("op-first"),
+        now_unix=99.0,
+    )
     assert not is_new
     assert replayed.operation_id == queued.operation_id
     assert replayed.state is OperationState.QUEUED
-
 
 def test_same_command_can_own_multiple_distinct_operations(tmp_path: Path):
     owner = OperationOwner(SQLiteOperationStore(tmp_path / "operations.sqlite3"))
@@ -48,9 +57,10 @@ def test_operation_identity_contract_drift_fails_closed(tmp_path: Path):
         raise AssertionError("operation identity reuse with different command must fail closed")
 
 
+
 def _effectful_owner(tmp_path: Path, suffix: str):
     owner = OperationOwner(SQLiteOperationStore(tmp_path / f"{suffix}.sqlite3"))
-    operation, _ = owner.submit(
+    created, _ = owner.submit(
         _command_id(f"cmd-{suffix}"),
         operation_id=OperationId(f"op-{suffix}"),
         effect_profile=OperationEffectProfile.RECONCILABLE,
@@ -59,57 +69,77 @@ def _effectful_owner(tmp_path: Path, suffix: str):
         effect_request_digest="d" * 64,
         now_unix=10.0,
     )
-    owner.admit(operation.operation_id, now_unix=11.0)
-    owner.begin_execution(operation.operation_id)
-    return owner, operation.operation_id
+    admitted = owner.admit(created, now_unix=11.0)
+    running = owner.begin_execution(admitted)
+    return owner, running
 
 
-def _proof(owner: OperationOwner, operation_id: OperationId, disposition, certainty):
-    operation = owner.require(operation_id)
+def _proof(operation: OperationSnapshot, disposition, certainty):
     effect = None if certainty is None else EffectReceipt(
-        operation.effect_id.value, operation.effect_request_digest,
-        EffectClass.RECONCILABLE, certainty,
+        operation.effect_id.value,
+        operation.effect_request_digest,
+        EffectClass.RECONCILABLE,
+        certainty,
     )
-    return EffectReconciliationProof(operation.effect_request_id, disposition, effect)
+    return EffectReconciliationProof(
+        operation.effect_request_id,
+        disposition,
+        effect,
+    )
 
 
 def test_uncertain_effect_cannot_blindly_enter_recovery(tmp_path: Path):
-    owner, operation_id = _effectful_owner(tmp_path, "uncertain")
-    owner.mark_effect_unknown(operation_id)
+    owner, running = _effectful_owner(tmp_path, "uncertain")
+    unknown = owner.mark_effect_unknown(running)
     assert not hasattr(owner, "begin_recovery")
     assert not hasattr(owner, "transition")
     try:
-        owner.begin_execution(operation_id)
+        owner.begin_execution(unknown)
     except RuntimeError:
         pass
     else:
-        raise AssertionError("uncertain external effect must reconcile before execution resumes")
+        raise AssertionError(
+            "uncertain external effect must reconcile before execution resumes"
+        )
 
 
 def test_reconciliation_not_executed_allows_safe_retry(tmp_path: Path):
-    owner, operation_id = _effectful_owner(tmp_path, "retry")
-    owner.mark_effect_unknown(operation_id)
-    recovered = owner.reconcile_effect(operation_id, _proof(owner, operation_id, EffectReconciliationDisposition.NOT_APPLIED, EffectCertainty.NO_EFFECT))
+    owner, running = _effectful_owner(tmp_path, "retry")
+    unknown = owner.mark_effect_unknown(running)
+    recovered = owner.reconcile_effect(
+        unknown,
+        _proof(
+            unknown,
+            EffectReconciliationDisposition.NOT_APPLIED,
+            EffectCertainty.NO_EFFECT,
+        ),
+    )
     assert recovered.state is OperationState.RECOVERING
     assert recovered.effect_certainty is OperationEffectCertainty.NOT_EXECUTED
-    assert owner.begin_execution(operation_id).state is OperationState.RUNNING
+    assert owner.begin_execution(recovered).state is OperationState.RUNNING
 
 
 def test_reconciliation_executed_blocks_reexecution_and_can_complete(tmp_path: Path):
-    owner, operation_id = _effectful_owner(tmp_path, "executed")
-    owner.mark_effect_unknown(operation_id)
-    recovered = owner.reconcile_effect(operation_id, _proof(owner, operation_id, EffectReconciliationDisposition.APPLIED, EffectCertainty.EFFECT_CONFIRMED))
+    owner, running = _effectful_owner(tmp_path, "executed")
+    unknown = owner.mark_effect_unknown(running)
+    recovered = owner.reconcile_effect(
+        unknown,
+        _proof(
+            unknown,
+            EffectReconciliationDisposition.APPLIED,
+            EffectCertainty.EFFECT_CONFIRMED,
+        ),
+    )
     assert recovered.state is OperationState.RECOVERING
     try:
-        owner.begin_execution(operation_id)
+        owner.begin_execution(recovered)
     except RuntimeError:
         pass
     else:
         raise AssertionError("confirmed external effect must not be re-executed")
-    completed = owner.complete(operation_id, result_digest="d" * 64)
+    completed = owner.complete(recovered, result_digest="d" * 64)
     assert completed.state is OperationState.COMPLETED
     assert completed.effect_certainty is OperationEffectCertainty.EXECUTED
-
 
 def test_operation_store_rejects_partial_failure_corruption(tmp_path: Path):
     path = tmp_path / "operations-corrupt.sqlite3"
@@ -128,58 +158,82 @@ def test_operation_store_rejects_partial_failure_corruption(tmp_path: Path):
         raise AssertionError("partial operation failure columns must fail closed")
 
 
+
 def test_cancelled_uncertain_effect_reconciles_not_executed_to_cancelled(tmp_path: Path):
-    owner, operation_id = _effectful_owner(tmp_path, "cancel-not-executed")
-    cancelling = owner.request_cancel(operation_id, "user cancelled")
+    owner, running = _effectful_owner(tmp_path, "cancel-not-executed")
+    cancelling = owner.request_cancel(running, "user cancelled")
     assert cancelling.state is OperationState.CANCELLING
-    unknown = owner.recover_interrupted(operation_id)
+    unknown = owner.recover_interrupted(cancelling)
     assert unknown.state is OperationState.UNKNOWN_EFFECT
     assert unknown.cancellation_requested
     assert unknown.cancellation_reason == "user cancelled"
 
-    restarted = OperationOwner(SQLiteOperationStore(tmp_path / "cancel-not-executed.sqlite3"))
-    persisted = restarted.require(operation_id)
+    restarted = OperationOwner(
+        SQLiteOperationStore(tmp_path / "cancel-not-executed.sqlite3")
+    )
+    persisted = restarted.require(unknown.operation_id)
     assert persisted.cancellation_requested
-    cancelled = restarted.reconcile_effect(operation_id, _proof(restarted, operation_id, EffectReconciliationDisposition.NOT_APPLIED, EffectCertainty.NO_EFFECT))
+    cancelled = restarted.reconcile_effect(
+        persisted,
+        _proof(
+            persisted,
+            EffectReconciliationDisposition.NOT_APPLIED,
+            EffectCertainty.NO_EFFECT,
+        ),
+    )
     assert cancelled.state is OperationState.CANCELLED
     assert cancelled.cancellation_reason == "user cancelled"
 
 
 def test_cancelled_uncertain_effect_confirmed_executed_never_reexecutes(tmp_path: Path):
-    owner, operation_id = _effectful_owner(tmp_path, "cancel-executed")
-    owner.request_cancel(operation_id, "user cancelled")
-    owner.recover_interrupted(operation_id)
-    recovered = owner.reconcile_effect(operation_id, _proof(owner, operation_id, EffectReconciliationDisposition.APPLIED, EffectCertainty.EFFECT_CONFIRMED))
+    owner, running = _effectful_owner(tmp_path, "cancel-executed")
+    cancelling = owner.request_cancel(running, "user cancelled")
+    unknown = owner.recover_interrupted(cancelling)
+    recovered = owner.reconcile_effect(
+        unknown,
+        _proof(
+            unknown,
+            EffectReconciliationDisposition.APPLIED,
+            EffectCertainty.EFFECT_CONFIRMED,
+        ),
+    )
     assert recovered.state is OperationState.RECOVERING
     assert recovered.cancellation_requested
     try:
-        owner.begin_execution(operation_id)
+        owner.begin_execution(recovered)
     except RuntimeError:
         pass
     else:
-        raise AssertionError("cancelled operation with confirmed effect must never re-execute")
-    completed = owner.complete(operation_id, result_digest="e" * 64)
+        raise AssertionError(
+            "cancelled operation with confirmed effect must never re-execute"
+        )
+    completed = owner.complete(recovered, result_digest="e" * 64)
     assert completed.state is OperationState.COMPLETED
     assert completed.cancellation_requested
     assert completed.cancellation_reason == "user cancelled"
 
 
-def test_effect_free_failure_after_cancel_request_preserves_cancellation_evidence(tmp_path: Path):
+def test_effect_free_failure_after_cancel_request_preserves_cancellation_evidence(
+    tmp_path: Path,
+):
     owner = OperationOwner(SQLiteOperationStore(tmp_path / "cancel-fail.sqlite3"))
-    operation, _ = owner.submit(_command_id("cmd-cancel-fail"), operation_id=OperationId("op-cancel-fail"), now_unix=10.0)
-    owner.admit(operation.operation_id, now_unix=11.0)
-    owner.begin_execution(operation.operation_id)
-    owner.request_cancel(operation.operation_id, "operator stop")
+    created, _ = owner.submit(
+        _command_id("cmd-cancel-fail"),
+        operation_id=OperationId("op-cancel-fail"),
+        now_unix=10.0,
+    )
+    admitted = owner.admit(created, now_unix=11.0)
+    running = owner.begin_execution(admitted)
+    cancelling = owner.request_cancel(running, "operator stop")
     failure = OperationFailure(
         OperationFailureKind.OPERATION_FAILURE,
         "STOP_FAILED",
         "operation failed while cancellation was in progress",
     )
-    failed = owner.fail(operation.operation_id, failure)
+    failed = owner.fail(cancelling, failure)
     assert failed.state is OperationState.FAILED
     assert failed.cancellation_requested
     assert failed.cancellation_reason == "operator stop"
-
 
 def test_old_operation_schema_is_rejected_instead_of_silently_upgraded(tmp_path: Path):
     path = tmp_path / "old-operation-schema.sqlite3"
@@ -199,16 +253,20 @@ def test_old_operation_schema_is_rejected_instead_of_silently_upgraded(tmp_path:
         raise AssertionError("obsolete durable schema must require an explicit migration")
 
 
+
 def test_operation_owner_cancellation_reason_does_not_coerce_non_text(tmp_path: Path):
     owner = OperationOwner(SQLiteOperationStore(tmp_path / "strict-cancel.sqlite3"))
-    operation, _ = owner.submit(_command_id("cmd-strict-cancel"), operation_id=OperationId("op-strict-cancel"), now_unix=10.0)
+    operation, _ = owner.submit(
+        _command_id("cmd-strict-cancel"),
+        operation_id=OperationId("op-strict-cancel"),
+        now_unix=10.0,
+    )
     try:
-        owner.request_cancel(operation.operation_id, 123)  # type: ignore[arg-type]
+        owner.request_cancel(operation, 123)  # type: ignore[arg-type]
     except TypeError:
         pass
     else:
         raise AssertionError("operation cancellation reason must remain typed")
-
 
 def test_operation_store_cas_rejects_version_skip(tmp_path: Path):
     store = SQLiteOperationStore(tmp_path / "cas-version.sqlite3")
@@ -221,7 +279,7 @@ def test_operation_store_cas_rejects_version_skip(tmp_path: Path):
         current.created_at_unix, 11.0,
     )
     try:
-        store.compare_and_swap(0, skipped)
+        store.compare_and_swap(current, skipped)
     except OperationConflict:
         pass
     else:
@@ -239,7 +297,7 @@ def test_operation_store_cas_rejects_immutable_identity_mutation(tmp_path: Path)
         current.created_at_unix, 11.0, parent_operation_id=OperationId("op-parent"),
     )
     try:
-        store.compare_and_swap(0, mutated)
+        store.compare_and_swap(current, mutated)
     except OperationConflict:
         pass
     else:
@@ -257,40 +315,73 @@ def test_operation_store_cas_rejects_illegal_state_jump(tmp_path: Path):
         current.created_at_unix, 11.0,
     )
     try:
-        store.compare_and_swap(0, jumped)
+        store.compare_and_swap(current, jumped)
     except OperationConflict:
         pass
     else:
         raise AssertionError("operation store must enforce lifecycle transitions even for direct CAS")
 
 
-def test_operation_owner_effectful_inflight_failure_requires_reconciliation(tmp_path: Path):
-    failure = OperationFailure(OperationFailureKind.OPERATION_FAILURE, "FAILED", "handler failed")
-    running_owner, running_id = _effectful_owner(tmp_path, "effectful-fail-running")
-    try:
-        running_owner.fail(running_id, failure)
-    except IllegalOperationTransition as exc:
-        assert "UNKNOWN_EFFECT" in str(exc)
-    else:
-        raise AssertionError("effectful RUNNING failure must not become terminal FAILED")
-    assert running_owner.require(running_id).state is OperationState.RUNNING
 
-    cancelling_owner, cancelling_id = _effectful_owner(tmp_path, "effectful-fail-cancelling")
-    cancelling_owner.request_cancel(cancelling_id, "stop")
+def test_operation_owner_effectful_inflight_failure_requires_reconciliation(
+    tmp_path: Path,
+):
+    failure = OperationFailure(
+        OperationFailureKind.OPERATION_FAILURE,
+        "FAILED",
+        "handler failed",
+    )
+    running_owner, running = _effectful_owner(
+        tmp_path,
+        "effectful-fail-running",
+    )
     try:
-        cancelling_owner.fail(cancelling_id, failure)
+        running_owner.fail(running, failure)
     except IllegalOperationTransition as exc:
         assert "UNKNOWN_EFFECT" in str(exc)
     else:
-        raise AssertionError("effectful CANCELLING failure must not become terminal FAILED")
-    assert cancelling_owner.require(cancelling_id).state is OperationState.CANCELLING
+        raise AssertionError(
+            "effectful RUNNING failure must not become terminal FAILED"
+        )
+    assert (
+        running_owner.require(running.operation_id).state
+        is OperationState.RUNNING
+    )
+
+    cancelling_owner, running = _effectful_owner(
+        tmp_path,
+        "effectful-fail-cancelling",
+    )
+    cancelling = cancelling_owner.request_cancel(running, "stop")
+    try:
+        cancelling_owner.fail(cancelling, failure)
+    except IllegalOperationTransition as exc:
+        assert "UNKNOWN_EFFECT" in str(exc)
+    else:
+        raise AssertionError(
+            "effectful CANCELLING failure must not become terminal FAILED"
+        )
+    assert (
+        cancelling_owner.require(cancelling.operation_id).state
+        is OperationState.CANCELLING
+    )
 
 
 def test_operation_owner_effect_free_running_failure_remains_legal(tmp_path: Path):
-    owner = OperationOwner(SQLiteOperationStore(tmp_path / "effect-free-fail.sqlite3"))
-    operation, _ = owner.submit(_command_id("cmd-effect-free-fail"), operation_id=OperationId("op-effect-free-fail"), now_unix=10.0)
-    owner.admit(operation.operation_id, now_unix=11.0)
-    owner.begin_execution(operation.operation_id)
-    failure = OperationFailure(OperationFailureKind.OPERATION_FAILURE, "FAILED", "handler failed")
-    failed = owner.fail(operation.operation_id, failure)
+    owner = OperationOwner(
+        SQLiteOperationStore(tmp_path / "effect-free-fail.sqlite3")
+    )
+    created, _ = owner.submit(
+        _command_id("cmd-effect-free-fail"),
+        operation_id=OperationId("op-effect-free-fail"),
+        now_unix=10.0,
+    )
+    admitted = owner.admit(created, now_unix=11.0)
+    running = owner.begin_execution(admitted)
+    failure = OperationFailure(
+        OperationFailureKind.OPERATION_FAILURE,
+        "FAILED",
+        "handler failed",
+    )
+    failed = owner.fail(running, failure)
     assert failed.state is OperationState.FAILED

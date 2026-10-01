@@ -12,8 +12,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
+from noetrium_platform.composition.research_authority_inputs import (
+    normalize_authority_inputs,
+)
 from noetrium_platform.composition.research_binding_authority import (
     ResearchProjectManifestRequirement,
+)
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionContext,
+    open_local_research_execution_context,
 )
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
@@ -24,32 +32,32 @@ from research.reproductions.authority_requirements import (
     compile_materialized_fleet_owner_requirements,
     compile_repository_fleet_prerequisites,
 )
+from research.reproductions.repository_authority import (
+    build_repository_fleet_authority_materializer,
+)
 from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.execution_authority import (
     ReproductionFleetAuthorityMaterializerPort,
     materialize_repository_fleet_execution_authorities,
 )
-from research.reproductions.execution_context import (
-    ReproductionFleetExecutionContext,
-    open_local_reproduction_fleet_execution_context,
-)
 from research.reproductions.fleet import (
     ReproductionFleetExecutionResult,
     audit_materialized_reproduction_fleet_authorities,
     execute_materialized_reproduction_fleet,
     preflight_materialized_reproduction_fleet,
+    select_execution_authority_closed_fleet,
 )
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
     discover_reproduction_definitions,
     executable_reproduction_definitions,
-    is_research_os_executable,
     expand_reproduction_benchmark_lanes,
+    is_research_os_executable,
     materialize_reproduction_study,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
-    resolve_method_program_binding,
+    resolve_method_binding,
     resolve_research_program_bindings,
     resolve_study_factory_bindings,
 )
@@ -295,18 +303,18 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
             if row.kind is ReproductionAssetKind.METHOD_PROGRAM
         )
         if method_assets:
-            method = resolve_method_program_binding(definition)
-            method_program_digest = method.program_digest
+            method = resolve_method_binding(definition)
+            method_program_digest = method.method_digest
         machines = resolve_research_program_bindings(definition)
         machine_program_digests = tuple(
             row.program_digest for row in machines
         )
 
-        portfolio = api.ResearchPortfolio(
+        portfolio = product_research_os.ResearchPortfolio(
             definition.package + ".current-research-os",
             (program,),
         )
-        revision = api.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
@@ -405,7 +413,7 @@ def build_plan() -> dict:
                 "top-level reproduction ResearchPortfolio drifted from executable "
                 "reproduction authority"
             )
-        revision = api.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
@@ -484,59 +492,34 @@ def build_plan() -> dict:
 
 
 
-def _load_authority_materializer(
-    spec: str,
-    context: ReproductionFleetExecutionContext,
-) -> ReproductionFleetAuthorityMaterializerPort:
-    if type(spec) is not str or not spec.strip() or spec != spec.strip():
-        raise ValueError("fleet authority materializer spec must be canonical text")
-    module_name, separator, qualname = spec.partition(":")
-    if (
-        separator != ":"
-        or not module_name
-        or not qualname
-        or ":" in qualname
-    ):
-        raise ValueError(
-            "fleet authority materializer must use module:factory format"
-        )
-    module = importlib.import_module(module_name)
-    value = module
-    for part in qualname.split("."):
-        if not part or part.startswith("_"):
-            raise ValueError(
-                "fleet authority materializer factory qualname must be public"
-            )
-        value = getattr(value, part)
-    if not callable(value):
-        raise TypeError("fleet authority materializer target must be callable")
-    materializer = value(context)
-    if not isinstance(materializer, ReproductionFleetAuthorityMaterializerPort):
-        raise TypeError(
-            "fleet authority materializer factory must return "
-            "ReproductionFleetAuthorityMaterializerPort"
-        )
-    return materializer
-
-
 def _execution_source(
     args,
     parser,
-    context: ReproductionFleetExecutionContext,
+    context: ResearchExecutionContext,
 ):
-    if args.authority_materializer is None:
-        parser.error(
-            "execution mode requires --authority-materializer; "
-            "direct execution-authority overrides are not supported"
-        )
+    materializer = build_repository_fleet_authority_materializer(context)
     materialized = materialize_repository_fleet_execution_authorities(
-        _load_authority_materializer(args.authority_materializer, context)
+        materializer,
+        require_full_closure=False,
     )
-    return (
-        materialized.execution_authorities,
-        materialized.fleet,
-        materialized.materialization_digest,
-    )
+    return materialized
+
+def _parse_authority_inputs(rows: list[str], parser) -> tuple[tuple[str, str], ...]:
+    parsed: list[tuple[str, str]] = []
+    for raw in rows:
+        key, separator, value = raw.partition("=")
+        if separator != "=":
+            parser.error("--authority-input must use KEY=VALUE")
+        parsed.append((key, value))
+    try:
+        return normalize_authority_inputs(
+            tuple(parsed),
+            label="fleet execution authority_inputs",
+        )
+    except (TypeError, ValueError) as exc:
+        parser.error(str(exc))
+        raise AssertionError("unreachable") from exc
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
@@ -581,28 +564,29 @@ def main() -> int:
         ),
     )
     parser.add_argument(
-        "--authority-materializer",
-        help=(
-            "module:factory(context) returning "
-            "ReproductionFleetAuthorityMaterializerPort; this is the only "
-            "executable fleet authority source"
-        ),
-    )
-    parser.add_argument(
         "--state-root",
         type=Path,
         default=ROOT / ".noetrium" / "reproduction-fleet",
     )
     parser.add_argument("--execution-id")
+    parser.add_argument(
+        "--authority-input",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "explicit machine-local authority fact; repeat for multiple inputs; "
+            "accepted only for authority-audit/preflight/execute"
+        ),
+    )
     args = parser.parse_args()
+    authority_inputs = _parse_authority_inputs(args.authority_input, parser)
 
     if args.requirements:
-        if args.authority_materializer is not None:
-            parser.error(
-                "--requirements does not accept an execution authority source"
-            )
         if args.execution_id is not None:
             parser.error("--requirements does not accept --execution-id")
+        if authority_inputs:
+            parser.error("--requirements does not accept --authority-input")
         manifest = compile_repository_fleet_prerequisites()
         payload = {
             "schema": "noetrium.reproduction-fleet-prerequisites.v1",
@@ -626,13 +610,16 @@ def main() -> int:
         return 0
 
     if args.authority_audit:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
             start_background_controllers=False,
+            authority_inputs=authority_inputs,
         ) as context:
-            authorities, materialized_fleet, authority_materialization_digest = (
-                _execution_source(args, parser, context)
-            )
+            materialized = _execution_source(args, parser, context)
+            authorities = materialized.execution_authorities
+            materialized_fleet = materialized.fleet
+            authority_materialization_digest = materialized.materialization_digest
+            materialization_blockers = materialized.materialization_blockers
             result = audit_materialized_reproduction_fleet_authorities(
                 materialized_fleet,
                 research_bindings=authorities.research_bindings,
@@ -671,6 +658,10 @@ def main() -> int:
             "closed_lane_count": result.closed_lane_count,
             "blocker_count": result.blocker_count,
             "gap_count": result.gap_count,
+            "materialization_blocker_count": len(materialization_blockers),
+            "materialization_blockers": [
+                asdict(row) for row in materialization_blockers
+            ],
             "all_execution_authority_closed": (
                 result.closed_lane_count == len(result.lanes)
             ),
@@ -714,15 +705,47 @@ def main() -> int:
         return 0 if payload["all_execution_authority_closed"] else 1
 
     if args.preflight:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
             start_background_controllers=False,
+            authority_inputs=authority_inputs,
         ) as context:
-            authorities, materialized_fleet, authority_materialization_digest = (
-                _execution_source(args, parser, context)
-            )
-            result = preflight_materialized_reproduction_fleet(
+            materialized = _execution_source(args, parser, context)
+            authorities = materialized.execution_authorities
+            materialized_fleet = materialized.fleet
+            authority_materialization_digest = materialized.materialization_digest
+            materialization_blockers = materialized.materialization_blockers
+            authority_audit = audit_materialized_reproduction_fleet_authorities(
                 materialized_fleet,
+                research_bindings=authorities.research_bindings,
+                experiment_runtime_components=authorities.experiment_runtime_components,
+                authority_manifest_digest=authorities.authority_manifest_digest,
+            )
+            runnable_fleet = select_execution_authority_closed_fleet(
+                materialized_fleet,
+                authority_audit,
+            )
+            if runnable_fleet is None:
+                payload = {
+                    "schema": "noetrium.reproduction-fleet-preflight.v4",
+                    "status": "no-runnable-lanes",
+                    "authority_manifest_digest": authorities.authority_manifest_digest,
+                    "authority_materialization_digest": authority_materialization_digest,
+                    "source_materialization_blocker_count": len(materialization_blockers),
+                    "authority_blocker_count": authority_audit.blocker_count,
+                    "authority_gap_count": authority_audit.gap_count,
+                    "candidate_lane_count": len(materialized_fleet.lanes),
+                    "runnable_lane_count": 0,
+                    "audit_digest": authority_audit.audit_digest,
+                }
+                rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+                if args.output:
+                    args.output.parent.mkdir(parents=True, exist_ok=True)
+                    args.output.write_text(rendered, encoding="utf-8")
+                print(rendered, end="")
+                return 0
+            result = preflight_materialized_reproduction_fleet(
+                runnable_fleet,
                 state_root=args.state_root,
                 research_bindings=authorities.research_bindings,
                 experiment_runtime_components=(
@@ -731,6 +754,7 @@ def main() -> int:
                 authority_manifest_digest=authorities.authority_manifest_digest,
                 execution_id=args.execution_id,
                 execution_pool=context.execution_pool,
+                content_authorities=context.content,
             )
         payload = {
             "schema": "noetrium.reproduction-fleet-preflight.v3",
@@ -755,15 +779,53 @@ def main() -> int:
         return 0
 
     if args.execute:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
-            start_background_controllers=True,
+            start_background_controllers=False,
+            authority_inputs=authority_inputs,
+            terminal_retirement_on_success=True,
         ) as context:
-            authorities, materialized_fleet, authority_materialization_digest = (
-                _execution_source(args, parser, context)
-            )
-            receipt = execute_materialized_reproduction_fleet(
+            materialized = _execution_source(args, parser, context)
+            authorities = materialized.execution_authorities
+            materialized_fleet = materialized.fleet
+            authority_materialization_digest = materialized.materialization_digest
+            materialization_blockers = materialized.materialization_blockers
+            authority_audit = audit_materialized_reproduction_fleet_authorities(
                 materialized_fleet,
+                research_bindings=authorities.research_bindings,
+                experiment_runtime_components=authorities.experiment_runtime_components,
+                authority_manifest_digest=authorities.authority_manifest_digest,
+            )
+            runnable_fleet = select_execution_authority_closed_fleet(
+                materialized_fleet,
+                authority_audit,
+            )
+            if runnable_fleet is None:
+                payload = {
+                    "schema": "noetrium.reproduction-fleet-execution.v4",
+                    "status": "no-runnable-lanes",
+                    "authority_manifest_digest": authorities.authority_manifest_digest,
+                    "authority_materialization_digest": authority_materialization_digest,
+                    "source_materialization_blocker_count": len(materialization_blockers),
+                    "authority_blocker_count": authority_audit.blocker_count,
+                    "authority_gap_count": authority_audit.gap_count,
+                    "candidate_lane_count": len(materialized_fleet.lanes),
+                    "runnable_lane_count": 0,
+                    "audit_digest": authority_audit.audit_digest,
+                }
+                rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+                if args.output:
+                    args.output.parent.mkdir(parents=True, exist_ok=True)
+                    args.output.write_text(rendered, encoding="utf-8")
+                print(rendered, end="")
+                return 0
+            # Required model/environment realizations have now had their exact
+            # targeted-adoption opportunity. Generic background orphan GC may
+            # start only after this barrier, otherwise it can destroy warm state
+            # between process generations before the required owner reattaches.
+            context.runtime.start_background_controllers()
+            receipt = execute_materialized_reproduction_fleet(
+                runnable_fleet,
                 state_root=args.state_root,
                 research_bindings=authorities.research_bindings,
                 experiment_runtime_components=(
@@ -772,10 +834,12 @@ def main() -> int:
                 authority_manifest_digest=authorities.authority_manifest_digest,
                 execution_id=args.execution_id,
                 execution_pool=context.execution_pool,
+                operation_dispatcher=context.runtime.operation_runtime.dispatcher,
+                content_authorities=context.content,
             )
             context.runtime.assert_healthy()
             result = ReproductionFleetExecutionResult(
-                materialized_fleet,
+                runnable_fleet,
                 receipt,
                 authorities.authority_manifest_digest,
             )
@@ -784,7 +848,7 @@ def main() -> int:
             "authority_manifest_digest": result.authority_manifest_digest,
             "authority_materialization_digest": authority_materialization_digest,
             "execution_id": result.receipt.target.execution_id,
-            "revision_digest": result.receipt.target.research_revision_digest,
+            "revision_digest": result.receipt.target.revision.revision_digest,
             "materialization_digest": (
                 result.materialization.materialization_digest
             ),
@@ -793,7 +857,16 @@ def main() -> int:
             "lane_count": len(result.materialization.lanes),
             "control_action": result.receipt.action.value,
             "control_state": result.receipt.state,
-            "control_receipt_digest": result.receipt.receipt_digest,
+            "control_receipt_digest": canonical_digest(
+                {
+                    "action": result.receipt.action.value,
+                    "execution_id": result.receipt.target.execution_id,
+                    "revision_digest": result.receipt.target.revision.revision_digest,
+                    "state": result.receipt.state,
+                    "control_revision_digest": result.receipt.control_revision_digest,
+                    "payload": result.receipt.payload,
+                }
+            ),
             "execution_digest": result.execution_digest,
         }
         rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
@@ -803,13 +876,12 @@ def main() -> int:
         print(rendered, end="")
         return 0 if result.receipt.state == "succeeded" else 1
 
-    if args.authority_materializer is not None:
-        parser.error(
-            "authority materializer requires --authority-audit, "
-            "--preflight, or --execute"
-        )
     if args.execution_id is not None:
         parser.error("--execution-id requires --preflight or --execute")
+    if authority_inputs:
+        parser.error(
+            "--authority-input requires --authority-audit, --preflight, or --execute"
+        )
 
     payload = build_plan()
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"

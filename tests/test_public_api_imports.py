@@ -12,17 +12,25 @@ class PublicAPIImportTests(unittest.TestCase):
         for module in (telemetry, forensics, model_serving, operator, prompt_runtime):
             self.assertIsNotNone(module)
 
-    def test_unified_downstream_api_is_discoverable(self):
+    def test_unified_downstream_api_is_only_top_level_research_os(self):
         import noetrium
         from noetrium import api
 
         self.assertEqual(noetrium.__all__, ["api", "__version__"])
-        self.assertIsNotNone(api.AgentGoal)
-        with self.assertRaises(AttributeError):
-            _ = api.JsonValue
-        self.assertTrue(callable(api.compile_research_method))
-        self.assertIsNotNone(api.MultiAgentRuntime)
-        self.assertIsNotNone(api.VersionedMemoryGraph)
+        self.assertEqual(
+            api.__all__,
+            ("ResearchPortfolioBuilder", "ResearchPortfolio", "ResearchOS", "open_project"),
+        )
+        for retired in (
+            "research_authoring",
+            "execution_authoring",
+            "research_requirements",
+            "research_os",
+            "MethodProgramBuilder",
+            "MemoryProgramBuilder",
+            "Study",
+        ):
+            self.assertFalse(hasattr(api, retired), retired)
 
     def test_removed_extension_aliases_are_not_importable(self):
         for module_name in (
@@ -32,22 +40,6 @@ class PublicAPIImportTests(unittest.TestCase):
             with self.assertRaises(ModuleNotFoundError):
                 importlib.import_module(module_name)
 
-    def test_system_descriptor_uses_package_boundaries(self):
-        from noetrium_platform.foundation.governance.system_registry.api import (
-            SystemDescriptor,
-            SystemIdentity,
-            SystemLayer,
-            SystemNodeKind,
-        )
 
-        with self.assertRaises(ValueError):
-            SystemDescriptor(
-                identity=SystemIdentity("platform"),
-                layer=SystemLayer.PLATFORM,
-                package_prefix="noetrium_platform_shadow",
-                node_kind=SystemNodeKind.PROVIDER,
-            )
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

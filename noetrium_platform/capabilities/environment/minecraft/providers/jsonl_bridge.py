@@ -4,6 +4,7 @@ from collections import deque
 import hashlib
 import json
 from pathlib import Path
+from threading import Lock
 import time
 from typing import Mapping
 from uuid import uuid4
@@ -14,7 +15,7 @@ from noetrium_platform.capabilities.environment.api import (
     Observation,
     action_request_digest,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import SerialActorPort, TaskGroupPort
+from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue
 from noetrium_platform.substrate.api import OperatingSystemRoute, ProcessSupervisorPort
 
@@ -91,11 +92,20 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
             failure_reporter=self._failure_log,
             stderr_tail_lines=stderr_tail_lines,
         )
-        self._actor: SerialActorPort = task_group.open_serial_actor(
-            f"minecraft-bridge:{actor_identity}:{uuid4().hex}",
-            lane_id=f"minecraft-bridge:{actor_identity}",
-        )
+        self._operation_lock = Lock()
         self._closing = False
+
+    def _call_owned(self, operation: str, fn, /, *args):
+        """Serialize the synchronous bridge API without occupying a SERIAL worker.
+
+        The bridge protocol is deliberately synchronous at this boundary. Long
+        subprocess pipe drains remain owned by the capability ASYNC_IO task group;
+        a local mutex provides per-bridge ordering without pinning an external-I/O
+        wait to the shared SERIAL worker pool.
+        """
+        del operation
+        with self._operation_lock:
+            return fn(*args)
 
     @property
     def action_recovery_durability(self) -> str:
@@ -229,12 +239,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                             "BRIDGE_INVALID_ACTION_RESULT",
                             safe_exception_message(exc),
                         ) from exc
-                    disposition = {
-                        MinecraftActionOutcomeStatus.APPLIED: ActionReconciliationDisposition.APPLIED,
-                        MinecraftActionOutcomeStatus.REJECTED: ActionReconciliationDisposition.NOT_APPLIED,
-                        MinecraftActionOutcomeStatus.PARTIAL: ActionReconciliationDisposition.UNKNOWN,
-                    }[evidence.status]
-                    self._action_proofs[evidence.action_id] = disposition
+                    self._action_proofs[evidence.action_id] = evidence.effect_disposition
                 continue
             if message.kind != "ack":
                 continue
@@ -414,7 +419,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
             raise
 
     def start(self) -> None:
-        self._actor.call("start", self._start_owned)
+        self._call_owned("start", self._start_owned)
 
     def _command_owned(
         self,
@@ -463,7 +468,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
             raise ValueError("Minecraft bridge command must be non-empty")
         if timeout_s <= 0:
             raise ValueError("Minecraft bridge command timeout must be positive")
-        return self._actor.call("command", self._command_owned, command, payload, timeout_s)
+        return self._call_owned("command", self._command_owned, command, payload, timeout_s)
 
     def _reconcile_action_owned(
         self, action_id: str, request_digest: str
@@ -471,7 +476,9 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         local = self._action_proofs.get(action_id)
         if local in {
             ActionReconciliationDisposition.APPLIED,
+            ActionReconciliationDisposition.REJECTED,
             ActionReconciliationDisposition.NOT_APPLIED,
+            ActionReconciliationDisposition.UNKNOWN,
         }:
             return MinecraftReconciliation(
                 action_id=action_id,
@@ -496,6 +503,14 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         )
         ack = response.diagnostics.get("ack")
         raw = ack.get("disposition") if isinstance(ack, Mapping) else None
+        raw_outcome = ack.get("outcome") if isinstance(ack, Mapping) else None
+        if raw_outcome is not None and not isinstance(raw_outcome, Mapping):
+            raise MinecraftBridgeError(
+                "reconcile",
+                "BRIDGE_INVALID_RECONCILIATION",
+                "provider outcome must be a mapping when present",
+            )
+        provider_outcome = dict(raw_outcome) if isinstance(raw_outcome, Mapping) else None
         try:
             disposition = ActionReconciliationDisposition(str(raw))
         except ValueError as exc:
@@ -513,6 +528,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                 else "process_action_journal",
                 "known_action_proof": disposition.value,
                 "durability": self.action_recovery_durability,
+                "provider_outcome": provider_outcome,
             },
         )
 
@@ -528,7 +544,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         if not action_id.strip():
             raise ValueError("Minecraft action_id must be non-empty")
         digest = request_digest or action_request_digest(request)
-        return self._actor.call(
+        return self._call_owned(
             "reconcile-action", self._reconcile_action_owned, action_id, digest
         )
 
@@ -552,7 +568,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
             self._closing = False
 
     def close(self) -> None:
-        self._actor.call("close", self._close_owned)
+        self._call_owned("close", self._close_owned)
 
 
 

@@ -53,9 +53,11 @@ class _QuiescenceDouble:
             raise self.resume_error
 
 
-def _portable_metadata_writer(path, payload: bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(payload)
+class _PortableMetadataStore:
+    def publish(self, path: str, payload: bytes) -> None:
+        target = Path(path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
 
 
 def _source_world(tmp_path):
@@ -81,7 +83,7 @@ def _provider(tmp_path, source):
         quiescence=quiescence,
         snapshot_root=tmp_path / "cuts",
         branch_root=tmp_path / "branches",
-        metadata_writer=_portable_metadata_writer,
+        metadata_store=_PortableMetadataStore(),
     )
     return provider, quiescence
 
@@ -181,7 +183,7 @@ def test_reflink_copier_prunes_nested_volatile_entries_after_verified_copy(tmp_p
     assert not (destination / "nested" / "session.lock").exists()
 
 
-def test_world_cut_default_metadata_writer_matches_controller_platform(tmp_path) -> None:
+def test_world_cut_default_metadata_store_matches_controller_platform(tmp_path) -> None:
     source = _source_world(tmp_path)
     control = _QuiescenceDouble(str(source))
     provider = FilesystemMinecraftWorldCutProvider(

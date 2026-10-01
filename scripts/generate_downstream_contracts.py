@@ -11,14 +11,19 @@ import argparse
 import ast
 from dataclasses import asdict, dataclass
 import hashlib
-import importlib
 import json
 from pathlib import Path
 import re
 import sys
 from typing import Any
 
-from noetrium._api_surface import UNIFIED_API_EXTRA_MODULES
+SCRIPT_DIR = Path(__file__).resolve().parent
+ROOT = SCRIPT_DIR.parent
+for _path in (SCRIPT_DIR, ROOT):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
+from generate_public_api_hierarchy import discover_product_api_layers
 from noetrium_platform.foundation.governance.architecture.downstream_surface_policy import downstream_symbols
 
 SCHEMA = "noetrium-downstream-contracts.v5"
@@ -158,7 +163,27 @@ def _string_sequence(
     raise ValueError("unsupported __all__ expression")
 
 
-def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
+def _relative_import_path(source_path: Path, node: ast.ImportFrom) -> Path | None:
+    if node.level <= 0:
+        return None
+    base = source_path.parent
+    for _ in range(node.level - 1):
+        base = base.parent
+    if node.module:
+        base = base.joinpath(*node.module.split("."))
+    file_path = base.with_suffix(".py")
+    if file_path.is_file():
+        return file_path
+    init_path = base / "__init__.py"
+    return init_path if init_path.is_file() else None
+
+
+def _declared_all(
+    tree: ast.Module,
+    *,
+    source_path: Path | None = None,
+    seen_paths: frozenset[Path] = frozenset(),
+) -> tuple[str, ...] | None:
     """Resolve declarative ``__all__`` updates without importing project code."""
     sequences: dict[str, tuple[str, ...]] = {}
     scope_names: list[str] = []
@@ -179,9 +204,32 @@ def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
         if isinstance(node, ast.ImportFrom):
             if node.module == "__future__":
                 continue
+            imported_all: tuple[str, ...] | None = None
+            imported_path = (
+                None
+                if source_path is None
+                else _relative_import_path(source_path, node)
+            )
+            if imported_path is not None and imported_path not in seen_paths:
+                try:
+                    imported_tree = ast.parse(
+                        imported_path.read_text(encoding="utf-8"),
+                        filename=str(imported_path),
+                    )
+                    imported_all = _declared_all(
+                        imported_tree,
+                        source_path=imported_path,
+                        seen_paths=seen_paths | {source_path},
+                    )
+                except (OSError, UnicodeError, SyntaxError, RuntimeError):
+                    imported_all = None
             for alias in node.names:
-                if alias.name != "*":
-                    remember(_scope_name_from_alias(alias))
+                if alias.name == "*":
+                    continue
+                local_name = _scope_name_from_alias(alias)
+                remember(local_name)
+                if alias.name == "__all__" and imported_all is not None:
+                    sequences[local_name] = imported_all
             continue
         if isinstance(node, ast.Assign):
             simple_targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
@@ -248,7 +296,7 @@ def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
 def _public_symbols(path: Path) -> tuple[str, ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     try:
-        declared = _declared_all(tree)
+        declared = _declared_all(tree, source_path=path, seen_paths=frozenset({path}))
     except RuntimeError as exc:
         raise RuntimeError(f"{path}: {exc}") from exc
     if declared is not None:
@@ -453,102 +501,23 @@ def _module_source(root: Path, module: str) -> Path:
     raise FileNotFoundError(f"public module source not found: {module}")
 
 
-def _equivalent_runtime_source(
-    symbol: str,
-    modules: set[str],
-) -> str | None:
-    resolved: list[tuple[str, object]] = []
-    for module_name in sorted(modules):
-        try:
-            module = importlib.import_module(module_name)
-            value = getattr(module, symbol)
-        except (ImportError, AttributeError):
-            return None
-        resolved.append((module_name, value))
-    if not resolved:
-        return None
-    value = resolved[0][1]
-    if not all(candidate is value for _module, candidate in resolved[1:]):
-        return None
-    return resolved[0][0]
-
-
-def _unified_resolution_sources(
+def _hierarchical_resolution_sources(
     root: Path,
-    surfaces: tuple[SystemSurface, ...],
 ) -> tuple[dict[str, str], dict[str, tuple[str, ...]]]:
-    product_module = "noetrium_platform.product.api"
-    registry_sources: dict[str, set[str]] = {}
-    try:
-        product_source = _module_source(root, product_module)
-    except FileNotFoundError:
-        product_symbols: tuple[str, ...] = ()
-    else:
-        product_symbols = downstream_symbols(_public_symbols(product_source))
-    for symbol in product_symbols:
-        if symbol.isidentifier():
-            registry_sources.setdefault(symbol, set()).add(product_module)
-
-    extra_sources: dict[str, set[str]] = {}
-    for module in UNIFIED_API_EXTRA_MODULES:
-        try:
-            source = _module_source(root, module)
-        except FileNotFoundError:
-            continue
-        symbols = downstream_symbols(_public_symbols(source))
-        for symbol in symbols:
-            if symbol.isidentifier():
-                extra_sources.setdefault(symbol, set()).add(module)
+    """Resolve nested Product API symbols from the canonical generated hierarchy."""
 
     direct: dict[str, str] = {}
     ambiguous: dict[str, tuple[str, ...]] = {}
-    for symbol in sorted(set(registry_sources) | set(extra_sources)):
-        modules = set(registry_sources.get(symbol, ())) | set(
-            extra_sources.get(symbol, ())
-        )
-        if len(modules) == 1:
-            direct[symbol] = next(iter(modules))
-            continue
-        source = _equivalent_runtime_source(symbol, modules)
-        if source is None:
-            ambiguous[symbol] = tuple(sorted(modules))
-        else:
-            direct[symbol] = source
+    for layer, _source_module, symbols in discover_product_api_layers(root):
+        module = "noetrium_platform.product.api"
+        for symbol in symbols:
+            previous = direct.get(symbol)
+            if previous is None:
+                direct[symbol] = module
+                continue
+            ambiguous[symbol] = tuple(sorted({previous, module}))
+            direct.pop(symbol, None)
     return direct, ambiguous
-
-
-def render_unified_api_stub(
-    root: Path,
-    surfaces: tuple[SystemSurface, ...],
-) -> tuple[str, int]:
-    direct, ambiguous = _unified_resolution_sources(root, surfaces)
-    if ambiguous:
-        raise RuntimeError(
-            "Research OS public API contains ambiguous symbols: "
-            + ", ".join(sorted(ambiguous))
-        )
-    selected = {
-        symbol: module
-        for symbol, module in direct.items()
-        if module == "noetrium_platform.product.api"
-    }
-    by_module: dict[str, list[str]] = {}
-    for symbol, module in sorted(selected.items()):
-        by_module.setdefault(module, []).append(symbol)
-
-    lines = [
-        f'""" {_MARKER}.',
-        "Static typing projection for the single Noetrium Research OS API.",
-        '"""',
-        "",
-    ]
-    for module in sorted(by_module):
-        lines.append(f"from {module} import (")
-        for symbol in sorted(by_module[module]):
-            lines.append(f"    {symbol} as {symbol},")
-        lines.extend([")", ""])
-    return "\n".join(lines), len(selected)
-
 
 
 def render_root_contract_init(root: Path) -> str:
@@ -630,9 +599,7 @@ def render_catalog(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
     )
     topology_digest = _digest(registry)
     symbol_index: dict[str, list[str]] = {}
-    direct_symbol_sources, ambiguous_symbol_sources = _unified_resolution_sources(
-        root, surfaces
-    )
+    direct_symbol_sources, ambiguous_symbol_sources = _hierarchical_resolution_sources(root)
     document: dict[str, Any] = {
         "schema": SCHEMA,
         "generator": "scripts/generate_downstream_contracts.py",
@@ -711,7 +678,7 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
         "## How downstream projects use Noetrium",
         "",
         "1. Import only the unified noetrium.api Research OS surface.",
-        "2. Author methods, benchmarks, metrics, experiments, analyses, and portfolio graphs through ResearchProgramBuilder.",
+        "2. Start from ResearchPortfolioBuilder; Program/Method/Memory DSLs are reached through that root.",
         "3. Control live research through ResearchOS; lower platform APIs are composition-only internals.",
         "4. Run python scripts/update_generated_docs.py after changing registry topology or the Product API.",
         "",
@@ -719,8 +686,9 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
         "",
         "    from noetrium import api",
         "",
-        "    program = api.ResearchProgramBuilder(\"paper\")",
-        "    os = api.ResearchOS(port)",
+        "    portfolio = api.ResearchPortfolioBuilder(\"research\")",
+        "    program = portfolio.program(\"paper\")",
+        "    os = api.open_project(\".\")",
         "",
         f"- Registered systems: {len(surfaces)}",
         f"- Public API modules: {total_modules}",
@@ -763,19 +731,25 @@ def render_markdown(root: Path, surfaces: tuple[SystemSurface, ...]) -> bytes:
     return ("\n".join(lines) + "\n").encode("utf-8")
 
 
-def render_readme_interface_block(surfaces: tuple[SystemSurface, ...]) -> str:
+def render_readme_interface_block(
+    root: Path,
+    surfaces: tuple[SystemSurface, ...],
+) -> str:
     domains = _domain_rows(surfaces)
     total_modules = sum(len(surface.api_modules) for surface in surfaces)
-    total_symbols = sum(
-        len(api.symbols) for surface in surfaces for api in surface.api_modules
+    public_api_path = root / "noetrium/api/__init__.py"
+    public_symbols = _declared_all(
+        ast.parse(public_api_path.read_text(encoding="utf-8")),
+        source_path=public_api_path,
     )
+    total_symbols = len(public_symbols or ())
     lines = [
         README_BLOCK_START,
         "### Public interface catalog",
         "",
         "Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.",
         "",
-        f"- {len(surfaces)} registered system surfaces; {total_modules} public API modules; {total_symbols} public symbols.",
+        f"- {len(surfaces)} registered system surfaces; {total_modules} public API module; {total_symbols} public root symbols.",
         "- Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json",
         "- Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md",
         "- Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.",
@@ -790,8 +764,9 @@ def render_readme_interface_block(surfaces: tuple[SystemSurface, ...]) -> str:
         "Author and control research through the same top-level API:",
         "",
         "    from noetrium import api",
-        "    program = api.ResearchProgramBuilder(\"paper\")",
-        "    research_os = api.ResearchOS(port)",
+        "    portfolio = api.ResearchPortfolioBuilder(\"paper\")",
+        "    program = portfolio.program(\"paper\")",
+        "    research_os = api.open_project(\".\")",
         "",
         "After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.",
         README_BLOCK_END,
@@ -836,13 +811,21 @@ def generate(root: Path, *, check: bool = False) -> int:
     markdown_path = root / "docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md"
     topology_path = root / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
     topology_source = root / "noetrium_platform/foundation/governance/system_registry/catalog.json"
-    api_stub, api_stub_symbol_count = render_unified_api_stub(root, surfaces)
+    api_stub_symbol_count = next(
+        (
+            len(api.symbols)
+            for surface in surfaces
+            if surface.system_key == "research_os"
+            for api in surface.api_modules
+            if api.module == "noetrium_platform.product.api"
+        ),
+        0,
+    )
     expected: dict[Path, bytes] = {
         facade_root / "__init__.py": render_init(surfaces).encode("utf-8"),
         catalog_path: render_catalog(root, surfaces),
         markdown_path: render_markdown(root, surfaces),
         topology_path: topology_source.read_bytes(),
-        root / "noetrium/api.pyi": api_stub.encode("utf-8"),
     }
     expected[root / "noetrium/contracts/__init__.py"] = (
         render_root_contract_init(root).encode("utf-8")
@@ -853,7 +836,7 @@ def generate(root: Path, *, check: bool = False) -> int:
         slug = surface.facade_module.rsplit(".", 1)[-1]
         expected[facade_root / f"{slug}.py"] = render_facade(surface).encode("utf-8")
     ok = True
-    readme_block = render_readme_interface_block(surfaces)
+    readme_block = render_readme_interface_block(root, surfaces)
     readme_updates: dict[Path, str] = {}
     for readme_path in _readme_paths(root):
         current = readme_path.read_text(encoding="utf-8") if readme_path.is_file() else ""

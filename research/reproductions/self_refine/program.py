@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
 
 from .fidelity import SELF_REFINE_FIDELITY
 
@@ -56,7 +53,7 @@ def self_refine_commongen_initial_state(
     }
 
 
-def _generation_view(request: MethodNodeRequest) -> JsonObject:
+def _generation_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "init",
         "task_id": request.state["task_id"],
@@ -78,16 +75,16 @@ def _sentence(value: JsonValue) -> str:
     raise TypeError("Self-Refine model result must contain sentence text")
 
 
-def _record_sentence(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_sentence(request: MethodCall) -> MethodNodeResult:
     sentence = _sentence(request.previous_value)
-    return MethodNodeResult(
+    return dict(
         value={"sentence": sentence},
         state_update={"current_sentence": sentence},
         next_node="feedback",
     )
 
 
-def _feedback_view(request: MethodNodeRequest) -> JsonObject:
+def _feedback_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "feedback",
         "task_id": request.state["task_id"],
@@ -134,7 +131,7 @@ def _feedback_is_none(concepts: tuple[str, ...], commonsense: str) -> bool:
     )
 
 
-def _record_feedback(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_feedback(request: MethodCall) -> MethodNodeResult:
     concepts, commonsense = _feedback(request.previous_value)
     sentence = _text(request.state.get("current_sentence"), "current sentence")
     history = (
@@ -150,7 +147,7 @@ def _record_feedback(request: MethodNodeRequest) -> MethodNodeResult:
     accepted = _feedback_is_none(concepts, commonsense)
     attempt_index = int(request.state.get("attempt_index", 0))
     exhausted = attempt_index + 1 >= _MAX_ATTEMPTS
-    return MethodNodeResult(
+    return dict(
         value={
             "accepted": accepted,
             "attempt": attempt_index + 1,
@@ -170,7 +167,7 @@ def _record_feedback(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _refine_view(request: MethodNodeRequest) -> JsonObject:
+def _refine_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "iterate",
         "task_id": request.state["task_id"],
@@ -183,10 +180,10 @@ def _refine_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_refinement(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_refinement(request: MethodCall) -> MethodNodeResult:
     sentence = _sentence(request.previous_value)
     attempt_index = int(request.state.get("attempt_index", 0)) + 1
-    return MethodNodeResult(
+    return dict(
         value={"sentence": sentence, "attempt_index": attempt_index},
         state_update={
             "current_sentence": sentence,
@@ -196,7 +193,7 @@ def _record_refinement(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     history = tuple(request.state.get("history", ()))
     direct = history[0] if history else None
     final = history[-1] if history else None
@@ -215,7 +212,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
 
     direct_concept_success, direct_commonsense_success = component_success(direct)
     iter_concept_success, iter_commonsense_success = component_success(final)
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": request.state["task_id"],
             "concepts": request.state["concepts"],
@@ -233,7 +230,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_self_refine_commongen_method_program() -> MethodProgram:
+def build_self_refine_commongen_method_program(method, ) -> None:
     configuration: JsonObject = {
         "source_commit": SELF_REFINE_FIDELITY.audited_commit,
         "mechanism": SELF_REFINE_FIDELITY.mechanism,
@@ -249,22 +246,14 @@ def build_self_refine_commongen_method_program() -> MethodProgram:
         ),
         "stop_condition": SELF_REFINE_FIDELITY.commongen_stop_condition,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="self-refine",
-            implementation_version=SELF_REFINE_FIDELITY.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="self-refine.commongen.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="generate")
+
+    builder = method
     builder.agent(
         "generate",
         "self-refine.commongen.init",
         _MODEL_AGENT_ID,
         ("record_sentence",),
-        view_handler=_generation_view,
+        view=_generation_view,
         max_visits=1,
     )
     builder.compute(
@@ -279,7 +268,7 @@ def build_self_refine_commongen_method_program() -> MethodProgram:
         "self-refine.commongen.feedback",
         _MODEL_AGENT_ID,
         ("record_feedback",),
-        view_handler=_feedback_view,
+        view=_feedback_view,
         max_visits=_MAX_ATTEMPTS,
     )
     builder.route(
@@ -294,7 +283,7 @@ def build_self_refine_commongen_method_program() -> MethodProgram:
         "self-refine.commongen.iterate",
         _MODEL_AGENT_ID,
         ("record_refinement",),
-        view_handler=_refine_view,
+        view=_refine_view,
         max_visits=_MAX_ATTEMPTS - 1,
     )
     builder.compute(
@@ -305,15 +294,15 @@ def build_self_refine_commongen_method_program() -> MethodProgram:
         max_visits=_MAX_ATTEMPTS - 1,
     )
     builder.return_node("return", "self-refine.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*())
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "self-refine.model-visible-history",
             "self-refine.feedback",
         ),
-        metric_names=(
+        metrics=(
             "direct_concept_success",
             "direct_commonsense_success",
             "direct_success",
@@ -322,15 +311,26 @@ def build_self_refine_commongen_method_program() -> MethodProgram:
             "iter_success",
             "attempt_count",
         ),
-        artifact_kinds=("self_refine_history", "commongen_prediction"),
+        artifacts=("self_refine_history", "commongen_prediction"),
     )
+    return builder
 
 
-SELF_REFINE_COMMONGEN_METHOD_PROGRAM = build_self_refine_commongen_method_program()
+METHOD_CONFIGURER = build_self_refine_commongen_method_program
+METHOD_ENTRYPOINT = "generate"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "SELF_REFINE_COMMONGEN_METHOD_PROGRAM",
-    "build_self_refine_commongen_method_program",
-    "self_refine_commongen_initial_state",
+    'build_self_refine_commongen_method_program',
+    'self_refine_commongen_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'self-refine', "version": "paper-protocol", "semantic_contract": 'self-refine' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

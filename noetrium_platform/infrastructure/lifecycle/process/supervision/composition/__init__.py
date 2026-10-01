@@ -8,15 +8,24 @@ from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime impo
 )
 
 
-def build_local_command_runner(task_group, *, default_timeout_seconds: float = 3600.0) -> AsyncLocalCommandRunner:
+def build_local_command_runner(
+    task_group,
+    *,
+    default_timeout_seconds: float = 3600.0,
+    task_namespace: str | None = None,
+) -> AsyncLocalCommandRunner:
     return AsyncLocalCommandRunner(
-        build_process_command_runner(task_group),
+        build_process_command_runner(task_group, task_namespace=task_namespace),
         default_timeout_seconds=default_timeout_seconds,
     )
 
 
-def build_process_command_runner(task_group) -> AsyncProcessCommandRunner:
-    return AsyncProcessCommandRunner(task_group)
+def build_process_command_runner(
+    task_group,
+    *,
+    task_namespace: str | None = None,
+) -> AsyncProcessCommandRunner:
+    return AsyncProcessCommandRunner(task_group, task_namespace=task_namespace)
 
 
 def build_process_supervisor(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity, DatasetQuery, DatasetVersion
 from noetrium_platform.foundation.governance.architecture.system_graphs import declared_subsystem_graph, declared_system_graph
 from noetrium_platform.infrastructure.resources.compute.api import ComputeGPU, ComputeHost, ComputeRequirement
@@ -9,8 +9,8 @@ from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity
 from tests.resource_compute_support import idle_gpu_runtime_observer
 
 
-def test_platform_meta_composes_independent_authorities() -> None:
-    meta = build_in_memory_platform_meta()
+def test_platform_meta_composes_independent_authorities(tmp_path) -> None:
+    meta = build_platform_meta(tmp_path / "meta")
     project = ScopeIdentity(ScopeKind.PROJECT, "paper-a")
     workspace = ScopeIdentity(ScopeKind.WORKSPACE, "ws")
     program = ScopeIdentity(ScopeKind.PROGRAM, "prog")
@@ -25,8 +25,9 @@ def test_platform_meta_composes_independent_authorities() -> None:
     assert meta.resource_leases.active_for(resource)[0].lease_id == "lease-a"
 
 
-def test_compute_scheduler_allocates_matching_gpu_without_embedding_host_policy_in_runs() -> None:
-    meta = build_in_memory_platform_meta(
+def test_compute_scheduler_allocates_matching_gpu_without_embedding_host_policy_in_runs(tmp_path) -> None:
+    meta = build_platform_meta(
+        tmp_path / "meta",
         gpu_runtime_observer=idle_gpu_runtime_observer("0", "1")
     )
     meta.compute_inventory.register_host(ComputeHost(
@@ -39,8 +40,8 @@ def test_compute_scheduler_allocates_matching_gpu_without_embedding_host_policy_
     assert len(allocation.gpu_ids) == 1
 
 
-def test_dataset_versions_are_scoped_portable_and_immutable_by_identity() -> None:
-    meta = build_in_memory_platform_meta()
+def test_dataset_versions_are_scoped_portable_and_immutable_by_identity(tmp_path) -> None:
+    meta = build_platform_meta(tmp_path / "meta")
     row = DatasetVersion(
         DatasetIdentity("benchmark", "v1"),
         PLATFORM_SCOPE,

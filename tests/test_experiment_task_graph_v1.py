@@ -71,3 +71,11 @@ def test_task_graph_handles_deep_dependency_chains_without_recursion() -> None:
     assert len(ordered) == 1500
     assert ordered[0].task_id == "task-0"
     assert ordered[-1].task_id == "task-1499"
+
+
+def test_experiment_task_payload_is_frozen_at_authoring_boundary() -> None:
+    payload = {"question": "What is 2+2?", "tags": ["math"]}
+    task = ExperimentTaskSpec("payload", "qa", "solve", payload=payload)
+    payload["question"] = "mutated"
+    payload["tags"].append("changed")
+    assert task.payload == {"question": "What is 2+2?", "tags": ("math",)}

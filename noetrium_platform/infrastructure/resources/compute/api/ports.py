@@ -4,12 +4,11 @@ from typing import Protocol
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity
 
-from .contracts import ComputeAllocation, ComputeAllocationBatch, ComputeBindingProof, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
+from .contracts import ComputeAllocation, ComputeBindingProof, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
 
 
 class ComputeInventoryPort(Protocol):
     def register_host(self, host: ComputeHost) -> None: ...
-    def replace_host(self, expected: ComputeHost, replacement: ComputeHost) -> ComputeHost: ...
     def host(self, host_id: str) -> ComputeHost: ...
     def list_hosts(self, *, scope: ScopeIdentity | None = None) -> tuple[ComputeHost, ...]: ...
     def register_cluster(self, cluster: ComputeCluster) -> None: ...
@@ -41,13 +40,6 @@ class ComputeLeaseGuardFactoryPort(Protocol):
     def create(self, allocations: tuple[ComputeAllocation, ...]) -> ComputeLeaseGuardPort: ...
 
 class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
-    def allocate_batch(
-        self,
-        batch: ComputeAllocationBatch,
-        *,
-        ttl_seconds: float | None = None,
-        now: float | None = None,
-    ) -> tuple[ComputeAllocation, ...]: ...
     def allocate(
         self,
         allocation_id: str,
@@ -57,9 +49,20 @@ class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
         placement_scope: ScopeIdentity | None = None,
         ttl_seconds: float | None = None,
         now: float | None = None,
+        excluded_gpus: frozenset[tuple[str, str]] = frozenset(),
     ) -> ComputeAllocation: ...
+    def unbound_placement_satisfies(
+        self,
+        allocation: ComputeAllocation,
+        requirement: ComputeRequirement,
+    ) -> bool:
+        """Revalidate one exact unbound placement against current physical facts."""
+        ...
     def renew_many(
         self, allocations: tuple[ComputeAllocation, ...], *, ttl_seconds: float, now: float | None = None
+    ) -> tuple[ComputeAllocation, ...]: ...
+    def retain_many(
+        self, allocations: tuple[ComputeAllocation, ...], *, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...
     def confirm_bound(
         self,
@@ -71,6 +74,15 @@ class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
         *,
         previous_binding_proof_digest: str,
     ) -> ComputeAllocation: ...
+    def reacquire(
+        self,
+        allocation: ComputeAllocation,
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> ComputeAllocation:
+        """Reacquire one exact durable allocation with fresh fencing."""
+        ...
     def reconcile_expired(
         self, *, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...

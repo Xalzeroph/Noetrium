@@ -9,6 +9,7 @@ class ScopeKind(StrEnum):
     WORKSPACE = "workspace"
     PROGRAM = "program"
     PROJECT = "project"
+    EXECUTION_CUT = "execution_cut"
     STUDY = "study"
     EXPERIMENT = "experiment"
     RUN = "run"
@@ -23,6 +24,7 @@ _PARENT_KIND: dict[ScopeKind, ScopeKind | None] = {
     ScopeKind.WORKSPACE: ScopeKind.PLATFORM,
     ScopeKind.PROGRAM: ScopeKind.WORKSPACE,
     ScopeKind.PROJECT: ScopeKind.PROGRAM,
+    ScopeKind.EXECUTION_CUT: ScopeKind.PROJECT,
     ScopeKind.STUDY: ScopeKind.PROJECT,
     ScopeKind.EXPERIMENT: ScopeKind.STUDY,
     ScopeKind.RUN: ScopeKind.EXPERIMENT,
@@ -39,10 +41,6 @@ class ScopeIdentity:
     scope_id: str
 
     def __post_init__(self) -> None:
-        if type(self.kind) is not ScopeKind:
-            raise TypeError("scope kind must be ScopeKind")
-        if type(self.scope_id) is not str:
-            raise TypeError("scope_id must be str")
         if not self.scope_id.strip():
             raise ValueError("scope_id must be non-empty")
 

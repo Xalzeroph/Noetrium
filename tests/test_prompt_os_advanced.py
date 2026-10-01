@@ -1,3 +1,4 @@
+from prompt_os_test_support import make_promoted_prompt_registry
 import unittest
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
     CanaryObservation, CanarySuite, PromptBlock, PromptBlockKind, PromptCanary, PromptCompiler,
@@ -7,7 +8,7 @@ from noetrium_platform.capabilities.model.request.prompt.runtime import (
 
 class PromptOSAdvancedTests(unittest.TestCase):
     def test_planner_compiler_enforces_block_policy(self):
-        r=PromptRegistry(); r.publish("g",default_prompt_specs()); b=r.get("planner.v6")
+        r=make_promoted_prompt_registry(generation_id="g"); b=r.get("planner.v6")
         K=PromptBlockKind
         blocks=(PromptBlock(K.TASK,"get wood","a",1),PromptBlock(K.VERIFIED_STATE,"inv empty","b",2),PromptBlock(K.TOOL_CATALOG,"mine/craft","c",3))
         c=PromptCompiler().compile(b,default_block_policies()["planner"],blocks)
@@ -16,7 +17,7 @@ class PromptOSAdvancedTests(unittest.TestCase):
             PromptCompiler().compile(b,default_block_policies()["planner"],blocks+(PromptBlock(K.FAILURE_EVIDENCE,"x","d",4),))
 
     def test_meta_cannot_receive_task_or_tools(self):
-        r=PromptRegistry(); r.publish("g",default_prompt_specs()); b=r.get("meta.v6"); K=PromptBlockKind
+        r=make_promoted_prompt_registry(generation_id="g"); b=r.get("meta.v6"); K=PromptBlockKind
         with self.assertRaises(ValueError):
             PromptCompiler().compile(b,default_block_policies()["meta"],(PromptBlock(K.ARCHITECTURE_OBSERVATION,"aor","x",1),PromptBlock(K.TOOL_CATALOG,"tools","y",2)))
 

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "astranav_memory_cvpr2026",
-  "package_digest": "ede0df15df40e4eeaaa2180ac836d0c5f0e7fd38b87211a513225ad3e0bf3c88",
-  "definition_digest": "481b9e05da672245ec2a806d72b1a13530b67ed5ea12a05e2855a28bf8225b4f",
+  "package_digest": "0d9b5ed1e978a6660decaecc441f209c8c91458ed8a0b809570a62c931c948f5",
+  "definition_digest": "4285b47b868aeceb8cda48f6edb929c9b22acda1fcfa5e0b24288ab945d95d76",
   "source_registry_digest": "304c7c3d5dc3e52eeb337cb48eef06780d286e226a126bd447de218cc3d11aae",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/astranav_memory_cvpr2026/program.py",
       "declaration_digest": "510089bbd42c20644d1a4142366c2f598e0695b9ff59f6a981d684266f31d7e6",
-      "content_sha256": "42eb18d550ef8a795fec47983db819bf14d0f49afb568c1ac826dd9802020f55"
+      "content_sha256": "c18f7bd6952ec64484839d05da6455f45dac5807cc2b71261c22983ad268fbe3"
     },
     {
       "kind": "study",
       "path": "research/reproductions/astranav_memory_cvpr2026/study.py",
       "declaration_digest": "487093132f1a24ede9b0e531525e85911b0ab337b8d3b4dc4733443ccd197e76",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/astranav_memory_cvpr2026/program.py",
@@ -157,25 +157,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "astranav_memory_cvpr2026",
-    "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
+    "program_digest": "b81ef71e8110be3bf7cfc1ca1763ffbea249974bd8d6cbd31b26ade242dd0b85",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:astranav_memory_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

@@ -8,6 +8,7 @@ existing ResearchOSExperimentRuntimeBinding.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from threading import Lock
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
@@ -21,7 +22,6 @@ from noetrium_platform.research.experimentation.lifecycle.study.algorithms impor
 )
 
 from .research_os_experiment import (
-    ResearchOSExperimentArtifactStoreFactoryPort,
     ResearchOSExperimentClosure,
     ResearchOSExperimentReconciliationPort,
     ResearchOSExperimentRuntimeBinding,
@@ -250,9 +250,9 @@ class ResearchOSExperimentReconciliationRegistry:
             ResearchOSExperimentReconciliationRegistration, ...
         ],
     ) -> None:
-        if type(registrations) is not tuple or not registrations:
+        if type(registrations) is not tuple:
             raise TypeError(
-                "Experiment reconciliation registry requires non-empty typed tuple"
+                "Experiment reconciliation registry requires typed tuple"
             )
         if any(
             type(row) is not ResearchOSExperimentReconciliationRegistration
@@ -351,21 +351,10 @@ class ResearchOSExperimentRuntimeComponents:
                 "Experiment runtime components require reconciliation resolver"
             )
 
-    def bind(
-        self,
-        artifacts: ResearchOSExperimentArtifactStoreFactoryPort,
-    ) -> "ResearchOSExperimentRuntimeBindingAuthority":
-        if not isinstance(
-            artifacts,
-            ResearchOSExperimentArtifactStoreFactoryPort,
-        ):
-            raise TypeError(
-                "Experiment runtime components require Artifact-store factory"
-            )
+    def bind(self) -> "ResearchOSExperimentRuntimeBindingAuthority":
         return ResearchOSExperimentRuntimeBindingAuthority(
             study_execution=self.study_execution,
             aggregation=self.aggregation,
-            artifacts=artifacts,
             reconciliation=self.reconciliation,
         )
 
@@ -380,7 +369,6 @@ class ResearchOSExperimentRuntimeBindingAuthority(
         *,
         study_execution: ResearchOSExperimentStudyExecutionResolverPort,
         aggregation: ResearchOSExperimentAggregationResolverPort,
-        artifacts: ResearchOSExperimentArtifactStoreFactoryPort,
         reconciliation: ResearchOSExperimentReconciliationResolverPort,
     ) -> None:
         if not isinstance(
@@ -398,31 +386,26 @@ class ResearchOSExperimentRuntimeBindingAuthority(
                 "Experiment runtime authority requires aggregation resolver"
             )
         if not isinstance(
-            artifacts,
-            ResearchOSExperimentArtifactStoreFactoryPort,
-        ):
-            raise TypeError(
-                "Experiment runtime authority requires Artifact-store factory"
-            )
-        if not isinstance(
             reconciliation,
             ResearchOSExperimentReconciliationResolverPort,
         ):
             raise TypeError(
                 "Experiment runtime authority requires reconciliation resolver"
             )
-        require_sha256(
-            artifacts.identity_digest,
-            "Experiment Artifact-store factory identity",
-        )
         self._study_execution = study_execution
         self._aggregation = aggregation
-        self._artifacts = artifacts
         self._reconciliation = reconciliation
+        self._cache_lock = Lock()
+        self._bindings: dict[str, ResearchOSExperimentRuntimeBinding] = {}
+        self._binding_locks: dict[str, Lock] = {}
 
-    @property
-    def artifact_store_factory(self) -> ResearchOSExperimentArtifactStoreFactoryPort:
-        return self._artifacts
+    def _binding_lock(self, closure_digest: str) -> Lock:
+        with self._cache_lock:
+            lock = self._binding_locks.get(closure_digest)
+            if lock is None:
+                lock = Lock()
+                self._binding_locks[closure_digest] = lock
+            return lock
 
     def resolve(
         self,
@@ -433,6 +416,26 @@ class ResearchOSExperimentRuntimeBindingAuthority(
                 "Experiment runtime authority requires ResearchOSExperimentClosure"
             )
 
+        closure_digest = closure.closure_digest
+        with self._cache_lock:
+            cached = self._bindings.get(closure_digest)
+        if cached is not None:
+            cached.validate_closure(closure)
+            return cached
+
+        with self._binding_lock(closure_digest):
+            with self._cache_lock:
+                cached = self._bindings.get(closure_digest)
+            if cached is not None:
+                cached.validate_closure(closure)
+                return cached
+
+            return self._resolve_uncached(closure)
+
+    def _resolve_uncached(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> ResearchOSExperimentRuntimeBinding:
         study_execution = self._study_execution.resolve(closure)
         if type(study_execution) is not ResearchOSExperimentStudyExecutionBinding:
             raise TypeError(
@@ -471,14 +474,22 @@ class ResearchOSExperimentRuntimeBindingAuthority(
             closure.research_plan.binding_digest,
             study_execution.adapter,
             aggregation.aggregation,
-            self._artifacts,
             reconciliation,
             study_execution.identity_digest,
             aggregation.identity_digest,
-            self._artifacts.identity_digest,
             reconciliation.identity_digest,
         )
         binding.validate_closure(closure)
+        with self._cache_lock:
+            current = self._bindings.get(closure.closure_digest)
+            if (
+                current is not None
+                and current.runtime_binding_digest != binding.runtime_binding_digest
+            ):
+                raise RuntimeError(
+                    "Experiment runtime binding identity drifted during materialization"
+                )
+            self._bindings[closure.closure_digest] = binding
         return binding
 
 

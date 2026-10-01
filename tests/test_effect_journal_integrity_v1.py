@@ -20,8 +20,8 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectJournalIntegrityError,
 )
 from noetrium_platform.infrastructure.reliability.effect.runtime import (
-    InMemoryEffectIntentJournal,
-    SQLiteEffectIntentJournal,
+    memory_effect_intent_journal,
+    sqlite_effect_intent_journal,
 )
 
 
@@ -62,9 +62,9 @@ def _effect(intent: EffectIntent, certainty: EffectCertainty, *, verification: b
 
 def test_not_applied_rejects_verification_pending_no_effect_proof() -> None:
     intent = _intent()
-    journals = [InMemoryEffectIntentJournal()]
+    journals = [memory_effect_intent_journal()]
     with TemporaryDirectory() as directory:
-        journals.append(SQLiteEffectIntentJournal(Path(directory) / "effect.sqlite"))
+        journals.append(sqlite_effect_intent_journal(Path(directory) / "effect.sqlite"))
         for journal in journals:
             journal.prepare(intent)
             with pytest.raises(EffectIntentConflict, match="authoritative bound NO_EFFECT"):
@@ -78,7 +78,7 @@ def test_not_applied_rejects_verification_pending_no_effect_proof() -> None:
 def test_sqlite_effect_journal_detects_request_index_corruption() -> None:
     with TemporaryDirectory() as directory:
         path = Path(directory) / "effect.sqlite"
-        journal = SQLiteEffectIntentJournal(path)
+        journal = sqlite_effect_intent_journal(path)
         intent = _intent()
         journal.prepare(intent)
         with closing(sqlite3.connect(path)) as conn:
@@ -94,7 +94,7 @@ def test_sqlite_effect_journal_detects_request_index_corruption() -> None:
 def test_sqlite_effect_journal_detects_effect_checksum_corruption() -> None:
     with TemporaryDirectory() as directory:
         path = Path(directory) / "effect.sqlite"
-        journal = SQLiteEffectIntentJournal(path)
+        journal = sqlite_effect_intent_journal(path)
         intent = _intent()
         journal.prepare(intent)
         journal.record_result(
@@ -115,7 +115,7 @@ def test_sqlite_effect_journal_detects_effect_checksum_corruption() -> None:
 def test_sqlite_effect_journal_detects_impossible_terminal_phase() -> None:
     with TemporaryDirectory() as directory:
         path = Path(directory) / "effect.sqlite"
-        journal = SQLiteEffectIntentJournal(path)
+        journal = sqlite_effect_intent_journal(path)
         intent = _intent()
         journal.prepare(intent)
         with closing(sqlite3.connect(path)) as conn:
@@ -131,7 +131,7 @@ def test_sqlite_effect_journal_detects_impossible_terminal_phase() -> None:
 def test_scope_query_rejects_index_row_injected_into_wrong_scope() -> None:
     with TemporaryDirectory() as directory:
         path = Path(directory) / "effect.sqlite"
-        journal = SQLiteEffectIntentJournal(path)
+        journal = sqlite_effect_intent_journal(path)
         intent = _intent(run_id="run-a", lifetime_id="life-a")
         journal.prepare(intent)
         with closing(sqlite3.connect(path)) as conn:
@@ -149,7 +149,7 @@ def test_sqlite_effect_journal_timeout_must_be_finite() -> None:
         path = Path(directory) / "effect.sqlite"
         for timeout in (float("nan"), float("inf"), 0.0, -1.0):
             with pytest.raises(ValueError, match="finite and positive"):
-                SQLiteEffectIntentJournal(path, timeout_seconds=timeout)
+                sqlite_effect_intent_journal(path, timeout_seconds=timeout)
 
 
 def test_effect_intent_prepare_fences_source_generation_replacement() -> None:
@@ -157,7 +157,7 @@ def test_effect_intent_prepare_fences_source_generation_replacement() -> None:
     successor = _intent(request_digest="b" * 64, source_generation="env-g2")
     assert original.intent_id == successor.intent_id
 
-    for journal in (InMemoryEffectIntentJournal(),):
+    for journal in (memory_effect_intent_journal(),):
         journal.prepare(original)
         with pytest.raises(EffectIntentConflict, match="identity conflict"):
             journal.prepare(successor)
@@ -166,7 +166,7 @@ def test_effect_intent_prepare_fences_source_generation_replacement() -> None:
 def test_effect_transition_rejects_successor_request_digest_on_stale_intent() -> None:
     original = _intent(request_digest="a" * 64, source_generation="env-g1")
     successor = _intent(request_digest="b" * 64, source_generation="env-g2")
-    journal = InMemoryEffectIntentJournal()
+    journal = memory_effect_intent_journal()
     journal.prepare(original)
 
     with pytest.raises(EffectIntentConflict, match="request digest conflict"):
@@ -184,8 +184,8 @@ def test_sqlite_effect_generation_fence_survives_restart() -> None:
         successor = _intent(request_digest="b" * 64, source_generation="env-g2")
         assert original.intent_id == successor.intent_id
 
-        SQLiteEffectIntentJournal(path).prepare(original)
-        reopened = SQLiteEffectIntentJournal(path)
+        sqlite_effect_intent_journal(path).prepare(original)
+        reopened = sqlite_effect_intent_journal(path)
         persisted = reopened.load(original.intent_id)
         assert persisted is not None
         assert persisted.intent.source_generation == "env-g1"

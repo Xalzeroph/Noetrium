@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_of_thoughts",
-  "package_digest": "41b32829d4ce55e542b77a93253eb3f8454ca0bd25fbefba13f218cd1bc86d4c",
-  "definition_digest": "60394018797f7754c216d1c11b1526b0b2a2ce75a4a954dc80dfa3082f5edbc1",
+  "package_digest": "5b9d506777adcfe86d22e756542cc3a17603c6b89fb76593feba994b7b7c85ce",
+  "definition_digest": "7a4c5752c5aa068084a816da8f2a04070f83f9e2ebe7b8d05ed1a359f09e5722",
   "source_registry_digest": "f9293be77907acc25ce02bd3835acf300ca060aec59d9e4b22dd2d6803a08876",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -74,13 +74,13 @@
       "kind": "method_program",
       "path": "research/reproductions/tree_of_thoughts/program.py",
       "declaration_digest": "73ce8f48b174a64d7ec8a8389ff403c761b4650397081369a4f28b5ad3365390",
-      "content_sha256": "c758f6be1d39be27014bb5894ee56c237a27741fadfd878775e4aa9dfa852f21"
+      "content_sha256": "2130c5a00f27750ce13cab0fd751f00f8d593cac63f614ee4e71e047ca5e2029"
     },
     {
       "kind": "study",
       "path": "research/reproductions/tree_of_thoughts/study.py",
       "declaration_digest": "3fc270d3331732f1e0a205d17b50c1781a4fdcd9b6a1a7bbc5d19263639dfbca",
-      "content_sha256": "22c94c937a30c1fad331ee23c0b475d8fa55d2a7824d83c31d7a4db787d5686a"
+      "content_sha256": "a53ecf7a46a1a2209f20e360b189aac3adbd1fc62ba25ca641b40b0d732fe545"
     },
     {
       "kind": "support",
@@ -130,18 +130,14 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_tree_of_thoughts_fidelity_v1.py",
-      "content_sha256": "e1ab3150bd2c7ac2bf59119fcb2addc4e9b19272e4e05a27526cb7367bc63b11"
-    },
-    {
-      "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-      "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
+      "content_sha256": "93c40f8d1eff792797bee942d45a03b240a868ec235dcace81e3888bed6dc692"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "tree_of_thoughts",
-    "program_digest": "ddf1eadaa7460952fa6140b845ee739fb26a5c463450549897e0ada242a124c1",
+    "program_digest": "4fadc31bc94fe71e61dd685745837f7651beac5eee1882f14e0cca2925ece89c",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

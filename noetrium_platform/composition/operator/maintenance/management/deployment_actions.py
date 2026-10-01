@@ -42,8 +42,6 @@ def dispatch_deployment_action(
         return True, {"reset": fleet.reset_auto_recovery(args.deployment_id)}
     if action == "set-gpus":
         return True, catalog.set_gpu_devices(args.deployment_id, tuple(args.gpu_devices))
-    if action == "set-env":
-        return True, catalog.set_python_environment(args.deployment_id, args.environment_id)
     if action == "status":
         return True, runtime.status(args.deployment_id)
     if action == "remove":
@@ -69,8 +67,6 @@ def dispatch_deployment_action(
             min_free_memory_mb=args.min_free_mb,
             max_utilization_percent=args.max_utilization,
         )
-    if action == "env-usage":
-        return True, resources.environment_usage()
     if action == "gpu-processes":
         return True, resources.gpu_process_bindings()
     if action == "logs":

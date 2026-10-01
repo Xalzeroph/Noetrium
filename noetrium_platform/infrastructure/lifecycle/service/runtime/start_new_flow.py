@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
-from .contracts import ServicePhase
+from .contracts import ServiceExitClass, ServicePhase
 from .prepared_start import crash_durable_start_adapter
 from .service_state_contracts import ServiceSupervisorState
 from .start_flow_common import ServiceReadinessCommitter, service_start_intent_refs
@@ -75,10 +75,51 @@ class NewServiceStartFlow:
             evidence.extend(refs)
             intent = self._journal.record_process(intent, process)
 
-        state = self._transitions.persist(state, ServicePhase.WAIT_READY, process=process)
+        state = self._transitions.persist(
+            state,
+            ServicePhase.WAIT_READY,
+            process=process,
+        )
         if intent is not None:
             intent = self._journal.state_committed(intent)
-        state, ready_refs = self._readiness.commit(contract, state, process)
+        try:
+            state, ready_refs = self._readiness.commit(
+                contract,
+                state,
+                process,
+            )
+        except BaseException as readiness_exc:
+            if intent is None:
+                raise
+            cleanup_errors: list[BaseException] = []
+            try:
+                state = self._transitions.persist(
+                    state,
+                    ServicePhase.STOPPING,
+                )
+                self._adapter.stop(process, contract)
+            except BaseException as cleanup_exc:
+                cleanup_errors.append(cleanup_exc)
+            else:
+                try:
+                    self._journal.abort(intent)
+                except BaseException as journal_exc:
+                    cleanup_errors.append(journal_exc)
+                try:
+                    state = self._transitions.persist(
+                        state,
+                        ServicePhase.EXITED,
+                        process=None,
+                        last_exit_class=ServiceExitClass.CLEAN,
+                    )
+                except BaseException as transition_exc:
+                    cleanup_errors.append(transition_exc)
+            if cleanup_errors:
+                raise ExceptionGroup(
+                    "service readiness failed and exact process cleanup failed",
+                    [readiness_exc, *cleanup_errors],
+                ) from readiness_exc
+            raise
         evidence.extend(ready_refs)
         if intent is not None:
             self._journal.complete(intent)

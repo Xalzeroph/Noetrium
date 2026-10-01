@@ -42,7 +42,11 @@ def execute_new_capability_effect(
     rows.append(prepare_handle_operation)
     intent = build_capability_effect_intent(request, target, invoke_operation_id, handle)
 
-    _, pending_commit = intent_operations.require_scope_clear(intent, request.context)
+    _, pending_commit = intent_operations.require_scope_clear(
+        intent,
+        request.context,
+        stage="commit",
+    )
     rows.append(pending_commit)
     _, journal_prepare = intent_operations.prepare(intent, request.context)
     rows.append(journal_prepare)
@@ -72,6 +76,7 @@ def execute_new_capability_effect(
             descriptor=descriptor,
             request=request,
             handle=handle,
+            invocation_ordinal=invocation_ordinal,
         )
         rows.append(reconcile_operation)
         assert reconciliation.result is not None

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "70c8c708ba71d36c59ae1c91a6c2338bb4134206cdedabd730ccc2fb35ef8507",
-  "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
+  "package_digest": "6f1be445e843212e690188af1b25b872a7849e25fcd31530c27c9563d82d7323",
+  "definition_digest": "f190321e9224bce4cd2f9732fa567c83c879aa27446b76f9987d945ff1d31452",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -48,7 +48,8 @@
     ],
     "platform_owned": [
       "LVU full-video benchmark projection",
-      "MemoryMachine journal authority",
+      "Method aggregate and Method-owned memory-component composition",
+      "Method-owned memory component on the shared Machine journal",
       "cross-modal scorer implementation identity",
       "multimodal tensor content identity",
       "study and evaluation orchestration"
@@ -57,7 +58,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html"
     ],
-    "catalog_digest": "692a0a25fab58258e3513aa9753f912756bdee555b40fee5e644d5ab5bb833bb"
+    "catalog_digest": "7107c87a7dc444670e7c0280e297aba2e76ff0edb2016e240e6f4e3b1d1ef5f3"
   },
   "source_lanes": [
     {
@@ -77,7 +78,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/adacm2_memory/benchmark.py",
       "declaration_digest": "2a08c327feae5cb347b83fb48c135a8f8661f8dd873f32c33b41236419ed3376",
-      "content_sha256": "76bbe9cd7bc4053f28aec2e98c83eaad475570306746a55bef7188a5d487aa91"
+      "content_sha256": "908d37bf6ee9ec9936f8e5f019f60060b984f2a78469931c165ff98fef8269d4"
     },
     {
       "kind": "fidelity",
@@ -86,16 +87,16 @@
       "content_sha256": "e62e52b00b67c6233e2f9a5d955f00616aa479dabdffb538a0312a13dd27a793"
     },
     {
-      "kind": "research_program",
-      "path": "research/reproductions/adacm2_memory/memory.py",
-      "declaration_digest": "7a7851a5cf76d1973f349d89d9ce251ad1a651f81a7cf3fd410c3676ee0b4df3",
-      "content_sha256": "d8c11b6bb89f6383205cb81ec600cb2b633f662c509b977852ac6c0401cd1dc5"
+      "kind": "method_program",
+      "path": "research/reproductions/adacm2_memory/program.py",
+      "declaration_digest": "62774a42b84766e23e5a3a89a8d6de2fb1b0e130b00e7e7c57fa04cf78f02b32",
+      "content_sha256": "25fd3eb453f33c755551e65da0e6596be6688e23992b8043aa8be948ec213c80"
     },
     {
       "kind": "study",
       "path": "research/reproductions/adacm2_memory/study.py",
       "declaration_digest": "7d376514ef86cf9df9dcdb22d893c74f5864e0b0019bf2a2efa88bf8eb0f4646",
-      "content_sha256": "00c0fb63594d4f5ab3f38ed820586a1252794547d61b4aaab5242c8e68d70ca4"
+      "content_sha256": "36a0ba755aa5c1c1f651f189a7dfc959cc8f3732f2de926d3852598eae2bc161"
     },
     {
       "kind": "support",
@@ -104,7 +105,7 @@
       "content_sha256": "e4497295e8450ecb6f9309fdc74720ba54cc096ec5dd79840589ffd0ddf19ffe"
     }
   ],
-  "primary_executable": "research/reproductions/adacm2_memory/memory.py",
+  "primary_executable": "research/reproductions/adacm2_memory/program.py",
   "reported_results": [
     {
       "claim_id": "adacm2_lvu_average_improvement",
@@ -163,15 +164,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_adacm2_memory_v1.py",
-      "content_sha256": "4b220581d65fea4c342b18f1e961a0346e633ca0485af4f5b3055b1abf27d162"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "adacm2_memory",
-    "program_digest": "a0c9e18145ab4ea46cd77d05918b40ed5d5c962ad1eeb6e7d95a743bacbd4fc1",
+    "program_digest": "fe325a8e49611e7f50e41a0dcf3dbbc72cfcbeaf34f1f8d876fc12cc5f04db16",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

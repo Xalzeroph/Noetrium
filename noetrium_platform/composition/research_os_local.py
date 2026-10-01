@@ -7,13 +7,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from uuid import uuid4
 
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.research.execution.workflow.api import MethodObservationPort, OperationDispatchPort
+from noetrium_platform.research.execution.workflow.api.runtime_binding import (
+    MethodRuntimePortInventory,
+)
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
-    ResourceCompetitionDemand,
+    LocalSharedNetworkPressureObserver,
+    LocalSharedStoragePressureObserver,
+)
+from noetrium_platform.infrastructure.resources.compute.providers import (
+    LocalHostRuntimeObserver,
+)
+from noetrium_platform.composition.research_definition_authority import (
+    ResearchDefinitionBindingAuthorityPort,
 )
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
@@ -27,9 +36,6 @@ from noetrium_platform.composition.research_os_checkpoint_store import (
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosurePort,
 )
-from noetrium_platform.composition.research_os_experiment_artifacts import (
-    DirectoryResearchOSExperimentArtifactStoreFactory,
-)
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentRuntimeComponents,
 )
@@ -37,7 +43,7 @@ from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSImmutableValueAuthority,
+    ResearchOSArtifactValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
 from noetrium_platform.evidence.artifact.catalog.providers import (
@@ -45,6 +51,12 @@ from noetrium_platform.evidence.artifact.catalog.providers import (
 )
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
+)
+from noetrium_platform.evidence.artifact.reference.providers import (
+    SQLiteArtifactReferenceStore,
+)
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
 )
 from noetrium_platform.evidence.artifact.lineage.relation.providers import (
     SQLiteArtifactLineageStore,
@@ -72,14 +84,19 @@ class LocalResearchOSComposition:
     revision_store: SQLitePortfolioRevisionStore
     graph_store: SQLiteResearchGraphExecutionStore
     execution_pool: ResearchExecutionPool
+    content: ResearchExecutionContentAuthorities
     _runtime: CanonicalResearchOSNodeRuntime
     _values: ResearchOSValueRouter
     _experiment_closures: ResearchOSExperimentClosurePort | None
+    _definition_bindings: ResearchDefinitionBindingAuthorityPort | None
     _artifact_lineage: SQLiteArtifactLineageStore
-    _artifact_group: TaskGroupPort | None
+    _artifact_retention: SQLiteArtifactRetentionStore
+    _owns_content_authorities: bool
     _owns_execution_pool: bool
-    _artifact_group_closed: bool = False
     _execution_pool_closed: bool = False
+    _artifact_lineage_closed: bool = False
+    _artifact_retention_closed: bool = False
+    _content_closed: bool = False
     _closed: bool = False
 
     def prepare(
@@ -95,34 +112,62 @@ class LocalResearchOSComposition:
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
+
+    def handoff_content_ownership(
+        self,
+        target: "LocalResearchOSComposition",
+    ) -> None:
+        """Atomically move shared content authority ownership to a replacement composition."""
+        if self._closed:
+            raise RuntimeError("closed local Research OS cannot transfer content ownership")
+        if not isinstance(target, LocalResearchOSComposition):
+            raise TypeError("content ownership target must be LocalResearchOSComposition")
+        if target._closed:
+            raise RuntimeError("closed local Research OS cannot receive content ownership")
+        if self.content is not target.content:
+            raise ValueError("content ownership transfer requires identical authority object")
+        if not self._owns_content_authorities or self._content_closed:
+            raise RuntimeError("source local Research OS does not own live content authorities")
+        if target._owns_content_authorities or target._content_closed:
+            raise RuntimeError("target local Research OS already owns or closed content authorities")
+        self._owns_content_authorities = False
+        target._owns_content_authorities = True
 
     def close(self) -> None:
         if self._closed:
             return
         errors: list[BaseException] = []
-        if self._artifact_group is not None and not self._artifact_group_closed:
-            try:
-                self.execution_pool.close_experiment_group(
-                    self._artifact_group,
-                    cancel_pending=True,
-                )
-            except BaseException as exc:
-                errors.append(exc)
-            else:
-                self._artifact_group_closed = True
-        if (
-            self._owns_execution_pool
-            and not self._execution_pool_closed
-            and (self._artifact_group is None or self._artifact_group_closed)
-        ):
+        if self._owns_execution_pool and not self._execution_pool_closed:
             try:
                 self.execution_pool.close()
             except BaseException as exc:
                 errors.append(exc)
             else:
                 self._execution_pool_closed = True
+        if not self._artifact_lineage_closed:
+            try:
+                self._artifact_lineage.close()
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._artifact_lineage_closed = True
+        if not self._artifact_retention_closed:
+            try:
+                self._artifact_retention.close()
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._artifact_retention_closed = True
+        if self._owns_content_authorities and not self._content_closed:
+            try:
+                self.content.close()
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._content_closed = True
         if errors:
             raise ExceptionGroup("local Research OS close failed", errors)
         self._closed = True
@@ -133,7 +178,12 @@ def compose_local_research_os(
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None,
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    method_runtime_inventory: MethodRuntimePortInventory | None = None,
+    operation_dispatcher: OperationDispatchPort | None = None,
+    method_observation: MethodObservationPort | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> LocalResearchOSComposition:
     """Compose the single durable local Research OS implementation.
 
@@ -143,7 +193,7 @@ def compose_local_research_os(
     Half-bound execution is rejected.
     """
 
-    if type(state_root) is not Path:
+    if not isinstance(state_root, Path):
         raise TypeError("local Research OS state_root must be pathlib.Path")
     root = state_root.expanduser().absolute()
     if root.exists() and (root.is_symlink() or not root.is_dir()):
@@ -168,12 +218,41 @@ def compose_local_research_os(
         raise TypeError(
             "local Research OS experiment_runtime_components must be typed"
         )
+    if definition_bindings is not None and not isinstance(
+        definition_bindings,
+        ResearchDefinitionBindingAuthorityPort,
+    ):
+        raise TypeError(
+            "local Research OS definition_bindings must satisfy typed port"
+        )
+    if method_runtime_inventory is not None and not isinstance(
+        method_runtime_inventory,
+        MethodRuntimePortInventory,
+    ):
+        raise TypeError(
+            "local Research OS method_runtime_inventory must be MethodRuntimePortInventory"
+        )
 
     root.mkdir(parents=True, exist_ok=True)
-    blobs = DirectoryArtifactBlobStore(root / "blobs")
+    owns_content_authorities = content_authorities is None
+    if content_authorities is None:
+        content = ResearchExecutionContentAuthorities(
+            root,
+            DirectoryArtifactBlobStore(root / "blobs"),
+            SQLiteArtifactRegistry(root / "artifact-catalog.sqlite3"),
+            SQLiteArtifactReferenceStore(root / "artifact-references.sqlite3"),
+        )
+    else:
+        if type(content_authorities) is not ResearchExecutionContentAuthorities:
+            raise TypeError(
+                "local Research OS content_authorities must be "
+                "ResearchExecutionContentAuthorities"
+            )
+        content = content_authorities
+    blobs = content.blobs
+    registry = content.artifacts
     revisions = SQLitePortfolioRevisionStore(root / "portfolio.sqlite3")
     graph = SQLiteResearchGraphExecutionStore(root / "graph.sqlite3")
-    registry = SQLiteArtifactRegistry(root / "artifact-catalog.sqlite3")
     retention = SQLiteArtifactRetentionStore(
         root / "artifact-retention.sqlite3"
     )
@@ -182,40 +261,40 @@ def compose_local_research_os(
         root / "graph-checkpoints"
     )
     values = ResearchOSValueRouter(
-        (ResearchOSImmutableValueAuthority(blobs, registry, retention),)
+        (ResearchOSArtifactValueAuthority(blobs, registry, retention),)
     )
     owns_execution_pool = execution_pool is None
-    pool = ResearchExecutionPool() if execution_pool is None else execution_pool
+    pool = (
+        ResearchExecutionPool(
+            host_runtime_observer=LocalHostRuntimeObserver(),
+            storage_pressure_observer=LocalSharedStoragePressureObserver((root,)),
+            network_pressure_observer=LocalSharedNetworkPressureObserver(),
+        )
+        if execution_pool is None
+        else execution_pool
+    )
     if not isinstance(pool, ResearchExecutionPool):
         raise TypeError("local Research OS execution_pool must be ResearchExecutionPool")
 
-    artifact_group: TaskGroupPort | None = None
     try:
         if experiment_runtime_components is None:
-            runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
+            runtime = CanonicalResearchOSNodeRuntime(
+                root / "machine-state",
+                method_runtime_inventory=method_runtime_inventory,
+                operation_dispatcher=operation_dispatcher,
+                method_observation=method_observation,
+                content_authorities=content,
+            )
         else:
-            artifact_group = pool.open_experiment_group(
-                f"research-os-experiment-artifacts:{uuid4().hex}",
-                resource_id="research-os-experiment-artifacts",
-                resource_demand=(
-                    ResourceCompetitionDemand(
-                        storage_path=root / "run-artifacts",
-                    )
-                    if pool.resource_competition_enabled
-                    else None
-                ),
-            )
-            artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
-                root / "run-artifacts",
-                task_group=artifact_group,
-            )
-            experiment_bindings = experiment_runtime_components.bind(
-                artifact_factory
-            )
+            experiment_bindings = experiment_runtime_components.bind()
             runtime = CanonicalResearchOSNodeRuntime(
                 root / "machine-state",
                 execution_pool=pool,
                 experiment_bindings=experiment_bindings,
+                method_runtime_inventory=method_runtime_inventory,
+                operation_dispatcher=operation_dispatcher,
+                method_observation=method_observation,
+                content_authorities=content,
             )
 
         control = StrictResearchOSControl(
@@ -224,6 +303,7 @@ def compose_local_research_os(
             runtime,
             values,
             experiment_closures=experiment_closures,
+            definition_bindings=definition_bindings,
             artifact_lineage=lineage,
             checkpoints=checkpoints,
         )
@@ -234,14 +314,6 @@ def compose_local_research_os(
         )
     except BaseException as primary:
         cleanup_errors: list[BaseException] = []
-        if artifact_group is not None:
-            try:
-                pool.close_experiment_group(
-                    artifact_group,
-                    cancel_pending=True,
-                )
-            except BaseException as exc:
-                cleanup_errors.append(exc)
         if owns_execution_pool:
             try:
                 pool.close()
@@ -255,17 +327,20 @@ def compose_local_research_os(
         raise
 
     return LocalResearchOSComposition(
-        root,
-        research_os,
-        revisions,
-        graph,
-        pool,
-        runtime,
-        values,
-        experiment_closures,
-        lineage,
-        artifact_group,
-        owns_execution_pool,
+        state_root=root,
+        research_os=research_os,
+        revision_store=revisions,
+        graph_store=graph,
+        execution_pool=pool,
+        content=content,
+        _runtime=runtime,
+        _values=values,
+        _experiment_closures=experiment_closures,
+        _definition_bindings=definition_bindings,
+        _artifact_lineage=lineage,
+        _artifact_retention=retention,
+        _owns_content_authorities=owns_content_authorities,
+        _owns_execution_pool=owns_execution_pool,
     )
 
 

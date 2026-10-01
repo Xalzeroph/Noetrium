@@ -10,11 +10,10 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     HostRuntimeStatus,
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import (
-    InMemoryComputeInventory,
-    SQLiteComputeScheduler,
+    ComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
-from tests.resource_compute_support import in_memory_compute_scheduler
+from tests.resource_compute_support import TestComputeInventory, compute_scheduler
 
 
 class _HostObserver:
@@ -29,8 +28,8 @@ def _scope() -> ScopeIdentity:
     return ScopeIdentity(ScopeKind.PROJECT, "runtime-pressure")
 
 
-def _inventory() -> InMemoryComputeInventory:
-    inventory = InMemoryComputeInventory()
+def _inventory() -> TestComputeInventory:
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("node-a", _scope(), 16, 64 * 1024**3))
     inventory.register_host(ComputeHost("node-b", _scope(), 16, 64 * 1024**3))
     return inventory
@@ -44,7 +43,7 @@ def _status(host: str, *, load: float, memory_gib: int) -> HostRuntimeStatus:
 
 
 def test_runtime_required_fails_closed_without_host_observer() -> None:
-    scheduler = in_memory_compute_scheduler(_inventory())
+    scheduler = compute_scheduler(_inventory())
     requirement = ComputeRequirement(
         cpu_cores=2, memory_bytes=1024, require_host_runtime=True
     )
@@ -57,7 +56,7 @@ def test_runtime_required_fails_closed_without_host_observer() -> None:
 
 
 def test_scheduler_prefers_lower_external_pressure() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=12.0, memory_gib=40),
@@ -74,7 +73,7 @@ def test_scheduler_prefers_lower_external_pressure() -> None:
 
 
 def test_default_runtime_policy_keeps_competing_at_full_cpu_load() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=16.0, memory_gib=40),
@@ -94,7 +93,7 @@ def test_default_runtime_policy_keeps_competing_at_full_cpu_load() -> None:
 
 
 def test_explicit_cpu_load_ceiling_remains_enforceable() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=12.0, memory_gib=40),
@@ -110,8 +109,27 @@ def test_explicit_cpu_load_ceiling_remains_enforceable() -> None:
     assert scheduler.candidates(requirement, scope=_scope()) == ()
 
 
+def test_explicit_cpu_load_ceiling_uses_projected_new_allocation() -> None:
+    scheduler = compute_scheduler(
+        _inventory(),
+        host_runtime_observer=_HostObserver(
+            _status("node-a", load=6.0, memory_gib=40),
+            _status("node-b", load=6.0, memory_gib=40),
+        ),
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=4,
+        memory_bytes=1024,
+        require_host_runtime=True,
+        max_cpu_load_ratio=0.5,
+    )
+    # Current load is only 37.5%, but admitting four more cores projects
+    # 62.5%, which must be fenced before the work becomes observable.
+    assert scheduler.candidates(requirement, scope=_scope()) == ()
+
+
 def test_explicit_cpu_headroom_remains_enforceable() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=14.0, memory_gib=40),
@@ -128,7 +146,7 @@ def test_explicit_cpu_headroom_remains_enforceable() -> None:
 
 
 def test_runtime_memory_headroom_blocks_unsafe_placement() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=1.0, memory_gib=10),
@@ -145,9 +163,9 @@ def test_runtime_memory_headroom_blocks_unsafe_placement() -> None:
 
 
 def test_runtime_pressure_and_committed_capacity_are_independent_constraints() -> None:
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("node-a", _scope(), 16, 64 * 1024**3))
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         inventory,
         host_runtime_observer=_HostObserver(_status("node-a", load=4.0, memory_gib=60)),
     )
@@ -163,8 +181,8 @@ def test_runtime_pressure_and_committed_capacity_are_independent_constraints() -
     assert second.cpu_cores == 10
 
 
-def _fixed_residual_inventory() -> InMemoryComputeInventory:
-    inventory = InMemoryComputeInventory()
+def _fixed_residual_inventory() -> TestComputeInventory:
+    inventory = TestComputeInventory()
     inventory.register_host(
         ComputeHost("node-a", _scope(), 32, 64 * 1024**3)
     )
@@ -197,7 +215,7 @@ def _bind(
 
 
 def test_unmaterialized_compute_reservation_fences_stale_live_memory_snapshot() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _fixed_residual_inventory(),
         host_runtime_observer=_fixed_residual_observer(),
     )
@@ -236,7 +254,7 @@ def test_sqlite_unmaterialized_reservation_survives_restart_and_fences_capacity(
         memory_bytes=6 * 1024**3,
         require_host_runtime=True,
     )
-    first_scheduler = SQLiteComputeScheduler(
+    first_scheduler = ComputeScheduler(
         database,
         _fixed_residual_inventory(),
         clock=clock,
@@ -249,7 +267,7 @@ def test_sqlite_unmaterialized_reservation_survives_restart_and_fences_capacity(
         ttl_seconds=60.0,
     )
 
-    rebuilt = SQLiteComputeScheduler(
+    rebuilt = ComputeScheduler(
         database,
         _fixed_residual_inventory(),
         clock=clock,
@@ -275,7 +293,7 @@ def test_sqlite_unmaterialized_reservation_survives_restart_and_fences_capacity(
 
 
 def test_sqlite_scheduler_applies_same_live_pressure_policy(tmp_path) -> None:
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         tmp_path / "compute.sqlite", _inventory(),
         clock=ManualLeaseClock(
             elapsed_seconds=1.0,

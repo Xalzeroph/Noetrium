@@ -6,7 +6,6 @@ expiration authority.
 """
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass, field
 import math
 from pathlib import Path
@@ -117,10 +116,6 @@ class MachineAuthorityPort(Protocol):
         ttl_seconds: float = 30.0,
     ) -> MachineLease: ...
     def assert_held(self, lease: MachineLease) -> MachineLease: ...
-    def commit_guard(
-        self,
-        lease: MachineLease,
-    ) -> AbstractContextManager[None]: ...
     def release(self, lease: MachineLease) -> None: ...
 
 
@@ -272,21 +267,6 @@ class InMemoryMachineAuthority:
             ):
                 raise MachineLeaseLost("machine authority is not held")
             return current
-
-    @contextmanager
-    def commit_guard(self, lease: MachineLease):
-        """Fence one authoritative journal write against ownership takeover."""
-        with self._lock:
-            now, reading = self._authority_now_unlocked()
-            current = self._leases.get(lease.machine_id)
-            if (
-                current != lease
-                or not current.is_live(now, reading)
-            ):
-                raise MachineLeaseLost(
-                    "machine authority was lost before commit"
-                )
-            yield
 
     def release(self, lease: MachineLease) -> None:
         with self._lock:
@@ -553,21 +533,6 @@ class DirectoryMachineAuthority(InMemoryMachineAuthority):
                     "machine authority is not held"
                 )
             return current
-
-    @contextmanager
-    def commit_guard(self, lease: MachineLease):
-        """Hold the durable epoch fence through the authoritative journal append."""
-        with self._guard:
-            now, reading = self._authority_now_locked()
-            current = self._read(lease.machine_id)
-            if (
-                current != lease
-                or not current.is_live(now, reading)
-            ):
-                raise MachineLeaseLost(
-                    "machine authority was lost before commit"
-                )
-            yield
 
     def release(self, lease: MachineLease) -> None:
         with self._guard:

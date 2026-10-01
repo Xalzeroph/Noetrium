@@ -26,6 +26,30 @@ class Provider:
 
 
 class CapabilityOperationBoundaryV162Tests(unittest.TestCase):
+    def test_router_close_does_not_close_borrowed_effect_executor(self):
+        class BorrowedEffectExecutor:
+            def __init__(self):
+                self.close_calls = 0
+
+            def close(self):
+                self.close_calls += 1
+
+        dispatcher=KernelOperationDispatcher(OperationExecutor())
+        adapter=CapabilityOperationAdapter(dispatcher)
+        component=ComponentIdentity('capability_provider.echo','echo','1','1','g')
+        binding=CapabilitySessionBinding(component, Session(), "provider")
+        borrowed=BorrowedEffectExecutor()
+        router=StudyCapabilityRouter(
+            adapter,
+            (binding,),
+            effect_executor=borrowed,
+            consumer_component=ComponentIdentity('agent.test','agent','1','1','cfg'),
+            pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(),
+            scope=ScopedRegistrationRuntime("borrowed-effect-owner-test"),
+        )
+        router.close()
+        self.assertEqual(borrowed.close_calls,0)
+
     def test_router_uses_narrow_operation_adapter_without_owning_dispatcher(self):
         dispatcher=KernelOperationDispatcher(OperationExecutor())
         adapter=CapabilityOperationAdapter(dispatcher)

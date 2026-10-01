@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import (
     CapabilityDescriptor,
-    CapabilityPolicySet,
     CapabilityRequest,
     CapabilityResult,
 )
+
+if TYPE_CHECKING:
+    from noetrium_platform.research.execution.machines.capability_program import (
+        CapabilityProgramBinding,
+    )
 
 
 @runtime_checkable
@@ -27,7 +31,7 @@ class CapabilityInvocationPipelinePort(Protocol):
 class CapabilityInvocationPipelineFactoryPort(Protocol):
     def create(
         self,
-        policy: CapabilityPolicySet | None = None,
+        program_binding: "CapabilityProgramBinding | None" = None,
     ) -> CapabilityInvocationPipelinePort: ...
 
 

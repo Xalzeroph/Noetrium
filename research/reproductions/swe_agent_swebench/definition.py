@@ -54,6 +54,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/swe_agent_swebench/history.py',
         ),
     ),
+    primary_executable="research/reproductions/swe_agent_swebench/program.py",
     reported_results=(
         ReportedResult(
             claim_id="swe_agent_swebench_pass_at_1",
@@ -79,7 +80,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('matched execution still requires exact paper-era model/prompt binding plus a deployment-qualified SWE-bench software environment cut',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_swe_agent_07_v1.py', 'tests/test_scientific_swe_agent_method_program_v1.py', 'tests/test_scientific_swe_agent_swebench_fidelity_v1.py'),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

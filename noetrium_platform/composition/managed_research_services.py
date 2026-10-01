@@ -21,7 +21,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.portfolio.project.api import ProjectIdentity
 from noetrium_platform.research.execution.machines import ResearchProgramHost
-from noetrium_platform.research.execution.workflow.api import MethodMachinePort
 from noetrium_platform.research.experimentation.lifecycle.evaluation.composition import (
     bind_paired_evaluation_host,
 )
@@ -52,12 +51,10 @@ class ManagedResearchServices:
     def bind_workload(
         self,
         *,
-        machine: MethodMachinePort,
         compiler: WorkloadMethodCompilerPort,
         result_adapter: WorkloadMethodResultAdapterPort,
     ) -> WorkloadTaskExecutionPort:
         return bind_method_workload(
-            machine=machine,
             compiler=compiler,
             result_adapter=result_adapter,
         )

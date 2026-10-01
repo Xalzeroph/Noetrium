@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from research.reproductions.generative_agents_memory import (
+from research.reproductions.generative_agents_memory.fidelity import (
     GENERATIVE_AGENTS_RETRIEVAL_FIDELITY,
+)
+from research.reproductions.generative_agents_memory.retrieval import (
     GenerativeMemoryNode,
     GenerativeRetrievalWeights,
     retrieve_top,

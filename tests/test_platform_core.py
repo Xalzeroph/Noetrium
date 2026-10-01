@@ -1,3 +1,4 @@
+from prompt_os_test_support import make_promoted_prompt_registry
 from pathlib import Path
 import tempfile
 import unittest
@@ -35,9 +36,8 @@ class PlatformCoreTests(unittest.TestCase):
             rec.observe("model.ttft", 0.2, model="m", engine="e", replica="0", surprise="x")
 
     def test_prompt_generation_is_atomic(self):
-        reg = PromptRegistry()
         specs = default_prompt_specs()
-        reg.publish("g1", specs)
+        reg = make_promoted_prompt_registry(generation_id="g1", specs=specs)
         self.assertEqual(reg.generation, "g1")
         self.assertTrue(reg.get("planner.v6").digest)
         self.assertIn("Verified current state", reg.get("planner.v6").text)

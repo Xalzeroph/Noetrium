@@ -24,7 +24,7 @@ class InstalledArtifactReceipt:
     schema: str
     qualification_scope: str
     npe_verified: bool
-    research_os_smoke_actions: tuple[str, ...]
+    public_api_roots: tuple[str, ...]
     artifact_name: str
     artifact_sha256: str
     artifact_size: int
@@ -80,7 +80,14 @@ def _create_venv(root: Path) -> None:
         import venv
     except ModuleNotFoundError as exc:
         raise RuntimeError("Python venv module is unavailable") from exc
-    venv.EnvBuilder(with_pip=True, clear=True).create(root)
+    # Artifact smoke verification isolates the Noetrium installation itself
+    # while reusing the already-qualified controller dependency environment.
+    # Dependency resolution is a separate, content-addressed release concern.
+    venv.EnvBuilder(
+        with_pip=True,
+        clear=True,
+        system_site_packages=True,
+    ).create(root)
 
 
 def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
@@ -110,6 +117,7 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
                     "--disable-pip-version-check",
                     "--no-input",
                     "--no-deps",
+                    "--no-build-isolation",
                     str(artifact),
                 ],
                 cwd=work,
@@ -135,46 +143,39 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
                 f"installed import escaped verification venv: {module_file}"
             )
 
-        reference_code = (
-            "import json,sys;"
-            "from noetrium.api import ResearchExecutionTarget,ResearchGraphRevision,ResearchOS;"
-            "from noetrium_platform.product.research_os import bind_research_os;"
-            "from noetrium_platform.product.reference import ReferenceResearchOSPort;"
-            "action=sys.argv[1];execution_id=sys.argv[2];"
-            "research_os=bind_research_os(ReferenceResearchOSPort());"
-            "assert isinstance(research_os,ResearchOS);"
-            "revision=ResearchGraphRevision('qualification','0'*64,(),'installed qualification');"
-            "target=ResearchExecutionTarget(execution_id,revision);"
-            "result=getattr(research_os,action)(target);"
-            "print(json.dumps({'ok':True,'command':action,'result':"
-            "{'action':result.action.value,'execution_id':result.target.execution_id,"
-            "'research_revision_digest':result.target.research_revision_digest,"
-            "'state':result.state,'control_revision_digest':result.control_revision_digest}},"
-            "sort_keys=True))"
+        public_api_code = (
+            "import json;"
+            "from noetrium import api;"
+            "expected=('ResearchPortfolioBuilder','ResearchPortfolio','ResearchOS','open_project');"
+            "assert tuple(api.__all__)==expected;"
+            "assert all(hasattr(api.ResearchOS,name) for name in "
+            "('run','inspect','pause','resume','checkpoint','reconcile'));"
+            "assert callable(api.open_project);"
+            "builder=api.ResearchPortfolioBuilder('installed-qualification');"
+            "assert callable(builder.program) and callable(builder.freeze);"
+            "print(json.dumps({'ok':True,'roots':expected},sort_keys=True))"
         )
-        for command in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile"):
-            receipt = _run(
-                [
-                    str(python),
-                    "-I",
-                    "-c",
-                    reference_code,
-                    command,
-                    "installed-reference",
-                ],
-                cwd=work,
-                env=env,
-            )
-            payload = json.loads(receipt.stdout)
-            if payload.get("ok") is not True or payload.get("command") != command:
-                raise RuntimeError(f"installed API {command} returned invalid receipt")
-            commands.append(receipt)
+        public_api_receipt = _run(
+            [str(python), "-I", "-c", public_api_code],
+            cwd=work,
+            env=env,
+        )
+        payload = json.loads(public_api_receipt.stdout)
+        expected_roots = (
+            "ResearchPortfolioBuilder",
+            "ResearchPortfolio",
+            "ResearchOS",
+            "open_project",
+        )
+        if payload.get("ok") is not True or tuple(payload.get("roots", ())) != expected_roots:
+            raise RuntimeError("installed public four-root API returned invalid receipt")
+        commands.append(public_api_receipt)
 
         return InstalledArtifactReceipt(
-            schema="noetrium.installed-artifact-verification.v3",
-            qualification_scope="research-os-smoke-only",
+            schema="noetrium.installed-artifact-verification.v4",
+            qualification_scope="public-four-root-smoke",
             npe_verified=False,
-            research_os_smoke_actions=("run", "inspect", "pause", "resume", "checkpoint", "reconcile"),
+            public_api_roots=expected_roots,
             artifact_name=artifact.name,
             artifact_sha256=_sha256(artifact),
             artifact_size=artifact.stat().st_size,

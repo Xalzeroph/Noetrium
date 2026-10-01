@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import MEMGPT_CLASSIC_FIDELITY
 from .semantics import (
@@ -101,7 +98,7 @@ def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
     return value
 
 
-def _memgpt_agent_view(request: MethodNodeRequest) -> JsonObject:
+def _memgpt_agent_view(request: MethodCall) -> JsonObject:
     """Expose only the classic model-visible memory/context projection."""
 
     return {
@@ -114,7 +111,7 @@ def _memgpt_agent_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _memgpt_summary_view(request: MethodNodeRequest) -> JsonObject:
+def _memgpt_summary_view(request: MethodCall) -> JsonObject:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("MemGPT summary node requires a prepared summary projection")
     messages = request.previous_value.get("messages_to_summarize")
@@ -153,7 +150,7 @@ def memgpt_classic_initial_state(
     }
 
 
-def _route_operation(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_operation(request: MethodCall) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     kind = _text(operation.get("kind"), "operation kind")
     mapping = {
@@ -165,7 +162,7 @@ def _route_operation(request: MethodNodeRequest) -> MethodNodeResult:
         "context_overflow": "prepare_summary",
         "final": "return",
     }
-    return MethodNodeResult(
+    return dict(
         value=operation,
         next_node=mapping[kind],
     )
@@ -180,13 +177,13 @@ def _record_main_turn(
     return {"turn": turn}
 
 
-def _core_replace(request: MethodNodeRequest) -> MethodNodeResult:
+def _core_replace(request: MethodCall) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     label = _text(operation.get("label"), "core_replace label")
     old = _text(operation.get("old"), "core_replace old", allow_empty=True)
     new = _text(operation.get("new"), "core_replace new", allow_empty=True)
     updated = _core_memory(request.state).replace(label, old, new)
-    return MethodNodeResult(
+    return dict(
         value={"kind": "core_replace", "label": label},
         state_update={
             "core_memory": updated.blocks,
@@ -198,12 +195,12 @@ def _core_replace(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _core_append(request: MethodNodeRequest) -> MethodNodeResult:
+def _core_append(request: MethodCall) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     label = _text(operation.get("label"), "core_append label")
     content = _text(operation.get("content"), "core_append content", allow_empty=True)
     updated = _core_memory(request.state).append(label, content)
-    return MethodNodeResult(
+    return dict(
         value={"kind": "core_append", "label": label},
         state_update={
             "core_memory": updated.blocks,
@@ -233,12 +230,12 @@ def _memory_query(
 
 
 def _prepare_query(
-    request: MethodNodeRequest,
+    request: MethodCall,
     tier: MemGPTMemoryTier,
 ) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     query = _memory_query(operation, tier)
-    return MethodNodeResult(
+    return dict(
         value={
             "tier": query.tier.value,
             "query": query.query,
@@ -254,11 +251,11 @@ def _prepare_query(
     )
 
 
-def _prepare_recall(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_recall(request: MethodCall) -> MethodNodeResult:
     return _prepare_query(request, MemGPTMemoryTier.RECALL)
 
 
-def _prepare_archival_query(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_archival_query(request: MethodCall) -> MethodNodeResult:
     return _prepare_query(request, MemGPTMemoryTier.ARCHIVAL)
 
 
@@ -280,8 +277,8 @@ def _append_memory_observation(
     return (*history, observation)
 
 
-def _record_query_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _record_query_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value=request.previous_value,
         state_update={
             "messages": _append_memory_observation(
@@ -299,10 +296,10 @@ def _record_query_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_archival_insert(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_archival_insert(request: MethodCall) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     content = _text(operation.get("content"), "archival insert content")
-    return MethodNodeResult(
+    return dict(
         value={"tier": "archival", "content": content},
         state_update={
             **_record_main_turn(request.state, operation=operation),
@@ -310,8 +307,8 @@ def _prepare_archival_insert(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_archival_insert(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _record_archival_insert(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value=request.previous_value,
         state_update={
             "memory_write_count": _count(request.state, "memory_write_count") + 1,
@@ -323,11 +320,11 @@ def _record_archival_insert(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_summary(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_summary(request: MethodCall) -> MethodNodeResult:
     _operation(request.previous_value)
     history = _messages(request.state.get("messages"))
     partition = classic_summary_partition(history)
-    return MethodNodeResult(
+    return dict(
         value={
             "messages_to_summarize": partition.summarize,
             "cutoff": partition.cutoff,
@@ -339,7 +336,7 @@ def _prepare_summary(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _apply_summary(request: MethodNodeRequest) -> MethodNodeResult:
+def _apply_summary(request: MethodCall) -> MethodNodeResult:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("MemGPT summarizer result must be a mapping")
     summary = _text(request.previous_value.get("summary"), "summary")
@@ -359,7 +356,7 @@ def _apply_summary(request: MethodNodeRequest) -> MethodNodeResult:
         summary_row,
         *(freeze_json(dict(row)) for row in retained),
     )
-    return MethodNodeResult(
+    return dict(
         value={"summary_applied": True},
         state_update={
             "messages": rebuilt,
@@ -375,10 +372,10 @@ def _apply_summary(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     operation = _operation(request.previous_value)
     content = _text(operation.get("content"), "final response", allow_empty=True)
-    return MethodNodeResult(
+    return dict(
         value={
             "response": content,
             "turns": _count(request.state, "turn") + 1,
@@ -394,7 +391,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_memgpt_classic_method_program() -> MethodProgram:
+def build_memgpt_classic_method_program(method, ) -> None:
     configuration: JsonObject = {
         "paper_era_anchor": MEMGPT_CLASSIC_FIDELITY.audited_anchor_commit,
         "overflow_fix": MEMGPT_CLASSIC_FIDELITY.context_overflow_fix_commit,
@@ -406,22 +403,14 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         "overflow_strategy": MEMGPT_CLASSIC_FIDELITY.overflow_strategy,
         "summary_fraction": MEMGPT_CLASSIC_FIDELITY.default_summary_fraction,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="memgpt-classic",
-            implementation_version=MEMGPT_CLASSIC_FIDELITY.audited_anchor_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="memgpt-classic.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="agent")
+
+    builder = method
     builder.agent(
         "agent",
         "memgpt.agent",
         _MAIN_AGENT_ID,
         ("route",),
-        view_handler=_memgpt_agent_view,
+        view=_memgpt_agent_view,
         max_visits=_MAX_METHOD_TURNS + _MAX_SUMMARIES,
     )
     builder.route(
@@ -465,7 +454,7 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         "memgpt.recall.query",
         _RECALL_QUERY_CAPABILITY,
         ("record_query",),
-        effect_class=EffectClass.PURE,
+        effect='pure',
         max_visits=_MAX_MEMORY_OPERATIONS,
     )
     builder.compute(
@@ -480,7 +469,7 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         "memgpt.archival.query",
         _ARCHIVAL_QUERY_CAPABILITY,
         ("record_query",),
-        effect_class=EffectClass.PURE,
+        effect='pure',
         max_visits=_MAX_MEMORY_OPERATIONS,
     )
     builder.compute(
@@ -502,9 +491,9 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         "memgpt.archival.insert",
         _ARCHIVAL_INSERT_CAPABILITY,
         ("record_archival_insert",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=_MAX_MEMORY_OPERATIONS,
-        evidence_obligations=("memory.archival.effect",),
+        evidence=("memory.archival.effect",),
     )
     builder.compute(
         "record_archival_insert",
@@ -525,7 +514,7 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         "memgpt.context.summarize",
         _SUMMARIZER_AGENT_ID,
         ("apply_summary",),
-        view_handler=_memgpt_summary_view,
+        view=_memgpt_summary_view,
         max_visits=_MAX_SUMMARIES,
     )
     builder.compute(
@@ -536,35 +525,46 @@ def build_memgpt_classic_method_program() -> MethodProgram:
         max_visits=_MAX_SUMMARIES,
     )
     builder.return_node("return", "memgpt.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(
+    builder.configure(configuration)
+    builder.requires(*(
             _RECALL_QUERY_CAPABILITY,
             _ARCHIVAL_QUERY_CAPABILITY,
             _ARCHIVAL_INSERT_CAPABILITY,
-        ),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+        ))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "memgpt.memory.operations",
             "memgpt.context.projection",
             "memory.archival.effect",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "agent_turn_count",
             "memory_query_count",
             "memory_write_count",
             "summary_count",
         ),
-        artifact_kinds=("memgpt_trajectory", "memgpt_memory_trace"),
+        artifacts=("memgpt_trajectory", "memgpt_memory_trace"),
     )
+    return builder
 
 
-MEMGPT_CLASSIC_METHOD_PROGRAM = build_memgpt_classic_method_program()
+METHOD_CONFIGURER = build_memgpt_classic_method_program
+METHOD_ENTRYPOINT = "agent"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "MEMGPT_CLASSIC_METHOD_PROGRAM",
-    "build_memgpt_classic_method_program",
-    "memgpt_classic_initial_state",
+    'build_memgpt_classic_method_program',
+    'memgpt_classic_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'memgpt', "version": "paper-protocol", "semantic_contract": 'memgpt' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

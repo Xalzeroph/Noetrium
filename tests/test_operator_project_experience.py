@@ -15,6 +15,7 @@ from noetrium_platform.foundation.portfolio.api import (
     encode_project_manifest,
     project_manifest_document,
 )
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.product.operator.api import (
     PROJECT_TEMPLATE_REVISION,
     ProjectCreateRequest,
@@ -213,9 +214,37 @@ def test_project_doctor_validates_one_compile_surface_and_public_boundary(
         encoding="utf-8",
     )
     drifted = project_doctor.doctor_project(
-        root, boundary_auditor=audit_downstream_project_imports
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     assert _checks(drifted)["public_import_boundary"] is ProjectDoctorDisposition.BLOCKED
+
+
+def test_project_doctor_allows_additional_python_dependencies(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    root = tmp_path / "demo-project"
+    project_scaffold.create_project(
+        ProjectCreateRequest("demo-project", "0.1.0", root)
+    )
+    pyproject = root / "pyproject.toml"
+    text = pyproject.read_text(encoding="utf-8")
+    text = text.replace(
+        'dependencies = ["noetrium==0.1.0"]',
+        'dependencies = ["noetrium==0.1.0", "networkx==3.4.2"]',
+    )
+    pyproject.write_text(text, encoding="utf-8")
+
+    report = project_doctor.doctor_project(
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
+    )
+    checks = _checks(report)
+    assert checks["platform_version"] is ProjectDoctorDisposition.PASS
+    assert report.ready
 
 
 def test_project_doctor_rejects_unknown_manifest_template(
@@ -232,7 +261,9 @@ def test_project_doctor_rejects_unknown_manifest_template(
         )
     )
     report = project_doctor.doctor_project(
-        root, boundary_auditor=audit_downstream_project_imports
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = _checks(report)
     assert checks["project_manifest"] is ProjectDoctorDisposition.PASS
@@ -375,7 +406,7 @@ def test_project_sync_regenerates_shell_without_touching_user_core(
     generated_test = root / "tests" / "test_generated_project.py"
 
     user_core = core.read_text(encoding="utf-8").replace(
-        'program.node("root", kind=api.ResearchNodeKind.CUSTOM)',
+        'program.node("root", kind=research_os_api.ResearchNodeKind.CUSTOM)',
         'program.node("novel-core", kind=api.ResearchNodeKind.CUSTOM)',
     )
     core.write_text(user_core, encoding="utf-8")

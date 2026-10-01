@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "c204e34f1c821f7481bd5d9ccc4a7e77dcd400db96c74bbb1a274bc9692de460",
-  "definition_digest": "dfd76e1e43edd424426db654c8291f1984f6b6f4f4368f6906645298dc042218",
+  "package_digest": "21ef878049f8dcddb4b1613cc3e630b0d23e28ca68db88a06e392c32b56b39b4",
+  "definition_digest": "d182a20a6c2b0ded445cda66255df6945e81607104dcc6bb89f732b3566c7739",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -124,13 +124,13 @@
       "kind": "method_program",
       "path": "research/reproductions/deps_minecraft/program.py",
       "declaration_digest": "f77243075d34aa2e07dcdea11506713e2b771b821d7287e35e060a7eb855d0c9",
-      "content_sha256": "348ead907c064ed879074865916dc26c3861f3e683e48b5dfaff8c7f632269b7"
+      "content_sha256": "05469eca2ea8bba31c5559e6264b06e234fb767c107a642faa94ebdf009a45fc"
     },
     {
       "kind": "study",
       "path": "research/reproductions/deps_minecraft/study.py",
       "declaration_digest": "735ad684b39590c1b3de0ced1bd5b24011cf47d49fc26061212c31e56d92f79b",
-      "content_sha256": "39d73a28bd59c45a5d3fe3cde453115811a7ec996a7934174d23372e34280a6c"
+      "content_sha256": "f1d4653bf54625d3f2dc0f58e048e4343450388faa1317874ecc6d5b09aa11e8"
     },
     {
       "kind": "support",
@@ -179,19 +179,19 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_deps_minecraft_v1.py",
-      "content_sha256": "a80e526c681c3942dc3f8d2483357cbc1d385b0d2b9676f2848639c99affd41e"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "deps_minecraft",
-    "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+    "program_digest": "ab607f6fcebb94fecfd2dba92f481728cec1bdf37a5653dfb553c05c303db281",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
+        "8c4c3e56011fc8336334ed1b94764290770c807ad29b68f63cbdeda5be9ece30"
       ],
       "blockers": []
     },

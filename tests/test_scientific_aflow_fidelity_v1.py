@@ -69,7 +69,7 @@ def test_aflow_fidelity_freezes_search_round_sampling_and_evaluation_semantics()
 def test_aflow_reproduction_uses_universal_research_program_asset() -> None:
     kinds = tuple(asset.kind for asset in REPRODUCTION.assets)
     assert ReproductionAssetKind.FIDELITY in kinds
-    assert ReproductionAssetKind.RESEARCH_PROGRAM in kinds
-    assert ReproductionAssetKind.METHOD_PROGRAM not in kinds
+    assert ReproductionAssetKind.RESEARCH_PROGRAM not in kinds
+    assert ReproductionAssetKind.METHOD_PROGRAM in kinds
     assert REPRODUCTION.lifecycle.value == "protocol_bound"
     assert "humaneval" in REPRODUCTION.catalog.benchmark_ids

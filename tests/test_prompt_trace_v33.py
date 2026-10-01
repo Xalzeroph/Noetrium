@@ -1,3 +1,4 @@
+from prompt_os_test_support import make_promoted_prompt_registry
 from pathlib import Path
 import tempfile, unittest
 
@@ -16,7 +17,7 @@ from noetrium_platform.evidence.observability.telemetry.metric.runtime import Te
 class PromptTraceV33Tests(unittest.TestCase):
     def _ctx(self): return ExecutionContext(run_id='r',trace_id='tr',span_id='sp',task_id='task',decision_cycle_id='dc',operation_id='op',component_id='llm.runtime')
     def test_compiler_exposes_exact_block_size_stats(self):
-        r=PromptRegistry(); r.publish('g',default_prompt_specs()); b=r.get('planner.v6'); K=PromptBlockKind
+        r=make_promoted_prompt_registry(generation_id='g'); b=r.get('planner.v6'); K=PromptBlockKind
         c=PromptCompiler().compile(b,default_block_policies()['planner'],(
             PromptBlock(K.TASK,'abc','d1',1),PromptBlock(K.VERIFIED_STATE,'state','d2',2),PromptBlock(K.TOOL_CATALOG,'tool','d3',3),
         ))

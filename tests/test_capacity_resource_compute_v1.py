@@ -4,9 +4,9 @@ from threading import Barrier, Event, Thread
 import time
 
 from noetrium_platform.infrastructure.resources.compute.api import ComputeHost, ComputeRequirement
-from noetrium_platform.infrastructure.resources.compute.runtime.inventory import InMemoryComputeInventory
+from tests.resource_compute_support import TestComputeInventory
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
-from tests.resource_compute_support import in_memory_compute_scheduler
+from tests.resource_compute_support import compute_scheduler
 
 
 def _scope(name: str) -> ScopeIdentity:
@@ -16,10 +16,10 @@ def _scope(name: str) -> ScopeIdentity:
 def test_compute_allocation_never_crosses_requested_scope() -> None:
     first = _scope("first")
     second = _scope("second")
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("a-first", first, 8, 1024))
     inventory.register_host(ComputeHost("b-second", second, 8, 1024))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = compute_scheduler(inventory)
 
     allocation = scheduler.allocate(
         "second-allocation", second, ComputeRequirement(cpu_cores=1, memory_bytes=1)
@@ -27,14 +27,14 @@ def test_compute_allocation_never_crosses_requested_scope() -> None:
     assert inventory.host(allocation.host_id).scope == second
 
 
-class _SlowInventory(InMemoryComputeInventory):
+class _SlowInventory(TestComputeInventory):
     def list_hosts(self, *, scope=None):
         rows = super().list_hosts(scope=scope)
         time.sleep(0.05)
         return rows
 
 
-class _BlockingInventory(InMemoryComputeInventory):
+class _BlockingInventory(TestComputeInventory):
     def __init__(self) -> None:
         super().__init__()
         self.list_entered = Event()
@@ -52,7 +52,7 @@ def test_inventory_observation_does_not_hold_scheduler_state_lock() -> None:
     scope = _scope("lock-scope")
     inventory = _BlockingInventory()
     inventory.register_host(ComputeHost("host", scope, 2, 2))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = compute_scheduler(inventory)
     candidate_done = Event()
     candidate_errors: list[BaseException] = []
 
@@ -98,7 +98,7 @@ def test_compute_allocation_is_linearizable_under_thread_contention() -> None:
     scope = _scope("shared")
     inventory = _SlowInventory()
     inventory.register_host(ComputeHost("host", scope, 1, 1))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = compute_scheduler(inventory)
     start = Barrier(3)
     allocations = []
     errors = []

@@ -19,11 +19,15 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
     @property
     def identity_digest(self) -> str:
         return canonical_digest({
-            "policy": "adaptive-least-pressure-model-replica.v1",
+            "policy": "adaptive-least-pressure-model-replica.v2",
             "signals": (
+                "retry_diversity",
                 "saturation",
+                "runtime_waiting",
+                "runtime_kv_pressure",
                 "normalized_in_flight",
                 "consecutive_failures",
+                "prefix_affinity",
                 "observed_latency",
                 "selection_recency",
             ),
@@ -39,15 +43,38 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
         def score(candidate: ModelEndpointReplicaSelectionCandidate):
             saturated = 1 if candidate.in_flight >= candidate.capacity else 0
             normalized_load = candidate.in_flight / candidate.capacity
+            runtime_waiting = (
+                candidate.runtime_requests_waiting
+                if candidate.runtime_pressure_observed
+                else 0
+            )
+            runtime_kv_pressure = (
+                candidate.runtime_gpu_kv_cache_usage
+                if runtime_waiting > 0
+                else 0.0
+            )
             latency_rank = (
                 -1.0
                 if candidate.ewma_latency_seconds is None
                 else candidate.ewma_latency_seconds
             )
+            # Retry diversity is first: when scientifically interchangeable
+            # replicas exist, do not spend a retry on the same physical target
+            # unless every currently admissible candidate was already tried.
+            #
+            # Prefix affinity is deliberately considered only after pressure
+            # and health. This gives sequential/shared-prefix agent traffic KV
+            # locality while preserving load spreading under concurrency.
             return (
+                1 if candidate.attempted_in_dispatch else 0,
                 saturated,
+                1 if runtime_waiting > 0 else 0,
+                runtime_waiting,
+                runtime_kv_pressure,
                 normalized_load,
                 candidate.consecutive_failures,
+                -candidate.prefix_affinity_score,
+                -candidate.prefix_affinity_depth,
                 latency_rank,
                 candidate.last_selected_sequence,
                 candidate.deployment_id,

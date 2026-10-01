@@ -39,7 +39,9 @@ class _Transport:
         body: dict[str, object],
         *,
         timeout_s: float,
+        headers: tuple[tuple[str, str], ...] = (),
     ) -> JsonHttpResponse:
+        del headers
         self.calls.append((url, body, timeout_s))
         return JsonHttpResponse(200, {
             "choices": [{
@@ -127,7 +129,7 @@ def test_composition_runs_live_canary_binds_receipt_and_publishes_closure(tmp_pa
     assert any(ref.startswith("canary:sha256:") for ref in runtime_receipt.evidence_refs)
     assert len(transport.calls) == 1
     binding = PersistedQualifiedModelEndpointBinding(closure).binding_for(
-        role="planner", prompt_generation="sem-planner-generation-v1"
+        role="planner", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1", prompt_generation="sem-planner-generation-v1"
     )
     assert binding.deployment_id == deployment.deployment_id
 

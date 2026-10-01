@@ -21,7 +21,6 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 )
 from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
-    AdmissionMode,
     AdmissionRejected,
 )
 
@@ -129,12 +128,12 @@ def test_workload_domains_share_one_physical_resource_reservation_ledger() -> No
     )
     orchestration = pool.open_orchestration_group(
         "reserve-orchestration",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
         resource_demand=demand,
     )
     experiment = pool.open_experiment_group(
         "reserve-experiment",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
         resource_demand=demand,
     )
     entered = Event()
@@ -287,7 +286,7 @@ def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_ali
         lambda: pool.environment_instance_lease_guard_factory(object()),
         lambda: pool.docker_container_lease_guard_factory(object()),
     ):
-        with pytest.raises(RuntimeError, match="workloads are quiesced"):
+        with pytest.raises(RuntimeError, match="workloads are quiesc"):
             operation()
 
     cleanup = pool.open_orchestration_group("terminal-cleanup")
@@ -432,6 +431,8 @@ def test_workload_domains_share_one_cpu_provider_while_control_is_isolated() -> 
     pool = ResearchExecutionPool(
         orchestration_concurrency_budget=budget,
         experiment_concurrency_budget=budget,
+        machine_concurrency_budget=budget,
+        capability_io_concurrency_budget=budget,
         model_io_concurrency_budget=budget,
     )
     orchestration = pool.open_orchestration_group("shared-cpu-orchestration")

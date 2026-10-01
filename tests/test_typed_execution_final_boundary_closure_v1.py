@@ -6,7 +6,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
 )
 from noetrium_platform.research.execution.policy.runtime import HierarchicalAdmissionAuthority
 from noetrium_platform.infrastructure.lifecycle.launch_control import RunLaunchIdentity
@@ -35,7 +34,8 @@ def test_admission_identity_and_intent_are_strict_and_canonical():
         AdmissionIntent(priority="high")  # type: ignore[arg-type]
     with pytest.raises(TypeError):
         AdmissionIntent(mode="reject")  # type: ignore[arg-type]
-    assert AdmissionIntent(ExecutionPriority.HIGH, AdmissionMode.REJECT).mode is AdmissionMode.REJECT
+    immediate = AdmissionIntent(ExecutionPriority.HIGH, 0.0)
+    assert immediate.reject_if_wait_required is True
 
 
 def test_admission_group_identity_never_coerces_objects_to_text():
@@ -65,9 +65,78 @@ def test_scheduling_candidate_and_policy_reject_permissive_numeric_inputs():
     assert candidate.enqueued_monotonic == 1.0
     policy = FairPrioritySchedulingPolicy(priority_aging_seconds=1)
     with pytest.raises(TypeError):
-        policy.select((candidate,), group_last_grant={}, now_monotonic=True)  # type: ignore[arg-type]
+        policy.select((candidate,), group_last_grant={}, tenant_last_grant={}, now_monotonic=True)  # type: ignore[arg-type]
     with pytest.raises(ValueError):
-        policy.select((candidate,), group_last_grant={}, now_monotonic=math.nan)
+        policy.select((candidate,), group_last_grant={}, tenant_last_grant={}, now_monotonic=math.nan)
+
+
+def test_fair_priority_scheduling_is_tenant_fair_before_group_fair() -> None:
+    policy = FairPrioritySchedulingPolicy(priority_aging_seconds=1.0)
+    candidates = tuple(
+        SchedulingCandidate(
+            index,
+            f"group-a-{index}",
+            ExecutionPriority.NORMAL,
+            99.0,
+            tenant_id="paper-a",
+        )
+        for index in range(100)
+    ) + (
+        SchedulingCandidate(
+            100,
+            "group-b-0",
+            ExecutionPriority.NORMAL,
+            99.0,
+            tenant_id="paper-b",
+        ),
+    )
+    selected = policy.select(
+        candidates,
+        group_last_grant={"group-a-0": 1},
+        tenant_last_grant={"paper-a": 50, "paper-b": 10},
+        now_monotonic=100.0,
+    )
+    assert selected == 100
+
+    same_tenant = candidates[:2]
+    selected = policy.select(
+        same_tenant,
+        group_last_grant={"group-a-0": 20, "group-a-1": 3},
+        tenant_last_grant={"paper-a": 50},
+        now_monotonic=100.0,
+    )
+    assert selected == 1
+
+
+def test_fair_priority_scheduling_prefers_lower_active_tenant_share() -> None:
+    policy = FairPrioritySchedulingPolicy(priority_aging_seconds=1.0)
+    candidates = (
+        SchedulingCandidate(
+            1,
+            "group-a",
+            ExecutionPriority.NORMAL,
+            99.0,
+            tenant_id="paper-a",
+            group_in_flight=4,
+            tenant_in_flight=8,
+        ),
+        SchedulingCandidate(
+            2,
+            "group-b",
+            ExecutionPriority.NORMAL,
+            99.0,
+            tenant_id="paper-b",
+            group_in_flight=0,
+            tenant_in_flight=0,
+        ),
+    )
+    selected = policy.select(
+        candidates,
+        group_last_grant={"group-a": 1, "group-b": 100},
+        tenant_last_grant={"paper-a": 1, "paper-b": 100},
+        now_monotonic=100.0,
+    )
+    assert selected == 2
 
 
 def test_run_launch_identity_canonicalizes_sha256_and_rejects_non_text():

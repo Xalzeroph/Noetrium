@@ -25,7 +25,6 @@ from noetrium_platform.research.execution.machines import (
     ProgramRule,
     ProgramRuleSet,
     ResearchProgram,
-    RuleDispatchMode,
     RuntimeConcern,
     UnhandledEventPolicy,
     build_rule_handlers,
@@ -148,7 +147,7 @@ def multi_agent_rule_set() -> ProgramRuleSet:
                 semantic=RuntimeConcern.INTERVENTION.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
+        max_matches=1,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 

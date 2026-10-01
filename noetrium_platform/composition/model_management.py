@@ -1,18 +1,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
+import os
+from threading import RLock
 from pathlib import Path
 from typing import Mapping
-from uuid import uuid4
 
-from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ContentAddressedSingleFlight,
+    TaskGroupPort,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_local_command_runner
 
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities
+from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities, ManagedDirectoryKind
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.api import ModelAuthorities, ModelRevisionAuthorityPort
-from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs
+from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSpec
 from noetrium_platform.capabilities.model.asset.providers import HuggingFaceCliModelSource
 from noetrium_platform.capabilities.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
 from noetrium_platform.capabilities.model.composition import DeploymentModelAssetReferences
@@ -39,17 +44,23 @@ from noetrium_platform.capabilities.model.qualification.composition import (
 from noetrium_platform.infrastructure.resources.compute.api import ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver, NvidiaSmiGpuRuntimeObserver
 from noetrium_platform.composition.resource_probes import LocalCommandResourceProbe
+from noetrium_platform.composition.runtime_coordination import runtime_coordination_root
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
+    discover_docker_root,
+)
+from noetrium_platform.infrastructure.resources.container.api import (
+    DockerCommandRunnerPort,
+    DockerContainerLeaseGuardFactoryPort,
 )
 from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
 )
+from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.python.runtime import (
     CondaEnvironmentBackend,
     build_python_environment_authorities,
@@ -68,26 +79,181 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ProcessAliveReadinessProbe,
     StaticServiceEnvironmentProvider,
 )
+from noetrium_platform.composition.docker_service_process_backend import (
+    DockerContainerProcessBackend,
+    DockerServiceBindMount,
+    DockerServiceProcessConfiguration,
+    DockerServiceTmpfsMount,
+)
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 
-from noetrium_platform.infrastructure.lifecycle.service.composition import compose_local_process_backend, build_service_supervisor
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
+from noetrium_platform.infrastructure.lifecycle.service.composition import build_service_supervisor
 from noetrium_platform.infrastructure.lifecycle.host.composition import HostComposition, compose_local_host
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.platform_meta import (
     PlatformMetaAuthorities,
-    build_durable_platform_meta,
+    build_platform_meta,
 )
 from noetrium_platform.infrastructure.resources.compute.composition import (
     discover_local_compute_host,
 )
 
 
+_MODEL_SERVING_CACHE_ROOT = Path("/var/cache/noetrium/model-serving")
+_MODEL_SERVING_CACHE_ENVIRONMENT = (
+    ("TORCHINDUCTOR_CACHE_DIR", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "torchinductor")),
+    ("TRITON_CACHE_DIR", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "triton")),
+    ("CUDA_CACHE_PATH", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "cuda")),
+    ("VLLM_CACHE_ROOT", str(_MODEL_SERVING_CACHE_ROOT / "topology" / "vllm")),
+)
+_MODEL_COMPILE_DYNAMIC_VALUE_FLAGS = frozenset({
+    "--host",
+    "--port",
+    "--data-parallel-rpc-port",
+})
+_MODEL_COMPILE_IGNORED_VALUE_FLAGS = frozenset({
+    "--max-num-seqs",
+    "--generation-config",
+})
+_MODEL_COMPILE_IGNORED_SWITCH_FLAGS = frozenset({
+    "--disable-uvicorn-access-log",
+    "--disable-log-stats",
+    "--enable-server-load-tracking",
+})
+
+
+def _compile_semantic_compilation_config(raw: str) -> str | None:
+    try:
+        document = json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return raw
+    if not isinstance(document, dict):
+        return raw
+    # CUDA-graph capture buckets change startup work and runtime padding, not
+    # the generated model graph. vLLM maintains its own internal graph-cache
+    # hash under this outer cache, so stripping this field only enables safe
+    # reuse of identical compiler artifacts.
+    document.pop("cudagraph_capture_sizes", None)
+    if not document:
+        return None
+    return json.dumps(document, sort_keys=True, separators=(",", ":"))
+
+
+def _model_cache_semantic_argv(argv: tuple[str, ...]) -> tuple[str, ...]:
+    rows: list[str] = []
+    index = 0
+    while index < len(argv):
+        value = argv[index]
+        if value in _MODEL_COMPILE_IGNORED_SWITCH_FLAGS:
+            index += 1
+            continue
+        if value in _MODEL_COMPILE_DYNAMIC_VALUE_FLAGS:
+            if index + 1 >= len(argv):
+                rows.append(value)
+                index += 1
+                continue
+            rows.extend((value, "<dynamic>"))
+            index += 2
+            continue
+        if value in _MODEL_COMPILE_IGNORED_VALUE_FLAGS:
+            index += 2 if index + 1 < len(argv) else 1
+            continue
+        if value == "--compilation-config":
+            if index + 1 >= len(argv):
+                rows.append(value)
+                index += 1
+                continue
+            semantic = _compile_semantic_compilation_config(argv[index + 1])
+            if semantic is not None:
+                rows.extend((value, semantic))
+            index += 2
+            continue
+
+        dynamic_match = next(
+            (
+                flag
+                for flag in _MODEL_COMPILE_DYNAMIC_VALUE_FLAGS
+                if value.startswith(flag + "=")
+            ),
+            None,
+        )
+        if dynamic_match is not None:
+            rows.append(f"{dynamic_match}=<dynamic>")
+            index += 1
+            continue
+        if any(
+            value.startswith(flag + "=")
+            for flag in _MODEL_COMPILE_IGNORED_VALUE_FLAGS
+        ):
+            index += 1
+            continue
+        compilation_prefix = "--compilation-config="
+        if value.startswith(compilation_prefix):
+            semantic = _compile_semantic_compilation_config(
+                value[len(compilation_prefix):]
+            )
+            if semantic is not None:
+                rows.append(compilation_prefix + semantic)
+            index += 1
+            continue
+        rows.append(value)
+        index += 1
+    return tuple(rows)
+
+
+
+def _model_serving_cache_keys(spec: ModelDeploymentSpec) -> tuple[str, str]:
+    compile_key = canonical_digest(
+        {
+            "schema": "noetrium.model-serving-compile-cache.v1",
+            "model_id": spec.model_id,
+            "engine": spec.engine,
+            "container_digest": spec.container_digest,
+            "executable": spec.executable,
+            "argv": _model_cache_semantic_argv(spec.argv),
+            "environment": spec.environment,
+        }
+    )
+    topology_key = canonical_digest(
+        {
+            "schema": "noetrium.model-serving-topology-cache.v2",
+            "compile_key": compile_key,
+            # A one-device vLLM runtime has no inter-GPU topology state.
+            # Sharing its vLLM graph cache across interchangeable placements
+            # avoids recompiling the same stack whenever the scheduler moves
+            # it to another GPU. Multi-GPU runtimes keep exact device tuples
+            # because vLLM persists P2P topology evidence there.
+            "gpu_topology": (
+                ("single-device",)
+                if len(spec.gpu_devices) == 1
+                else spec.gpu_devices
+            ),
+        }
+    )
+    return compile_key, topology_key
+
+
+def _model_serving_environment(
+    base_environment: tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, str], ...]:
+    resolved = dict(base_environment)
+    for key, value in _MODEL_SERVING_CACHE_ENVIRONMENT:
+        existing = resolved.get(key)
+        if existing is not None and existing != value:
+            raise ValueError(
+                f"model serving cache environment is platform-owned: {key}"
+            )
+        resolved[key] = value
+    return tuple(sorted(resolved.items()))
+
+
 @dataclass(frozen=True, slots=True)
 class ManagementPlaneAuthorities:
     scopes: ScopeRegistryPort
     directories: DirectoryManagementAuthorities
+    durable_directories: DirectoryManagementAuthorities
+    physical_directories: DirectoryManagementAuthorities
     execution_environments: ExecutionEnvironmentCatalogPort
     python_environments: PythonEnvironmentAuthorities
     models: ModelAuthorities
@@ -100,102 +266,261 @@ class ManagementPlaneAuthorities:
 
 
 class LocalModelServiceRuntimeFactory:
-    """Composition-only factory for many independently managed local model services."""
+    """Compose model serving through the single exact Service + Docker lifecycle."""
 
     def __init__(
         self,
         directories: DirectoryLayoutPort,
         *,
-        operating_system: OperatingSystemRoute,
+        assets: ModelAssetManager,
+        docker_containers: DockerContainerLeaseAuthority,
+        docker_runner: DockerCommandRunnerPort,
+        docker_lease_guards: DockerContainerLeaseGuardFactoryPort,
         task_group: TaskGroupPort,
     ) -> None:
         self._directories = directories
-        self._operating_system = operating_system
+        self._assets = assets
+        self._docker_containers = docker_containers
+        self._docker_runner = docker_runner
+        self._docker_lease_guards = docker_lease_guards
         self._task_group = task_group
         self._state_root = directories.layout.state / "model-services"
         self._intent_root = directories.layout.runtime / "model-service-start-intents"
         self._capture_root = directories.layout.logs / "model-services"
+        self._lock = RLock()
+        self._runtimes: dict[
+            tuple[str, str],
+            tuple[ExactServiceRuntimeEndpoint, DockerContainerProcessBackend],
+        ] = {}
+
+    def _mounts(
+        self,
+        spec: ModelDeploymentSpec,
+        contract: ServiceLaunchContract,
+    ) -> tuple[DockerServiceBindMount, ...]:
+        asset = self._assets.model(spec.model_id)
+        target_asset = Path(asset.path).expanduser().absolute()
+        target_cwd = Path(contract.cwd).expanduser().absolute()
+        rows: dict[str, DockerServiceBindMount] = {}
+
+        asset_mount = DockerServiceBindMount(
+            target_asset.resolve(strict=True),
+            target_asset,
+            read_only=True,
+        )
+        rows[str(asset_mount.target)] = asset_mount
+
+        cwd_mount = DockerServiceBindMount(
+            target_cwd.resolve(strict=True),
+            target_cwd,
+            read_only=True,
+        )
+        rows.setdefault(str(cwd_mount.target), cwd_mount)
+
+        compile_key, topology_key = _model_serving_cache_keys(spec)
+        cache_root = self._directories.layout.cache / "model-serving"
+        cache_mounts = (
+            (
+                cache_root / "compile" / compile_key,
+                _MODEL_SERVING_CACHE_ROOT / "compile",
+            ),
+            (
+                cache_root / "topology" / topology_key,
+                _MODEL_SERVING_CACHE_ROOT / "topology",
+            ),
+        )
+        for source, target in cache_mounts:
+            source.mkdir(parents=True, exist_ok=True)
+            mount = DockerServiceBindMount(source, target, read_only=False)
+            rows[str(mount.target)] = mount
+        return tuple(rows[key] for key in sorted(rows))
 
     def open(
         self,
+        spec: ModelDeploymentSpec,
         contract: ServiceLaunchContract,
         *,
         environment: tuple[tuple[str, str], ...],
         readiness_url: str | None,
     ) -> ExactServiceRuntimeEndpoint:
-        service_key = self._safe(contract.service_id)
-        materialized = MaterializedServiceEnvironment(
-            variables=environment,
-            evidence_ref=f"model-serving-env:{contract.environment_digest}",
-        )
-        provider = StaticServiceEnvironmentProvider((materialized,))
-        backend = compose_local_process_backend(
-            self._operating_system,
-            process_supervisor=build_process_supervisor(self._task_group),
-        )
-        readiness = (
-            HttpEndpointReadinessProbe(self._task_group, readiness_url)
-            if readiness_url
-            else ProcessAliveReadinessProbe(self._task_group)
-        )
-        adapter = LocalServiceProcessAdapter(
-            provider,
-            DirectoryCapturePathProvider(self._capture_root),
-            backend,
-            readiness,
-        )
-        contract_key = contract.digest()
-        state = FileServiceStateStore(self._state_root / service_key / contract_key / "state.json")
-        intents = DirectoryServiceStartIntentStore(self._intent_root / service_key / contract_key)
-        return ExactServiceRuntimeEndpoint(build_service_supervisor(state, intents, adapter))
+        if type(spec) is not ModelDeploymentSpec:
+            raise TypeError("model service runtime requires ModelDeploymentSpec")
+        if spec.service_id != contract.service_id:
+            raise ValueError("model service spec/contract service identity drifted")
+        key = (canonical_digest(spec), contract.digest())
 
+        with self._lock:
+            existing = self._runtimes.get(key)
+            if existing is not None:
+                return existing[0]
 
-    def logs(self, contract: ServiceLaunchContract, *, deployment_id: str) -> ModelDeploymentLogs:
+            service_key = self._safe(contract.service_id)
+            materialized = MaterializedServiceEnvironment(
+                variables=environment,
+                evidence_ref=f"model-serving-env:{contract.environment_digest}",
+            )
+            provider = StaticServiceEnvironmentProvider((materialized,))
+            backend = DockerContainerProcessBackend(
+                authority=self._docker_containers,
+                runner=self._docker_runner,
+                lease_guard_factory=self._docker_lease_guards,
+                configuration=DockerServiceProcessConfiguration(
+                    image_digest=spec.container_digest,
+                    holder_scope=spec.scope,
+                    mounts=self._mounts(spec, contract),
+                    tmpfs_mounts=(
+                        DockerServiceTmpfsMount(
+                            Path("/tmp"),
+                            4 * 1024 ** 3,
+                            executable=True,
+                        ),
+                    ),
+                    gpu_devices=spec.gpu_devices,
+                    network_host=True,
+                    ipc_host=True,
+                    user_uid=os.getuid(),
+                    user_gid=os.getgid(),
+                ),
+            )
+            readiness = (
+                HttpEndpointReadinessProbe(self._task_group, readiness_url)
+                if readiness_url
+                else ProcessAliveReadinessProbe(self._task_group)
+            )
+            adapter = LocalServiceProcessAdapter(
+                provider,
+                DirectoryCapturePathProvider(self._capture_root),
+                backend,
+                readiness,
+            )
+            contract_key = contract.digest()
+            state = FileServiceStateStore(
+                self._state_root / service_key / contract_key / "state.json"
+            )
+            intents = DirectoryServiceStartIntentStore(
+                self._intent_root / service_key / contract_key
+            )
+            endpoint = ExactServiceRuntimeEndpoint(
+                build_service_supervisor(state, intents, adapter)
+            )
+            self._runtimes[key] = (endpoint, backend)
+            return endpoint
+
+    def logs(
+        self,
+        contract: ServiceLaunchContract,
+        *,
+        deployment_id: str,
+    ) -> ModelDeploymentLogs:
         paths = DirectoryCapturePathProvider(self._capture_root).paths(contract)
-        return ModelDeploymentLogs(deployment_id, paths.stdout_path, paths.stderr_path)
+        return ModelDeploymentLogs(
+            deployment_id,
+            paths.stdout_path,
+            paths.stderr_path,
+        )
+
+    def close(self) -> None:
+        with self._lock:
+            rows = tuple(reversed(tuple(self._runtimes.values())))
+            self._runtimes.clear()
+        errors: list[BaseException] = []
+        for _endpoint, backend in rows:
+            try:
+                backend.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise BaseExceptionGroup(
+                "model Docker service heartbeat shutdown failed",
+                errors,
+            )
 
     @staticmethod
     def _safe(value: str) -> str:
         return value.replace("/", "_").replace("\\", "_")
 
 
+def discover_local_docker_root(
+    task_group: TaskGroupPort,
+    *,
+    docker_executable: str = "docker",
+) -> Path | None:
+    """Discover Docker storage through the structured control command runner."""
+
+    return discover_docker_root(
+        build_local_command_runner(task_group),
+        docker_executable=docker_executable,
+    )
+
+
 def build_local_management_plane(
     layout: DirectoryLayout,
     *,
+    durable_layout: DirectoryLayout | None = None,
+    physical_layout: DirectoryLayout | None = None,
     base_service_environment: tuple[tuple[str, str], ...] = (),
     model_source_environment: tuple[tuple[str, str], ...] = (),
     huggingface_cli: str = "hf",
     model_storage_pools: Mapping[str, Path] | None = None,
     task_group: TaskGroupPort,
+    docker_task_group: TaskGroupPort,
+    execution_pool: ResearchExecutionPool,
 ) -> ManagementPlaneAuthorities:
+    if not isinstance(execution_pool, ResearchExecutionPool):
+        raise TypeError("management plane requires ResearchExecutionPool")
     local_commands = build_local_command_runner(task_group)
+    docker_commands = build_local_command_runner(docker_task_group)
     gpu_runtime = NvidiaSmiGpuRuntimeObserver(LocalCommandResourceProbe(local_commands))
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
     directory_layout = directories.layout
-    meta = build_durable_platform_meta(
+    durable_directories = (
+        directories
+        if durable_layout is None
+        else build_local_directory_authorities(durable_layout)
+    )
+    durable_directory_layout = durable_directories.layout
+    physical_directories = (
+        directories
+        if physical_layout is None
+        else build_local_directory_authorities(physical_layout)
+    )
+    physical_directory_layout = physical_directories.layout
+    lease_clock = LocalLeaseClock()
+    physical_host_identity = lease_clock.read().host_identity_digest
+    meta = build_platform_meta(
         directory_layout.layout.state / "platform-meta",
+        resource_root=(
+            physical_directory_layout.layout.state / "platform-resources"
+        ),
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
+        lease_clock=lease_clock,
     )
     docker_authority_id = canonical_digest(
         {
             "schema": "noetrium.docker-container-authority.v1",
-            "state_root": str(directory_layout.layout.state.resolve()),
+            "state_root": str(physical_directory_layout.layout.state.resolve()),
         }
     )
     docker_owner_generation_id = canonical_digest(
         {
-            "schema": "noetrium.docker-controller-generation.v1",
+            "schema": "noetrium.docker-controller-generation.v2",
             "authority_id": docker_authority_id,
-            "nonce": uuid4().hex,
+            "physical_host_identity": physical_host_identity,
         }
     )
     docker_containers = DockerContainerLeaseAuthority(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
         runtime=DockerCliManagedContainerProvider(
-            local_commands,
+            # Docker observation/recovery may be called synchronously from an
+            # orchestration ASYNC_IO task (for example service readiness).
+            # Keeping Docker control commands in the independent control-plane
+            # task group prevents the event loop from synchronously waiting on
+            # a child task submitted back to itself.
+            docker_commands,
+            docker_commands,
             authority_id=docker_authority_id,
         ),
         authority_id=docker_authority_id,
@@ -205,6 +530,7 @@ def build_local_management_plane(
     try:
         discovered_host = discover_local_compute_host(
             gpu_runtime_observer=gpu_runtime,
+            host_id=physical_host_identity,
         )
     except RuntimeError:
         discovered_host = None
@@ -213,10 +539,10 @@ def build_local_management_plane(
     scopes = meta.scopes
     host = compose_local_host(planner=meta.capability_composition)
     runner = SubprocessEnvironmentCommandRunner(local_commands)
-    pip_cache = directory_layout.layout.cache / "pip"
-    conda_cache = directory_layout.layout.cache / "conda-packages"
+    pip_cache = durable_directory_layout.layout.cache / "pip"
+    conda_cache = durable_directory_layout.layout.cache / "conda-packages"
     environments = build_python_environment_authorities(
-        directory_layout,
+        durable_directory_layout,
         (
             VenvEnvironmentBackend(runner, pip_cache=pip_cache),
             CondaEnvironmentBackend(
@@ -231,15 +557,18 @@ def build_local_management_plane(
         runner,
     )
     execution_environments = meta.environments
-    asset_registry = ModelAssetRegistry(directory_layout)
-    deployment_registry = ModelDeploymentRegistry(directory_layout)
-    applied_store = AppliedModelDeploymentStore(directory_layout)
+    asset_registry = ModelAssetRegistry(durable_directory_layout)
+    deployment_registry = ModelDeploymentRegistry(physical_directory_layout)
+    applied_store = AppliedModelDeploymentStore(physical_directory_layout)
     # Exact clear tombstones dominate any active-path residue that can reappear
     # after a crash between unlink and directory durability. Converge those
     # paths before model controllers or new service starts are composed.
     applied_store.reconcile_cleared()
-    asset_storage = LocalModelAssetStorage(directory_layout, additional_pools=model_storage_pools)
-    deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
+    asset_storage = LocalModelAssetStorage(
+        durable_directory_layout,
+        additional_pools=model_storage_pools,
+    )
+    deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
     assets = ModelAssetManager(
         asset_registry,
         DeploymentModelAssetReferences(deployment_catalog),
@@ -247,24 +576,32 @@ def build_local_management_plane(
         (HuggingFaceCliModelSource(
             asset_storage,
             executable=huggingface_cli,
-            cache_root=directory_layout.layout.cache / "huggingface",
+            cache_root=durable_directory_layout.layout.cache / "huggingface",
             environment=dict(model_source_environment),
             command_runner=local_commands,
         ),),
     )
     assignments = ModelAssignmentManager(scopes)
     service_factory = LocalModelServiceRuntimeFactory(
-        directory_layout,
-        operating_system=host.operating_system,
+        physical_directory_layout,
+        assets=assets,
+        docker_containers=docker_containers,
+        docker_runner=docker_commands,
+        docker_lease_guards=execution_pool.docker_container_lease_guard_factory(
+            docker_containers
+        ),
         task_group=task_group,
     )
+    execution_pool.register_model_lifecycle_resource(service_factory)
     materializer = ModelLaunchMaterializer(
-        assets, environments.lifecycle, base_environment=base_service_environment
+        assets,
+        gpu_runtime_observer=gpu_runtime,
+        base_environment=_model_serving_environment(base_service_environment),
     )
     deployment_runtime = ModelDeploymentRuntime(
         applied_store, deployment_catalog, materializer, service_factory
     )
-    auto_recovery = DurableModelAutoRecoveryAuthority(directory_layout)
+    auto_recovery = DurableModelAutoRecoveryAuthority(physical_directory_layout)
     fleet = ModelFleetRuntime(deployment_catalog, deployment_runtime, auto_recovery)
     deployment_logs = ModelDeploymentLogReader(
         applied_store, deployment_catalog, materializer, service_factory
@@ -277,7 +614,7 @@ def build_local_management_plane(
     )
     controller = ModelDesiredStateController(
         fleet,
-        FileModelControllerStateStore(directory_layout.layout.state / "model" / "deployments" / "controller.json"),
+        FileModelControllerStateStore(physical_directory_layout.layout.state / "model" / "deployments" / "controller.json"),
     )
     models = ModelAuthorities(
         assets, assignments, deployment_catalog, deployment_runtime, fleet, deployment_logs, resources, controller
@@ -285,16 +622,18 @@ def build_local_management_plane(
     return ManagementPlaneAuthorities(
         scopes=scopes,
         directories=directories,
+        durable_directories=durable_directories,
+        physical_directories=physical_directories,
         execution_environments=execution_environments,
         python_environments=environments,
         models=models,
         model_revisions=sqlite_revision_authority(
-            directory_layout.layout.state / "model" / "revisions.sqlite3"
+            durable_directory_layout.layout.state / "model" / "revisions.sqlite3"
         ),
         host=host,
         compute_scheduler=meta.compute_scheduler,
         deployment_qualification=build_local_deployment_qualification(
-            directory_layout.layout.state / "model" / "qualification",
+            durable_directory_layout.layout.state / "model" / "qualification",
             environments.packages,
             environments.execution,
             local_commands,
@@ -327,7 +666,24 @@ def bind_local_model_replica_pool(
         endpoint_lease_guards=execution_pool.endpoint_lease_guard_factory(
             plane.platform_meta.endpoint_allocations
         ),
+        realization_singleflight=ContentAddressedSingleFlight(
+            runtime_coordination_root() / "global-single-flight"
+        ),
+        runtime_fabric_leases=plane.platform_meta.resource_leases,
+        runtime_fabric_consumer_lease_id=(
+            "runtime-fabric-consumer:" + execution_pool.owner_generation_id
+        ),
+        runtime_fabric_consumer_lock_path=(
+            plane.physical_directories.layout.root(ManagedDirectoryKind.LOCKS)
+            / "runtime-fabric-consumers.lock"
+        ),
     )
 
 
-__all__ = ["LocalModelServiceRuntimeFactory", "ManagementPlaneAuthorities", "bind_local_model_replica_pool", "build_local_management_plane"]
+__all__ = [
+    "LocalModelServiceRuntimeFactory",
+    "ManagementPlaneAuthorities",
+    "bind_local_model_replica_pool",
+    "build_local_management_plane",
+    "discover_local_docker_root",
+]

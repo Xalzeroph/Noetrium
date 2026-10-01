@@ -28,7 +28,6 @@ from noetrium_platform.research.execution.api import (
     ProgramRuleSet,
     ResearchProgram,
     ResearchProgramHost,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -65,7 +64,6 @@ def paired_evaluation_rule_set() -> ProgramRuleSet:
                 semantic=EvaluationConcern.FINALIZATION.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 
@@ -73,13 +71,13 @@ def paired_evaluation_rule_set() -> ProgramRuleSet:
 def compile_paired_evaluation_program(
     *,
     program_id: str = "evaluation.paired.default",
-    version: str = "2",
+    version: str = "1",
 ) -> ResearchProgram:
     return compile_rule_program(
         program_id=program_id,
         kind=MachineKind.EVALUATION,
         version=version,
-        state_schema="evaluation.paired.state.v2",
+        state_schema="evaluation.paired.state.v1",
         rules=paired_evaluation_rule_set(),
     )
 
@@ -88,7 +86,6 @@ def paired_evaluation_initial_data(
     *,
     evaluation_id: str,
     source_execution_digest: str,
-    measurement_semantics_digest: str,
 ) -> JsonObject:
     if type(evaluation_id) is not str or not evaluation_id.strip():
         raise ValueError("evaluation_id is required")
@@ -98,16 +95,9 @@ def paired_evaluation_initial_data(
         or any(ch not in "0123456789abcdef" for ch in source_execution_digest)
     ):
         raise ValueError("source_execution_digest must be lowercase SHA-256")
-    if (
-        type(measurement_semantics_digest) is not str
-        or len(measurement_semantics_digest) != 64
-        or any(ch not in "0123456789abcdef" for ch in measurement_semantics_digest)
-    ):
-        raise ValueError("measurement_semantics_digest must be lowercase SHA-256")
     return {
         "evaluation_id": evaluation_id,
         "source_execution_digest": source_execution_digest,
-        "measurement_semantics_digest": measurement_semantics_digest,
         "pairs": {},
         "aggregate": {},
         "comparison_count": 0,
@@ -149,7 +139,6 @@ def _receipt(value: JsonObject) -> BranchReceipt:
         workload_id=decoded["workload_id"],
         environment_generation=decoded["environment_generation"],
         task_manifest_digest=decoded["task_manifest_digest"],
-        measurement_semantics_digest=decoded["measurement_semantics_digest"],
         branch_writes=tuple(decoded.get("branch_writes", ())),
         lifetime_writes=tuple(decoded.get("lifetime_writes", ())),
         private_to_method_flows=tuple(decoded.get("private_to_method_flows", ())),
@@ -164,7 +153,6 @@ def _receipt_payload(receipt: BranchReceipt) -> JsonObject:
         "workload_id": receipt.workload_id,
         "environment_generation": receipt.environment_generation,
         "task_manifest_digest": receipt.task_manifest_digest,
-        "measurement_semantics_digest": receipt.measurement_semantics_digest,
         "branch_writes": receipt.branch_writes,
         "lifetime_writes": receipt.lifetime_writes,
         "private_to_method_flows": receipt.private_to_method_flows,
@@ -181,7 +169,6 @@ def _proof_payload(proof: ComparabilityProof) -> JsonObject:
         "workload_id": proof.workload_id,
         "environment_generation": proof.environment_generation,
         "task_manifest_digest": proof.task_manifest_digest,
-        "measurement_semantics_digest": proof.measurement_semantics_digest,
     }
 
 
@@ -197,16 +184,6 @@ def paired_evaluation_operations() -> ProgramHandlerRegistry:
             raise TypeError("evaluation.compare requires control/candidate objects")
         control = _receipt(control_value)
         candidate = _receipt(candidate_value)
-        expected_semantics = data.get("measurement_semantics_digest")
-        if type(expected_semantics) is not str:
-            raise TypeError("evaluation state is missing measurement semantics identity")
-        if (
-            control.measurement_semantics_digest != expected_semantics
-            or candidate.measurement_semantics_digest != expected_semantics
-        ):
-            raise ValueError(
-                "branch measurement semantics do not match frozen evaluation identity"
-            )
         proof = build_comparability_proof(control, candidate)
 
         control_metrics = dict(control.metrics)
@@ -312,7 +289,6 @@ def paired_evaluation_operations() -> ProgramHandlerRegistry:
         result_digest = canonical_digest({
             "evaluation_id": data.get("evaluation_id"),
             "source_execution_digest": data.get("source_execution_digest"),
-            "measurement_semantics_digest": data.get("measurement_semantics_digest"),
             "pairs": data.get("pairs", {}),
             "aggregate": aggregate,
         })
@@ -336,7 +312,7 @@ def paired_evaluation_operations() -> ProgramHandlerRegistry:
         compare,
         implementation_digest=canonical_digest({
             "operation": "evaluation.paired.compare",
-            "implementation_revision": 2,
+            "implementation_revision": 1,
         }),
     )
     operations.register(
@@ -352,7 +328,7 @@ def paired_evaluation_operations() -> ProgramHandlerRegistry:
         finalize,
         implementation_digest=canonical_digest({
             "operation": "evaluation.paired.finalize",
-            "implementation_revision": 2,
+            "implementation_revision": 1,
         }),
     )
     return operations

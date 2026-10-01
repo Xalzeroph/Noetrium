@@ -4,9 +4,6 @@ from tests_support import FakeParticipantResolver, runtime_identity_for_test, mo
 
 from noetrium_platform.composition.participants.generic import generic_participant_adapter
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
-from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
@@ -61,14 +58,13 @@ def _spec():
     )
 
 
-def _runtime(store=None):
+def _runtime():
     participants = FakeParticipantResolver()
     participants.register("robot", "arm-vendor-sdk", ExternalRobot)
     from tests_support import EmptyWorkflowSurfaceFactory
     return build_experiment_runtime_for_test(
         participant_adapters=tuple(generic_participant_adapter(kind, participants) for kind in participants.kinds()),
         trial_protocol=NoOpTrialProtocol(),
-        checkpoint_store=store,
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )
 
@@ -80,23 +76,3 @@ def test_third_party_participant_needs_no_study_adapter():
     assert any("robot.resolve:physical_arm" in row for row in ids)
     assert any("robot.open_session:physical_arm" in row for row in ids)
     assert any("robot.close:physical_arm" in row for row in ids)
-
-
-def test_low_level_participant_gets_generic_joint_checkpoint_restore(tmp_path):
-    ExternalRobotSession.restored.clear()
-    store = DirectoryRunCheckpointStore(tmp_path / "cp")
-    identity = RunIdentity("run", "session", "trace")
-    cycle = DecisionCycleIdentity("run", "dc1", "session", "task1", "trace")
-    with _runtime(store).open_run(_spec(), run_identity=identity) as run:
-        run.execute(task="one", input_payload=1, cycle_identity=cycle)
-        checkpoint_id = run.latest_checkpoint_id
-    assert checkpoint_id
-
-    restored = _runtime(store).open_run(
-        _spec(),
-        run_identity=identity,
-        restore_checkpoint_id=checkpoint_id,
-        restore_cycle_identity=cycle,
-    )
-    restored.close()
-    assert ExternalRobotSession.restored == [b"robot-state-v1"]

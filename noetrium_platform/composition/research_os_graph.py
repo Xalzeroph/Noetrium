@@ -13,6 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.product.research_os import (
     ResearchDefinition,
+    ResearchDefinitionKind,
     ResearchGraphRevision,
     ResearchInputBinding,
     ResearchNode,
@@ -169,10 +170,10 @@ def compile_research_portfolio_graph(
     if revision.portfolio_digest != portfolio.portfolio_digest:
         raise ValueError("research graph revision/portfolio digest mismatch")
 
-    programs = {program.program_id: program for program in portfolio.programs}
+    programs = {program.program_id: program for program in portfolio._programs}
     nodes = {
         ResearchNodeRef(program.program_id, node.node_id): node
-        for program in portfolio.programs
+        for program in portfolio._programs
         for node in program.nodes
     }
     definitions = {
@@ -180,7 +181,7 @@ def compile_research_portfolio_graph(
             definition.definition_id: definition
             for definition in program.definitions
         }
-        for program in portfolio.programs
+        for program in portfolio._programs
     }
     incoming: dict[
         ResearchNodeRef,
@@ -189,7 +190,7 @@ def compile_research_portfolio_graph(
         ref: [] for ref in nodes
     }
 
-    for program in portfolio.programs:
+    for program in portfolio._programs:
         for dependency in program.dependencies:
             upstream = ResearchNodeRef(
                 program.program_id,
@@ -206,7 +207,7 @@ def compile_research_portfolio_graph(
                     dependency.dependency_digest,
                 )
             )
-    for dependency in portfolio.dependencies:
+    for dependency in portfolio._dependencies:
         incoming[dependency.downstream].append(
             (
                 dependency.upstream,
@@ -238,6 +239,23 @@ def compile_research_portfolio_graph(
         )
         for ref in ordered_refs
     }
+    program_auxiliary_definition_digests = {
+        program.program_id: tuple(
+            definition.definition_digest
+            for definition in sorted(
+                (
+                    definition
+                    for definition in program.definitions
+                    if definition.kind in {
+                        ResearchDefinitionKind.CHILD_MACHINE,
+                        ResearchDefinitionKind.VERIFIER,
+                    }
+                ),
+                key=lambda definition: definition.definition_id,
+            )
+        )
+        for program in portfolio._programs
+    }
     semantic_digests: dict[ResearchNodeRef, str] = {}
 
     def semantic_digest(ref: ResearchNodeRef) -> str:
@@ -253,6 +271,9 @@ def compile_research_portfolio_graph(
                 "definition_digests": tuple(
                     definition.definition_digest
                     for definition in node_definitions
+                ),
+                "program_auxiliary_definition_digests": (
+                    program_auxiliary_definition_digests[ref.program_id]
                 ),
                 "incoming": tuple(
                     {
@@ -366,8 +387,8 @@ def bind_research_portfolio_scheduler(
     tenant_id: str | None = None,
     priority: ExecutionPriority = ExecutionPriority.NORMAL,
     task_group_id: str | None = None,
-    execution_store: ResearchGraphExecutionStorePort | None = None,
-    execution_id: str | None = None,
+    execution_store: ResearchGraphExecutionStorePort,
+    execution_id: str,
     lease_seconds: float = 30.0,
     scheduler_owner_id: str | None = None,
     selected_node_ids: tuple[str, ...] | None = None,

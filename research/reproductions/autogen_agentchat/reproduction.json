@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "autogen_agentchat",
-  "package_digest": "5ab84f292437857a276196ae2fc9e925901d57d83767c08f5681f9d7e6f0d486",
-  "definition_digest": "cc6c1df578b908f00a037c121b1029b6407f3bb0a9c891a68c8049924a54d746",
+  "package_digest": "df06e7a93a9225d9285c7de3c9205da23328eac3f5c26d030471cd757b47f630",
+  "definition_digest": "4bc66922995a931849a181a3433be2c33691160589c4c7375c468767991e42bb",
   "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -77,13 +77,13 @@
       "kind": "method_program",
       "path": "research/reproductions/autogen_agentchat/program.py",
       "declaration_digest": "6c8b245d6b438f4dff0c064781a7b0a27489323b57dbf57ed8253893d1540c6e",
-      "content_sha256": "7f0dc4d50bb226ccea3e92499847ce8d954118c5d1d7c593fbbdcca7555e9a67"
+      "content_sha256": "4bee52d692682c5f15c5a1c224a2d46e20687be45fc2f9051df285841638e39e"
     },
     {
       "kind": "study",
       "path": "research/reproductions/autogen_agentchat/study.py",
       "declaration_digest": "7d9162ef66f519761e34d82bfe41d290a261cda8ac0624b3c31d6256afcc9916",
-      "content_sha256": "a55af7a2fd8f01d89a2f40998a51916e3f236f2ca8813f88acd52530e846fa51"
+      "content_sha256": "c4b2681fc66be51c0e9442f3861f0a83e9fc010eee8bc67fd4b00ef9be714614"
     }
   ],
   "primary_executable": "research/reproductions/autogen_agentchat/program.py",
@@ -97,18 +97,14 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_autogen_agentchat_fidelity_v1.py",
-      "content_sha256": "ba00f910a69fe72cbac6d94b833a37b839b4658dadac0059aa651ff356fc9f5c"
-    },
-    {
-      "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
-      "content_sha256": "8ec33d8f814b694c3db9ae3ff6e09fc4435a41dd9b417b394416413072cd6dd1"
+      "content_sha256": "c74a0f653144473a970395a56b5854a9a85a5d83da858da77c2815aa667158d7"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "autogen_agentchat",
-    "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
+    "program_digest": "12533664b8dba779c86f15a5526716bd46e28f457f8fc00daa9673609bbe2b35",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "crossha_cvpr2026",
-  "package_digest": "d7edd682e4efe752e4fdeeb8f5338ead1ef87edfbcd396df973541cc728371c0",
-  "definition_digest": "0dbd527b8a5223d3511d230e426f1b7d740cab26e48f781a7be0b08873e32655",
+  "package_digest": "43e1be11d4309d71699b4f66d841f472e88880aaac252b4e0ea6f283cc87f3d0",
+  "definition_digest": "3a8c0376c8730aff4feee37245b851e0c07870bcfa21f66d120762977a9c3f95",
   "source_registry_digest": "5a145e097816c7349d69d888b911b46ce88155c5829bc4dcc9d1017335ead762",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/crossha_cvpr2026/program.py",
       "declaration_digest": "755dfa893d98e5eb8b8799bbd7e1eb9c19e9fc15336d2f945d599f7c999f93ea",
-      "content_sha256": "79b61887ae11c4056ed35a51fffd1ea2bbb2c32807b20b99d351eb66ef2ca95f"
+      "content_sha256": "fab922773f4fabe1020b84de7f2fa33506b1bce3263629239b32f321fb05aae6"
     },
     {
       "kind": "study",
       "path": "research/reproductions/crossha_cvpr2026/study.py",
       "declaration_digest": "1a359b070f57a00199d878418bf0d78392c68cb3b65e62cf2462ed1e9922d9c6",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/crossha_cvpr2026/program.py",
@@ -171,15 +171,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "crossha_cvpr2026",
-    "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+    "program_digest": "628d4d30f1a133df5e9a3d30344e97721d723f48d5be56766e44d60645d8c33d",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -190,6 +190,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

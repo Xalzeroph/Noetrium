@@ -3,17 +3,27 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, Lock
 from copy import deepcopy
 from pathlib import Path
 
+import scripts.build_environment_images as environment_builder
 from scripts.build_environment_images import (
     _default_active_profile_ids,
+    _environment_base_build_input_digest,
+    _environment_base_revision,
+    _environment_base_tag,
     _image_runtime_identity_digest,
+    _parse_profile_build_input_env_file,
+    _qualify_profile_once,
     _parse_profile_build_input_overrides,
     _prepare_qualification_instance,
     _profile_build_input_digest,
+    _category_current_tag,
     _profile_map,
     _profile_revision,
+    _profile_runtime_revision,
     _require_profile_build_intent,
     validate_catalog,
 )
@@ -25,6 +35,376 @@ ENV_ROOT = ROOT / "deploy" / "environments"
 
 def _catalog() -> dict:
     return json.loads((ENV_ROOT / "catalog.json").read_text(encoding="utf-8"))
+
+
+def test_batch_image_identities_uses_one_inspect_and_preserves_order(
+    monkeypatch,
+) -> None:
+    calls: list[tuple[str, ...]] = []
+    documents = {
+        "python:test": {
+            "Id": "sha256:" + "1" * 64,
+            "RepoDigests": [],
+            "Created": "now",
+            "Config": {"Labels": {"kind": "python"}},
+        },
+        "node:test": {
+            "Id": "sha256:" + "2" * 64,
+            "RepoDigests": [],
+            "Created": "now",
+            "Config": {"Labels": {"kind": "node"}},
+        },
+    }
+
+    class _Completed:
+        returncode = 0
+        stderr = ""
+        stdout = "\n".join(
+            json.dumps(documents[name])
+            for name in ("python:test", "node:test")
+        ) + "\n"
+
+    def fake_run(argv, **kwargs):
+        calls.append(tuple(argv))
+        return _Completed()
+
+    monkeypatch.setattr(environment_builder.subprocess, "run", fake_run)
+    rows = environment_builder._batch_image_identities(
+        ("python:test", "node:test", "python:test")
+    )
+
+    assert rows is not None
+    assert tuple(rows) == ("python:test", "node:test")
+    assert rows["python:test"]["id"] == "sha256:" + "1" * 64
+    assert rows["node:test"]["labels"] == {"kind": "node"}
+    assert len(calls) == 1
+    assert calls[0][:3] == ("docker", "image", "inspect")
+
+
+def test_environment_base_identity_tracks_only_environment_inputs(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    base_root = tmp_path / "deploy" / "environments" / "base"
+    base_root.mkdir(parents=True)
+    for name, payload in {
+        "Dockerfile": "FROM python:3.12-slim-bookworm\n",
+        "entrypoint.sh": "#!/bin/sh\nexit 0\n",
+        "compose.yaml": "services: {}\n",
+    }.items():
+        (base_root / name).write_text(payload, encoding="utf-8")
+    base = {
+        "build_mode": "dependency-runtime",
+        "content_inputs": [
+            "deploy/environments/base/Dockerfile",
+            "deploy/environments/base/entrypoint.sh",
+        ],
+    }
+    monkeypatch.setattr(environment_builder, "ROOT", tmp_path)
+    baseline = _environment_base_revision(base)
+
+    code = tmp_path / "noetrium_platform" / "runtime.py"
+    code.parent.mkdir()
+    code.write_text("VALUE = 1\n", encoding="utf-8")
+    assert _environment_base_revision(base) == baseline
+    code.write_text("VALUE = 2\n", encoding="utf-8")
+    assert _environment_base_revision(base) == baseline
+
+    (base_root / "compose.yaml").write_text(
+        "services:\n  changed: {}\n",
+        encoding="utf-8",
+    )
+    assert _environment_base_revision(base) == baseline
+
+    (base_root / "entrypoint.sh").write_text(
+        "#!/bin/sh\necho changed\n",
+        encoding="utf-8",
+    )
+    assert _environment_base_revision(base) != baseline
+
+
+def test_environment_base_build_input_binds_runtime_not_code() -> None:
+    revision = "a" * 64
+    first = _environment_base_build_input_digest(
+        base_revision=revision,
+        python_runtime_identity_digest="b" * 64,
+    )
+    second = _environment_base_build_input_digest(
+        base_revision=revision,
+        python_runtime_identity_digest="b" * 64,
+    )
+    changed_runtime = _environment_base_build_input_digest(
+        base_revision=revision,
+        python_runtime_identity_digest="c" * 64,
+    )
+    assert first == second
+    assert first != changed_runtime
+    assert _environment_base_tag(first) == f"noetrium-env-base:{first}"
+
+
+def test_profile_revision_tracks_declared_environment_assets_only(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    profile_root = tmp_path / "deploy" / "environments" / "minecraft"
+    profile_root.mkdir(parents=True)
+    (profile_root / "Dockerfile").write_text("FROM base\n", encoding="utf-8")
+    (profile_root / "compose.yaml").write_text("services: {}\n", encoding="utf-8")
+    (profile_root / "doctor.sh").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bridge = tmp_path / "assets" / "bridge.js"
+    bridge.parent.mkdir()
+    bridge.write_text("console.log('v1')\n", encoding="utf-8")
+    row = {
+        "profile_id": "minecraft",
+        "category_id": "minecraft",
+        "build_mode": "derived-image",
+        "dockerfile": "deploy/environments/minecraft/Dockerfile",
+        "compose": "deploy/environments/minecraft/compose.yaml",
+        "content_inputs": ["assets/bridge.js"],
+    }
+    monkeypatch.setattr(environment_builder, "ROOT", tmp_path)
+    baseline = _profile_revision(row)
+
+    code = tmp_path / "noetrium_platform" / "unrelated.py"
+    code.parent.mkdir()
+    code.write_text("VALUE = 1\n", encoding="utf-8")
+    assert _profile_revision(row) == baseline
+
+    bridge.write_text("console.log('v2')\n", encoding="utf-8")
+    assert _profile_revision(row) != baseline
+
+
+def test_profile_runtime_revision_changes_without_image_rebuild(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    profile_root = tmp_path / "deploy" / "environments" / "minecraft"
+    profile_root.mkdir(parents=True)
+    (profile_root / "Dockerfile").write_text(
+        "FROM base\n",
+        encoding="utf-8",
+    )
+    (profile_root / "compose.yaml").write_text(
+        "services:\n  runtime: {}\n",
+        encoding="utf-8",
+    )
+    (profile_root / "doctor.sh").write_text(
+        "#!/bin/sh\nexit 0\n",
+        encoding="utf-8",
+    )
+    asset = tmp_path / "assets" / "bridge.js"
+    asset.parent.mkdir()
+    asset.write_text("console.log('stable')\n", encoding="utf-8")
+    row = {
+        "profile_id": "minecraft",
+        "category_id": "minecraft",
+        "build_mode": "derived-image",
+        "dockerfile": "deploy/environments/minecraft/Dockerfile",
+        "compose": "deploy/environments/minecraft/compose.yaml",
+        "content_inputs": ["assets/bridge.js"],
+        "extends": "base",
+        "runtime_sharing": {
+            "scope": "study",
+            "reuse_policy": "reset-between-assignments",
+        },
+        "isolation": {
+            "shared_read_only": ["environment-image"],
+            "private_writable": ["runtime-state"],
+            "cleanliness": "destroy-overlay-or-verified-reset",
+        },
+        "boundary": {"excludes": ["paper_methods"]},
+    }
+    monkeypatch.setattr(environment_builder, "ROOT", tmp_path)
+
+    image_revision = _profile_revision(row)
+    runtime_revision = _profile_runtime_revision(
+        row,
+        image_revision=image_revision,
+    )
+
+    (profile_root / "compose.yaml").write_text(
+        "services:\n  runtime:\n    network_mode: host\n",
+        encoding="utf-8",
+    )
+    assert _profile_revision(row) == image_revision
+    compose_changed_runtime = _profile_runtime_revision(
+        row,
+        image_revision=image_revision,
+    )
+    assert compose_changed_runtime != runtime_revision
+
+    row["isolation"] = {
+        **row["isolation"],
+        "cleanliness": "changed-policy",
+    }
+    assert _profile_revision(row) == image_revision
+    isolation_changed_runtime = _profile_runtime_revision(
+        row,
+        image_revision=image_revision,
+    )
+    assert isolation_changed_runtime != compose_changed_runtime
+
+    asset.write_text("console.log('changed')\n", encoding="utf-8")
+    assert _profile_revision(row) != image_revision
+
+
+def test_environment_qualification_receipt_reuses_exact_immutable_proof(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "a" * 64}
+    calls = []
+
+    first, reused_first = _qualify_profile_once(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="b" * 64,
+        build_input_digest="c" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+    second, reused_second = _qualify_profile_once(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="b" * 64,
+        build_input_digest="c" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+
+    assert calls == ["doctor"]
+    assert reused_first is False
+    assert reused_second is True
+    assert first == second
+
+
+def test_environment_qualification_migrates_legacy_receipt_without_doctor(
+    tmp_path: Path,
+) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "d" * 64}
+    calls: list[str] = []
+    state = tmp_path / "state"
+
+    first, reused_first = _qualify_profile_once(
+        work_root=state,
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="e" * 64,
+        build_input_digest="f" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+    assert reused_first is False
+    assert calls == ["doctor"]
+
+    new_path = (
+        state
+        / "content"
+        / "qualification-receipts"
+        / "minecraft"
+        / f"{first['qualification_digest']}.json"
+    )
+    legacy_path = (
+        state
+        / "qualification-receipts"
+        / "minecraft"
+        / f"{first['qualification_digest']}.json"
+    )
+    legacy_path.parent.mkdir(parents=True)
+    legacy_path.write_bytes(new_path.read_bytes())
+    new_path.unlink()
+
+    second, reused_second = _qualify_profile_once(
+        work_root=state,
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="e" * 64,
+        build_input_digest="f" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: (_ for _ in ()).throw(
+            AssertionError("legacy proof migration must not rerun doctor")
+        ),
+    )
+
+    assert reused_second is True
+    assert second == first
+    assert new_path.is_file()
+    assert calls == ["doctor"]
+
+
+def test_environment_qualification_receipt_is_single_flight_across_threads(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "1" * 64}
+    started = Barrier(2)
+    calls_lock = Lock()
+    calls = 0
+
+    def qualify():
+        nonlocal calls
+        started.wait(timeout=2.0)
+
+        def run_doctor():
+            nonlocal calls
+            with calls_lock:
+                calls += 1
+
+        return _qualify_profile_once(
+            work_root=tmp_path / "state",
+            profile_id="minecraft",
+            category_id="minecraft",
+            image_identity=image,
+            profile_revision="2" * 64,
+            build_input_digest="3" * 64,
+            rebuild=False,
+            doctor=doctor,
+            run_doctor=run_doctor,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(qualify)
+        second = pool.submit(qualify)
+        rows = (first.result(timeout=3.0), second.result(timeout=3.0))
+
+    assert calls == 1
+    assert sorted(reused for _receipt, reused in rows) == [False, True]
+
+
+
+
+
+
+def test_environment_qualification_receipt_invalidates_on_doctor_change(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "d" * 64}
+    calls = []
+    kwargs = dict(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="e" * 64,
+        build_input_digest="f" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+    _qualify_profile_once(**kwargs)
+    doctor.write_text("#!/bin/sh\necho changed\n", encoding="utf-8")
+    _qualify_profile_once(**kwargs)
+    assert calls == ["doctor", "doctor"]
 
 
 def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
@@ -118,6 +498,11 @@ def test_environment_profile_lifecycle_blocks_new_work_without_recovery_intent()
     )
 
 
+def test_environment_category_current_alias_is_generic_and_stable() -> None:
+    assert _category_current_tag("minecraft") == "noetrium-env-category-minecraft:current"
+    assert _category_current_tag("web") == "noetrium-env-category-web:current"
+
+
 def test_environment_build_receipt_uses_concrete_content_addressed_runtime_identity() -> None:
     digest = "a" * 64
     assert _image_runtime_identity_digest({"id": "sha256:" + digest}) == digest
@@ -125,7 +510,7 @@ def test_environment_build_receipt_uses_concrete_content_addressed_runtime_ident
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
         encoding="utf-8"
     )
-    assert '"schema": "noetrium.environment-image-build.v4"' in builder
+    assert '"schema": "noetrium.environment-image-build.v5"' in builder
     assert '"runtime_identity_digest"' in builder
 
 
@@ -224,6 +609,11 @@ def test_environment_profile_build_inputs_are_registry_driven() -> None:
     assert "FROM ${NODE_RUNTIME_IMAGE} AS node-runtime" in minecraft_dockerfile
     assert "curl -fsSLO" not in minecraft_dockerfile
     assert "apt-get install" not in minecraft_dockerfile
+    minecraft_doctor = (
+        ROOT / "deploy" / "environments" / "minecraft" / "doctor.sh"
+    ).read_text(encoding="utf-8")
+    assert "fs.realpathSync(entry)" in minecraft_doctor
+    assert "directory.startsWith(bridge)" not in minecraft_doctor
 
 
 def test_environment_profile_build_input_override_parser_fails_closed() -> None:
@@ -275,8 +665,8 @@ def test_environment_images_extend_qualified_base_and_install_local_doctors() ->
         assert compose.is_file()
         assert hook.is_file()
         text = dockerfile.read_text(encoding="utf-8")
-        assert "ARG PLATFORM_BASE_IMAGE" in text
-        assert "FROM ${PLATFORM_BASE_IMAGE}" in text
+        assert "ARG PLATFORM_ENVIRONMENT_BASE_IMAGE" in text
+        assert "FROM ${PLATFORM_ENVIRONMENT_BASE_IMAGE}" in text
         assert "environment-doctor.d" in text
         assert f"/environment-doctor.d/{row['category_id']}" in text
         assert "org.opencontainers.image.noetrium.environment.profile-id" in text
@@ -289,7 +679,7 @@ def test_environment_images_extend_qualified_base_and_install_local_doctors() ->
 
 
 def test_environment_doctor_dispatch_is_profile_extensible() -> None:
-    entrypoint = (ROOT / "deploy" / "container-entrypoint.sh").read_text(encoding="utf-8")
+    entrypoint = (ROOT / "deploy" / "environments" / "base" / "entrypoint.sh").read_text(encoding="utf-8")
     assert "environment-doctor.d" in entrypoint
     assert 'local hook="$PROFILE_DOCTOR_ROOT/$profile"' in entrypoint
     for profile_id in ("minecraft", "embodied", "gui", "web", "software"):
@@ -338,17 +728,100 @@ def test_environment_catalog_keeps_scientific_assets_downstream() -> None:
     assert "downstream-owned" in boundary
 
 
-def test_environment_bootstrap_supports_linked_git_worktrees_without_host_git() -> None:
+def test_deploy_defaults_to_one_noetrium_data_root() -> None:
+    deploy = (ROOT / "deploy" / "noetrium").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    assert 'DATA_ROOT="${NOETRIUM_DATA_ROOT:-$ROOT/.noetrium}"' in deploy
+    assert 'STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$DATA_ROOT/deployment}"' in deploy
+    assert 'ENV_WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$DATA_ROOT/environment-images}"' in deploy
+    assert "ROOT_CACHE_KEY" not in deploy
+    assert 'PROJECTS_STATE_ROOT="$DATA_ROOT/projects"' in deploy
+    assert 'project_state_root="$(project_state_root_for "$project_root")"' in deploy
+    assert "XDG_CACHE_HOME" not in deploy
+    assert '$HOME/.cache' not in deploy
+    assert '${TMPDIR:-/tmp}' not in deploy
+    assert 'PROJECT_RESEARCH_STATE_ROOT="$CONTROL_STATE_ROOT/research-os"' in bootstrap
+    assert '-e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT' in bootstrap
+    assert 'CONTROL_ASSET_REGISTRY="$CONTROL_FABRIC_NAMESPACE_ROOT/content/state/model/assets"' in bootstrap
+    assert '--runtime-fabric-root-output "$CONTROL_FABRIC_NAMESPACE_FILE"' in bootstrap
+    assert 'MATERIALIZED_FABRIC_NAMESPACE_ROOT="$(cat "$CONTROL_FABRIC_NAMESPACE_FILE")"' in bootstrap
+    assert '"fabric_namespace_root"' in (
+        ROOT / "scripts" / "materialize_project_runtime.py"
+    ).read_text(encoding="utf-8")
+    assert "Runtime Fabric namespace receipt/sidecar drifted." in bootstrap
+    materializer = (ROOT / "scripts" / "materialize_project_runtime.py").read_text(
+        encoding="utf-8"
+    )
+    assert "runtime_fabric_root().resolve()" in materializer
+    discovery = bootstrap.split('CONTROL_ASSET_REGISTRY="$CONTROL_FABRIC_NAMESPACE_ROOT/content/state/model/assets"', 1)[1].split('if [ -n "$CONTROL_INPUT_ROOT" ]', 1)[0]
+    assert '-v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT:ro"' in discovery
+
+
+def test_bootstrap_containers_use_ephemeral_tmpfs() -> None:
     text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
-    assert 'if [ -f "$ROOT/.git" ]; then' in text
-    assert "gitdir: " in text
-    assert 'if [ -f "$GITDIR/commondir" ]; then' in text
-    assert 'GIT_METADATA_ARGS="-v $GIT_METADATA_ROOT:$GIT_METADATA_ROOT:ro"' in text
-    assert "$GIT_METADATA_ARGS -v $ROOT:$ROOT:ro" in text
+    tmpfs = "--tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777"
+    assert text.count(tmpfs) >= 2
+    runner = text.split("run_bootstrap_container() {", 1)[1].split("docker_image_id()", 1)[0]
+    assert tmpfs in runner
+
+def test_deploy_preflight_propagates_docker_capability_proof() -> None:
+    deploy = (ROOT / "deploy" / "noetrium").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
+        encoding="utf-8"
+    )
+    assert "export NOETRIUM_DOCKER_CAPABILITY_VERIFIED=1" in deploy
+    assert (
+        "-e NOETRIUM_DOCKER_CAPABILITY_VERIFIED="
+        "${NOETRIUM_DOCKER_CAPABILITY_VERIFIED:-0}"
+    ) in bootstrap
+    assert (
+        'os.environ.get("NOETRIUM_DOCKER_CAPABILITY_VERIFIED") != "1"'
+        in builder
+    )
+
+
+def test_environment_bootstrap_is_vcs_neutral() -> None:
+    text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "deploy" / "bootstrap" / "Dockerfile").read_text(encoding="utf-8")
+    assert "GIT_METADATA_ARGS" not in text
+    assert "safe.directory" not in text
     assert "git rev-parse" not in text
+    assert "BUILDX_GIT_INFO=false" in text
+    assert "BUILDX_GIT_LABELS=false" in text
+    assert "BUILDX_GIT_CHECK_DIRTY=false" in text
+    assert "apt-get" not in bootstrap
+    assert " git " not in bootstrap.lower()
     prefix = text.split("docker build", 1)[0].lower()
     assert "python3" not in prefix
     assert "python -m" not in prefix
+
+def test_control_gpu_capability_probe_is_content_addressed() -> None:
+    text = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    assert "DOCKER_DAEMON_CAPABILITY_IDENTITY" in text
+    assert 'GPU_CAPABILITY_ROOT="$CONTROL_COORDINATION_ROOT/gpu-capability"' in text
+    assert "NVIDIA_HOST_TOPOLOGY" in text
+    assert "/var/run/cdi/nvidia.yaml" in text
+    assert 'GPU_CAPABILITY_PASS="$GPU_CAPABILITY_ROOT/$GPU_CAPABILITY_DIGEST.pass"' in text
+    assert 'GPU_CAPABILITY_FAIL="$GPU_CAPABILITY_ROOT/$GPU_CAPABILITY_DIGEST.fail"' in text
+    assert 'if [ -f "$GPU_CAPABILITY_PASS" ]' in text
+    assert 'elif [ -f "$GPU_CAPABILITY_FAIL" ]' in text
+    assert 'elif docker run --rm --init --restart no --gpus all' in text
+
+
+def test_control_runtime_shares_host_runtime_coordination_namespace() -> None:
+    text = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    assert 'HOST_RUNTIME_BASE="${XDG_RUNTIME_DIR:-/run/user/$HOST_UID}"' in text
+    assert 'CONTROL_COORDINATION_ROOT="$HOST_RUNTIME_BASE/noetrium"' in text
+    assert 'CONTROL_COORDINATION_ROOT="/dev/shm/noetrium-uid-$HOST_UID"' in text
+    assert '-v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT' in text
+    assert '-e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT' in text
 
 
 def test_qualification_precreates_runtime_and_profile_bind_sources(tmp_path: Path) -> None:
@@ -391,7 +864,7 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     assert "--node-version" not in builder
     assert '"base_runtime_source"' in builder
     assert '"profile_build_inputs"' in builder
-    assert "PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST" in builder
+    assert "NOETRIUM_PYTHON_RUNTIME_IDENTITY_DIGEST" in builder
     assert "NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST" in builder
     assert "profile_revision" in builder
     assert "_verified_profile_image_identity" in builder
@@ -423,7 +896,11 @@ def test_environment_bootstrap_orphan_reaper_fails_closed_on_unknown_docker_stat
         encoding="utf-8"
     )
 
+    assert "bootstrap_container_absent_once" in bootstrap
     assert "bootstrap_container_absent" in bootstrap
+    assert '"No such object"' in bootstrap
+    assert '"No such container"' in bootstrap
+    assert "sleep 0.05" in bootstrap
     assert "remove_bootstrap_container_exact" in bootstrap
     assert "Unable to prove bootstrap container absence" in bootstrap
     assert "Failed to remove bootstrap container and absence is unproven" in bootstrap
@@ -644,3 +1121,57 @@ def test_bootstrap_normal_completion_proves_exact_container_absence(
     assert removed.read_text(encoding="utf-8").splitlines() == [
         "bootstrap-id",
     ]
+
+
+def test_environment_bootstrap_uses_one_deployment_env_for_control_and_build() -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    assert 'DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"' in bootstrap
+    assert 'CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"' in bootstrap
+    build_block = bootstrap.split('if [ "${1:-}" = "build" ]; then', 1)[1]
+    assert '-v "$DEPLOYMENT_ENV_FILE:/run/noetrium/build-input.env:ro"' in build_block
+    assert '--build-input-env-file /run/noetrium/build-input.env' in build_block
+    assert '--env-file "$DEPLOYMENT_ENV_FILE"' not in build_block
+    dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
+    assert ".env" in dockerignore
+    assert "**/.env" in dockerignore
+    assert ".noetrium" in dockerignore
+    assert ".noetrium/**" in dockerignore
+
+
+def test_bootstrap_is_cross_run_content_addressed_tooling_capsule() -> None:
+    deploy = (ROOT / "deploy" / "noetrium").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    dockerfile = (ROOT / "deploy" / "bootstrap" / "Dockerfile").read_text(encoding="utf-8")
+
+    assert "NOETRIUM_BOOTSTRAP_REUSE" not in deploy
+    assert "BOOTSTRAP_READY" not in deploy
+    assert 'BOOTSTRAP_INPUT_DIGEST="$(' in bootstrap
+    assert 'io.noetrium.bootstrap.input-sha256' in bootstrap
+    assert 'BOOTSTRAP_CONTEXT="$WORK_ROOT/bootstrap-context/$BOOTSTRAP_INPUT_DIGEST"' in bootstrap
+    assert 'cp "$ROOT/deploy/bootstrap/Dockerfile" "$BOOTSTRAP_CONTEXT/Dockerfile"' in bootstrap
+    assert 'cp "$ROOT/pyproject.toml" "$BOOTSTRAP_CONTEXT/pyproject.toml"' in bootstrap
+    assert '"$BOOTSTRAP_CONTEXT"' in bootstrap
+    assert '-e PYTHONPATH=$ROOT' in bootstrap
+    assert 'COPY . /tmp/noetrium-source' not in dockerfile
+    assert 'pip install --no-deps --no-build-isolation /tmp/noetrium-source' not in dockerfile
+    assert dockerfile.count("ARG NOETRIUM_BOOTSTRAP_INPUT_DIGEST") >= 2
+    second_stage = dockerfile.split("FROM ${PYTHON_RUNTIME_IMAGE}", 1)[1]
+    assert "ARG NOETRIUM_BOOTSTRAP_INPUT_DIGEST" in second_stage
+    assert 'LABEL io.noetrium.bootstrap.input-sha256=' in second_stage
+
+
+def test_environment_build_input_env_file_reads_only_declared_inputs(tmp_path: Path) -> None:
+    env_file = tmp_path / "deployment.env"
+    env_file.write_text(
+        "IGNORED_SECRET=do-not-forward\n"
+        "NODE_RUNTIME_IMAGE=mirror.example/library/node:22\n"
+        "export JAVA_RUNTIME_IMAGE=mirror.example/library/java:21\n",
+        encoding="utf-8",
+    )
+    assert _parse_profile_build_input_env_file(
+        env_file,
+        declared_environment_variables={"JAVA_RUNTIME_IMAGE", "NODE_RUNTIME_IMAGE"},
+    ) == {
+        "JAVA_RUNTIME_IMAGE": "mirror.example/library/java:21",
+        "NODE_RUNTIME_IMAGE": "mirror.example/library/node:22",
+    }

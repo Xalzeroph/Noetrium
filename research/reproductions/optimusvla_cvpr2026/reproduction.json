@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimusvla_cvpr2026",
-  "package_digest": "6af610ae2fd99c02547909fffada31f3b7c46e2bb7288f3016e34e4ac73f6aa9",
-  "definition_digest": "924ba4ddda9619d14ef27319e474b5c94b1b08f0cb49141f0b840c0af4225ba4",
+  "package_digest": "b03d4d03f7d5bf595dbfc1ef5a89c061298a35fc27fec413401accfe6815f405",
+  "definition_digest": "1b1c6c9a24fb971939f936db74341d5a9e1dc800898315b0debcc123d342520b",
   "source_registry_digest": "a14f0c02855003c848afa4330da888dfbf6930f445850857bd2f6e75e348b32b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/optimusvla_cvpr2026/program.py",
       "declaration_digest": "c826707fdcb7309cc26520e0a2d6c3714695c5c11d505d2c060e6d0302d0b8b5",
-      "content_sha256": "69db3cd39825f2a6792e8622311dbf698df6d074e4c7e03c532f7c3df02ea99c"
+      "content_sha256": "f3c3abd049312b3bb90fd5ff27c792836e846c71668425752f04101cfccd8764"
     },
     {
       "kind": "study",
       "path": "research/reproductions/optimusvla_cvpr2026/study.py",
       "declaration_digest": "1ad869366cf427dc9d731cd56868a3abe56d9d32870188c3aeb20e68466a76da",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/optimusvla_cvpr2026/program.py",
@@ -177,25 +177,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "optimusvla_cvpr2026",
-    "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
+    "program_digest": "75a704566ad4b832abea1e1b3fa3a43d95e8fc83e954d9edd84085b413a94a87",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'calvin' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:optimusvla_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

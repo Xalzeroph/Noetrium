@@ -9,8 +9,15 @@ from noetrium_platform.foundation.governance.release.api import FileDigest, Rele
 from .project_metadata import load_project_metadata
 
 
-EXCLUDED_DIRS = {"__pycache__", ".git", ".local", ".pytest_cache", ".server-state", "build", "dist", "node_modules"}
-EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
+EXCLUDED_DIRS = {
+    "__pycache__", ".git", ".local", ".pytest_cache", ".server-state",
+    ".noetrium", ".docker-engine", ".docker-build", ".runtime-assets",
+    ".venv", "venv", "env", "build", "dist", "node_modules", "htmlcov",
+    ".hypothesis", ".mypy_cache", ".ruff_cache", ".tox",
+}
+EXCLUDED_DIR_PREFIXES = ("pytest-of-",)
+EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".log"}
+EXCLUDED_FILENAMES = {".env", ".coverage", "coverage.xml", "nohup.out"}
 EXCLUDED_NAME_MARKERS = (".local.",)
 DERIVED_RELEASE_FILES = {
     "RELEASE_MANIFEST.json",
@@ -32,7 +39,21 @@ def hash_file(path: Path) -> str:
 
 
 def _excluded_dir_name(name: str) -> bool:
-    return name in EXCLUDED_DIRS or name.endswith(".egg-info")
+    return (
+        name in EXCLUDED_DIRS
+        or name.endswith(".egg-info")
+        or any(name.startswith(prefix) for prefix in EXCLUDED_DIR_PREFIXES)
+    )
+
+
+def _excluded_file_name(name: str) -> bool:
+    return (
+        name in EXCLUDED_FILENAMES
+        or name.startswith(".env.")
+        or name.endswith(".sqlite")
+        or ".sqlite-" in name
+        or any(marker in name for marker in EXCLUDED_NAME_MARKERS)
+    )
 
 
 def _iter_release_files(root: Path) -> Iterator[tuple[Path, Path]]:
@@ -55,7 +76,7 @@ def _iter_release_files(root: Path) -> Iterator[tuple[Path, Path]]:
             rel = path.relative_to(root)
             if path.suffix in EXCLUDED_SUFFIXES:
                 continue
-            if any(marker in name for marker in EXCLUDED_NAME_MARKERS):
+            if _excluded_file_name(name):
                 continue
             if rel.as_posix() in DERIVED_RELEASE_FILES:
                 continue
@@ -125,6 +146,8 @@ def verify_release_manifest(
 __all__ = [
     "DERIVED_RELEASE_FILES",
     "EXCLUDED_DIRS",
+    "EXCLUDED_DIR_PREFIXES",
+    "EXCLUDED_FILENAMES",
     "EXCLUDED_NAME_MARKERS",
     "EXCLUDED_SUFFIXES",
     "build_release_manifest",

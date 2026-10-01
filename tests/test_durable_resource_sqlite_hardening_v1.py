@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    LocalLeaseClock,
+    ResourceLeaseRegistry,
+)
+from noetrium_platform.infrastructure.resources.lease.runtime import registry as lease_registry
+
 import inspect
 import math
 from pathlib import Path
@@ -9,12 +15,10 @@ import pytest
 
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
-    SQLiteResourceLeaseRegistry,
 )
 from noetrium_platform.foundation.kernel.kernel.durability import sqlite as sqlite_connection
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
-from noetrium_platform.infrastructure.resources.providers import sqlite_endpoint, sqlite_lease
-from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
+from noetrium_platform.infrastructure.resources.providers import sqlite_endpoint
 
 
 def test_hardened_sqlite_session_applies_durable_pragmas_and_closes(tmp_path: Path) -> None:
@@ -47,19 +51,12 @@ def test_both_durable_resource_authorities_consume_the_same_connection_primitive
 
     monkeypatch.setattr(sqlite_connection, "retry_until_deadline", observed_retry)
     database = tmp_path / "authorities.sqlite3"
-    clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
-    SQLiteResourceLeaseRegistry(
-        database,
-        timeout_seconds=0.15,
-        clock=clock,
-    )
+    ResourceLeaseRegistry(database, timeout_seconds=0.15)
     SQLiteEndpointAllocationStore(
-        database,
-        timeout_seconds=0.25,
-        clock=clock,
+        database, timeout_seconds=0.25, clock=LocalLeaseClock()
     )
 
-    assert observed_timeouts == [0.15, 0.25]
+    assert observed_timeouts == [0.15, 0.15, 0.25, 0.25]
     with sqlite3.connect(database) as conn:
         tables = {
             str(row[0])
@@ -70,12 +67,9 @@ def test_both_durable_resource_authorities_consume_the_same_connection_primitive
 
 def test_connection_hardening_does_not_absorb_domain_transaction_authority() -> None:
     helper_source = inspect.getsource(sqlite_connection)
-    lease_source = inspect.getsource(sqlite_lease)
+    lease_source = inspect.getsource(lease_registry)
     endpoint_source = inspect.getsource(sqlite_endpoint)
 
-    # The canonical durability layer owns transaction acquisition and lock
-    # retry mechanics. Resource providers consume that primitive rather than
-    # embedding raw BEGIN IMMEDIATE statements themselves.
     assert "BEGIN IMMEDIATE" in helper_source
     assert "ensure_resource_schema" not in helper_source
     assert "endpoint_allocations" not in helper_source

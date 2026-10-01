@@ -145,6 +145,8 @@ class EmbodiedSimulatorEnvironment(EmbodiedEnvironmentPort):
         observation: SimulatorObservation,
     ) -> EmbodiedEvent:
         payload = dict(thaw_json(observation.normalized_payload))
+        if observation.decision_payload is not None:
+            payload["decision_view"] = thaw_json(observation.decision_payload)
         payload.update({
             "reward": observation.reward,
             "success": observation.success,

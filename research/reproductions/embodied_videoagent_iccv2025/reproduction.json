@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "9a047718a03ce66b75b90a01fdebb3fed38fc5f123a76c232dc3a210e8446fd5",
-  "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
+  "package_digest": "cc1051ea97994e0191c747ff3e3e649826b3d3b9a0c5f6ee0653dd08d0122b9c",
+  "definition_digest": "0f19f92b8add6c9ea4397105e5c69411757f6ae8bf45ef8b12707db7efd8c969",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -74,7 +74,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/embodied_videoagent_iccv2025/benchmark.py",
       "declaration_digest": "f24ab51862e1464192f496b048e997e85b011ac470a6e30d365a3f843d250bc3",
-      "content_sha256": "116b3d6aa606f5b5b410da75391da64ad790bfb5beed3506a6c4eaa92ea77b8f"
+      "content_sha256": "27aaa33ccb1369ba4ff76d8c9ae94a80e5f232749ae8ec267c45c94b4e60935e"
     },
     {
       "kind": "fidelity",
@@ -86,13 +86,13 @@
       "kind": "method_program",
       "path": "research/reproductions/embodied_videoagent_iccv2025/program.py",
       "declaration_digest": "8a2090f198b1e58e39bd83bf1b1d358058e6fdb1eab3d868174d7dc3e2179392",
-      "content_sha256": "6c79461e320af4e8368cc35a8e0388df793280c90bc27d6f2bba9af803ac2b16"
+      "content_sha256": "72eec4afea541a17fffd1ec5190353ea05a24c75deabf3486c44816619267d7d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/embodied_videoagent_iccv2025/study.py",
       "declaration_digest": "605bf49d8f58d632164f80e937b9e9b9c549da90058bbd26ec716263af4e75ae",
-      "content_sha256": "01329bf88e789fcac560b4a8cd20018e8637544654944f6f9ee159777c47003a"
+      "content_sha256": "6b69eb662299f4b6b91ffee57d7cbedd79b9c60c1457435fb30a593a7943edb3"
     }
   ],
   "primary_executable": "research/reproductions/embodied_videoagent_iccv2025/program.py",
@@ -146,15 +146,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
-      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "embodied_videoagent_iccv2025",
-    "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
+    "program_digest": "97a0ecf195861ab8fc832af5a6c456cfc9ec0e2d2241c483ca5a66a66fbe71cd",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

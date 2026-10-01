@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "784ab549b4e5c71157a5687a5490a89c4e5a40bc8e2f62c1f442bf9fdcc53226",
-  "definition_digest": "42a30c2635f4d6f36393e0c3a88bb81b6d814281cc4bfc4f78d4b752084dc7f0",
+  "package_digest": "cfa1a0dbee9c48e71865f2db4ada78304e8199a175b3a90dd97d07d59a1d3497",
+  "definition_digest": "945be4b7d9dccc37711c3cf4f0d7ada796e139c9e60509385b5a104da7a1fadd",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -46,7 +46,7 @@
       "streaming semantic-segment recurrence"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "artifact/evidence lineage",
       "benchmark cut identity",
       "immutable multimodal content identity",
@@ -59,7 +59,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "798d698684fbf5adbd2ca39d301c72713a766cf752975db7d35145a0f76ba413"
+    "catalog_digest": "907d609fba0cdd3df6312b9e8b8030af8bc6924dc0ffd810d468bf0482fa6073"
   },
   "source_lanes": [
     {
@@ -97,7 +97,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videollamb_memory/benchmark.py",
       "declaration_digest": "2c8d5686d014f954ce523701593603fc4c003254993cb9e5de64f53ba2184542",
-      "content_sha256": "c72514ce86b74a2b6a29386b841b57e238dc21f16f95b7d0c16eb0eafc0bce7b"
+      "content_sha256": "db23ee983507ab5f60355afbd5884689839113234451fe486b5d9fa1c084d01a"
     },
     {
       "kind": "fidelity",
@@ -106,16 +106,16 @@
       "content_sha256": "e3c5e82236b695b63506d030bc9d81ec4b58f026c35d25b50ded24840a5cab00"
     },
     {
-      "kind": "research_program",
-      "path": "research/reproductions/videollamb_memory/memory.py",
-      "declaration_digest": "493715a6f1755df086e9d01a1dfe1056fdb67f1a8672ba3eefc708cad58a776a",
-      "content_sha256": "d9343d595c82a94a2f66d37744dbc7d5888181e0aae2dae21d50fc675ccf7cf2"
+      "kind": "method_program",
+      "path": "research/reproductions/videollamb_memory/program.py",
+      "declaration_digest": "6983ec32e5f2f17d865eeef46ac00204c540f31e8d50676fd9e7c11fb8b5ba29",
+      "content_sha256": "3f2baf7cddd2b260f0532f7a849d8b58b4b6598e9c2b19886b7a8931bc1c7df5"
     },
     {
       "kind": "study",
       "path": "research/reproductions/videollamb_memory/study.py",
       "declaration_digest": "50160674929c0fcb0b1a0905670f152695e6a3c6dd98eea35d0192cee110cfb7",
-      "content_sha256": "152cc2d5708aa2b4c27b28d35518b6f63f95a0ffaac81833646357d018c81b14"
+      "content_sha256": "8cbf0db67a832f074b9febb9569f1b0e8e129cfeb2853a65f7f9d87568fbe360"
     },
     {
       "kind": "support",
@@ -124,7 +124,7 @@
       "content_sha256": "cb6bfbae784fbb81e549ba2bef65252e8db21c6c7038452b0e5345bb90d5caa0"
     }
   ],
-  "primary_executable": "research/reproductions/videollamb_memory/memory.py",
+  "primary_executable": "research/reproductions/videollamb_memory/program.py",
   "reported_results": [
     {
       "claim_id": "videollamb_videoqa_gain",
@@ -176,15 +176,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_videollamb_memory_v1.py",
-      "content_sha256": "af01b794ba17f4e3096176b923d3ca1661e1b6bad08b94d1f6f80594bf600b21"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "videollamb_memory",
-    "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+    "program_digest": "c76085b40b752ade955af5c2c92822531a8419e8ea98e7b873152b748c875d6f",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -7,6 +7,7 @@ and transitions remain exclusively in the Machine Journal.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Callable
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -24,6 +25,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from .program import (
     ProgramHandlerRegistry,
+    ProgramHandlerRegistryPort,
     ProgramNodeRequest,
     ProgramNodeResult,
     ProgrammableMachineInterpreter,
@@ -37,6 +39,66 @@ from .program import programmable_machine_family
 
 ResearchHostHandler = Callable[[ProgramNodeRequest, object], ProgramNodeResult]
 ResearchHostBindingRestorer = Callable[[object, JsonObject, JsonValue], None]
+
+
+class _BoundResearchHostHandlers(ProgramHandlerRegistryPort):
+    """Immutable per-session view over one sealed host handler template."""
+
+    def __init__(
+        self,
+        *,
+        base: ProgramHandlerRegistry,
+        operations: tuple["ResearchHostOperation", ...],
+        binding: object,
+        identity_digest: str,
+    ) -> None:
+        if not base.sealed:
+            raise RuntimeError("research host base handler registry must be sealed")
+        bound = {}
+        for item in operations:
+            def invoke(
+                request: ProgramNodeRequest,
+                *,
+                _handler: ResearchHostHandler = item.handler,
+                _binding: object = binding,
+            ) -> ProgramNodeResult:
+                result = _handler(request, _binding)
+                if not isinstance(result, ProgramNodeResult):
+                    raise TypeError(
+                        "research host handler must return ProgramNodeResult"
+                    )
+                return result
+            bound[item.operation] = (invoke, item.implementation_digest)
+        self._base = base
+        self._bound = MappingProxyType(bound)
+        self._identity_digest = require_sha256(
+            identity_digest,
+            "research host handler registry identity_digest",
+        )
+        self._operations = tuple(sorted(set(base.operations()).union(bound)))
+
+    def resolve(self, operation: str):
+        if type(operation) is not str or not operation.strip():
+            raise ValueError("program operation is required")
+        row = self._bound.get(operation)
+        return self._base.resolve(operation) if row is None else row[0]
+
+    def implementation_digest(self, operation: str) -> str:
+        if type(operation) is not str or not operation.strip():
+            raise ValueError("program operation is required")
+        row = self._bound.get(operation)
+        return (
+            self._base.implementation_digest(operation)
+            if row is None
+            else row[1]
+        )
+
+    def operations(self) -> tuple[str, ...]:
+        return self._operations
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,6 +130,10 @@ class ResearchHostExecution:
     status: MachineStatus
     data: JsonObject
     previous_value: JsonValue
+    visit_counts: tuple[tuple[str, int], ...]
+    step_count: int
+    semantic_state: JsonObject
+    checkpoint_value: JsonValue
     cut: MachineCut | None
     run: ResearchMachineRun
 
@@ -84,7 +150,7 @@ class ResearchProgramHost:
         journal: MachineJournalPort,
         base_handlers: ProgramHandlerRegistry | None = None,
         snapshot_store: MachineSnapshotStorePort | None = None,
-        max_steps: int = 10_000,
+        max_steps: int | None = None,
         dependency_identity: JsonValue = None,
         binding_restorer: ResearchHostBindingRestorer | None = None,
     ) -> None:
@@ -99,8 +165,8 @@ class ResearchProgramHost:
         names = tuple(item.operation for item in operations)
         if len(names) != len(set(names)):
             raise ValueError("research host operation names must be unique")
-        if type(max_steps) is not int or max_steps < 1:
-            raise ValueError("research host max_steps must be positive")
+        if max_steps is not None and (type(max_steps) is not int or max_steps < 1):
+            raise ValueError("research host max_steps must be positive or None")
         if not isinstance(journal, MachineJournalPort):
             raise TypeError("research host requires MachineJournalPort")
         if base_handlers is not None and not isinstance(
@@ -113,6 +179,20 @@ class ResearchProgramHost:
         self.program = program
         self.operations = operations
         self.base_handlers = base_handlers
+        effective_base_handlers = (
+            core_program_handlers()
+            if base_handlers is None
+            else base_handlers
+        )
+        effective_base_handlers.seal()
+        base_operations = set(effective_base_handlers.operations())
+        overlap = base_operations.intersection(names)
+        if overlap:
+            raise ValueError(
+                "research host operations conflict with base handlers: "
+                + ", ".join(sorted(overlap))
+            )
+        self._effective_base_handlers = effective_base_handlers
         self.journal = journal
         self.snapshot_store = snapshot_store
         self.max_steps = max_steps
@@ -120,20 +200,64 @@ class ResearchProgramHost:
         if binding_restorer is not None and not callable(binding_restorer):
             raise TypeError("research host binding_restorer must be callable")
         self.binding_restorer = binding_restorer
-        operation_implementations = tuple(
+        if self.base_handlers is not None:
+            self.base_handlers.seal()
+        self._operation_implementations = tuple(
             (item.operation, item.implementation_digest)
             for item in self.operations
         )
+        self._base_handler_identity_digest = (
+            None
+            if self.base_handlers is None
+            else self.base_handlers.identity_digest
+        )
+        handler_implementations = {
+            operation: self._effective_base_handlers.implementation_digest(
+                operation
+            )
+            for operation in self._effective_base_handlers.operations()
+        }
+        handler_implementations.update(dict(self._operation_implementations))
+        self._handler_registry_identity_digest = canonical_digest(tuple(
+            sorted(handler_implementations.items())
+        ))
+        referenced_operations = tuple(
+            sorted({node.operation for node in self.program.nodes})
+        )
+        try:
+            referenced_implementations = tuple(
+                (operation, handler_implementations[operation])
+                for operation in referenced_operations
+            )
+        except KeyError as exc:
+            raise KeyError(
+                f"unbound research-program operation: {exc.args[0]}"
+            ) from exc
+        self._handler_binding_digest = canonical_digest({
+            "research_program_digest": self.program.program_digest,
+            "operation_implementations": referenced_implementations,
+        })
+        self._schema_digest = canonical_digest({
+            "state_schema": self.program.state_schema,
+        })
+        self._interpreter_digest = canonical_digest({
+            "interpreter": "programmable-machine",
+            "version": 1,
+        })
         self.configuration_digest = canonical_digest({
             "host_id": self.host_id,
             "program_digest": self.program.program_digest,
-            "operation_implementations": operation_implementations,
-            "base_handler_identity_digest": (
-                None
-                if self.base_handlers is None
-                else self.base_handlers.identity_digest
-            ),
+            "operation_implementations": self._operation_implementations,
+            "base_handler_identity_digest": self._base_handler_identity_digest,
             "max_steps": self.max_steps,
+            "dependency_identity": self.dependency_identity,
+        })
+        self._dependency_digest = canonical_digest({
+            "host_id": self.host_id,
+            "operation_implementations": self._operation_implementations,
+            "base_handler_identity_digest": self._base_handler_identity_digest,
+            "handler_binding_digest": self._handler_binding_digest,
+            "required_capabilities": self.program.required_capabilities,
             "dependency_identity": self.dependency_identity,
         })
 
@@ -147,63 +271,24 @@ class ResearchProgramHost:
             handler_binding_digest,
             "research program handler_binding_digest",
         )
+        if handler_binding_digest != self._handler_binding_digest:
+            raise ValueError("research host handler binding identity drifted")
         return ProgramLock(
             code_digest=self.program.program_digest,
-            dependency_digest=canonical_digest({
-                "host_id": self.host_id,
-                "operation_implementations": tuple(
-                    (item.operation, item.implementation_digest)
-                    for item in self.operations
-                ),
-                "base_handler_identity_digest": (
-                    None
-                    if self.base_handlers is None
-                    else self.base_handlers.identity_digest
-                ),
-                "handler_binding_digest": handler_binding_digest,
-                "required_capabilities": self.program.required_capabilities,
-                "dependency_identity": self.dependency_identity,
-            }),
-            schema_digest=canonical_digest({
-                "state_schema": self.program.state_schema,
-            }),
-            interpreter_digest=canonical_digest({
-                "interpreter": "programmable-machine",
-                "version": 1,
-            }),
+            dependency_digest=self._dependency_digest,
+            schema_digest=self._schema_digest,
+            interpreter_digest=self._interpreter_digest,
             data_digest=canonical_digest(instance_identity),
             config_digest=self.configuration_digest,
         )
 
-    def _handlers(self, binding: object) -> ProgramHandlerRegistry:
-        if self.base_handlers is None:
-            registry = core_program_handlers()
-        else:
-            registry = ProgramHandlerRegistry()
-            for operation in self.base_handlers.operations():
-                registry.register(
-                    operation,
-                    self.base_handlers.resolve(operation),
-                    implementation_digest=(
-                        self.base_handlers.implementation_digest(operation)
-                    ),
-                )
-        for item in self.operations:
-            def bound(
-                request: ProgramNodeRequest,
-                *,
-                _handler: ResearchHostHandler = item.handler,
-            ) -> ProgramNodeResult:
-                result = _handler(request, binding)
-                if not isinstance(result, ProgramNodeResult):
-                    raise TypeError("research host handler must return ProgramNodeResult")
-                return result
-            registry.register(
-                item.operation,
-                bound,
-                implementation_digest=item.implementation_digest,
-            )
-        return registry
+    def _handlers(self, binding: object) -> ProgramHandlerRegistryPort:
+        return _BoundResearchHostHandlers(
+            base=self._effective_base_handlers,
+            operations=self.operations,
+            binding=binding,
+            identity_digest=self._handler_registry_identity_digest,
+        )
 
     def terminal_replay_machine_id(
         self,
@@ -229,6 +314,14 @@ class ResearchProgramHost:
             f"research host {self.host_id} exhausted terminal replay attempts"
         )
 
+    def accepted_commits(
+        self,
+        machine_id: str,
+    ):
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("research machine_id is required")
+        return self.journal.commits(machine_id)
+
     def open_session(
         self,
         *,
@@ -239,10 +332,7 @@ class ResearchProgramHost:
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("research machine_id is required")
         handlers = self._handlers(binding)
-        handler_binding_digest = program_handler_binding_digest(
-            self.program,
-            handlers,
-        )
+        handler_binding_digest = self._handler_binding_digest
         machine = MachineExecutor(
             identity=MachineIdentity(
                 machine_id,
@@ -263,6 +353,7 @@ class ResearchProgramHost:
         interpreter = ProgrammableMachineInterpreter(
             self.program,
             handlers,
+            handler_binding_digest=handler_binding_digest,
         )
         return ResearchMachineSession(machine, self.program, interpreter)
 
@@ -283,14 +374,30 @@ class ResearchProgramHost:
         session: ResearchMachineSession,
         run: ResearchMachineRun,
     ) -> ResearchHostExecution:
-        head = session.machine.journal.latest(session.machine_id)
+        snapshot = session.snapshot
+        cut = (
+            None
+            if snapshot.revision == 0 or snapshot.parent_commit_id is None
+            else MachineCut(
+                machine_id=session.machine_id,
+                revision=snapshot.revision,
+                commit_id=snapshot.parent_commit_id,
+                state_digest=snapshot.state_digest,
+                program_digest=snapshot.program.program_digest,
+                program_lock_digest=snapshot.program.program_lock.lock_digest,
+            )
+        )
         return ResearchHostExecution(
             machine_id=session.machine_id,
             revision=session.revision,
             status=run.status,
             data=session.data,
             previous_value=session.previous_value,
-            cut=None if head is None else MachineCut.from_commit(head),
+            visit_counts=session.visit_counts,
+            step_count=session.step_count,
+            semantic_state=session.semantic_state,
+            checkpoint_value=session.checkpoint_value,
+            cut=cut,
             run=run,
         )
 
@@ -365,7 +472,10 @@ class ResearchProgramHost:
                 )
             )
 
-        session.checkpoint()
+        # Accepted transitions are already crash-durable in the Machine Journal.
+        # Persisting a second full MachineSnapshot here duplicates the durability
+        # barrier and is not consulted when a journal head exists. Explicit
+        # checkpoint callers still use MachineExecutor.checkpoint().
         run = ResearchMachineRun(
             tuple(commits),
             session.status,
@@ -425,7 +535,8 @@ class ResearchProgramHost:
             payload=payload,
             max_steps=self.max_steps,
         )
-        session.checkpoint()
+        # The journal is the single recovery authority. Avoid a second full
+        # snapshot write/fsync at every host execution boundary.
         return self._project_execution(session, run)
 
 

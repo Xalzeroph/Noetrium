@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "live_swe_agent",
-  "package_digest": "58f2749452075b516dc8fd715cf2f7f101c24ee215bd7be6d77c1c127abd896f",
-  "definition_digest": "9be3174ead00018a3ab7ab3633b28d826507a31a61dbd8a7792c473c1f26513c",
+  "package_digest": "9d92fd740400e7ac93638cd263c619cc640e534081da884f409777b7007b2fa7",
+  "definition_digest": "8f689b089e7378b719078d2759ee9e9995d1aee7d3f3b8490bd02e5f343d855b",
   "source_registry_digest": "df603fd2b849ff9e4be7849fe10487911f2bb7dd449b0c8822be92c5e7b40e5c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -74,13 +74,13 @@
       "kind": "method_program",
       "path": "research/reproductions/live_swe_agent/program.py",
       "declaration_digest": "79f2d83a15df4540299423718590a36aec0dcd4ca621707814a2e3921ddd0468",
-      "content_sha256": "4af93ec1990a772570b9e346a84a0063aaa791f061a0230d34c8431c258c8169"
+      "content_sha256": "2f76fcc832e41a10dc9e6a2a28458cc0084976af507827046c23a905bf0a4c64"
     },
     {
       "kind": "study",
       "path": "research/reproductions/live_swe_agent/study.py",
       "declaration_digest": "475f10f088749054af76698d1a2588a342453985ebe7c0a48cce628940cb7c8e",
-      "content_sha256": "f1d6a949d1145977ed8b58e1d95ba88400a9d1c6c74bfea6c6ab24099e4473bd"
+      "content_sha256": "6cd96a72feba72cb8fa87407589e1ad6fd1c9a711741a66a09d687beea8a30d3"
     }
   ],
   "primary_executable": "research/reproductions/live_swe_agent/program.py",
@@ -91,15 +91,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "776012157c13e91becddeeccb7c2cd0d9d1ed771f3a6991173b19959fbc8945d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "live_swe_agent",
-    "program_digest": "540ea04fbb0a6961a2828350577834a460cc99b35ba0438025e59e701cc4b7d1",
+    "program_digest": "39b6a046c781169088674979c13e3f0e2b44a8a0a1e358354a7b196603c5625c",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

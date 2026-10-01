@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from prompt_os_test_support import make_promoted_prompt_registry
+
 import pytest
 
 from noetrium_platform.capabilities.model.api import (
@@ -35,8 +37,10 @@ def _prompt(*, version: str = "1", role: str = "planner") -> PromptSpec:
 
 
 def _selection(generation: str = "prompt-gen-1", *, version: str = "1") -> RegistryPromptSelection:
-    registry = PromptRegistry()
-    registry.publish(generation, (_prompt(version=version),))
+    registry = make_promoted_prompt_registry(
+        generation_id=generation,
+        specs=(_prompt(version=version),),
+    )
     return RegistryPromptSelection(registry)
 
 
@@ -126,8 +130,10 @@ def test_generation_requires_prompt_selection_and_rejects_role_drift() -> None:
     with pytest.raises(TypeError, match="PromptSelectionPort"):
         definition.requirement()
 
-    registry = PromptRegistry()
-    registry.publish("prompt-gen-1", (_prompt(role="critic"),))
+    registry = make_promoted_prompt_registry(
+        generation_id="prompt-gen-1",
+        specs=(_prompt(role="critic"),),
+    )
     with pytest.raises(ValueError, match="role"):
         definition.requirement(RegistryPromptSelection(registry))
 

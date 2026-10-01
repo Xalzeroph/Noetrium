@@ -51,7 +51,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=("Matched execution requires frozen OS images, online benchmark revisions, browser sandbox, prompts and model snapshots.", "Online OS claims require replayable VM and Machine Journal receipts."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 
 __all__ = ["REPRODUCTION"]

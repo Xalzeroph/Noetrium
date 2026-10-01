@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from threading import RLock
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityPort,
-    CapabilityPolicySet,
     CapabilityRequest,
     CapabilityResult,
 )
@@ -33,6 +33,14 @@ class CapabilityAmbiguous(RuntimeError):
 
 class UnsafeGenericCapability(RuntimeError):
     pass
+
+
+@runtime_checkable
+class ContextualCapabilitySessionPort(Protocol):
+    @property
+    def capabilities(self) -> tuple[CapabilityDescriptor, ...]: ...
+
+    def session_for(self, context) -> object: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -170,10 +178,15 @@ class StudyCapabilityRouter(CapabilityPort):
         request: CapabilityRequest,
         ordinal: int,
     ) -> CapabilityResult:
+        session = (
+            binding.session.session_for(request.context)
+            if isinstance(binding.session, ContextualCapabilitySessionPort)
+            else binding.session
+        )
         if descriptor.effect_class in (EffectClass.PURE, EffectClass.IDEMPOTENT):
             execution = self._operations_adapter.invoke(
                 target=binding.component,
-                session=binding.session,
+                session=session,
                 descriptor=descriptor,
                 request=request,
                 invocation_ordinal=ordinal,
@@ -188,7 +201,7 @@ class StudyCapabilityRouter(CapabilityPort):
             )
         execution = self._effect_executor.invoke(
             target=binding.component,
-            session=binding.session,
+            session=session,
             descriptor=descriptor,
             request=request,
             consumer_component=self._consumer_component,
@@ -205,6 +218,12 @@ class StudyCapabilityRouter(CapabilityPort):
             return rows
 
     def close(self) -> None:
+        """Dispose only the registration scope owned by this routing view.
+
+        Dispatcher, capability sessions and the effect executor are injected shared
+        authorities. Their lifecycle belongs to the composition that created them,
+        never to a per-turn router.
+        """
         self._scope.dispose()
 
 

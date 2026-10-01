@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+import heapq
+from types import MappingProxyType
 from enum import StrEnum
 import math
 from typing import Self
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.research.execution.api import ArtifactReference
+
+from .benchmark import TaskGraph, TaskGraphRelation
 
 
 def _require_non_empty_string(value: object, field: str) -> str:
@@ -74,7 +80,7 @@ class StudyVariantSpec:
     kind: VariantKind
     implementation_id: str
     configuration_digest: str
-    budget_tier: str = "standard"
+    budget_tier: str | None = None
     ablates: tuple[str, ...] = ()
 
     @classmethod
@@ -85,7 +91,7 @@ class StudyVariantSpec:
         kind: VariantKind,
         implementation_id: str,
         configuration: object,
-        budget_tier: str = "standard",
+        budget_tier: str | None = None,
         ablates: tuple[str, ...] = (),
     ) -> Self:
         return cls(
@@ -103,114 +109,11 @@ class StudyVariantSpec:
             raise TypeError("study variant kind must be VariantKind")
         _require_non_empty_string(self.implementation_id, "study variant implementation_id")
         _require_sha256(self.configuration_digest, "study variant configuration_digest")
-        _require_non_empty_string(self.budget_tier, "study variant budget_tier")
+        if self.budget_tier is not None:
+            _require_non_empty_string(self.budget_tier, "study variant budget_tier")
         _require_string_tuple(
             self.ablates, "study variant ablates", non_empty=False, unique=True
         )
-
-
-@dataclass(frozen=True, slots=True)
-class StudyConcurrencyPolicy:
-    """Frozen execution-concurrency identity for a scientific study.
-
-    Parallelism can change contention, timing and therefore observations.  It is
-    part of the protocol digest rather than an invisible runtime tuning knob.
-    """
-
-    max_parallel_repetitions: int
-    parallel_assignments: bool
-    cpu_isolation: str
-    gpu_isolation: str
-    environment_isolation: str
-    model_admission_policy: str
-    scheduler_policy: str
-    repetition_timeout_seconds: float
-    max_parallel_assignments: int
-    max_assignment_attempts: int = 3
-    assignment_retry_policy: str = "retryable-task-failures-v1"
-
-    @classmethod
-    def serial_shared_v1(cls, *, repetition_timeout_seconds: float) -> Self:
-        """Versioned canonical serial/shared execution policy.
-
-        The factory is a stable named scientific contract; callers must still
-        state the timeout explicitly because it participates in execution identity.
-        """
-        return cls(
-            max_parallel_repetitions=1,
-            parallel_assignments=False,
-            cpu_isolation="shared",
-            gpu_isolation="shared",
-            environment_isolation="shared",
-            model_admission_policy="runtime-hierarchical-v1",
-            scheduler_policy="deterministic-priority-fair-v1",
-            repetition_timeout_seconds=repetition_timeout_seconds,
-            max_parallel_assignments=1,
-        )
-
-    @classmethod
-    def isolated_parallel_v1(
-        cls,
-        *,
-        max_parallel_repetitions: int,
-        max_parallel_assignments: int,
-        repetition_timeout_seconds: float,
-        cpu_isolation: str = "worker",
-        gpu_isolation: str = "provider-admission",
-        environment_isolation: str = "per-assignment",
-        model_admission_policy: str = "runtime-hierarchical-v1",
-        scheduler_policy: str = "deterministic-priority-fair-v1",
-    ) -> Self:
-        """Canonical high-throughput policy for independently isolated assignments.
-
-        The scientific protocol freezes *allowed* concurrency and isolation
-        semantics. Runtime resource admission may execute fewer assignments when
-        hardware/model capacity is lower, but it may never exceed these bounds.
-        """
-        return cls(
-            max_parallel_repetitions=max_parallel_repetitions,
-            parallel_assignments=True,
-            cpu_isolation=cpu_isolation,
-            gpu_isolation=gpu_isolation,
-            environment_isolation=environment_isolation,
-            model_admission_policy=model_admission_policy,
-            scheduler_policy=scheduler_policy,
-            repetition_timeout_seconds=repetition_timeout_seconds,
-            max_parallel_assignments=max_parallel_assignments,
-        )
-
-    def __post_init__(self) -> None:
-        _require_positive_int(
-            self.max_parallel_repetitions, "max_parallel_repetitions"
-        )
-        if type(self.parallel_assignments) is not bool:
-            raise TypeError("parallel_assignments must be boolean")
-        _require_positive_int(self.max_parallel_assignments, "max_parallel_assignments")
-        _require_positive_int(
-            self.max_assignment_attempts,
-            "max_assignment_attempts",
-        )
-        _require_non_empty_string(
-            self.assignment_retry_policy,
-            "study concurrency assignment_retry_policy",
-        )
-        if self.parallel_assignments and self.max_parallel_assignments < 2:
-            raise ValueError(
-                "parallel_assignments requires max_parallel_assignments greater than one"
-            )
-        timeout = _require_finite_number(
-            self.repetition_timeout_seconds, "repetition_timeout_seconds"
-        )
-        if timeout <= 0:
-            raise ValueError("repetition_timeout_seconds must be positive")
-        for name, value in (
-            ("cpu_isolation", self.cpu_isolation),
-            ("gpu_isolation", self.gpu_isolation),
-            ("environment_isolation", self.environment_isolation),
-            ("model_admission_policy", self.model_admission_policy),
-            ("scheduler_policy", self.scheduler_policy),
-        ):
-            _require_non_empty_string(value, f"study concurrency {name}")
 
 
 def _require_variants(value: object) -> tuple[StudyVariantSpec, ...]:
@@ -226,16 +129,14 @@ def _require_variants(value: object) -> tuple[StudyVariantSpec, ...]:
     return value
 
 
-def _require_concurrency_policy(value: object) -> StudyConcurrencyPolicy:
-    if not isinstance(value, StudyConcurrencyPolicy):
-        raise TypeError("study protocol concurrency_policy must be StudyConcurrencyPolicy")
-    return value
-
-
 def _require_variant_budget_tiers(
     variants: tuple[StudyVariantSpec, ...], budget_tiers: tuple[str, ...]
 ) -> None:
-    unknown = {item.budget_tier for item in variants} - set(budget_tiers)
+    unknown = {
+        item.budget_tier
+        for item in variants
+        if item.budget_tier is not None
+    } - set(budget_tiers)
     if unknown:
         raise ValueError(f"study variants use undeclared budget tiers: {sorted(unknown)}")
 
@@ -251,8 +152,8 @@ class StudyProtocol:
     seed_schedule_digest: str
     metric_names: tuple[str, ...]
     task_manifest_digest: str
+    assignment_workloads: tuple["AssignmentWorkload", ...]
     budget_tiers: tuple[str, ...]
-    concurrency_policy: StudyConcurrencyPolicy
     protocol_digest: str = field(init=False)
 
     @classmethod
@@ -266,8 +167,8 @@ class StudyProtocol:
         seed_schedule: object,
         metric_names: tuple[str, ...],
         task_manifest: object,
+        assignment_workloads: tuple["AssignmentWorkload", ...],
         budget_tiers: tuple[str, ...],
-        concurrency_policy: StudyConcurrencyPolicy,
     ) -> Self:
         return cls(
             study_id=study_id,
@@ -277,8 +178,8 @@ class StudyProtocol:
             seed_schedule_digest=canonical_digest(seed_schedule),
             metric_names=metric_names,
             task_manifest_digest=canonical_digest(task_manifest),
+            assignment_workloads=assignment_workloads,
             budget_tiers=budget_tiers,
-            concurrency_policy=concurrency_policy,
         )
 
     def __post_init__(self) -> None:
@@ -292,10 +193,25 @@ class StudyProtocol:
         )
         del metric_names
         _require_sha256(self.task_manifest_digest, "study protocol task_manifest_digest")
-        budget_tiers = _require_string_tuple(
-            self.budget_tiers, "study protocol budget_tiers", non_empty=True, unique=True
+        if type(self.assignment_workloads) is not tuple or not self.assignment_workloads:
+            raise TypeError(
+                "study protocol assignment_workloads must be a non-empty tuple"
+            )
+        if any(
+            type(row) is not AssignmentWorkload
+            for row in self.assignment_workloads
+        ):
+            raise TypeError(
+                "study protocol assignment_workloads must contain AssignmentWorkload"
+            )
+        workload_digests = tuple(
+            row.workload_digest for row in self.assignment_workloads
         )
-        _require_concurrency_policy(self.concurrency_policy)
+        if len(workload_digests) != len(set(workload_digests)):
+            raise ValueError("study protocol assignment workloads must be unique")
+        budget_tiers = _require_string_tuple(
+            self.budget_tiers, "study protocol budget_tiers", non_empty=False, unique=True
+        )
         _require_variant_budget_tiers(variants, budget_tiers)
         object.__setattr__(self, "protocol_digest", canonical_digest({
             "study_id": self.study_id,
@@ -305,9 +221,187 @@ class StudyProtocol:
             "seed_schedule_digest": self.seed_schedule_digest,
             "metric_names": self.metric_names,
             "task_manifest_digest": self.task_manifest_digest,
+            "assignment_workloads": tuple(
+                row.workload_digest for row in self.assignment_workloads
+            ),
             "budget_tiers": self.budget_tiers,
-            "concurrency_policy": self.concurrency_policy,
         }))
+
+
+@dataclass(frozen=True, slots=True)
+class AssignmentWorkload:
+    """One immutable task graph executed inside a single assignment lifetime."""
+
+    task_ids: tuple[str, ...]
+    task_graph: TaskGraph = field(default_factory=TaskGraph)
+    workload_digest: str = field(init=False)
+    _task_index: Mapping[str, int] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _dependencies_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _prerequisites_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _retry_sources_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+
+    def __post_init__(self) -> None:
+        task_ids = _require_string_tuple(
+            self.task_ids,
+            "assignment workload task_ids",
+            non_empty=True,
+            unique=True,
+        )
+        ordered = task_ids
+        object.__setattr__(self, "task_ids", ordered)
+        if type(self.task_graph) is not TaskGraph:
+            raise TypeError("assignment workload task_graph must be TaskGraph")
+
+        order_index = {
+            task_id: index
+            for index, task_id in enumerate(ordered)
+        }
+        known = set(ordered)
+        dependencies = {task_id: set() for task_id in ordered}
+        prerequisites = {task_id: set() for task_id in ordered}
+        retry_sources = {task_id: set() for task_id in ordered}
+        dependents = {task_id: set() for task_id in ordered}
+        dependency_relations = {
+            TaskGraphRelation.PREREQUISITE,
+            TaskGraphRelation.RETRY_OF,
+        }
+        for edge in self.task_graph.edges:
+            if (
+                edge.source_task_id not in known
+                or edge.target_task_id not in known
+            ):
+                raise ValueError(
+                    "assignment workload graph references task outside workload"
+                )
+            if edge.relation not in dependency_relations:
+                continue
+            dependencies[edge.target_task_id].add(edge.source_task_id)
+            dependents[edge.source_task_id].add(edge.target_task_id)
+            if edge.relation is TaskGraphRelation.PREREQUISITE:
+                prerequisites[edge.target_task_id].add(edge.source_task_id)
+            else:
+                retry_sources[edge.target_task_id].add(edge.source_task_id)
+
+        indegree = {
+            task_id: len(rows)
+            for task_id, rows in dependencies.items()
+        }
+        ready = [
+            order_index[task_id]
+            for task_id in ordered
+            if indegree[task_id] == 0
+        ]
+        heapq.heapify(ready)
+        visited_count = 0
+        while ready:
+            task_id = ordered[heapq.heappop(ready)]
+            visited_count += 1
+            for target_id in dependents[task_id]:
+                indegree[target_id] -= 1
+                if indegree[target_id] == 0:
+                    heapq.heappush(ready, order_index[target_id])
+        if visited_count != len(ordered):
+            raise ValueError("assignment workload dependency graph must be acyclic")
+
+        def ordered_rows(rows: set[str]) -> tuple[str, ...]:
+            return tuple(
+                sorted(
+                    rows,
+                    key=order_index.__getitem__,
+                )
+            )
+
+        object.__setattr__(
+            self,
+            "_task_index",
+            MappingProxyType(order_index),
+        )
+        object.__setattr__(
+            self,
+            "_dependencies_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(dependencies[task_id])
+                for task_id in ordered
+            }),
+        )
+        object.__setattr__(
+            self,
+            "_prerequisites_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(prerequisites[task_id])
+                for task_id in ordered
+            }),
+        )
+        object.__setattr__(
+            self,
+            "_retry_sources_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(retry_sources[task_id])
+                for task_id in ordered
+            }),
+        )
+        object.__setattr__(
+            self,
+            "workload_digest",
+            canonical_digest(
+                {
+                    "task_ids": ordered,
+                    "task_graph_digest": self.task_graph.graph_digest,
+                }
+            ),
+        )
+
+    def task_index(self, task_id: str) -> int:
+        try:
+            return self._task_index[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
+    def dependencies_for(self, task_id: str) -> tuple[str, ...]:
+        try:
+            return self._dependencies_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
+    def prerequisites_for(self, task_id: str) -> tuple[str, ...]:
+        try:
+            return self._prerequisites_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
+    def retry_sources_for(self, task_id: str) -> tuple[str, ...]:
+        try:
+            return self._retry_sources_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -316,7 +410,7 @@ class StudyAssignment:
     variant_id: str
     repetition: int
     seed: str
-    task_id: str | None = None
+    workload: AssignmentWorkload
     assignment_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -324,14 +418,16 @@ class StudyAssignment:
         _require_non_empty_string(self.variant_id, "study assignment variant_id")
         _require_nonnegative_int(self.repetition, "study assignment repetition")
         _require_non_empty_string(self.seed, "study assignment seed")
-        if self.task_id is not None:
-            _require_non_empty_string(self.task_id, "study assignment task_id")
+        if type(self.workload) is not AssignmentWorkload:
+            raise TypeError(
+                "study assignment workload must be AssignmentWorkload"
+            )
         object.__setattr__(self, "assignment_digest", canonical_digest({
             "study_id": self.study_id,
             "variant_id": self.variant_id,
             "repetition": self.repetition,
             "seed": self.seed,
-            "task_id": self.task_id,
+            "workload_digest": self.workload.workload_digest,
         }))
 
 
@@ -430,11 +526,95 @@ def _require_metric_rows(value: object) -> tuple[tuple[str, float], ...]:
 class StudyMetricObservation:
     assignment: StudyAssignment
     metrics: tuple[tuple[str, float], ...]
+    trial_request_digest: str | None = None
+    trial_receipt_digest: str | None = None
+    trial_receipt_reference: ArtifactReference | None = None
+    measurement_record_digests: tuple[str, ...] = ()
+    evidence_refs: tuple[ArtifactReference, ...] = ()
+    verifier_receipt_digest: str | None = None
+    observation_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.assignment, StudyAssignment):
             raise TypeError("study metric observation assignment must be StudyAssignment")
         _require_metric_rows(self.metrics)
+        provenance_fields = (
+            self.trial_request_digest,
+            self.trial_receipt_digest,
+            self.trial_receipt_reference,
+        )
+        has_provenance = any(value is not None for value in provenance_fields)
+        if has_provenance and any(value is None for value in provenance_fields):
+            raise ValueError(
+                "study metric observation Trial provenance must carry request, receipt and reference together"
+            )
+        if self.trial_request_digest is not None:
+            _require_sha256(
+                self.trial_request_digest,
+                "study metric observation trial_request_digest",
+            )
+            _require_sha256(
+                self.trial_receipt_digest,
+                "study metric observation trial_receipt_digest",
+            )
+            if type(self.trial_receipt_reference) is not ArtifactReference:
+                raise TypeError(
+                    "study metric observation trial_receipt_reference must be ArtifactReference"
+                )
+        if type(self.measurement_record_digests) is not tuple:
+            raise TypeError(
+                "study metric observation measurement_record_digests must be tuple"
+            )
+        for digest in self.measurement_record_digests:
+            _require_sha256(
+                digest,
+                "study metric observation measurement_record_digest",
+            )
+        if len(self.measurement_record_digests) != len(
+            set(self.measurement_record_digests)
+        ):
+            raise ValueError(
+                "study metric observation measurement_record_digests must be unique"
+            )
+        if type(self.evidence_refs) is not tuple or any(
+            type(row) is not ArtifactReference for row in self.evidence_refs
+        ):
+            raise TypeError(
+                "study metric observation evidence_refs must contain ArtifactReference"
+            )
+        if len(self.evidence_refs) != len(set(self.evidence_refs)):
+            raise ValueError(
+                "study metric observation evidence_refs must be unique"
+            )
+        if self.verifier_receipt_digest is not None:
+            _require_sha256(
+                self.verifier_receipt_digest,
+                "study metric observation verifier_receipt_digest",
+            )
+        if not has_provenance and (
+            self.measurement_record_digests
+            or self.evidence_refs
+            or self.verifier_receipt_digest is not None
+        ):
+            raise ValueError(
+                "study metric observation Trial-derived provenance requires a Trial receipt reference"
+            )
+        object.__setattr__(
+            self,
+            "observation_digest",
+            canonical_digest(
+                {
+                    "assignment_digest": self.assignment.assignment_digest,
+                    "metrics": self.metrics,
+                    "trial_request_digest": self.trial_request_digest,
+                    "trial_receipt_digest": self.trial_receipt_digest,
+                    "trial_receipt_reference": self.trial_receipt_reference,
+                    "measurement_record_digests": self.measurement_record_digests,
+                    "evidence_refs": self.evidence_refs,
+                    "verifier_receipt_digest": self.verifier_receipt_digest,
+                }
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -464,7 +644,7 @@ class StudyMetricAggregate:
 
 
 __all__ = [
-    "StudyConcurrencyPolicy",
+    "AssignmentWorkload",
     "StudyAssignment",
     "StudyExecutionUnit",
     "StudyMatrixExecutionReport",

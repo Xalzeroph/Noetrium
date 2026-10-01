@@ -125,6 +125,17 @@ Source / 来源: `noetrium_platform/capabilities/environment/minecraft/providers
 | `xxhash-wasm` | `0.4.2` | `MIT` |
 | `yggdrasil` | `1.8.0` | `MIT` |
 
+
+## Python runtime direct dependency
+
+The core Python package declares HTTPX with HTTP/2 support as generic network transport infrastructure. Noetrium retains model-provider protocol, retry, evidence, scheduling and lifecycle semantics.
+
+| Package | Version constraint | License |
+| --- | --- | --- |
+| httpx[http2] | >=0.28,<0.29 | BSD-3-Clause |
+
+Transitive Python dependencies are resolved by the installation environment and must be included in the exact release SBOM/license projection.
+
 ## Distribution note / 分发说明
 
 Release artifacts should generate or verify an exact dependency/SBOM projection for the distributed cut and carry any license texts or notices required by those dependencies. The lockfile inventory above describes the repository snapshot only; it must not be used to claim that unrelated model weights, datasets, benchmark assets, system packages, or external services are covered by Apache-2.0.

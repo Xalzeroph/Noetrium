@@ -17,7 +17,6 @@ def register(groups) -> None:
         target.add_argument("--tag", action="append", default=[])
         target.add_argument("--model")
         target.add_argument("--engine")
-        target.add_argument("--env")
     desire = sub.add_parser("desire")
     desire.add_argument("deployment_id")
     desire.add_argument("state", choices=("running", "stopped"))
@@ -26,17 +25,13 @@ def register(groups) -> None:
     desire_all.add_argument("--tag", action="append", default=[])
     desire_all.add_argument("--model")
     desire_all.add_argument("--engine")
-    desire_all.add_argument("--env")
     for action in ("start", "stop", "restart", "status", "remove", "reset-auto-recovery"):
         command = sub.add_parser(action)
         command.add_argument("deployment_id")
     set_gpus = sub.add_parser("set-gpus")
     set_gpus.add_argument("deployment_id")
     set_gpus.add_argument("gpu_devices", nargs="*")
-    set_env = sub.add_parser("set-env")
-    set_env.add_argument("deployment_id")
-    set_env.add_argument("environment_id", nargs="?")
-    for action in ("status-all", "reconcile", "start-all", "stop-all", "gpu", "gpu-conflicts", "gpu-runtime", "env-usage", "gpu-processes"):
+    for action in ("status-all", "reconcile", "start-all", "stop-all", "gpu", "gpu-conflicts", "gpu-runtime", "gpu-processes"):
         sub.add_parser(action)
     candidates = sub.add_parser("gpu-candidates")
     candidates.add_argument("--count", type=int, default=1)

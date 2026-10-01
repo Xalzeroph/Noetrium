@@ -28,7 +28,13 @@ def freeze_model_deployment_set(
     return FrozenDeploymentSet(
         role_manifest_digest=role_manifest.digest(),
         assignments=tuple(
-            FrozenRoleAssignment(item.role, item.deployment_id)
+            FrozenRoleAssignment(
+                item.role,
+                item.capability_id,
+                item.input_schema_id,
+                item.output_schema_id,
+                item.deployment_id,
+            )
             for item in role_manifest.assignments
         ),
         deployments=tuple(freeze_model_deployment(item) for item in deployments),

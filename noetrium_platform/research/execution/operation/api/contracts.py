@@ -72,6 +72,7 @@ class OperationFailure:
     message: str
     retryable: bool=False
     reconciliation_required: bool=False
+    failure_id: str | None = None
     def __post_init__(self) -> None:
         if not isinstance(self.kind, OperationFailureKind):
             raise TypeError("operation failure kind must be OperationFailureKind")
@@ -79,6 +80,10 @@ class OperationFailure:
             raise TypeError("operation failure code/message must be text")
         if not isinstance(self.retryable, bool) or not isinstance(self.reconciliation_required, bool):
             raise TypeError("operation failure retry/reconciliation flags must be bool")
+        if self.failure_id is not None:
+            if not isinstance(self.failure_id, str) or not self.failure_id.strip():
+                raise ValueError("operation failure failure_id must be non-empty text or null")
+            object.__setattr__(self, "failure_id", self.failure_id.strip())
         code = self.code.strip()
         message = self.message.strip()
         if not code or not message:

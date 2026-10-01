@@ -280,6 +280,81 @@ class BoundedThreadExecutor(_BoundedExecutor):
         return tuple(_FutureHandle(future) for future in futures)
 
 
+class LazyBoundedProcessExecutor:
+    """Lazily materialize the process pool on first CPU work.
+
+    Research workloads that never use the CPU lane must not create multiprocessing
+    semaphores/resource-tracker state merely by constructing the execution plane.
+    """
+
+    def __init__(
+        self,
+        *,
+        max_workers: int,
+        max_in_flight: int,
+        initializer: Callable[[], None] | None = None,
+    ) -> None:
+        if max_workers <= 0:
+            raise ValueError("max_workers must be positive")
+        if max_in_flight <= 0:
+            raise ValueError("max_in_flight must be positive")
+        self._max_workers = int(max_workers)
+        self._max_in_flight = int(max_in_flight)
+        self._initializer = initializer
+        self._lock = Lock()
+        self._delegate: BoundedProcessExecutor | None = None
+        self._closed = False
+
+    def _provider(self) -> "BoundedProcessExecutor":
+        with self._lock:
+            if self._closed:
+                raise RuntimeError("executor is closed")
+            provider = self._delegate
+            if provider is None:
+                provider = BoundedProcessExecutor(
+                    max_workers=self._max_workers,
+                    max_in_flight=self._max_in_flight,
+                    initializer=self._initializer,
+                )
+                self._delegate = provider
+            return provider
+
+    @property
+    def materialized(self) -> bool:
+        with self._lock:
+            return self._delegate is not None
+
+    def submit(
+        self,
+        fn: Callable[..., T],
+        /,
+        *args: Any,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+        **kwargs: Any,
+    ) -> _FutureHandle[T]:
+        return self._provider().submit(
+            fn,
+            *args,
+            deadline=deadline,
+            cancellation=cancellation,
+            **kwargs,
+        )
+
+    def map(self, fn, values, *, chunksize: int = 1):
+        return self._provider().map(fn, values, chunksize=chunksize)
+
+    def close(self, *, wait: bool = True, cancel_pending: bool = False) -> None:
+        with self._lock:
+            if self._closed:
+                provider = self._delegate
+            else:
+                self._closed = True
+                provider = self._delegate
+        if provider is not None:
+            provider.close(wait=wait, cancel_pending=cancel_pending)
+
+
 class BoundedProcessExecutor(_BoundedExecutor):
     def __init__(
         self,

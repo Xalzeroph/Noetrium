@@ -42,6 +42,7 @@ class CapabilityDescriptor:
     result_schema: str
     effect_class: EffectClass = EffectClass.PURE
     deterministic: bool = False
+    metadata: JsonObject = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for value in (
@@ -52,6 +53,9 @@ class CapabilityDescriptor:
         ):
             if not isinstance(value, str) or not value.strip() or value != value.strip():
                 raise ValueError("capability descriptor identity fields must be canonical non-empty text")
+        if not isinstance(self.metadata, Mapping):
+            raise TypeError("capability descriptor metadata must be a mapping")
+        object.__setattr__(self, "metadata", freeze_json(self.metadata))
 
     def digest(self) -> str:
         return canonical_digest(self)
@@ -115,6 +119,7 @@ class CapabilityResult:
     effect: EffectReceipt | None = None
     provider_identity: CapabilityProviderIdentity | None = None
     request_digest: str | None = None
+    evidence: JsonValue = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.capability_id, str) or not self.capability_id.strip():
@@ -145,6 +150,7 @@ class CapabilityResult:
             or any(char not in "0123456789abcdef" for char in self.request_digest)
         ):
             raise ValueError("capability result request_digest must be lowercase SHA-256")
+        object.__setattr__(self, "evidence", freeze_json(self.evidence))
 
     def digest(self) -> str:
         return canonical_digest({
@@ -156,6 +162,7 @@ class CapabilityResult:
             "effect": self.effect,
             "provider_identity": self.provider_identity,
             "request_digest": self.request_digest,
+            "evidence": self.evidence,
         })
 
 

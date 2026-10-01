@@ -16,6 +16,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="modular planning-grounding-navigation systems"),
         ReferenceBaseline(baseline_id="baseline_03",description="paper benchmark baselines"),
     ),
-    blockers=("Matched reproduction requires the pinned D3D-VLP code plus released 10M hybrid training data and exact simulator cuts.", "Real-world mobile-manipulation claims require the physical evaluation protocol and robot execution evidence."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned D3D-VLP code plus released 10M hybrid training data and exact simulator cuts.", "Real-world mobile-manipulation claims require the physical evaluation protocol and robot execution evidence."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

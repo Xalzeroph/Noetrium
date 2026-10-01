@@ -1,26 +1,23 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
 import re
 from collections.abc import Mapping, Sequence
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    thaw_json,
-)
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
+
 
 from .fidelity import WEBVOYAGER_FIDELITY
 
@@ -63,7 +60,7 @@ def webvoyager_initial_state(
     }
 
 
-def _policy_view(request: MethodNodeRequest) -> JsonObject:
+def _policy_view(request: MethodCall) -> JsonObject:
     step = request.state.get("step", 0)
     if type(step) is not int or step < 0:
         raise ValueError("WebVoyager step must be non-negative")
@@ -135,7 +132,7 @@ def _parse_action(action: str) -> JsonObject:
     }
 
 
-def _record_policy(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_policy(request: MethodCall) -> MethodNodeResult:
     thought, action_text = _decode_policy(request.previous_value)
     action = _parse_action(action_text)
     step = request.state.get("step", 0)
@@ -143,7 +140,7 @@ def _record_policy(request: MethodNodeRequest) -> MethodNodeResult:
         raise ValueError("WebVoyager step must be non-negative")
     if action["terminal"] is True:
         answer = _text(action["argument"], "answer")
-        return MethodNodeResult(
+        return dict(
             value={"thought": thought, "action": action_text, "answer": answer},
             state_update={
                 "last_thought": thought,
@@ -154,12 +151,12 @@ def _record_policy(request: MethodNodeRequest) -> MethodNodeResult:
             next_node="return",
         )
     if step >= WEBVOYAGER_FIDELITY.max_iterations:
-        return MethodNodeResult(
+        return dict(
             value={"budget_exhausted": True},
             state_update={"terminated": True},
             next_node="return",
         )
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "action": action,
@@ -174,7 +171,7 @@ def _record_policy(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_environment(request: MethodCall) -> MethodNodeResult:
     result = thaw_json(request.previous_value)
     if not isinstance(result, Mapping):
         raise TypeError("WebVoyager environment result must be an object")
@@ -194,7 +191,7 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
         image_refs.append(image_ref)
     image_refs = image_refs[-WEBVOYAGER_FIDELITY.max_attached_images :]
     exhausted = next_step >= WEBVOYAGER_FIDELITY.max_iterations
-    return MethodNodeResult(
+    return dict(
         value={
             "step": next_step,
             "observation": observation,
@@ -216,8 +213,8 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "answer": request.state.get("answer", ""),
@@ -232,7 +229,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_webvoyager_method_program() -> MethodProgram:
+def build_webvoyager_method_program(method, ) -> None:
     fidelity = WEBVOYAGER_FIDELITY
     configuration: JsonObject = {
         "source_commit": fidelity.audited_commit,
@@ -247,22 +244,14 @@ def build_webvoyager_method_program() -> MethodProgram:
         "type_action_auto_enter": fidelity.type_action_auto_enter,
         "environment_action_capability": _ENVIRONMENT_ACTION_CAPABILITY,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="webvoyager",
-            implementation_version=fidelity.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="webvoyager.acl2024.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="policy")
+
+    builder = method
     builder.agent(
         "policy",
         "webvoyager.policy",
         _POLICY_AGENT,
         ("record_policy",),
-        view_handler=_policy_view,
+        view=_policy_view,
         max_visits=fidelity.max_iterations + 1,
     )
     builder.route(
@@ -277,9 +266,9 @@ def build_webvoyager_method_program() -> MethodProgram:
         "webvoyager.environment.act",
         _ENVIRONMENT_ACTION_CAPABILITY,
         ("record_environment",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=fidelity.max_iterations,
-        evidence_obligations=("webvoyager.environment-effect",),
+        evidence=("webvoyager.environment-effect",),
     )
     builder.route(
         "record_environment",
@@ -289,32 +278,43 @@ def build_webvoyager_method_program() -> MethodProgram:
         max_visits=fidelity.max_iterations,
     )
     builder.return_node("return", "webvoyager.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_ENVIRONMENT_ACTION_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_ENVIRONMENT_ACTION_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "webvoyager.model-visible-observation",
             "webvoyager.environment-effect",
             "webvoyager.observation",
             "webvoyager.answer",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "step_count",
             "model_call_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "webvoyager_trajectory",
             "webvoyager_screenshot",
         ),
     )
+    return builder
 
 
-WEBVOYAGER_METHOD_PROGRAM = build_webvoyager_method_program()
+METHOD_CONFIGURER = build_webvoyager_method_program
+METHOD_ENTRYPOINT = "policy"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "WEBVOYAGER_METHOD_PROGRAM",
-    "build_webvoyager_method_program",
-    "webvoyager_initial_state",
+    'build_webvoyager_method_program',
+    'webvoyager_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'webvoyager', "version": "paper-protocol", "semantic_contract": 'webvoyager' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

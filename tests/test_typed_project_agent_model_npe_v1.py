@@ -9,18 +9,23 @@ import pytest
 
 from noetrium_platform.capabilities.model.api import (
     ModelBindingDiagnosticCode,
+    ModelCapabilityInvocation,
     ModelCapabilityRequirement,
     ModelProjectBindingError,
     ModelRequestContextExceeded,
     ModelProviderProfile,
-    ProjectModelClientPort,
-    ProjectModelProviderPort,
+    ProjectModelCapabilityClientPort,
+    ProjectModelCapabilityProviderPort,
     ProjectModelRequest,
+    ProjectModelResponse,
 )
 from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointDispatchResult,
+    ModelEndpointPoolSnapshot,
+    ModelEndpointReplicaSet,
     ModelEndpointRequest,
     ModelEndpointResponse,
     ModelEndpointRoute,
@@ -92,6 +97,9 @@ def _qualified_binding(
 ) -> QualifiedModelEndpointBinding:
     return QualifiedModelEndpointBinding(
         role="planner",
+        capability_id="generation",
+        input_schema_id="model.generation.request.v1",
+        output_schema_id="model.generation.response.v1",
         deployment_id=deployment_id,
         deployment_generation=D["generation"],
         base_url="http://127.0.0.1:8000",
@@ -105,6 +113,7 @@ def _qualified_binding(
         runtime_canary_evidence_digests=(D["canary"],),
         tokenizer_sha256=D["tokenizer"],
         chat_template_sha256=None,
+        verified_capabilities=("generation", "chat", "tools"),
     )
 
 
@@ -112,8 +121,27 @@ class _BindingPort:
     def __init__(self, binding: QualifiedModelEndpointBinding) -> None:
         self.binding = binding
 
-    def binding_for(self, *, role: str, prompt_generation: str) -> QualifiedModelEndpointBinding:
+    def binding_for(
+        self,
+        *,
+        role: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+        prompt_generation: str | None = None,
+    ) -> QualifiedModelEndpointBinding:
         return self.binding
+
+    def replica_set_for(
+        self,
+        *,
+        role: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+        prompt_generation: str | None = None,
+    ) -> ModelEndpointReplicaSet:
+        return ModelEndpointReplicaSet((self.binding,))
 
 
 @dataclass
@@ -146,6 +174,43 @@ def _endpoint_factory(binding: QualifiedModelEndpointBinding) -> _Endpoint:
     )
 
 
+
+class _SingleReplicaPool:
+    def __init__(self, replica_set: ModelEndpointReplicaSet, endpoint_factory=_endpoint_factory) -> None:
+        self.replica_set = replica_set
+        self.endpoint = endpoint_factory(replica_set.members[0])
+        self.sequence = 0
+
+    def snapshot(self) -> ModelEndpointPoolSnapshot:
+        return ModelEndpointPoolSnapshot(
+            self.replica_set.replica_set_digest,
+            "f" * 64,
+            self.sequence,
+            (),
+        )
+
+    def complete(self, request, body):
+        binding = self.replica_set.members[0]
+        physical = ModelEndpointRequest(
+            request=request,
+            deployment_id=binding.deployment_id,
+            deployment_generation=binding.deployment_generation,
+            body=body,
+        )
+        response = self.endpoint.complete(physical)
+        self.sequence += 1
+        return ModelEndpointDispatchResult(
+            physical,
+            response,
+            self.replica_set.replica_set_digest,
+            "f" * 64,
+            self.sequence,
+        )
+
+
+def _pool_factory(replica_set: ModelEndpointReplicaSet):
+    return _SingleReplicaPool(replica_set)
+
 def _envelope(
     model: ImmutableModelIdentity,
     *, body: object | None = None, prompt_digest: str = D["prompt"],
@@ -168,7 +233,21 @@ def _envelope(
 
 
 class _RequestVerifier:
-    def verify_visible_request(self, envelope: ModelRequestEnvelope, actual_body: object) -> None:
+    durability = "test"
+
+    def record(self, **kwargs):
+        raise AssertionError("generation test constructs envelopes explicitly")
+
+    def record_operation(self, **kwargs):
+        raise AssertionError("generation test must not record model operation")
+
+    def reconstruct(self, envelope):
+        raise AssertionError("reconstruction is not used by this test provider")
+
+    def reconstruct_request_body(self, envelope):
+        raise AssertionError("reconstruction is not used by this test provider")
+
+    def verify_visible_request(self, envelope, actual_body) -> None:
         if canonical_digest(actual_body) != envelope.request_body.content_sha256:
             raise RuntimeError("model-visible request drift")
 
@@ -179,12 +258,22 @@ def _provider(
     input_tokens: int = 1,
 ) -> QualifiedModelProjectProvider:
     return QualifiedModelProjectProvider(
-        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        ModelProviderProfile("qualified-local", ("generation", "chat", "tools")),
         _BindingPort(binding),
-        _endpoint_factory,
+        _pool_factory,
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(input_tokens=input_tokens),
     )
+
+
+def _invoke_generation(client, requirement, request):
+    invocation = ModelCapabilityInvocation.from_requirement(
+        requirement,
+        request.envelope.request_id,
+        request,
+        context=request.envelope.context,
+    )
+    return client.invoke(invocation).output
 
 
 def test_common_project_source_uses_only_role04_public_api() -> None:
@@ -231,9 +320,9 @@ DEMO_SESSION = DemoSession()
 def test_model_provider_conformance_and_binding_hide_route_process_details() -> None:
     requirement = _requirement()
     provider = _provider(_qualified_binding())
-    assert isinstance(provider, ProjectModelProviderPort)
-    client = provider.bind(requirement)
-    assert isinstance(client, ProjectModelClientPort)
+    assert isinstance(provider, ProjectModelCapabilityProviderPort)
+    client = provider.bind_capability(requirement)
+    assert isinstance(client, ProjectModelCapabilityClientPort)
     assert client.binding.requirement_digest == requirement.digest()
     assert client.binding.prompt_digest == requirement.prompt_digest
     assert client.binding.runtime_canary_evidence_digests == (D["canary"],)
@@ -252,41 +341,41 @@ def test_generation_binding_is_materialized_once_per_requirement() -> None:
             super().__init__(value)
             self.calls = 0
 
-        def binding_for(self, *, role: str, prompt_generation: str):
+        def binding_for(self, *, role: str, capability_id: str, input_schema_id: str, output_schema_id: str, prompt_generation: str | None = None):
             self.calls += 1
-            return super().binding_for(role=role, prompt_generation=prompt_generation)
+            return super().binding_for(role=role, capability_id=capability_id, input_schema_id=input_schema_id, output_schema_id=output_schema_id, prompt_generation=prompt_generation)
 
     bindings = CountingBindingPort(binding)
-    endpoint_calls = []
+    pool_calls = []
 
-    def factory(value):
-        endpoint_calls.append(value)
-        return _endpoint_factory(value)
+    def factory(replica_set):
+        pool_calls.append(replica_set)
+        return _SingleReplicaPool(replica_set)
 
     provider = QualifiedModelProjectProvider(
-        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        ModelProviderProfile("qualified-local", ("generation", "chat", "tools")),
         bindings,
         factory,
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(),
     )
 
-    first = provider.bind(requirement)
-    second = provider.bind(requirement)
+    first = provider.bind_capability(requirement)
+    second = provider.bind_capability(requirement)
 
     assert first is second
     assert bindings.calls == 1
-    assert len(endpoint_calls) == 1
+    assert len(pool_calls) == 1
 
 
 def test_model_request_binds_exact_prompt_tool_and_deployment_provenance() -> None:
     requirement = _requirement()
-    client = _provider(_qualified_binding()).bind(requirement)
+    client = _provider(_qualified_binding()).bind_capability(requirement)
     body = {"messages": [{"role": "user", "content": "hello"}]}
     envelope = _envelope(client.binding.model, body=body)
     request = ProjectModelRequest(requirement.digest(), envelope, body)
     body["messages"][0]["content"] = "mutated"
-    response = client.complete(request)
+    response = _invoke_generation(client, requirement, request)
     assert response.request_digest == request.request_digest
     assert response.binding_digest == client.binding.digest()
     assert response.text == "ok"
@@ -306,10 +395,10 @@ def test_model_request_provenance_drift_fails_closed(
     envelope: ModelRequestEnvelope, match: str
 ) -> None:
     requirement = _requirement()
-    client = _provider(_qualified_binding()).bind(requirement)
+    client = _provider(_qualified_binding()).bind_capability(requirement)
     request = ProjectModelRequest(requirement.digest(), envelope, {"messages": []})
     with pytest.raises(ValueError, match=match):
-        client.complete(request)
+        _invoke_generation(client, requirement, request)
 
 
 def test_model_request_context_budget_is_enforced_by_exact_bound_tokenization_before_endpoint_call() -> None:
@@ -317,13 +406,13 @@ def test_model_request_context_budget_is_enforced_by_exact_bound_tokenization_be
     binding = _qualified_binding()
     endpoint = _endpoint_factory(binding)
     provider = QualifiedModelProjectProvider(
-        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        ModelProviderProfile("qualified-local", ("generation", "chat", "tools")),
         _BindingPort(binding),
-        lambda _: endpoint,
+        lambda replica_set: _SingleReplicaPool(replica_set, lambda _: endpoint),
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(input_tokens=binding.model.context_length),
     )
-    client = provider.bind(requirement)
+    client = provider.bind_capability(requirement)
     body = {"messages": [{"role": "user", "content": "hello"}], "max_tokens": 1}
     request = ProjectModelRequest(
         requirement.digest(),
@@ -331,7 +420,7 @@ def test_model_request_context_budget_is_enforced_by_exact_bound_tokenization_be
         body,
     )
     with pytest.raises(ModelRequestContextExceeded) as raised:
-        client.complete(request)
+        _invoke_generation(client, requirement, request)
     assert raised.value.budget.input_tokens == binding.model.context_length
     assert raised.value.budget.requested_output_tokens == 1
     assert endpoint.calls == []
@@ -344,21 +433,21 @@ def test_model_provider_rejects_binding_role_or_prompt_generation_drift() -> Non
     diagnostics = provider.diagnose(requirement)
     assert diagnostics[0].code is ModelBindingDiagnosticCode.BINDING_PROVENANCE_DRIFT
     with pytest.raises(ModelProjectBindingError):
-        provider.bind(requirement)
+        provider.bind_capability(requirement)
 
 
 def test_model_provider_swap_preserves_project_requirement_and_logic() -> None:
     requirement = _requirement()
-    first = _provider(_qualified_binding(deployment_id="dep-a", model=_model("model-a"))).bind(requirement)
-    second = _provider(_qualified_binding(deployment_id="dep-b", model=_model("model-b"))).bind(requirement)
+    first = _provider(_qualified_binding(deployment_id="dep-a", model=_model("model-a"))).bind_capability(requirement)
+    second = _provider(_qualified_binding(deployment_id="dep-b", model=_model("model-b"))).bind_capability(requirement)
 
-    def project_logic(client: ProjectModelClientPort) -> str:
+    def project_logic(client: ProjectModelCapabilityClientPort) -> str:
         request = ProjectModelRequest(
             requirement.digest(),
             _envelope(client.binding.model, body={"messages": [{"role": "user", "content": "plan"}]}),
             {"messages": [{"role": "user", "content": "plan"}]},
         )
-        return client.complete(request).text
+        return _invoke_generation(client, requirement, request).text
 
     assert project_logic(first) == "ok"
     assert project_logic(second) == "ok"
@@ -375,9 +464,9 @@ class _FailingBindingPort:
 def test_model_doctor_diagnostics_are_typed_and_do_not_echo_provider_secrets() -> None:
     requirement = _requirement()
     provider = QualifiedModelProjectProvider(
-        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        ModelProviderProfile("qualified-local", ("generation", "chat", "tools")),
         _FailingBindingPort(),
-        _endpoint_factory,
+        _pool_factory,
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(),
     )
@@ -390,9 +479,9 @@ def test_model_doctor_diagnostics_are_typed_and_do_not_echo_provider_secrets() -
 
 def test_model_doctor_reports_capability_and_context_failures_without_endpoint_materialization() -> None:
     missing = QualifiedModelProjectProvider(
-        ModelProviderProfile("small", ("chat",)),
+        ModelProviderProfile("small", ("generation", "chat")),
         _BindingPort(_qualified_binding()),
-        lambda binding: (_ for _ in ()).throw(AssertionError("must not materialize")),
+        lambda replica_set: (_ for _ in ()).throw(AssertionError("must not materialize")),
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(),
     )
@@ -539,7 +628,7 @@ def test_common_public_modules_do_not_export_provider_runtime_constructors() -> 
 
 
 def test_project_client_does_not_expose_endpoint_authority() -> None:
-    client = _provider(_qualified_binding()).bind(_requirement())
+    client = _provider(_qualified_binding()).bind_capability(_requirement())
     assert not hasattr(client, "endpoint")
     assert not hasattr(client, "route")
     assert not hasattr(client, "base_url")
@@ -547,14 +636,14 @@ def test_project_client_does_not_expose_endpoint_authority() -> None:
 
 def test_actual_model_visible_body_drift_fails_closed() -> None:
     requirement = _requirement()
-    client = _provider(_qualified_binding()).bind(requirement)
+    client = _provider(_qualified_binding()).bind_capability(requirement)
     envelope = _envelope(client.binding.model, body={"messages": []})
     request = ProjectModelRequest(
         requirement.digest(), envelope,
         {"messages": [{"role": "user", "content": "different"}]},
     )
     with pytest.raises(RuntimeError, match="model-visible request drift"):
-        client.complete(request)
+        _invoke_generation(client, requirement, request)
 
 
 class _DriftResponseEndpoint(_Endpoint):
@@ -569,17 +658,20 @@ class _DriftResponseEndpoint(_Endpoint):
 def test_model_response_provenance_drift_fails_closed() -> None:
     requirement = _requirement()
     provider = QualifiedModelProjectProvider(
-        ModelProviderProfile("qualified-local", ("chat", "tools")),
+        ModelProviderProfile("qualified-local", ("generation", "chat", "tools")),
         _BindingPort(_qualified_binding()),
-        lambda binding: _DriftResponseEndpoint(_endpoint_factory(binding).route, []),
+        lambda replica_set: _SingleReplicaPool(
+            replica_set,
+            lambda binding: _DriftResponseEndpoint(_endpoint_factory(binding).route, []),
+        ),
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(),
     )
-    client = provider.bind(requirement)
+    client = provider.bind_capability(requirement)
     body = {"messages": []}
     request = ProjectModelRequest(requirement.digest(), _envelope(client.binding.model, body=body), body)
-    with pytest.raises(ValueError, match="response provenance drift"):
-        client.complete(request)
+    with pytest.raises(ValueError, match="response request provenance drift"):
+        _invoke_generation(client, requirement, request)
 
 
 def _psc_subjects(system_id: str):
@@ -620,9 +712,9 @@ def test_model_binding_projects_domain_failure_into_neutral_psc03_diagnostic() -
 
     requirement = _requirement()
     provider = QualifiedModelProjectProvider(
-        ModelProviderProfile("small", ("chat",)),
+        ModelProviderProfile("small", ("generation", "chat")),
         _BindingPort(_qualified_binding()),
-        _endpoint_factory,
+        _pool_factory,
         _RequestVerifier(),  # type: ignore[arg-type]
         FixedModelRequestTokenizationProvider(),
     )

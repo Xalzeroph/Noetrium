@@ -1,26 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import HUGGINGGPT_FIDELITY
 from .task_graph import build_hugginggpt_task
@@ -55,7 +51,7 @@ def hugginggpt_initial_state(*, instruction: str) -> JsonObject:
     }
 
 
-def _planning_view(request: MethodNodeRequest) -> JsonObject:
+def _planning_view(request: MethodCall) -> JsonObject:
     return {
         "instruction": _text(request.state.get("instruction"), "instruction"),
         "stage": "task_planning",
@@ -69,7 +65,7 @@ def _planning_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_plan(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_plan(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("HuggingGPT planner output must be an object")
@@ -100,33 +96,33 @@ def _record_plan(request: MethodNodeRequest) -> MethodNodeResult:
     if not normalized:
         raise ValueError("HuggingGPT planner must produce at least one subtask")
     normalized.sort(key=lambda row: int(row["task_id"]))
-    return MethodNodeResult(
+    return dict(
         value={"task_count": len(normalized)},
         state_update={"tasks": tuple(normalized)},
         next_node="select_next",
     )
 
 
-def _completed_ids(request: MethodNodeRequest) -> tuple[int, ...]:
+def _completed_ids(request: MethodCall) -> tuple[int, ...]:
     rows = _sequence(request.state.get("completed_task_ids", ()), "completed task ids")
     if any(type(row) is not int or row < 0 for row in rows):
         raise TypeError("HuggingGPT completed task ids must be non-negative integers")
     return tuple(int(row) for row in rows)
 
 
-def _task_rows(request: MethodNodeRequest) -> tuple[Mapping[str, object], ...]:
+def _task_rows(request: MethodCall) -> tuple[Mapping[str, object], ...]:
     rows = _sequence(request.state.get("tasks", ()), "tasks")
     if any(not isinstance(row, Mapping) for row in rows):
         raise TypeError("HuggingGPT tasks must be objects")
     return tuple(row for row in rows if isinstance(row, Mapping))
 
 
-def _select_next(request: MethodNodeRequest) -> MethodNodeResult:
+def _select_next(request: MethodCall) -> MethodNodeResult:
     tasks = _task_rows(request)
     completed = set(_completed_ids(request))
     pending = [row for row in tasks if int(row["task_id"]) not in completed]
     if not pending:
-        return MethodNodeResult(value={"done": True}, next_node="aggregate")
+        return dict(value={"done": True}, next_node="aggregate")
     ready = [
         row
         for row in pending
@@ -135,7 +131,7 @@ def _select_next(request: MethodNodeRequest) -> MethodNodeResult:
     if not ready:
         raise RuntimeError("HuggingGPT task graph has unresolved dependency cycle")
     selected = min(ready, key=lambda row: int(row["task_id"]))
-    return MethodNodeResult(
+    return dict(
         value={"selected_task_id": int(selected["task_id"])},
         state_update={
             "selected_task_id": int(selected["task_id"]),
@@ -145,7 +141,7 @@ def _select_next(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _selected_task(request: MethodNodeRequest) -> Mapping[str, object]:
+def _selected_task(request: MethodCall) -> Mapping[str, object]:
     task_id = request.state.get("selected_task_id")
     if type(task_id) is not int:
         raise ValueError("HuggingGPT selected_task_id is missing")
@@ -155,7 +151,7 @@ def _selected_task(request: MethodNodeRequest) -> Mapping[str, object]:
     raise ValueError("HuggingGPT selected task is not in task graph")
 
 
-def _selection_view(request: MethodNodeRequest) -> JsonObject:
+def _selection_view(request: MethodCall) -> JsonObject:
     task = _selected_task(request)
     return {
         "instruction": request.state.get("instruction"),
@@ -170,7 +166,7 @@ def _record_selection(
 ):
     allowed = set(allowed_capabilities)
 
-    def record(request: MethodNodeRequest) -> MethodNodeResult:
+    def record(request: MethodCall) -> MethodNodeResult:
         value = request.previous_value
         if isinstance(value, str):
             capability_id = value
@@ -181,7 +177,7 @@ def _record_selection(
         capability_id = _text(capability_id, "selected capability")
         if capability_id not in allowed:
             raise ValueError("HuggingGPT selected model escaped expert capability closure")
-        return MethodNodeResult(
+        return dict(
             value={"capability_id": capability_id},
             state_update={"selected_capability_id": capability_id},
             next_node="prepare_execution",
@@ -190,7 +186,7 @@ def _record_selection(
     return record
 
 
-def _results_map(request: MethodNodeRequest) -> dict[int, JsonValue]:
+def _results_map(request: MethodCall) -> dict[int, JsonValue]:
     rows = _sequence(request.state.get("results", ()), "results")
     result: dict[int, JsonValue] = {}
     for row in rows:
@@ -203,11 +199,11 @@ def _results_map(request: MethodNodeRequest) -> dict[int, JsonValue]:
     return result
 
 
-def _prepare_execution(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_execution(request: MethodCall) -> MethodNodeResult:
     task = _selected_task(request)
     results = _results_map(request)
     dependencies = tuple(int(dep) for dep in task.get("dependencies", ()))
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": int(task["task_id"]),
             "task": task["task"],
@@ -220,14 +216,14 @@ def _prepare_execution(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _expert_target(request: MethodNodeRequest) -> str:
+def _expert_target(request: MethodCall) -> str:
     return _text(
         request.state.get("selected_capability_id"),
         "selected capability",
     )
 
 
-def _record_execution(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_execution(request: MethodCall) -> MethodNodeResult:
     task = _selected_task(request)
     task_id = int(task["task_id"])
     rows = list(_sequence(request.state.get("results", ()), "results"))
@@ -236,7 +232,7 @@ def _record_execution(request: MethodNodeRequest) -> MethodNodeResult:
     count = request.state.get("expert_call_count", 0)
     if type(count) is not int or count < 0:
         raise ValueError("HuggingGPT expert_call_count must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value={"task_id": task_id, "completed": True},
         state_update={
             "results": tuple(rows),
@@ -252,7 +248,7 @@ def _record_execution(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _aggregate_view(request: MethodNodeRequest) -> JsonObject:
+def _aggregate_view(request: MethodCall) -> JsonObject:
     return {
         "instruction": request.state.get("instruction"),
         "stage": "response_generation",
@@ -261,7 +257,7 @@ def _aggregate_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_response(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_response(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         response = value
@@ -270,15 +266,15 @@ def _record_response(request: MethodNodeRequest) -> MethodNodeResult:
     else:
         raise TypeError("HuggingGPT response generation must return text or object")
     response = _text(response, "response")
-    return MethodNodeResult(
+    return dict(
         value={"response": response},
         state_update={"response": response},
         next_node="return",
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "response": request.state.get("response", ""),
             "subtask_count": len(_task_rows(request)),
@@ -289,9 +285,9 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_hugginggpt_method_program(
+def build_hugginggpt_method_program(method,
     expert_capability_ids: Sequence[str],
-) -> MethodProgram:
+) -> None:
     if isinstance(expert_capability_ids, (str, bytes, bytearray)) or not isinstance(
         expert_capability_ids,
         Sequence,
@@ -312,22 +308,14 @@ def build_hugginggpt_method_program(
         "dependency_marker": HUGGINGGPT_FIDELITY.dependency_marker,
         "ready_task_policy": "dependency-ready/task-id-order",
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="hugginggpt",
-            implementation_version=HUGGINGGPT_FIDELITY.source_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="hugginggpt.neurips2023.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="plan")
+
+    builder = method
     builder.agent(
         "plan",
         "hugginggpt.task-planning",
         _PLANNER,
         ("record_plan",),
-        view_handler=_planning_view,
+        view=_planning_view,
     )
     builder.compute(
         "record_plan",
@@ -347,7 +335,7 @@ def build_hugginggpt_method_program(
         "hugginggpt.model-selection",
         _SELECTOR,
         ("record_selection",),
-        view_handler=_selection_view,
+        view=_selection_view,
         max_visits=4096,
     )
     builder.compute(
@@ -370,9 +358,9 @@ def build_hugginggpt_method_program(
         expert_capability_ids,
         _expert_target,
         ("record_execution",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=4096,
-        evidence_obligations=("hugginggpt.expert-execution",),
+        evidence=("hugginggpt.expert-execution",),
     )
     builder.compute(
         "record_execution",
@@ -386,7 +374,7 @@ def build_hugginggpt_method_program(
         "hugginggpt.response-generation",
         _AGGREGATOR,
         ("record_response",),
-        view_handler=_aggregate_view,
+        view=_aggregate_view,
     )
     builder.compute(
         "record_response",
@@ -395,24 +383,41 @@ def build_hugginggpt_method_program(
         ("return",),
     )
     builder.return_node("return", "hugginggpt.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=expert_capability_ids,
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*expert_capability_ids)
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
             "hugginggpt.task-plan",
             "hugginggpt.model-selection",
             "hugginggpt.expert-execution",
             "hugginggpt.response",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "subtask_count",
             "expert_call_count",
             "model_call_count",
         ),
-        artifact_kinds=("hugginggpt_execution_trace",),
+        artifacts=("hugginggpt_execution_trace",),
     )
+    return builder
 
 
-__all__ = ["build_hugginggpt_method_program", "hugginggpt_initial_state"]
+METHOD_CONFIGURER = build_hugginggpt_method_program
+METHOD_ENTRYPOINT = "plan"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = [
+    'build_hugginggpt_method_program',
+    'hugginggpt_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
+]
+
+METHOD_SPEC = {"method_id": 'hugginggpt', "version": "paper-protocol", "semantic_contract": 'hugginggpt' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

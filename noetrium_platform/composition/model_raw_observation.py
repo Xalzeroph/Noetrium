@@ -4,8 +4,9 @@ import time
 from collections.abc import Mapping
 from threading import RLock
 
-from noetrium_platform.capabilities.model.serving.api import (
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
     JsonHttpResponse,
+    SseHttpResponse,
     ModelEndpointObserverPort,
     ModelEndpointRequest,
 )
@@ -118,7 +119,11 @@ class RawLakeModelEndpointObserver(ModelEndpointObserverPort):
             status=status,
             started_monotonic_ns=started_monotonic_ns,
             completed_monotonic_ns=completed_monotonic_ns,
-            dimensions={"usage": usage} if usage is not None else None,
+            dimensions={
+                "usage": usage,
+                "http_version": response.http_version,
+                "transport_digest": response.transport_digest,
+            },
         )
         self._emit(
             request,
@@ -145,21 +150,23 @@ class RawLakeModelEndpointObserver(ModelEndpointObserverPort):
             status=status,
             started_monotonic_ns=started_monotonic_ns,
             completed_monotonic_ns=completed_monotonic_ns,
-            dimensions={"usage": usage} if usage is not None else None,
+            dimensions={
+                "usage": usage,
+                "http_version": response.http_version,
+                "transport_digest": response.transport_digest,
+            },
         )
-    def on_failure(
+    def on_stream_exchange(
         self,
         request: ModelEndpointRequest,
-        error_type: str,
-        error_message: str,
+        response: SseHttpResponse,
         started_monotonic_ns: int,
         completed_monotonic_ns: int,
-        request_body: bytes,
-        response_body: bytes,
     ) -> None:
-        request_id, attempt = self._identity(request, advance=False)
+        request_id, attempt = self._identity(request)
+        request_body = response.request_body or canonical_bytes(request.body)
+        status = f"http_{response.status_code}"
         model = request.request.model.logical_name
-        status = "failed"
         common = {
             "role": request.request.role,
             "model": model,
@@ -167,41 +174,114 @@ class RawLakeModelEndpointObserver(ModelEndpointObserverPort):
             "status": status,
             "request_id": request_id,
             "deployment_id": request.deployment_id,
-            "error_type": error_type,
-            "error_message": error_message,
+            "response_status_code": response.status_code,
+            "streaming": True,
+            "event_count": response.event_count,
         }
+        dimensions = {
+            "streaming": True,
+            "event_count": response.event_count,
+            "content_type": response.header("content-type"),
+            "http_version": response.http_version,
+            "transport_digest": response.transport_digest,
+        }
+        self._emit(
+            request,
+            family="llm.request.raw",
+            event_id=f"{request_id}:attempt:{attempt}:stream-request",
+            attempt=attempt,
+            raw_payload=request_body,
+            payload=common,
+            status=status,
+            started_monotonic_ns=started_monotonic_ns,
+            completed_monotonic_ns=completed_monotonic_ns,
+            dimensions=dimensions,
+        )
+        self._emit(
+            request,
+            family="llm.attempt.raw",
+            event_id=f"{request_id}:attempt:{attempt}:stream-response",
+            attempt=attempt,
+            raw_payload=response.raw_body,
+            payload={
+                **common,
+                "endpoint": request.deployment_id,
+                "attempt": attempt,
+            },
+            status=status,
+            started_monotonic_ns=started_monotonic_ns,
+            completed_monotonic_ns=completed_monotonic_ns,
+            dimensions=dimensions,
+        )
+
+    def on_failure(
+        self,
+        request: ModelEndpointRequest,
+        error: ModelEndpointError,
+        started_monotonic_ns: int,
+        completed_monotonic_ns: int,
+    ) -> None:
+        # HTTP response failures already passed through on_exchange(), which
+        # allocated the attempt. Transport/admission failures have no exchange
+        # and therefore allocate their attempt here so retries never reuse an
+        # event identity.
+        request_id, attempt = self._identity(
+            request,
+            advance=(error.status_code is None),
+        )
+        model = request.request.model.logical_name
+        status = "failed"
+        failure = {
+            "type": type(error).__name__,
+            "message": str(error)[:2048],
+            "status_code": error.status_code,
+            "failure_kind": error.failure_kind,
+            "retryable": error.retryable,
+            "retry_after_seconds": error.retry_after_seconds,
+            "provider_code": error.provider_code,
+            "affects_replica_health": error.affects_replica_health,
+            "http_version": error.http_version,
+            "transport_digest": error.transport_digest,
+            "response_headers": error.response_headers,
+        }
+        common = {
+            "role": request.request.role,
+            "model": model,
+            "request_digest": request.digest(),
+            "status": status,
+            "request_id": request_id,
+            "deployment_id": request.deployment_id,
+            "error_type": type(error).__name__,
+            "error_message": str(error)[:2048],
+        }
+        dimensions = {"failure": failure}
         self._emit(
             request,
             family="llm.request.raw",
             event_id=f"{request_id}:failure:request:{attempt}",
             attempt=attempt,
-            raw_payload=request_body or canonical_bytes(request.body),
+            raw_payload=error.request_body or canonical_bytes(request.body),
             payload=common,
             status=status,
             started_monotonic_ns=started_monotonic_ns,
             completed_monotonic_ns=completed_monotonic_ns,
-            dimensions={"failure": {"type": error_type, "message": error_message}},
+            dimensions=dimensions,
         )
         self._emit(
             request,
             family="llm.attempt.raw",
             event_id=f"{request_id}:failure:attempt:{attempt}",
             attempt=attempt,
-            raw_payload=response_body,
+            raw_payload=error.response_body,
             payload={
-                "role": request.request.role,
-                "model": model,
+                **common,
                 "endpoint": request.deployment_id,
                 "attempt": attempt,
-                "status": status,
-                "request_id": request_id,
-                "error_type": error_type,
-                "error_message": error_message,
             },
             status=status,
             started_monotonic_ns=started_monotonic_ns,
             completed_monotonic_ns=completed_monotonic_ns,
-            dimensions={"failure": {"type": error_type, "message": error_message}},
+            dimensions=dimensions,
         )
 
 

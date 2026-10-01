@@ -5,7 +5,11 @@ from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkSourceResolution
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
@@ -16,6 +20,7 @@ from .authority import (
     ALFWORLD_RELEASE_AUTHORITY_DIGEST,
     ALFWORLD_RELEASE_COMMIT,
     ALFWORLD_RELEASE_PROVIDER,
+    ALFWORLD_RELEASE_PROVIDER_SOURCE_SHA256,
     ALFWORLD_RELEASE_VERSION,
 )
 from .cut import (
@@ -35,6 +40,10 @@ _RAW_FAMILY_TO_CANONICAL = {
 }
 _REQUIRED_TASK_FILES = ("game.tw-pddl", "traj_data.json", "initial_state.pddl")
 _REQUIRED_LOGIC_FILES = ("alfred.pddl", "alfred.twl2")
+
+ALFWORLD_REPOSITORY_DATA_ROOT_INPUT = "benchmark.alfworld.data_root"
+ALFWORLD_REPOSITORY_PROVIDER_ORDER_INPUT = "benchmark.alfworld.provider_order_manifest"
+_ALFWORLD_PROVIDER_ORDER_SCHEMA = "alfworld.official-provider-order.v1"
 
 
 def _sha256(path: Path) -> str:
@@ -100,6 +109,53 @@ def register_alfworld_materialization(
         proof_digest,
     )
 
+
+
+def _repository_provider_order(path: str | Path) -> tuple[str, ...]:
+    document = json.loads(Path(path).resolve(strict=True).read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise TypeError("ALFWorld provider-order authority must be a JSON object")
+    expected = {
+        "schema": _ALFWORLD_PROVIDER_ORDER_SCHEMA,
+        "source_commit": ALFWORLD_RELEASE_COMMIT,
+        "version": ALFWORLD_RELEASE_VERSION,
+        "provider_source_sha256": ALFWORLD_RELEASE_PROVIDER_SOURCE_SHA256,
+    }
+    for key, value in expected.items():
+        if document.get(key) != value:
+            raise ValueError(f"ALFWorld provider-order authority {key} drifted")
+    rows = document.get("game_files")
+    if not isinstance(rows, list) or any(type(row) is not str or not row.strip() for row in rows):
+        raise TypeError("ALFWorld provider-order authority game_files must be text list")
+    if len(rows) != ALFWORLD_PAPER_EVAL_EXPECTED_TASK_COUNT:
+        raise ValueError("ALFWorld provider-order authority task count drifted")
+    if len(rows) != len(set(rows)):
+        raise ValueError("ALFWorld provider-order authority contains duplicate game files")
+    return tuple(rows)
+
+
+def materialize_repository_benchmark_authority(
+    authority_inputs: tuple[tuple[str, str], ...],
+    *,
+    content: ResearchExecutionContentAuthorities,
+) -> tuple[BenchmarkResolutionRegistration, ...]:
+    """Materialize the audited ALFWorld cut from official-provider order authority."""
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError("ALFWorld repository materialization requires content authority")
+    facts = dict(authority_inputs)
+    data_root = facts.get(ALFWORLD_REPOSITORY_DATA_ROOT_INPUT)
+    provider_order = facts.get(ALFWORLD_REPOSITORY_PROVIDER_ORDER_INPUT)
+    if data_root is None and provider_order is None:
+        return ()
+    if data_root is None or provider_order is None:
+        raise ValueError("ALFWorld repository authority requires data root and provider-order manifest")
+    materialized = materialize_alfworld_paper_eval(
+        SimpleNamespace(game_files=_repository_provider_order(provider_order)),
+        data_root=data_root,
+        installed_source_commit=ALFWORLD_RELEASE_COMMIT,
+        installed_version=ALFWORLD_RELEASE_VERSION,
+    )
+    return (register_alfworld_materialization(materialized),)
 
 def materialize_alfworld_paper_eval(
     provider: object,
@@ -205,6 +261,9 @@ def materialize_alfworld_paper_eval(
 
 __all__ = [
     "AlfworldMaterialization",
+    "ALFWORLD_REPOSITORY_DATA_ROOT_INPUT",
+    "ALFWORLD_REPOSITORY_PROVIDER_ORDER_INPUT",
     "materialize_alfworld_paper_eval",
+    "materialize_repository_benchmark_authority",
     "register_alfworld_materialization",
 ]

@@ -14,12 +14,39 @@ class TextWorldActionKind(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class TextWorldContextPolicy:
+    """Bounds for model-visible textual world state and recent trajectory."""
+
+    max_observation_chars: int = 16_000
+    max_history_turns: int = 8
+    include_last_action_feedback: bool = True
+
+    def __post_init__(self) -> None:
+        if type(self.max_observation_chars) is not int or self.max_observation_chars < 1_000:
+            raise ValueError("text-world max_observation_chars is invalid")
+        if type(self.max_history_turns) is not int or self.max_history_turns < 0:
+            raise ValueError("text-world max_history_turns is invalid")
+        if type(self.include_last_action_feedback) is not bool:
+            raise TypeError(
+                "text-world include_last_action_feedback must be boolean"
+            )
+
+    def record(self) -> dict[str, JsonValue]:
+        return {
+            "max_observation_chars": self.max_observation_chars,
+            "max_history_turns": self.max_history_turns,
+            "include_last_action_feedback": self.include_last_action_feedback,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class TextWorldEnvironmentSpec:
     environment_id: str
     revision: str
     turn_based: bool = True
     action_vocabulary: tuple[TextWorldActionKind, ...] = ()
     metadata: dict[str, JsonValue] = field(default_factory=dict)
+    context_policy: TextWorldContextPolicy = field(default_factory=TextWorldContextPolicy)
 
     def __post_init__(self) -> None:
         if not self.environment_id.strip() or not self.revision.strip():
@@ -39,7 +66,8 @@ class TextWorldEnvironmentSpec:
             "turn_based": self.turn_based,
             "action_vocabulary": [item.value for item in self.action_vocabulary],
             "metadata": thaw_json(self.metadata),
+            "context_policy": self.context_policy.record(),
         })
 
 
-__all__ = ["TextWorldActionKind", "TextWorldEnvironmentSpec"]
+__all__ = ["TextWorldActionKind", "TextWorldContextPolicy", "TextWorldEnvironmentSpec"]

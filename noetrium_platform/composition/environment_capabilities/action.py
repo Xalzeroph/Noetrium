@@ -36,9 +36,30 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
     PreparedEffectHandle,
 )
 
+from .observation import (
+    observation_evidence,
+    raw_observation_payload,
+    semantic_observation_payload,
+)
+
 _REQUEST_SCHEMA = "noetrium.environment.action-capability.request.v1"
 _RESULT_SCHEMA = "noetrium.environment.action-capability.result.v1"
 _HANDLE_SCHEMA = "noetrium.environment.action-capability.handle.v1"
+
+
+def environment_capability_descriptor_metadata(descriptors) -> dict[str, JsonValue]:
+    return {
+        "environment_capabilities": tuple(
+            {
+                "capability_id": descriptor.capability_id,
+                "version": descriptor.version,
+                "action_types": descriptor.action_types,
+                "query_types": descriptor.query_types,
+                "metadata": descriptor.metadata,
+            }
+            for descriptor in descriptors
+        )
+    }
 
 
 def environment_action_capability_payload(action_type: str, payload: JsonInput) -> dict[str, JsonInput]:
@@ -56,19 +77,6 @@ def _jsonable(value: JsonValue) -> JsonInput:
     if value is None or type(value) in {str, bool, int, float}:
         return value
     raise TypeError(f"environment capability handle cannot encode {type(value).__qualname__}")
-
-
-def _observation_payload(observation: Observation | None) -> JsonValue:
-    if observation is None:
-        return None
-    if not isinstance(observation, Observation):
-        raise TypeError("environment capability observation must be Observation")
-    return {
-        "observation_id": observation.observation_id,
-        "generation": observation.generation,
-        "payload": observation.payload,
-        "artifact_refs": observation.artifact_refs,
-    }
 
 
 def _effect_lineage(effect: EffectReceipt | None) -> dict[str, JsonValue]:
@@ -169,6 +177,8 @@ class EnvironmentSessionCapabilityAdapter:
         if not isinstance(effect_class, EffectClass):
             raise TypeError("environment capability effect_class must be EffectClass")
         self._session = session
+        describe_environment = getattr(session, "capability_descriptors", None)
+        descriptors = () if not callable(describe_environment) else tuple(describe_environment())
         self._descriptor = CapabilityDescriptor(
             capability_id=capability_id,
             interface_version="1",
@@ -176,6 +186,7 @@ class EnvironmentSessionCapabilityAdapter:
             result_schema=_RESULT_SCHEMA,
             effect_class=effect_class,
             deterministic=False,
+            metadata=environment_capability_descriptor_metadata(descriptors),
         )
 
     @property
@@ -330,9 +341,11 @@ class EnvironmentSessionCapabilityAdapter:
 
     def _capability_result(self, request: CapabilityRequest, result: ActionResult) -> CapabilityResult:
         observation = result.observation
+        raw_observation = raw_observation_payload(observation)
+        semantic_observation = semantic_observation_payload(observation)
         return CapabilityResult(
             capability_id=self._descriptor.capability_id,
-            payload={"accepted": result.accepted, "observation": _observation_payload(observation)},
+            payload={"accepted": result.accepted, "observation": semantic_observation},
             generation=None if observation is None else observation.generation,
             artifacts=() if observation is None else observation.artifact_refs,
             diagnostics={
@@ -343,6 +356,14 @@ class EnvironmentSessionCapabilityAdapter:
             },
             effect=self._outer_effect(request, result.effect),
             request_digest=capability_request_digest(request),
+            evidence=(
+                None
+                if raw_observation is None
+                else {
+                    "schema": "noetrium.environment.action-evidence.v1",
+                    "observation": raw_observation,
+                }
+            ),
         )
 
     def _require_outer_handle(self, request: CapabilityRequest, handle: PreparedEffectHandle) -> None:

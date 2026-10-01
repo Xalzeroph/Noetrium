@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json
+
 from noetrium_platform.research.experimentation.binding import (
     ResearchBindingRequirements,
     ResearchModelRoleRequirement,
@@ -19,17 +21,25 @@ from noetrium_platform.research.experimentation.lifecycle.experiment.api import 
 )
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage, ReplayLevel
 
-from .benchmark import BenchmarkTaskSet, TrialBudget
+from .benchmark import (
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
+    TaskSetSplit,
+    TrialBudget,
+)
 from .design import (
-    BenchmarkAssignmentMode,
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+    FactorLevelSpec,
     ResearchRevision,
     ResearchStudyDefinition,
     StudyExecutionPolicy,
     StudyFactorSpec,
 )
-from .contracts import StudyConcurrencyPolicy
-from .measurement import MeasurementDefinition, MeasurementProtocol
+from .contracts import AssignmentWorkload
+from .measurement import MeasurementDefinition, MeasurementProtocol, MeasurementValueKind
 
 
 def _text(value: object, field: str) -> str:
@@ -148,16 +158,16 @@ class Study:
         trial: ExperimentTrialProtocolIdentity,
         repetitions: int,
         seeds: tuple[str, ...],
-        limits: TrialBudget,
+        limits: TrialBudget | None = None,
         benchmark_split_id: str | None = None,
-        benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
+        assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
         aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
         experiment_id: str | None = None,
         workload_id: str = "method-program",
         trial_provider_requirement_id: str = "trial.method-program",
         replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL,
-        repetition_timeout_seconds: float = 3600.0,
-        concurrency_policy: StudyConcurrencyPolicy | None = None,
+        environment_session_scope: str = "assignment",
+        environment_seed_scope: str = "assignment",
         factors: tuple[StudyFactorSpec, ...] = (),
         participants: tuple[StudyParticipant, ...] = (),
         revision: ResearchRevision | None = None,
@@ -205,8 +215,8 @@ class Study:
                 "tuple of MeasurementDefinition"
             )
 
-        if type(limits) is not TrialBudget:
-            raise TypeError("Study limits must be TrialBudget")
+        if limits is not None and type(limits) is not TrialBudget:
+            raise TypeError("Study limits must be TrialBudget or None")
         if type(seeds) is not tuple or not seeds:
             raise TypeError("Study seeds must be a non-empty tuple")
         if any(type(seed) is not str or not seed.strip() for seed in seeds):
@@ -215,20 +225,19 @@ class Study:
             raise ValueError("Study seeds must be unique")
         if type(repetitions) is not int or repetitions <= 0:
             raise ValueError("Study repetitions must be positive")
+        if len(seeds) != repetitions:
+            raise ValueError(
+                "Study seeds must map one-to-one to repetitions; "
+                f"seeds={len(seeds)} repetitions={repetitions}"
+            )
         if not isinstance(replay_level, ReplayLevel):
             raise TypeError("Study replay_level must be ReplayLevel")
 
-        if concurrency_policy is not None and type(concurrency_policy) is not StudyConcurrencyPolicy:
-            raise TypeError("Study concurrency_policy must be StudyConcurrencyPolicy or None")
         policy = StudyExecutionPolicy(
             trial_budget=limits,
             replay_level=replay_level,
-            concurrency_policy=(
-                concurrency_policy
-                or StudyConcurrencyPolicy.serial_shared_v1(
-                    repetition_timeout_seconds=repetition_timeout_seconds
-                )
-            ),
+            environment_session_scope=environment_session_scope,
+            environment_seed_scope=environment_seed_scope,
         )
         requirements = ResearchBindingRequirements(
             trial_provider_requirement_id=trial_provider_requirement_id,
@@ -240,6 +249,26 @@ class Study:
             ),
             model_roles=tuple(sorted(model_rows, key=lambda row: row.role)),
         )
+        selected_tasks = benchmark.selected_tasks(benchmark_split_id)
+        if assignment_workloads is None:
+            resolved_assignment_workloads = tuple(
+                AssignmentWorkload((task.task_id,))
+                for task in selected_tasks
+            )
+        else:
+            if type(assignment_workloads) is not tuple or not assignment_workloads:
+                raise TypeError(
+                    "Study assignment_workloads must be a non-empty tuple or None"
+                )
+            if any(
+                type(row) is not AssignmentWorkload
+                for row in assignment_workloads
+            ):
+                raise TypeError(
+                    "Study assignment_workloads must contain AssignmentWorkload"
+                )
+            resolved_assignment_workloads = assignment_workloads
+
         self._definition = ResearchStudyDefinition(
             project_id=project_id,
             experiment_id=experiment_id or study_id,
@@ -251,11 +280,11 @@ class Study:
             measurement_protocol=measurement_protocol,
             benchmark=benchmark,
             benchmark_split_id=benchmark_split_id,
+            assignment_workloads=resolved_assignment_workloads,
             binding_requirements=requirements,
             trial_protocol_identity=trial,
             revision=revision,
             execution_policy=policy,
-            benchmark_assignment_mode=benchmark_assignment_mode,
             aggregation_requirement_id=aggregation_requirement_id,
         )
 
@@ -267,13 +296,310 @@ class Study:
         return self._definition
 
 
+def _study_spec_mapping(value: object, field: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{field} must be a mapping")
+    return value
+
+
+def _study_spec_participant(value: object) -> StudyParticipant:
+    row = _study_spec_mapping(value, "study participant spec")
+    return StudyParticipant(
+        role=str(row["role"]),
+        kind=str(row["kind"]),
+        implementation=str(row["implementation"]),
+        treatment=str(row["treatment"]),
+        capabilities=tuple(row.get("capabilities", ())),
+        configurations=tuple(row.get("configurations", ())),
+        depends_on=tuple(row.get("depends_on", ())),
+    )
+
+
+def _study_spec_model(value: object) -> str | StudyModel:
+    if isinstance(value, str):
+        return value
+    row = _study_spec_mapping(value, "study model spec")
+    usage = row.get("usage", ModelRoleUsage.EXECUTION.value)
+    return StudyModel(
+        requirement=str(row["requirement"]),
+        prompt=None if row.get("prompt") is None else str(row["prompt"]),
+        usage=ModelRoleUsage(str(usage)),
+        required=bool(row.get("required", True)),
+        max_bindings=row.get("max_bindings", 1),
+    )
+
+
+def _study_spec_measurement(value: object) -> MeasurementDefinition:
+    row = _study_spec_mapping(value, "study measurement spec")
+    kind = str(row.get("value_kind", "scalar"))
+    common = dict(
+        measurement_id=str(row["measurement_id"]),
+        schema_id=str(row["schema_id"]),
+        unit=row.get("unit"),
+        description=str(row.get("description", "")),
+        semantic_kind=str(row.get("semantic_kind", "measurement")),
+        scale=row.get("scale"),
+        domain=row.get("domain"),
+        source_path=row.get("source_path"),
+        reducer=row.get("reducer"),
+    )
+    if kind == "scalar":
+        return MeasurementDefinition.scalar(**common)
+    return MeasurementDefinition(
+        value_kind=MeasurementValueKind(kind),
+        **common,
+    )
+
+
+def _study_spec_factor(value: object) -> StudyFactorSpec:
+    row = _study_spec_mapping(value, "study factor spec")
+    levels = tuple(
+        FactorLevelSpec(
+            str(level["level_id"]),
+            level.get("value"),
+            bool(level.get("control", False)),
+        )
+        for level in (
+            _study_spec_mapping(item, "study factor level spec")
+            for item in row["levels"]
+        )
+    )
+    return StudyFactorSpec(str(row["factor_id"]), levels)
+
+
+def _study_spec_task_graph(value: object) -> TaskGraph:
+    if value is None:
+        return TaskGraph()
+    row = _study_spec_mapping(value, "task graph spec")
+    edges = []
+    for raw in row.get("edges", ()):
+        edge = _study_spec_mapping(raw, "task graph edge spec")
+        edges.append(
+            TaskGraphEdge(
+                str(edge["source_task_id"]),
+                str(edge["target_task_id"]),
+                TaskGraphRelation(str(edge.get("relation", "prerequisite"))),
+            )
+        )
+    return TaskGraph(tuple(sorted(edges)))
+
+
+def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
+    if isinstance(value, BenchmarkTaskSet):
+        return value
+    row = _study_spec_mapping(value, "research study benchmark")
+    revision_id = str(row["revision_id"])
+    schema_id = str(row["task_schema_id"])
+    tasks = []
+    for raw in row["tasks"]:
+        task = _study_spec_mapping(raw, "benchmark task spec")
+        content = task.get("content")
+        content_digest = task.get("content_digest")
+        if content_digest is None:
+            if not isinstance(content, Mapping):
+                raise ValueError(
+                    "benchmark task requires inline content when content_digest is omitted"
+                )
+            content_digest = canonical_digest(freeze_json(content))
+        tasks.append(
+            TaskDefinition(
+                task_id=str(task["task_id"]),
+                revision_id=str(task.get("revision_id", revision_id)),
+                family=str(task["family"]),
+                schema_id=str(task.get("schema_id", schema_id)),
+                content_digest=str(content_digest),
+                content=content,
+                lineage_refs=tuple(task.get("lineage_refs", ())),
+            )
+        )
+    splits = tuple(
+        sorted(
+            (
+                TaskSetSplit(
+                    str(_study_spec_mapping(raw, "benchmark split spec")["split_id"]),
+                    tuple(_study_spec_mapping(raw, "benchmark split spec")["task_ids"]),
+                )
+                for raw in row.get("splits", ())
+            ),
+            key=lambda item: item.split_id,
+        )
+    )
+    ordered_tasks = tuple(sorted(tasks, key=lambda item: item.task_id))
+    source_digest = row.get("source_digest")
+    if source_digest is None:
+        source_digest = canonical_digest(
+            {
+                "benchmark_id": str(row["benchmark_id"]),
+                "revision_id": revision_id,
+                "task_schema_id": schema_id,
+                "tasks": tuple(
+                    (item.task_id, item.content_digest) for item in ordered_tasks
+                ),
+            }
+        )
+    return BenchmarkTaskSet(
+        benchmark_id=str(row["benchmark_id"]),
+        revision_id=revision_id,
+        source_digest=str(source_digest),
+        task_schema_id=schema_id,
+        tasks=ordered_tasks,
+        task_graph=_study_spec_task_graph(row.get("task_graph")),
+        splits=splits,
+    )
+
+
+def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
+    """Lower one top-level mapping Study spec into the canonical typed definition."""
+
+    row = _study_spec_mapping(value, "research study spec")
+    benchmark = _study_spec_benchmark(row.get("benchmark"))
+
+    method = _study_spec_participant(row["method"])
+    participants = tuple(
+        _study_spec_participant(item)
+        for item in row.get("participants", ())
+    )
+    models_raw = _study_spec_mapping(row["models"], "research study models")
+    models = {
+        str(role): _study_spec_model(spec)
+        for role, spec in models_raw.items()
+    }
+    measurements = tuple(
+        _study_spec_measurement(item)
+        for item in row["measurements"]
+    )
+    trial_row = _study_spec_mapping(row["trial"], "research study trial")
+    trial_configuration_digest = trial_row.get(
+        "configuration_digest",
+        trial_row.get("protocol_digest"),
+    )
+    if trial_configuration_digest is None:
+        trial_configuration_digest = canonical_digest(
+            {
+                "protocol_id": str(trial_row["protocol_id"]),
+                "configuration": {
+                    key: value
+                    for key, value in trial_row.items()
+                    if key not in {"configuration_digest", "protocol_digest"}
+                },
+            }
+        )
+    trial = ExperimentTrialProtocolIdentity(
+        str(trial_row["protocol_id"]),
+        str(trial_configuration_digest),
+    )
+    limits_raw = row.get("limits")
+    if limits_raw is None:
+        limits = None
+    else:
+        limits_row = _study_spec_mapping(limits_raw, "research study limits")
+        limits = TrialBudget(
+            budget_id=str(limits_row["budget_id"]),
+            max_steps=limits_row.get("max_steps"),
+            max_seconds=limits_row.get("max_seconds"),
+            max_tokens=limits_row.get("max_tokens"),
+            resource_budget_digest=limits_row.get("resource_budget_digest"),
+            max_turns=limits_row.get("max_turns"),
+            max_messages=limits_row.get("max_messages"),
+            max_model_calls=limits_row.get("max_model_calls"),
+            max_working_seconds=limits_row.get("max_working_seconds"),
+            max_cost_usd=limits_row.get("max_cost_usd"),
+        )
+
+    workloads_raw = row.get("assignment_workloads")
+    if workloads_raw is None:
+        workloads = None
+    else:
+        workloads = tuple(
+            AssignmentWorkload(
+                tuple(
+                    _study_spec_mapping(item, "assignment workload spec")["task_ids"]
+                ),
+                _study_spec_task_graph(
+                    _study_spec_mapping(item, "assignment workload spec").get(
+                        "task_graph"
+                    )
+                ),
+            )
+            for item in workloads_raw
+        )
+
+    factors = tuple(
+        _study_spec_factor(item)
+        for item in row.get("factors", ())
+    )
+    revision_raw = row.get("revision")
+    revision = None
+    if revision_raw is not None:
+        revision_row = _study_spec_mapping(revision_raw, "research revision spec")
+        revision = ResearchRevision(
+            str(revision_row["revision_id"]),
+            str(revision_row["change_digest"]),
+            revision_row.get("parent_revision_digest"),
+        )
+
+    if "concurrency_policy" in row:
+        raise ValueError(
+            "study concurrency_policy is platform-owned; downstream studies may "
+            "declare scientific dependencies and isolation requirements, not physical parallelism"
+        )
+
+    if "repetition_timeout_seconds" in row:
+        raise ValueError(
+            "study repetition_timeout_seconds is platform-owned; use TrialBudget.max_seconds "
+            "for a scientific time budget"
+        )
+
+    return Study(
+        project_id=str(row["project_id"]),
+        study_id=str(row["study_id"]),
+        benchmark=benchmark,
+        benchmark_split_id=row.get("benchmark_split_id"),
+        method=method,
+        models=models,
+        measurements=measurements,
+        trial=trial,
+        repetitions=int(row["repetitions"]),
+        seeds=tuple(row["seeds"]),
+        limits=limits,
+        assignment_workloads=workloads,
+        aggregation_requirement_id=str(
+            row.get(
+                "aggregation_requirement_id",
+                DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+            )
+        ),
+        experiment_id=row.get("experiment_id"),
+        workload_id=str(row.get("workload_id", "method-program")),
+        trial_provider_requirement_id=str(
+            row.get(
+                "trial_provider_requirement_id",
+                "trial.method-program",
+            )
+        ),
+        replay_level=ReplayLevel(
+            str(row.get("replay_level", ReplayLevel.OBSERVATIONAL.value))
+        ),
+        environment_session_scope=str(
+            row.get("environment_session_scope", "assignment")
+        ),
+        environment_seed_scope=str(
+            row.get("environment_seed_scope", "assignment")
+        ),
+        factors=factors,
+        participants=participants,
+        revision=revision,
+    ).build()
+
+
 @dataclass(frozen=True, slots=True)
 class AgentStudySpec:
     """Common-path authoring for one method-program study.
 
     This removes participant/model/seed boilerplate without hiding scientific
-    identities. Authors still supply the benchmark, trial protocol and budget;
-    multi-participant or otherwise non-standard studies use Study directly.
+    identities. Authors supply the benchmark and trial protocol; a TrialBudget is
+    optional and exists only when the scientific protocol explicitly requires one.
+    Multi-participant or otherwise non-standard studies use Study directly.
     """
 
     method_id: str
@@ -293,14 +619,14 @@ class AgentStudySpec:
     limits: TrialBudget | None = None
     repetitions: int = 1
     seeds: tuple[str, ...] | None = None
-    benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK
+    assignment_workloads: tuple[AssignmentWorkload, ...] | None = None
     aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID
     experiment_id: str | None = None
     workload_id: str = "method-program"
     trial_provider_requirement_id: str = "trial.method-program"
     replay_level: ReplayLevel = ReplayLevel.OBSERVATIONAL
-    repetition_timeout_seconds: float = 3600.0
-    concurrency_policy: StudyConcurrencyPolicy | None = None
+    environment_session_scope: str = "assignment"
+    environment_seed_scope: str = "assignment"
     factors: tuple[StudyFactorSpec, ...] = ()
     revision: ResearchRevision | None = None
 
@@ -352,8 +678,18 @@ class AgentStudySpec:
             raise ValueError("agent study repetitions must be positive")
         if self.seeds is not None:
             object.__setattr__(self, "seeds", _tokens(self.seeds, "agent study seeds"))
-        if not isinstance(self.benchmark_assignment_mode, BenchmarkAssignmentMode):
-            raise TypeError("agent study benchmark_assignment_mode must be BenchmarkAssignmentMode")
+        if self.assignment_workloads is not None:
+            if type(self.assignment_workloads) is not tuple or not self.assignment_workloads:
+                raise TypeError(
+                    "agent study assignment_workloads must be a non-empty tuple or None"
+                )
+            if any(
+                type(row) is not AssignmentWorkload
+                for row in self.assignment_workloads
+            ):
+                raise TypeError(
+                    "agent study assignment_workloads must contain AssignmentWorkload"
+                )
         _text(self.aggregation_requirement_id, "agent study aggregation_requirement_id")
         if self.experiment_id is not None:
             _text(self.experiment_id, "agent study experiment_id")
@@ -361,10 +697,21 @@ class AgentStudySpec:
         _text(self.trial_provider_requirement_id, "agent study trial_provider_requirement_id")
         if not isinstance(self.replay_level, ReplayLevel):
             raise TypeError("agent study replay_level must be ReplayLevel")
-        if isinstance(self.repetition_timeout_seconds, bool) or not isinstance(
-            self.repetition_timeout_seconds, (int, float)
-        ) or self.repetition_timeout_seconds <= 0:
-            raise ValueError("agent study repetition_timeout_seconds must be positive")
+        if self.environment_session_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "agent study environment_session_scope must be 'assignment' or 'task'"
+            )
+        if self.environment_seed_scope not in {"assignment", "task"}:
+            raise ValueError(
+                "agent study environment_seed_scope must be 'assignment' or 'task'"
+            )
+        if (
+            self.environment_session_scope == "assignment"
+            and self.environment_seed_scope != "assignment"
+        ):
+            raise ValueError(
+                "assignment-scoped environment sessions require assignment-scoped seeds"
+            )
         if type(self.factors) is not tuple or any(
             not isinstance(row, StudyFactorSpec) for row in self.factors
         ):
@@ -398,14 +745,14 @@ class AgentStudySpec:
         benchmark_split_id: str | None = None,
         repetitions: int | None = None,
         seeds: tuple[str, ...] | None = None,
-        benchmark_assignment_mode: BenchmarkAssignmentMode | None = None,
+        assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
         aggregation_requirement_id: str | None = None,
         experiment_id: str | None = None,
         workload_id: str | None = None,
         trial_provider_requirement_id: str | None = None,
         replay_level: ReplayLevel | None = None,
-        repetition_timeout_seconds: float | None = None,
-        concurrency_policy: StudyConcurrencyPolicy | None = None,
+        environment_session_scope: str | None = None,
+        environment_seed_scope: str | None = None,
         factors: tuple[StudyFactorSpec, ...] | None = None,
         revision: ResearchRevision | None = None,
     ) -> ResearchStudyDefinition:
@@ -420,10 +767,8 @@ class AgentStudySpec:
                 "agent study trial must be declared on the spec or supplied to build"
             )
         resolved_limits = self.limits if limits is None else limits
-        if not isinstance(resolved_limits, TrialBudget):
-            raise ValueError(
-                "agent study limits must be declared on the spec or supplied to build"
-            )
+        if resolved_limits is not None and not isinstance(resolved_limits, TrialBudget):
+            raise TypeError("agent study limits must be TrialBudget or None")
         resolved_model = self.model if model is None else model
         if resolved_model is None:
             raise ValueError("agent study model must be declared before build")
@@ -449,10 +794,10 @@ class AgentStudySpec:
             if benchmark_split_id is None
             else benchmark_split_id
         )
-        resolved_assignment_mode = (
-            self.benchmark_assignment_mode
-            if benchmark_assignment_mode is None
-            else benchmark_assignment_mode
+        resolved_assignment_workloads = (
+            self.assignment_workloads
+            if assignment_workloads is None
+            else assignment_workloads
         )
         resolved_aggregation_requirement_id = (
             self.aggregation_requirement_id
@@ -469,15 +814,15 @@ class AgentStudySpec:
             else trial_provider_requirement_id
         )
         resolved_replay = self.replay_level if replay_level is None else replay_level
-        resolved_timeout = (
-            self.repetition_timeout_seconds
-            if repetition_timeout_seconds is None
-            else repetition_timeout_seconds
+        resolved_environment_session_scope = (
+            self.environment_session_scope
+            if environment_session_scope is None
+            else environment_session_scope
         )
-        resolved_concurrency = (
-            self.concurrency_policy
-            if concurrency_policy is None
-            else concurrency_policy
+        resolved_environment_seed_scope = (
+            self.environment_seed_scope
+            if environment_seed_scope is None
+            else environment_seed_scope
         )
         resolved_factors = self.factors if factors is None else factors
         resolved_revision = self.revision if revision is None else revision
@@ -501,18 +846,18 @@ class AgentStudySpec:
             repetitions=resolved_repetitions,
             seeds=resolved_seeds,
             limits=resolved_limits,
-            benchmark_assignment_mode=resolved_assignment_mode,
+            assignment_workloads=resolved_assignment_workloads,
             aggregation_requirement_id=resolved_aggregation_requirement_id,
             experiment_id=resolved_experiment_id,
             workload_id=resolved_workload_id,
             trial_provider_requirement_id=resolved_trial_requirement,
             replay_level=resolved_replay,
-            repetition_timeout_seconds=resolved_timeout,
-            concurrency_policy=resolved_concurrency,
+            environment_session_scope=resolved_environment_session_scope,
+            environment_seed_scope=resolved_environment_seed_scope,
             factors=resolved_factors,
             revision=resolved_revision,
         ).build()
 
 
 
-__all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant"]
+__all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant", "materialize_research_study_spec"]

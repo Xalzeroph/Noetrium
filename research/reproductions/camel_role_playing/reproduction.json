@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "camel_role_playing",
-  "package_digest": "6def2091d5e6717e0c12fadfc8588ab16cc29ee6835e64f60781b00e105040fb",
-  "definition_digest": "fce235dd82ef0a923481fb22c65aa4cfe1c680a4fcf2cd9f9e69e2eb1464ec37",
+  "package_digest": "2fe9e51b2e8718da10494048d242bd026f0ce90c5f53a972562260187442b8bc",
+  "definition_digest": "d39b38b842cbfb1633eb1367e64cb8c95b82339464ebfc488163302ecf964d25",
   "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -77,13 +77,13 @@
       "kind": "method_program",
       "path": "research/reproductions/camel_role_playing/program.py",
       "declaration_digest": "89aa6e12e1427378ee2ba370a02a63725f55c3b086cb456bf25300b4d9b946d8",
-      "content_sha256": "bc0c2073831b7094f786305dc688a8d141fd96708468d74239bbff1a70d22596"
+      "content_sha256": "f4c87e29e728c7fb99c1debf0623ecce82ee5a89ebbae90f80ecf180e2530457"
     },
     {
       "kind": "study",
       "path": "research/reproductions/camel_role_playing/study.py",
       "declaration_digest": "51d0cec4ca0a84eb8fa675e6c3cd03771aacab3f62f91b289db47307570eab09",
-      "content_sha256": "4d61964210751bb1f5fc6b4a32b4571847b722cda539a8e994ca95c37c3f65fd"
+      "content_sha256": "36c405e244d4829e1657197245f434ecf51cc75240b6749ff6bc3c0daee1db60"
     }
   ],
   "primary_executable": "research/reproductions/camel_role_playing/program.py",
@@ -162,23 +162,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_camel_ai_society_benchmark_v1.py",
-      "content_sha256": "4d6fea76c62e2509c0bc3e3e1976f5100127256215baf017f698ca24ff0df853"
-    },
-    {
-      "path": "tests/test_scientific_camel_method_program_v1.py",
-      "content_sha256": "4313e67f2c7ba37c80f43077bad2e6a3cb0c1b141ae1850c312fc0237f0ab94e"
-    },
-    {
       "path": "tests/test_scientific_camel_role_playing_fidelity_v1.py",
-      "content_sha256": "19a4949154af4c66e18576f66b3b6b5a52071d8f6627a6999d0438684c2f1b56"
+      "content_sha256": "38c0c2a55fe2a3d61a368380694d8bfbbdf001d660a929a73765464797181c44"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "camel_role_playing",
-    "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+    "program_digest": "7dcd12f73f9020f68ebee23786012d6a5630426fe0980d5a560577b6b2fcf063",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

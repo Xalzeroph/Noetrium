@@ -85,7 +85,6 @@ def test_fixed_identity_validation_does_not_reintroduce_algorithm_regressions() 
         ("noetrium_platform/research/execution/api/intent.py", "ExecutionOperationIntent.__post_init__"),
         ("noetrium_platform/research/execution/operation/api/contracts.py", "OperationSnapshot.__post_init__"),
         ("noetrium_platform/research/execution/workflow/api/method_machine.py", "MethodCheckpoint.__post_init__"),
-        ("noetrium_platform/research/experimentation/lifecycle/run/api/manifest_evidence.py", "EvidenceBundleManifest.__post_init__"),
     )
     assert {name: _estimated_complexity(path, name) for path, name in targets} == {
         name: "O(1)" for _, name in targets

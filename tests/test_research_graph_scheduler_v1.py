@@ -1,16 +1,25 @@
 from __future__ import annotations
 
+from pathlib import Path
+import tempfile
 from threading import RLock
 import time
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
+from noetrium_platform.research.execution.graph.providers.sqlite import SQLiteResearchGraphExecutionStore
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNode,
     ResearchGraphNodeState,
     ResearchGraphPlan,
 )
+
+
+
+def _graph_store(label: str) -> SQLiteResearchGraphExecutionStore:
+    root = Path(tempfile.mkdtemp(prefix=f"noetrium-{label}-"))
+    return SQLiteResearchGraphExecutionStore(root / "research-graph.sqlite3")
 
 
 class _Executor:
@@ -59,7 +68,13 @@ def test_research_graph_releases_fan_in_only_after_all_dependencies_succeed() ->
     )
     executor = _Executor()
     pool = _pool()
-    scheduler = ResearchGraphScheduler(plan, executor, execution_pool=pool)
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=_graph_store(plan.graph_id),
+        execution_id=f"test:{plan.graph_id}",
+    )
     try:
         report = scheduler.execute()
     finally:
@@ -87,7 +102,13 @@ def test_research_graph_failure_blocks_only_descendants() -> None:
     )
     executor = _Executor(failing=frozenset({"root"}))
     pool = _pool()
-    scheduler = ResearchGraphScheduler(plan, executor, execution_pool=pool)
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=_graph_store(plan.graph_id),
+        execution_id=f"test:{plan.graph_id}",
+    )
     try:
         report = scheduler.execute()
     finally:

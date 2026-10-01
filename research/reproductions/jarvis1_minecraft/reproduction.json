@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "e3565470b6007752cf3f65fd9aec3293b83ab5c5d55341b7368977b2e403ed37",
-  "definition_digest": "34f17d6f0d7879c11dd051235813d1e08d67479911f20ed4df97916c03a8e159",
+  "package_digest": "cd0d76d08d8748fddaa3ec24d86ac2c01db046c268f01f8ab2fd0b8594ae7325",
+  "definition_digest": "a944d56a6be0bec0b62ca39c3519affbf4f66c7339bec960d7ba97fd96794a8b",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -47,7 +47,7 @@
       "skill selection from agent state"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "MethodProgram and child-machine composition",
       "Minecraft/embodied environment execution",
       "content-addressed multimodal artifacts",
@@ -60,7 +60,7 @@
     "reference_publications": [
       "https://ieeexplore.ieee.org/document/10778628/"
     ],
-    "catalog_digest": "77f218bf10c611a06c0177400a863bf07c0094c5b6b44fc866ede81d24e72ac8"
+    "catalog_digest": "0e7ee5b1544dccb2b2dcba2023cb1c62bab3efc1bf3141ad62d37b7a5d54ccd8"
   },
   "source_lanes": [
     {
@@ -98,7 +98,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/jarvis1_minecraft/benchmark.py",
       "declaration_digest": "9212ff9c3ac9d1fbd7929859a36b51226807cf8547f08ab8acc9c6290fde9b1b",
-      "content_sha256": "a82f80743b8e344130ca70a5d75ce780d154ba2a9cdcca59f86d3dbdaab1c82e"
+      "content_sha256": "501720f07bfe000ba22c012b9a69fdc81ea21bd1cd09515e49710460337115b8"
     },
     {
       "kind": "fidelity",
@@ -110,19 +110,13 @@
       "kind": "method_program",
       "path": "research/reproductions/jarvis1_minecraft/program.py",
       "declaration_digest": "5290ac81d8ce24405daccbc3bb8fe4746cfaac0951930059d70ade70781657fe",
-      "content_sha256": "5b9e773272d30399c705581779e22777a0741e5e0627dc31e0fc1128473f814d"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/jarvis1_minecraft/memory.py",
-      "declaration_digest": "41dc8602926dbce8e5d8a46328c8fd83201c8b4c51d0f7eb75ff8fb86fad96ea",
-      "content_sha256": "018661046936ef687c9b46c62395c196bf0201505b38279700d907e84c29adc3"
+      "content_sha256": "9087c724445bf4971fcbee8f580569bf6a496bbbfe0a4030b4838269c29fa50d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/jarvis1_minecraft/study.py",
       "declaration_digest": "db65d2f5c48b9ed3ce5d26e4ad8ae96d922edcfff5ff16a129a4470612faae63",
-      "content_sha256": "37d6f7f651ff7a3812244d34e902d2ec6b392318f18b7d502b4e85837a2c4050"
+      "content_sha256": "9c83b8bef9cf05abfde23de00daa568054d0d1a51878fe42fa4f196150ccc1f5"
     },
     {
       "kind": "support",
@@ -159,27 +153,19 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_jarvis1_benchmark_study_v1.py",
-      "content_sha256": "57326041f27bb2219ef3c91744cc0e6210770e2a4c5af52202dd564b470120a3"
-    },
-    {
-      "path": "tests/test_scientific_jarvis1_memory_v1.py",
-      "content_sha256": "0ea5396c39ff99a00eb45a232e88d20cdbc675848ab793b57cc6f360dce3e5af"
-    },
-    {
-      "path": "tests/test_scientific_jarvis1_method_program_v1.py",
-      "content_sha256": "5356a7124a97c4bff35845bc40b443335bdfab119c1dfffd36b459d5f67ec8f2"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "jarvis1_minecraft",
-    "program_digest": "bd05d081096e521fe2f6e178e47f369a7b08aa316a44c45a41eff3df23af7264",
+    "program_digest": "ef649b1c8dc00d47bcf3edca8fc2c78f61aafdfd6e818efacb07c45204ef15a7",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "453fbdb926610f3fe4b10b44ff029f3cda92f68f6c77e4799c35771568063434"
+        "0acdea536189dff698133994c94ddf237aac4d7d70eb1fdffa6cc5d3613bcf8d"
       ],
       "blockers": []
     },

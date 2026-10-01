@@ -6,11 +6,11 @@ owns the durable execution cut. No second execution loop is introduced here.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
-from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json, require_sha256
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
     MeasurementValueKind,
@@ -20,6 +20,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskVerifierPort,
     TrialExecutionReceipt,
     TrialExecutionRequest,
+    TrialPreparationPort,
     TrialProviderPort,
     VariantBinding,
 )
@@ -147,9 +148,9 @@ class ResearchOSExperimentTrialProviderRegistry:
             ResearchOSExperimentTrialProviderRegistration, ...
         ],
     ) -> None:
-        if type(registrations) is not tuple or not registrations:
+        if type(registrations) is not tuple:
             raise TypeError(
-                "Experiment Trial provider registry requires non-empty typed tuple"
+                "Experiment Trial provider registry requires typed tuple"
             )
         if any(
             type(row) is not ResearchOSExperimentTrialProviderRegistration
@@ -244,14 +245,58 @@ class ResearchOSExperimentTrialProviderResolverPort(Protocol):
     ) -> ResearchOSExperimentTrialProviderBinding: ...
 
 
+@runtime_checkable
+class ResearchOSExperimentTrialReceiptPublisherPort(Protocol):
+    @property
+    def identity_digest(self) -> str: ...
+
+    def publish(
+        self,
+        request: TrialExecutionRequest,
+        receipt: TrialExecutionReceipt,
+    ): ...
+
+
+@runtime_checkable
+class ResearchOSExperimentTrialObservationPort(Protocol):
+    """Side-plane projection only; never owns Trial/Study truth."""
+
+    def publish(
+        self,
+        request: TrialExecutionRequest,
+        receipt: TrialExecutionReceipt,
+        observation: StudyMetricObservation,
+    ) -> None: ...
+
+
 class _TrialBoundStudyExecution(BoundStudyExecutionPort):
     def __init__(
         self,
         closure: ResearchOSExperimentClosure,
         provider_binding: ResearchOSExperimentTrialProviderBinding,
+        observation: ResearchOSExperimentTrialObservationPort | None = None,
+        receipt_publisher: ResearchOSExperimentTrialReceiptPublisherPort | None = None,
+        scientific_inputs: Mapping[str, object] | None = None,
     ) -> None:
         self._closure = closure
         self._provider_binding = provider_binding
+        if observation is not None and not isinstance(
+            observation, ResearchOSExperimentTrialObservationPort
+        ):
+            raise TypeError("Trial Study observation must satisfy typed side-plane port")
+        self._observation_sink = observation
+        if receipt_publisher is not None and not isinstance(
+            receipt_publisher, ResearchOSExperimentTrialReceiptPublisherPort
+        ):
+            raise TypeError(
+                "Trial Study receipt_publisher must satisfy typed publisher port"
+            )
+        self._receipt_publisher = receipt_publisher
+        if scientific_inputs is None:
+            scientific_inputs = {}
+        if not isinstance(scientific_inputs, Mapping):
+            raise TypeError("Trial Study scientific_inputs must be an object")
+        self._scientific_inputs = freeze_json(dict(scientific_inputs))
         provider_protocol = provider_binding.provider.protocol_identity
         if provider_protocol != closure.research_plan.trial_protocol_identity:
             raise ValueError(
@@ -281,6 +326,18 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
                 "measurement metric"
             )
 
+    def bind_scientific_inputs(
+        self,
+        inputs: Mapping[str, object],
+    ) -> "_TrialBoundStudyExecution":
+        return _TrialBoundStudyExecution(
+            self._closure,
+            self._provider_binding,
+            self._observation_sink,
+            self._receipt_publisher,
+            scientific_inputs=inputs,
+        )
+
     def _request(
         self,
         assignment: StudyAssignment,
@@ -302,10 +359,9 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             raise ValueError(
                 "Trial Study assignment has no matching intervention identity"
             )
-        task = (
-            None
-            if assignment.task_id is None
-            else plan.task_for(assignment.task_id)
+        task_definitions = tuple(
+            plan.task_for(task_id)
+            for task_id in assignment.workload.task_ids
         )
         return TrialExecutionRequest(
             project_id=self._closure.definition.project_id,
@@ -313,31 +369,30 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             research_plan_digest=plan.research_plan_digest,
             revision=plan.research_semantics.revision,
             participant_schedule=plan.research_semantics.participant_schedule,
-            intervention=OptionalIdentityFacet(
-                intervention.intervention_digest
-            ),
+            participant_schedule_spec=plan.participant_schedule,
+            execution_policy=self._closure.definition.execution_policy,
+            intervention_spec=intervention,
             assignment=assignment,
             binding=binding,
             measurement_protocol=plan.measurement_protocol,
             protocol_identity=plan.trial_protocol_identity,
-            task=task,
+            task_definitions=task_definitions,
+            scientific_inputs=self._scientific_inputs,
         )
 
     def _observation(
         self,
         request: TrialExecutionRequest,
         receipt: TrialExecutionReceipt,
+        receipt_reference,
     ) -> StudyMetricObservation:
         if receipt.request_digest != request.request_digest:
             raise ValueError("Trial receipt does not bind Study request")
         if receipt.assignment_digest != request.assignment.assignment_digest:
             raise ValueError("Trial receipt assignment identity drifted")
 
-        measurements = receipt.require_complete_measurements(
-            request.measurement_protocol
-        )
         values: dict[str, float] = {}
-        for record in measurements:
+        for record in receipt.measurements:
             record.validate_against(request.measurement_protocol)
             if record.measurement_id not in self._metric_names:
                 continue
@@ -363,7 +418,65 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
         return StudyMetricObservation(
             request.assignment,
             tuple((name, values[name]) for name in self._metric_names),
+            trial_request_digest=request.request_digest,
+            trial_receipt_digest=receipt.receipt_digest,
+            trial_receipt_reference=receipt_reference,
+            measurement_record_digests=tuple(
+                row.record_digest for row in receipt.measurements
+            ),
+            evidence_refs=receipt.evidence_refs,
+            verifier_receipt_digest=(
+                None
+                if receipt.verifier_receipt is None
+                else receipt.verifier_receipt.receipt_digest
+            ),
         )
+
+    def _prepare_request(self, request: TrialExecutionRequest) -> None:
+        provider = self._provider_binding.provider
+        if isinstance(provider, TrialPreparationPort):
+            provider.prepare_trial(request)
+
+    def prepare_bound_variant(
+        self,
+        assignment: StudyAssignment,
+        binding: VariantBinding,
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None:
+        self._prepare_request(
+            self._request(
+                assignment,
+                binding,
+                plan_digest,
+                execution_id=execution_id,
+            )
+        )
+
+    def prepare_bound(
+        self,
+        unit: StudyExecutionUnit,
+        bindings: tuple[VariantBinding, ...],
+        plan_digest: str,
+        *,
+        execution_id: str,
+    ) -> None:
+        if len(unit.assignments) != len(bindings):
+            raise ValueError(
+                "Trial Study preparation unit/binding cardinality mismatch"
+            )
+        for assignment, binding in zip(
+            unit.assignments,
+            bindings,
+            strict=True,
+        ):
+            self.prepare_bound_variant(
+                assignment,
+                binding,
+                plan_digest,
+                execution_id=execution_id,
+            )
 
     def execute_bound_variant(
         self,
@@ -379,13 +492,27 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             plan_digest,
             execution_id=execution_id,
         )
-        provider_receipt = self._provider_binding.provider.run_trial(request)
+        self._prepare_request(request)
+        provider = self._provider_binding.provider
+        provider_receipt = provider.run_trial(request)
         receipt = TrialVerifierOrchestrator().finalize(
             request,
             provider_receipt,
             verifier=self._provider_binding.verifier,
         )
-        return self._observation(request, receipt)
+        if self._receipt_publisher is None:
+            raise RuntimeError(
+                "canonical Trial Study execution requires authoritative Trial receipt publication"
+            )
+        receipt_reference = self._receipt_publisher.publish(request, receipt)
+        observation = self._observation(request, receipt, receipt_reference)
+        if self._observation_sink is not None:
+            try:
+                self._observation_sink.publish(request, receipt, observation)
+            except Exception:
+                # Observability is a side plane and cannot mutate Trial truth.
+                pass
+        return observation
 
     def execute_bound(
         self,
@@ -422,6 +549,9 @@ class ResearchOSExperimentTrialStudyExecutionResolver(
     def __init__(
         self,
         providers: ResearchOSExperimentTrialProviderResolverPort,
+        *,
+        observation: ResearchOSExperimentTrialObservationPort | None = None,
+        receipt_publisher: ResearchOSExperimentTrialReceiptPublisherPort | None = None,
     ) -> None:
         if not isinstance(
             providers,
@@ -431,6 +561,18 @@ class ResearchOSExperimentTrialStudyExecutionResolver(
                 "Trial Study execution resolver requires Trial provider resolver"
             )
         self._providers = providers
+        if observation is not None and not isinstance(
+            observation, ResearchOSExperimentTrialObservationPort
+        ):
+            raise TypeError("Experiment Trial observation must satisfy typed port")
+        self._observation = observation
+        if receipt_publisher is not None and not isinstance(
+            receipt_publisher, ResearchOSExperimentTrialReceiptPublisherPort
+        ):
+            raise TypeError(
+                "Experiment Trial receipt publisher must satisfy typed port"
+            )
+        self._receipt_publisher = receipt_publisher
 
     def resolve(
         self,
@@ -445,12 +587,22 @@ class ResearchOSExperimentTrialStudyExecutionResolver(
             raise TypeError(
                 "Trial provider resolver returned invalid binding"
             )
-        adapter = _TrialBoundStudyExecution(closure, binding)
+        adapter = _TrialBoundStudyExecution(
+            closure,
+            binding,
+            self._observation,
+            self._receipt_publisher,
+        )
         identity = canonical_digest(
             {
                 "schema": "noetrium.trial-bound-study-execution.v2",
                 "closure_digest": closure.closure_digest,
                 "trial_provider_binding_digest": binding.binding_digest,
+                "receipt_publisher": (
+                    None
+                    if self._receipt_publisher is None
+                    else self._receipt_publisher.identity_digest
+                ),
             }
         )
         return ResearchOSExperimentStudyExecutionBinding(
@@ -464,5 +616,7 @@ __all__ = [
     "ResearchOSExperimentTrialProviderRegistry",
     "ResearchOSExperimentTrialProviderRegistration",
     "ResearchOSExperimentTrialProviderResolverPort",
+    "ResearchOSExperimentTrialObservationPort",
+    "ResearchOSExperimentTrialReceiptPublisherPort",
     "ResearchOSExperimentTrialStudyExecutionResolver",
 ]

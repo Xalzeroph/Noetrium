@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from prompt_os_test_support import make_promoted_prompt_registry, promote_prompt_generation
+
 import unittest
 from pathlib import Path
 import tempfile
 
 from noetrium_platform.evidence.artifact.content.providers import DirectoryArtifactBlobStore
-from noetrium_platform.capabilities.model.request.runtime import DirectoryModelRequestLedger, ReconstructableModelRequestRecorder
+from noetrium_platform.capabilities.model.request.runtime import SQLiteModelRequestLedger, ReconstructableModelRequestRecorder
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
     PromptBlock,
@@ -26,7 +28,7 @@ class PromptRequestBuildV76Tests(unittest.TestCase):
     def recorder(self, root: Path):
         return ReconstructableModelRequestRecorder(
             DirectoryArtifactBlobStore(root / "blobs"),
-            DirectoryModelRequestLedger(root / "requests"),
+            SQLiteModelRequestLedger(root / "requests"),
         )
 
     def context(self):
@@ -45,11 +47,11 @@ class PromptRequestBuildV76Tests(unittest.TestCase):
 
     def test_generation_switch_during_body_build_cannot_mix_request_identity(self):
         td=tempfile.TemporaryDirectory(); self.addCleanup(td.cleanup); root=Path(td.name)
-        registry=PromptRegistry(); registry.publish("g1",default_prompt_specs())
+        registry=make_promoted_prompt_registry(generation_id="g1")
 
         def body_builder(resolution,compilation):
             self.assertEqual(resolution.generation_id,"g1")
-            registry.publish("g2",default_prompt_specs())
+            promote_prompt_generation(registry, "g2", default_prompt_specs())
             return {
                 "messages":[{"role":"system","content":compilation.compiled.text}],
                 "temperature":resolution.bundle.temperature,
@@ -86,7 +88,7 @@ class PromptRequestBuildV76Tests(unittest.TestCase):
 
     def test_builder_owned_body_cannot_mutate_frozen_request_cut(self):
         td=tempfile.TemporaryDirectory(); self.addCleanup(td.cleanup); root=Path(td.name)
-        registry=PromptRegistry(); registry.publish("g1",default_prompt_specs())
+        registry=make_promoted_prompt_registry(generation_id="g1")
         retained={}
         def body_builder(resolution,compilation):
             body={"messages":[{"role":"system","content":compilation.compiled.text}],"temperature":resolution.bundle.temperature}
@@ -105,7 +107,7 @@ class PromptRequestBuildV76Tests(unittest.TestCase):
 
     def test_non_dict_body_is_rejected_before_contract_creation(self):
         td=tempfile.TemporaryDirectory(); self.addCleanup(td.cleanup); root=Path(td.name)
-        registry=PromptRegistry(); registry.publish("g1",default_prompt_specs())
+        registry=make_promoted_prompt_registry(generation_id="g1")
         with self.assertRaises(TypeError):
             self.transaction().build(
                 registry=registry,

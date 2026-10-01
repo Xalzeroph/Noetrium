@@ -58,6 +58,34 @@ def test_text_world_observation_projection_preserves_environment_payload() -> No
     assert observation.evidence_payload["environment_observation_id"] == "obs:0"
 
 
+def test_text_world_prefers_environment_decision_view_without_losing_raw_evidence() -> None:
+    world = FakeTextWorld()
+    world.current = Observation(
+        "obs:decision",
+        "generation:decision",
+        {
+            "text": "very large raw room state",
+            "debug": {"trace": "provider-only"},
+            "decision_view": {
+                "kind": "text_world_decision_view.v1",
+                "text": "room",
+                "affordances": ("open door",),
+            },
+        },
+    )
+
+    observation = TextWorldAgentObservationPort(world).observe(_CONTEXT)
+
+    assert observation.state["environment_payload"] == {
+        "kind": "text_world_decision_view.v1",
+        "text": "room",
+        "affordances": ("open door",),
+    }
+    raw = observation.evidence_payload["environment_observation"]
+    assert raw["payload"]["text"] == "very large raw room state"
+    assert raw["payload"]["debug"]["trace"] == "provider-only"
+
+
 def test_text_world_action_projection_forwards_typed_payload_and_receipt() -> None:
     world = FakeTextWorld()
     executor = TextWorldAgentActionExecutorPort(world)

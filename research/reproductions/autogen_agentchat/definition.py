@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/autogen_agentchat/study.py',
         ),
     ),
+    primary_executable="research/reproductions/autogen_agentchat/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -54,7 +55,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('matched execution requires an exact paper-era model/prompt binding and an immutable deployment-qualified MultiAgentBench task/environment cut',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_autogen_agentchat_fidelity_v1.py', 'tests/test_scientific_autogen_groupchat_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_autogen_agentchat_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

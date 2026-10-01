@@ -30,7 +30,6 @@ from noetrium_platform.research.execution.api import (
     ResearchMachineSessionPort,
     ResearchProgramHost,
     ResearchProgram,
-    RuleDispatchMode,
     RunConcern,
     UnhandledEventPolicy,
     build_rule_handlers,
@@ -101,7 +100,7 @@ def run_rule_set() -> ProgramRuleSet:
             ProgramRule("control-failed", "run.control.failed", "run.control.failed", priority=100, semantic=RunConcern.FINALIZATION.value),
             ProgramRule("closed", "run.closed", "run.closed", priority=100, semantic=RunConcern.FINALIZATION.value),
         ),
-        mode=RuleDispatchMode.FIRST,
+        max_matches=1,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 

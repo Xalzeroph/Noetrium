@@ -124,6 +124,9 @@ def compile_repository_fleet_prerequisites() -> ReproductionFleetPrerequisiteMan
         for factory in resolve_study_factory_bindings(definition):
             for benchmark_id in definition.catalog.benchmark_ids:
                 key = f"{factory.qualname}:{benchmark_id}"
+                benchmark_requirement = factory.benchmark_requirement(
+                    benchmark_id
+                )
                 rows.append(
                     ReproductionFleetPrerequisiteRequirement(
                         stage="benchmark",
@@ -131,10 +134,15 @@ def compile_repository_fleet_prerequisites() -> ReproductionFleetPrerequisiteMan
                         requirement_key=key,
                         requirement_digest=canonical_digest(
                             {
-                                "schema": "noetrium.reproduction-benchmark-prerequisite.v1",
+                                "schema": "noetrium.reproduction-benchmark-prerequisite.v2",
                                 "definition_digest": definition.definition_digest,
                                 "study_factory_binding_digest": factory.binding_digest,
                                 "benchmark_id": benchmark_id,
+                                "benchmark_requirement_digest": (
+                                    None
+                                    if benchmark_requirement is None
+                                    else benchmark_requirement.requirement_digest
+                                ),
                                 "split_axis_consumers": split_consumers,
                             }
                         ),

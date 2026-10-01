@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5364,
+    "import_edges": 5362,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5364,
+      "import_edges": 5362,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5364,
+  "import_edges": 5362,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "a0fb61e13bdf136215a18a8812cad7a0fa17d8dac1bfb8c23405db42a97f40c9",
+  "report_sha256": "10638c2f93788d5da11ec02b5d54804cd57ba8f52fd1b6f0b12f7162c1ff9b1a",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "c8dc28a53f401d0ae6fff699b5b0167a497508e5a73d7f88541212000f1cdd09",
+  "source_digest": "f8f5a48883903510a56ab922e921a76bd9a45297dedd982478d4ae07cb4c78da",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
@@ -920,20 +920,8 @@
     {
       "detail": "direct SQLite rollback bypasses the canonical Platform durability authority; use abort_sqlite_writer() or rollback_sqlite_writer()",
       "invariant": "sqlite_durability_authority",
-      "line": 1499,
+      "line": 1419,
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime -> noetrium_platform.infrastructure.lifecycle.python.api; required facade=noetrium_platform.substrate.api",
-      "invariant": "bypass_lower_layer_facade",
-      "line": 15,
-      "path": "noetrium_platform/capabilities/model/deployment/runtime/deployment_runtime.py"
-    },
-    {
-      "detail": "noetrium_platform.capabilities.model.deployment.runtime.fleet -> noetrium_platform.infrastructure.lifecycle.python.api; required facade=noetrium_platform.substrate.api",
-      "invariant": "bypass_lower_layer_facade",
-      "line": 16,
-      "path": "noetrium_platform/capabilities/model/deployment/runtime/fleet.py"
     }
   ],
   "source_root": ".",
@@ -1696,18 +1684,6 @@
       "score": 3951
     },
     {
-      "branches": 176,
-      "classes": 5,
-      "exception_handlers": 15,
-      "functions": 65,
-      "imports": 16,
-      "max_function_lines": 137,
-      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 1943,
-      "score": 3723
-    },
-    {
       "branches": 150,
       "classes": 31,
       "exception_handlers": 5,
@@ -1718,6 +1694,18 @@
       "path": "noetrium_platform/product/research_os.py",
       "physical_lines": 2306,
       "score": 3718
+    },
+    {
+      "branches": 172,
+      "classes": 5,
+      "exception_handlers": 14,
+      "functions": 65,
+      "imports": 16,
+      "max_function_lines": 123,
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "physical_lines": 1863,
+      "score": 3573
     },
     {
       "branches": 141,
@@ -1792,18 +1780,6 @@
       "score": 2327
     },
     {
-      "branches": 109,
-      "classes": 6,
-      "exception_handlers": 19,
-      "functions": 27,
-      "imports": 17,
-      "max_function_lines": 155,
-      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
-      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "physical_lines": 981,
-      "score": 2304
-    },
-    {
       "branches": 116,
       "classes": 17,
       "exception_handlers": 0,
@@ -1838,6 +1814,18 @@
       "path": "noetrium_platform/research/execution/workflow/api/method_machine.py",
       "physical_lines": 1124,
       "score": 2258
+    },
+    {
+      "branches": 106,
+      "classes": 6,
+      "exception_handlers": 18,
+      "functions": 26,
+      "imports": 17,
+      "max_function_lines": 155,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "physical_lines": 942,
+      "score": 2231
     },
     {
       "branches": 97,
@@ -1936,10 +1924,10 @@
       "serialization_sites": 2
     },
     {
-      "exception_handlers": 15,
+      "exception_handlers": 14,
       "import_fan_in": 1,
       "import_fan_out": 8,
-      "io_sites": 33,
+      "io_sites": 32,
       "lock_sites": 5,
       "long_functions": 8,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -1951,16 +1939,16 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 764,
+      "risk_score": 748,
       "self_mutation_sites": 24,
       "serialization_sites": 3
     },
     {
-      "exception_handlers": 19,
+      "exception_handlers": 18,
       "import_fan_in": 1,
       "import_fan_out": 9,
       "io_sites": 0,
-      "lock_sites": 3,
+      "lock_sites": 7,
       "long_functions": 6,
       "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
       "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
@@ -1970,7 +1958,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 634,
+      "risk_score": 674,
       "self_mutation_sites": 59,
       "serialization_sites": 0
     },

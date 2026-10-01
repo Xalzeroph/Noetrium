@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import json
+from pathlib import Path
 import pytest
 
 from noetrium_platform.infrastructure.resources.container.api import (
@@ -17,6 +20,7 @@ from noetrium_platform.infrastructure.resources.container.runtime import (
 from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
     DockerContainerRuntimeError,
+    discover_docker_root,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -25,7 +29,6 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceKind,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
 )
 
@@ -43,6 +46,9 @@ class FakeDockerRuntime:
         self.authority_id = authority_id
         self.rows = {} if rows is None else rows
         self.events = [] if events is None else events
+
+    def assert_expansion_admissible(self) -> None:
+        return None
 
     def start(self, handle) -> DockerContainerObservation:
         row = DockerContainerObservation(
@@ -116,12 +122,13 @@ def _reserve(authority, allocation_id: str = "worker-a"):
 
 
 def test_managed_docker_release_removes_physical_container_before_logical_lease() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
     prefix = authority.docker_run_prefix(handle)
-    assert prefix[:3] == ("docker", "run", "--rm")
+    assert prefix[:2] == ("docker", "run")
+    assert "--rm" not in prefix
     assert "--name" in prefix
     assert "--label" in prefix
     assert "--cpu-shares" not in prefix
@@ -142,7 +149,7 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
 
 
 def test_managed_docker_release_follows_exact_generation_after_external_rename() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -164,7 +171,7 @@ def test_managed_docker_release_follows_exact_generation_after_external_rename()
 
 
 def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_renamed() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -195,12 +202,123 @@ def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_re
     assert runtime.events == [f"remove:{observed.container_id}"]
 
 
+def test_managed_docker_confirmed_disappearance_releases_lease_and_advances_fence() -> None:
+    resources = TestResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    first = _reserve(authority)
+    observed = runtime.start(first)
+    authority.confirm_running(first)
+    runtime.rows.pop(observed.container_id)
+
+    report = authority.reconcile()
+
+    assert report.removed_container_ids == ()
+    assert report.released_lease_ids == (first.lease.lease_id,)
+    assert resources.get(first.lease.lease_id).state is LeaseState.RELEASED
+
+    second = _reserve(authority)
+    assert second.lease.fencing_token > first.lease.fencing_token
+    assert second.container_name != first.container_name
+
+
+def test_managed_docker_prestart_lease_is_not_released_by_reconcile() -> None:
+    resources = TestResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+
+    report = authority.reconcile()
+
+    assert report.released_lease_ids == ()
+    assert resources.get(handle.lease.lease_id).state is LeaseState.ACTIVE
+
+
+
+def test_managed_docker_confirmed_warm_generation_survives_expiry_and_recovery() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = TestResourceLeaseRegistry(clock=clock)
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    first = _reserve(authority, "warm-worker")
+    observed = runtime.start(first)
+    authority.confirm_running(first)
+
+    retention_resource = ResourceIdentity(
+        ResourceKind.RUNTIME_FABRIC,
+        "container:warm-worker",
+    )
+    retained = resources.active_for(retention_resource)
+    assert len(retained) == 1
+    assert retained[0].expires_at_epoch_s is None
+
+    clock.advance(1.0)
+    report = authority.reconcile()
+    assert report.removed_container_ids == ()
+    assert runtime.inspect(observed.container_id) == observed
+    assert resources.get(first.lease.lease_id).state is LeaseState.EXPIRED
+
+    recovered = authority.recover(
+        allocation_id=first.allocation_id,
+        image=first.image,
+        runtime_identity_digest=first.runtime_identity_digest,
+    )
+    assert recovered is not None
+    assert recovered.lease.fencing_token > first.lease.fencing_token
+    assert (
+        recovered.physical_generation_fencing_token
+        == first.physical_generation_fencing_token
+    )
+
+    # A recovered control generation has a fresh logical fence while the
+    # immutable Docker generation still carries its original physical fence.
+    # Generic reconcile must recognize that exact adopted pairing.
+    second_report = authority.reconcile()
+    assert second_report.removed_container_ids == ()
+    assert runtime.inspect(observed.container_id) == observed
+
+    released = authority.release(recovered)
+    assert released.state is LeaseState.RELEASED
+    assert runtime.inspect(observed.container_id) is None
+    assert resources.active_for(retention_resource) == ()
+
+
+def test_managed_docker_missing_warm_generation_retires_retention_after_control_expiry() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = TestResourceLeaseRegistry(clock=clock)
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority, "missing-warm-worker")
+    observed = runtime.start(handle)
+    authority.confirm_running(handle)
+    retention_resource = ResourceIdentity(
+        ResourceKind.RUNTIME_FABRIC,
+        "container:missing-warm-worker",
+    )
+    assert len(resources.active_for(retention_resource)) == 1
+
+    clock.advance(1.0)
+    assert resources.get(handle.lease.lease_id).state is LeaseState.EXPIRED
+    runtime.rows.pop(observed.container_id)
+
+    report = authority.reconcile()
+
+    assert report.removed_container_ids == ()
+    assert resources.active_for(retention_resource) == ()
+
+
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    resources = TestResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -216,7 +334,7 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
 
 
 def test_managed_docker_restart_quarantines_old_generation_until_exclusive_recovery() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     first = _authority(resources, runtime, owner_generation_id="2" * 64)
     first_handle = _reserve(first)
@@ -253,7 +371,7 @@ def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    resources = TestResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     first = _reserve(authority)
@@ -270,7 +388,7 @@ def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -
 
 
 def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     runtime.rows["malformed"] = DockerContainerObservation(
         "malformed",
@@ -292,7 +410,7 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
 
 
 def test_managed_docker_unknown_owner_generation_is_quarantined_until_exclusive_cleanup() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     unknown = DockerContainerObservation(
         "unknown-generation",
@@ -318,7 +436,7 @@ def test_managed_docker_unknown_owner_generation_is_quarantined_until_exclusive_
 
 
 def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     first = _reserve(authority)
@@ -342,7 +460,7 @@ def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -
 
 
 def test_managed_docker_shutdown_cleanup_releases_prestart_lease() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -356,7 +474,7 @@ def test_managed_docker_shutdown_cleanup_releases_prestart_lease() -> None:
 
 
 def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -373,8 +491,8 @@ def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> 
 def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
     rows: dict[str, DockerContainerObservation] = {}
     events: list[str] = []
-    left_resources = InMemoryResourceLeaseRegistry()
-    right_resources = InMemoryResourceLeaseRegistry()
+    left_resources = TestResourceLeaseRegistry()
+    right_resources = TestResourceLeaseRegistry()
     left_runtime = FakeDockerRuntime("a" * 64, rows=rows, events=events)
     right_runtime = FakeDockerRuntime("b" * 64, rows=rows, events=events)
     left = _authority(left_resources, left_runtime)
@@ -399,7 +517,7 @@ def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
 
 
 def test_managed_docker_live_current_generation_cannot_be_double_started() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -413,7 +531,7 @@ def test_managed_docker_live_current_generation_cannot_be_double_started() -> No
 
 
 def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -439,7 +557,7 @@ def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
 
 
 def test_new_docker_owner_generation_cannot_close_old_generation_handle() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     old_authority = _authority(
         resources,
@@ -523,6 +641,7 @@ def test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack(
     runner = _AmbiguousRemoveRunner()
     provider = DockerCliManagedContainerProvider(
         runner,
+        runner,
         authority_id="1" * 64,
     )
 
@@ -535,6 +654,7 @@ def test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack(
 def test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobservable() -> None:
     runner = _AmbiguousRemoveRunner(observable_after_remove=False)
     provider = DockerCliManagedContainerProvider(
+        runner,
         runner,
         authority_id="1" * 64,
     )
@@ -549,13 +669,90 @@ def test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobserv
     assert [call[1] for call in runner.calls] == ["inspect", "rm", "inspect"]
 
 
+
+class _BatchInspectRunner:
+    def __init__(self, count: int) -> None:
+        self.ids = tuple(f"cid-{index:03d}" for index in range(count))
+        self.calls: list[tuple[str, ...]] = []
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float):
+        del timeout_seconds
+        self.calls.append(argv)
+        from types import SimpleNamespace
+        if argv[1] == "ps":
+            return SimpleNamespace(
+                returncode=0,
+                stdout="\n".join(self.ids) + ("\n" if self.ids else ""),
+                stderr="",
+            )
+        if argv[1] == "inspect":
+            rows = []
+            for container_id in argv[2:]:
+                rows.append(
+                    {
+                        "Id": container_id,
+                        "Name": f"/{container_id}",
+                        "Config": {
+                            "Image": "image:batch",
+                            "Labels": {
+                                MANAGED_CONTAINER_LABEL:
+                                    MANAGED_CONTAINER_LABEL_VALUE,
+                                LABEL_AUTHORITY: "1" * 64,
+                            },
+                        },
+                        "State": {"Running": True},
+                    }
+                )
+            return SimpleNamespace(
+                returncode=0,
+                stdout=json.dumps(rows),
+                stderr="",
+            )
+        raise AssertionError(f"unexpected Docker command: {argv}")
+
+
+def test_docker_provider_batches_managed_container_inspection() -> None:
+    runner = _BatchInspectRunner(17)
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        runner,
+        authority_id="1" * 64,
+    )
+
+    rows = provider.list_managed()
+
+    assert tuple(row.container_id for row in rows) == runner.ids
+    assert [call[1] for call in runner.calls] == ["ps", "inspect"]
+    assert "--no-trunc" in runner.calls[0]
+    assert runner.calls[1][2:] == runner.ids
+
+
+def test_docker_provider_bounds_large_batch_inspection_argv() -> None:
+    runner = _BatchInspectRunner(
+        DockerCliManagedContainerProvider._INSPECT_BATCH_SIZE + 3
+    )
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        runner,
+        authority_id="1" * 64,
+    )
+
+    rows = provider.list_managed()
+
+    assert len(rows) == len(runner.ids)
+    inspect_calls = [call for call in runner.calls if call[1] == "inspect"]
+    assert len(inspect_calls) == 2
+    assert len(inspect_calls[0][2:]) == provider._INSPECT_BATCH_SIZE
+    assert len(inspect_calls[1][2:]) == 3
+
+
 class _UnavailableDockerRuntime(FakeDockerRuntime):
     def list_managed(self):
         raise RuntimeError("Docker daemon restarted during reconcile")
 
 
 def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authority() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -573,3 +770,55 @@ def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authorit
     current = resources.get(handle.lease.lease_id)
     assert current.state is LeaseState.ACTIVE
     assert current.fencing_token == handle.lease.fencing_token
+
+
+class _DockerInfoRunner:
+    def __init__(self, *, returncode: int = 0, stdout: str = "/var/lib/docker\n") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.calls: list[tuple[tuple[str, ...], float]] = []
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float):
+        from types import SimpleNamespace
+
+        self.calls.append((argv, timeout_seconds))
+        return SimpleNamespace(
+            returncode=self.returncode,
+            stdout=self.stdout,
+            stderr="",
+        )
+
+
+def test_docker_provider_separates_recovery_control_from_expansion_admission() -> None:
+    control = _AmbiguousRemoveRunner()
+    expansion = _DockerInfoRunner()
+    provider = DockerCliManagedContainerProvider(
+        control,
+        expansion,
+        authority_id="1" * 64,
+    )
+
+    provider.remove("cid-ambiguous")
+    assert [call[1] for call in control.calls] == ["inspect", "rm", "inspect"]
+    assert expansion.calls == []
+
+    provider.assert_expansion_admissible()
+    assert expansion.calls == [
+        (("docker", "info", "--format", "{{.DockerRootDir}}"), 15.0)
+    ]
+
+
+def test_discover_docker_root_uses_runtime_authority_path() -> None:
+    runner = _DockerInfoRunner()
+    assert discover_docker_root(runner) == Path("/var/lib/docker")
+    assert runner.calls == [
+        (("docker", "info", "--format", "{{.DockerRootDir}}"), 15.0)
+    ]
+
+
+def test_discover_docker_root_is_best_effort_for_unavailable_daemon() -> None:
+    assert discover_docker_root(_DockerInfoRunner(returncode=1)) is None
+
+
+def test_discover_docker_root_rejects_non_absolute_daemon_path() -> None:
+    assert discover_docker_root(_DockerInfoRunner(stdout="relative/docker\n")) is None

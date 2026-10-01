@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
 
 from .fidelity import CAMEL_ROLE_PLAYING_FIDELITY
 
@@ -103,7 +100,7 @@ def _model_message(value: JsonValue, field: str) -> JsonObject:
     }
 
 
-def _task_specify_view(request: MethodNodeRequest) -> JsonObject:
+def _task_specify_view(request: MethodCall) -> JsonObject:
     f = CAMEL_ROLE_PLAYING_FIDELITY
     return {
         "phase": "task_specification",
@@ -116,19 +113,19 @@ def _task_specify_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_specified_task(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_specified_task(request: MethodCall) -> MethodNodeResult:
     row = _model_message(request.previous_value, "task specification")
     if row["terminated"] is True:
         raise RuntimeError("CAMEL task specification terminated")
     task = _text(row["content"], "specified task")
-    return MethodNodeResult(
+    return dict(
         value={"specified_task": task},
         state_update={"specified_task": task},
         next_node="plan_task",
     )
 
 
-def _task_plan_view(request: MethodNodeRequest) -> JsonObject:
+def _task_plan_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "task_planning",
         "specified_task": _text(request.state.get("specified_task"), "specified task"),
@@ -137,14 +134,14 @@ def _task_plan_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_planned_task(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_planned_task(request: MethodCall) -> MethodNodeResult:
     row = _model_message(request.previous_value, "task planning")
     if row["terminated"] is True:
         raise RuntimeError("CAMEL task planning terminated")
     planned = _text(row["content"], "planned task")
     specified = _text(request.state.get("specified_task"), "specified task")
     final_task = f"{specified}\n{planned}"
-    return MethodNodeResult(
+    return dict(
         value={"planned_task": planned, "final_task": final_task},
         state_update={
             "planned_task": planned,
@@ -176,7 +173,7 @@ def _system_identity(state: Mapping[str, JsonValue], *, role: str) -> JsonObject
     }
 
 
-def _bootstrap_view(request: MethodNodeRequest) -> JsonObject:
+def _bootstrap_view(request: MethodCall) -> JsonObject:
     assistant_system = _system_identity(request.state, role="assistant")
     return {
         "phase": "hidden_assistant_bootstrap",
@@ -189,7 +186,7 @@ def _bootstrap_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_bootstrap(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_bootstrap(request: MethodCall) -> MethodNodeResult:
     row = _model_message(request.previous_value, "assistant bootstrap")
     if row["terminated"] is True:
         raise RuntimeError("CAMEL hidden assistant bootstrap terminated")
@@ -208,7 +205,7 @@ def _record_bootstrap(request: MethodNodeRequest) -> MethodNodeResult:
         },
     )
     user_history = (user_system,)
-    return MethodNodeResult(
+    return dict(
         value={"bootstrap": True},
         state_update={
             "assistant_history": assistant_history,
@@ -218,7 +215,7 @@ def _record_bootstrap(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _user_turn_view(request: MethodNodeRequest) -> JsonObject:
+def _user_turn_view(request: MethodCall) -> JsonObject:
     message_count = _integer(request.state.get("message_count", 0), "message_count")
     if message_count == 0:
         incoming: JsonObject = {
@@ -247,10 +244,10 @@ def _user_turn_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_user_turn(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_user_turn(request: MethodCall) -> MethodNodeResult:
     row = _model_message(request.previous_value, "user agent")
     if row["terminated"] is True:
-        return MethodNodeResult(
+        return dict(
             value={"terminated": True},
             state_update={
                 "pending_user": row,
@@ -262,7 +259,7 @@ def _record_user_turn(request: MethodNodeRequest) -> MethodNodeResult:
         *_sequence(request.state.get("user_history", ()), "user_history"),
         {"kind": "output", "content": row["content"]},
     )
-    return MethodNodeResult(
+    return dict(
         value={"content": row["content"]},
         state_update={
             "pending_user": row,
@@ -272,7 +269,7 @@ def _record_user_turn(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _assistant_turn_view(request: MethodNodeRequest) -> JsonObject:
+def _assistant_turn_view(request: MethodCall) -> JsonObject:
     user = request.state.get("pending_user")
     if not isinstance(user, Mapping):
         raise TypeError("CAMEL assistant turn requires pending user message")
@@ -289,10 +286,10 @@ def _assistant_turn_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_assistant_turn(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_assistant_turn(request: MethodCall) -> MethodNodeResult:
     row = _model_message(request.previous_value, "assistant agent")
     if row["terminated"] is True:
-        return MethodNodeResult(
+        return dict(
             value={"terminated": True},
             state_update={
                 "pending_assistant": row,
@@ -307,7 +304,7 @@ def _record_assistant_turn(request: MethodNodeRequest) -> MethodNodeResult:
         {"kind": "input", "content": user["content"]},
         {"kind": "output", "content": row["content"]},
     )
-    return MethodNodeResult(
+    return dict(
         value={"content": row["content"]},
         state_update={
             "pending_assistant": row,
@@ -337,7 +334,7 @@ def _repeat_counter(
     return counter, hit
 
 
-def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
+def _evaluate_pair(request: MethodCall) -> MethodNodeResult:
     f = CAMEL_ROLE_PLAYING_FIDELITY
     user = request.state.get("pending_user")
     assistant = request.state.get("pending_assistant")
@@ -353,7 +350,7 @@ def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
     if f.instruction_marker not in user_content:
         user_no_instruction += 1
         if user_no_instruction == f.user_no_instruction_threshold:
-            return MethodNodeResult(
+            return dict(
                 value={"termination_reason": "user_no_instruct_threshold"},
                 state_update={
                     "user_no_instruction_count": user_no_instruction,
@@ -371,7 +368,7 @@ def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
     if f.instruction_marker in assistant_content:
         assistant_instruction += 1
         if assistant_instruction == f.assistant_instruction_threshold:
-            return MethodNodeResult(
+            return dict(
                 value={"termination_reason": "assistant_instruct_threshold"},
                 state_update={
                     "user_no_instruction_count": user_no_instruction,
@@ -399,7 +396,7 @@ def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
 
     task_done = f.task_done_token in user_content
     if task_done:
-        return MethodNodeResult(
+        return dict(
             value={"termination_reason": f.task_done_token},
             state_update={
                 "transcript": tuple(transcript),
@@ -419,7 +416,7 @@ def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
     transcript.append({"speaker": "assistant", "content": assistant_content})
     message_count += 1
     maxed = message_count >= f.max_saved_messages
-    return MethodNodeResult(
+    return dict(
         value={"message_count": message_count, "maxed": maxed},
         state_update={
             "transcript": tuple(transcript),
@@ -443,9 +440,9 @@ def _evaluate_pair(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     transcript = _sequence(request.state.get("transcript", ()), "transcript")
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": request.state["task_id"],
             "assistant_role": request.state["assistant_role"],
@@ -469,7 +466,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_camel_ai_society_method_program() -> MethodProgram:
+def build_camel_ai_society_method_program(method, ) -> None:
     f = CAMEL_ROLE_PLAYING_FIDELITY
     configuration: JsonObject = {
         "source_commit": f.audited_commit,
@@ -493,23 +490,15 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         ),
         "role_blobs": (f.assistant_roles_blob, f.user_roles_blob),
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="camel",
-            implementation_version=f.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="camel.ai-society.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     turns = f.max_saved_messages // 2 + 1
-    builder = MethodProgramBuilder(identity, entrypoint="specify_task")
+    builder = method
     builder.agent(
         "specify_task",
         "camel.task.specify",
         _TASK_SPECIFIER,
         ("record_specified_task",),
-        view_handler=_task_specify_view,
+        view=_task_specify_view,
     )
     builder.compute(
         "record_specified_task",
@@ -522,7 +511,7 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         "camel.task.plan",
         _TASK_PLANNER,
         ("record_planned_task",),
-        view_handler=_task_plan_view,
+        view=_task_plan_view,
     )
     builder.compute(
         "record_planned_task",
@@ -535,7 +524,7 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         "camel.assistant.bootstrap",
         _ASSISTANT_AGENT,
         ("record_bootstrap",),
-        view_handler=_bootstrap_view,
+        view=_bootstrap_view,
     )
     builder.compute(
         "record_bootstrap",
@@ -548,7 +537,7 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         "camel.user.turn",
         _USER_AGENT,
         ("record_user_turn",),
-        view_handler=_user_turn_view,
+        view=_user_turn_view,
         max_visits=turns,
     )
     builder.route(
@@ -563,7 +552,7 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         "camel.assistant.turn",
         _ASSISTANT_AGENT,
         ("record_assistant_turn",),
-        view_handler=_assistant_turn_view,
+        view=_assistant_turn_view,
         max_visits=turns,
     )
     builder.route(
@@ -581,29 +570,40 @@ def build_camel_ai_society_method_program() -> MethodProgram:
         max_visits=turns,
     )
     builder.return_node("return", "camel.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "camel.task-inception",
             "camel.independent-agent-histories",
             "camel.public-transcript",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "num_messages",
             "task_done",
             "repeat_threshold_hits",
         ),
-        artifact_kinds=("camel_transcript", "camel_task_inception"),
+        artifacts=("camel_transcript", "camel_task_inception"),
     )
+    return builder
 
 
-CAMEL_AI_SOCIETY_METHOD_PROGRAM = build_camel_ai_society_method_program()
+METHOD_CONFIGURER = build_camel_ai_society_method_program
+METHOD_ENTRYPOINT = "specify_task"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "CAMEL_AI_SOCIETY_METHOD_PROGRAM",
-    "build_camel_ai_society_method_program",
-    "camel_ai_society_initial_state",
+    'build_camel_ai_society_method_program',
+    'camel_ai_society_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'camel', "version": "paper-protocol", "semantic_contract": 'camel' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

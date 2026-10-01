@@ -1,17 +1,22 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium.api import MethodIdentity, MethodProgramIdentity
-from noetrium.api import JsonObject, JsonValue, canonical_digest
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import RAP_FIDELITY
 from .search import RAPReward, backpropagate_mean_rewards
@@ -96,7 +101,7 @@ def _reward(r0: float, r1: float) -> float:
     return RAPReward(r0, r1, RAP_FIDELITY.alpha).combined
 
 
-def _rap_world_model_view(request: MethodNodeRequest) -> JsonObject:
+def _rap_world_model_view(request: MethodCall) -> JsonObject:
     nodes = _nodes(request.state)
     current_id = _current_id(request.state)
     return {
@@ -107,7 +112,7 @@ def _rap_world_model_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _rap_reasoner_view(request: MethodNodeRequest) -> JsonObject:
+def _rap_reasoner_view(request: MethodCall) -> JsonObject:
     nodes = _nodes(request.state)
     current_id = _current_id(request.state)
     return {
@@ -150,17 +155,17 @@ def rap_blocksworld_initial_state(*, initial_state: str, goal: str) -> JsonObjec
     }
 
 
-def _prepare_current(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_current(request: MethodCall) -> MethodNodeResult:
     nodes = _nodes(request.state)
     current = _node(nodes, _current_id(request.state))
     evaluated = current.get("evaluated") is True
-    return MethodNodeResult(
+    return dict(
         value={"node_id": current["node_id"], "evaluated": evaluated},
         next_node="terminal" if evaluated else "world_model",
     )
 
 
-def _record_world_model(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_world_model(request: MethodCall) -> MethodNodeResult:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("RAP world-model result must be a mapping")
     predicted_change = _text(request.previous_value.get("predicted_change"), "predicted_change")
@@ -183,7 +188,7 @@ def _record_world_model(request: MethodNodeRequest) -> MethodNodeResult:
         }
     )
     updated = _replace_node(nodes, current_id, current)
-    return MethodNodeResult(
+    return dict(
         value={
             "node_id": current_id,
             "predicted_change": predicted_change,
@@ -206,16 +211,16 @@ def _is_terminal(node: Mapping[str, JsonValue]) -> bool:
     return r1 > 50.0 or depth >= RAP_FIDELITY.max_depth or reward < -1.0
 
 
-def _route_terminal(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_terminal(request: MethodCall) -> MethodNodeResult:
     current = _node(_nodes(request.state), _current_id(request.state))
     terminal = _is_terminal(current)
-    return MethodNodeResult(
+    return dict(
         value={"node_id": current["node_id"], "terminal": terminal},
         next_node="backpropagate" if terminal else "expansion",
     )
 
 
-def _route_expansion(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_expansion(request: MethodCall) -> MethodNodeResult:
     current = _node(_nodes(request.state), _current_id(request.state))
     if current.get("expanded") is not True:
         next_node = "generate"
@@ -227,7 +232,7 @@ def _route_expansion(request: MethodNodeRequest) -> MethodNodeResult:
         ):
             raise TypeError("RAP node children must be a sequence")
         next_node = "select" if children else "backpropagate"
-    return MethodNodeResult(
+    return dict(
         value={"node_id": current["node_id"], "expanded": current.get("expanded") is True},
         next_node=next_node,
     )
@@ -253,7 +258,7 @@ def _action_candidates(value: JsonValue) -> tuple[tuple[str, float], ...]:
     return tuple(rows)
 
 
-def _record_expansion(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_expansion(request: MethodCall) -> MethodNodeResult:
     candidates = _action_candidates(request.previous_value)
     nodes = _nodes(request.state)
     current_id = _current_id(request.state)
@@ -288,7 +293,7 @@ def _record_expansion(request: MethodNodeRequest) -> MethodNodeResult:
     current["expanded"] = True
     current["children"] = tuple(row["node_id"] for row in children)
     updated = (*_replace_node(nodes, current_id, current), *children)
-    return MethodNodeResult(
+    return dict(
         value={"node_id": current_id, "children": current["children"]},
         state_update={
             "nodes": updated,
@@ -308,7 +313,7 @@ def _uct_score(node: Mapping[str, JsonValue], *, parent_visits: int) -> float:
     return _number(maximum, "child max_return") + RAP_FIDELITY.exploration_weight * math.sqrt(log_n / visits)
 
 
-def _select_child(request: MethodNodeRequest) -> MethodNodeResult:
+def _select_child(request: MethodCall) -> MethodNodeResult:
     nodes = _nodes(request.state)
     current_id = _current_id(request.state)
     parent = _node(nodes, current_id)
@@ -328,7 +333,7 @@ def _select_child(request: MethodNodeRequest) -> MethodNodeResult:
         if score > best_score:
             best_id = child_id
             best_score = score
-    return MethodNodeResult(
+    return dict(
         value={"selected_node_id": best_id, "uct": best_score},
         state_update={
             "current_node_id": best_id,
@@ -363,7 +368,7 @@ def _best_terminal(nodes: tuple[Mapping[str, JsonValue], ...]) -> tuple[str, flo
     return best
 
 
-def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
+def _backpropagate(request: MethodCall) -> MethodNodeResult:
     nodes = _nodes(request.state)
     path = _path(request.state)
     leaf_to_root = tuple(
@@ -390,7 +395,7 @@ def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
 
     best = _best_terminal(updated)
     rollout = _integer(request.state.get("rollout"), "rollout") + 1
-    return MethodNodeResult(
+    return dict(
         value={
             "rollout": rollout,
             "best_node_id": "" if best is None else best[0],
@@ -407,16 +412,16 @@ def _backpropagate(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _route_rollout(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_rollout(request: MethodCall) -> MethodNodeResult:
     rollout = _integer(request.state.get("rollout"), "rollout")
     complete = rollout >= RAP_FIDELITY.rollouts
-    return MethodNodeResult(
+    return dict(
         value={"rollout": rollout, "complete": complete},
         next_node="return" if complete else "prepare",
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     nodes = _nodes(request.state)
     best_id = _text(request.state.get("best_node_id"), "best_node_id", allow_empty=True)
     if best_id:
@@ -427,7 +432,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
         )
     else:
         actions = ()
-    return MethodNodeResult(
+    return dict(
         value={
             "rollouts": _integer(request.state.get("rollout"), "rollout"),
             "best_node_id": best_id,
@@ -438,7 +443,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_rap_blocksworld_method_program() -> MethodProgram:
+def build_rap_blocksworld_method_program(method, ) -> None:
     configuration: JsonObject = {
         "source_repository": RAP_FIDELITY.source.repository,
         "source_commit": RAP_FIDELITY.source.commit,
@@ -457,24 +462,16 @@ def build_rap_blocksworld_method_program() -> MethodProgram:
         "reward_aggregation": RAP_FIDELITY.mcts_reward_aggregation,
         "child_aggregation": RAP_FIDELITY.mcts_child_aggregation,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="rap-blocksworld",
-            implementation_version="official-774817c2",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="rap.blocksworld.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     search_visits = RAP_FIDELITY.rollouts * (RAP_FIDELITY.max_depth + 2)
-    builder = MethodProgramBuilder(identity, entrypoint="prepare")
+    builder = method
     builder.route("prepare", "rap.prepare-current", _prepare_current, ("terminal", "world_model"), max_visits=search_visits)
     builder.agent(
         "world_model",
         "rap.world-model",
         _WORLD_MODEL_AGENT_ID,
         ("record_world_model",),
-        view_handler=_rap_world_model_view,
+        view=_rap_world_model_view,
         max_visits=search_visits,
     )
     builder.compute("record_world_model", "rap.record-world-model", _record_world_model, ("terminal",), max_visits=search_visits)
@@ -485,7 +482,7 @@ def build_rap_blocksworld_method_program() -> MethodProgram:
         "rap.generate-actions",
         _REASONER_AGENT_ID,
         ("record_expansion",),
-        view_handler=_rap_reasoner_view,
+        view=_rap_reasoner_view,
         max_visits=search_visits,
     )
     builder.compute("record_expansion", "rap.record-expansion", _record_expansion, ("expansion",), max_visits=search_visits)
@@ -493,20 +490,31 @@ def build_rap_blocksworld_method_program() -> MethodProgram:
     builder.compute("backpropagate", "rap.mean-backpropagate", _backpropagate, ("rollout",), max_visits=RAP_FIDELITY.rollouts)
     builder.route("rollout", "rap.rollout-route", _route_rollout, ("prepare", "return"), max_visits=RAP_FIDELITY.rollouts)
     builder.return_node("return", "rap.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=("rap.search.tree", "model.invocation"),
-        metric_names=("plan_valid", "rollout_count"),
-        artifact_kinds=("rap_search_tree",),
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=("rap.search.tree", "model.invocation"),
+        metrics=("plan_valid", "rollout_count"),
+        artifacts=("rap_search_tree",),
     )
+    return builder
 
 
-RAP_BLOCKSWORLD_METHOD_PROGRAM = build_rap_blocksworld_method_program()
+METHOD_CONFIGURER = build_rap_blocksworld_method_program
+METHOD_ENTRYPOINT = "prepare"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "RAP_BLOCKSWORLD_METHOD_PROGRAM",
-    "build_rap_blocksworld_method_program",
-    "rap_blocksworld_initial_state",
+    'build_rap_blocksworld_method_program',
+    'rap_blocksworld_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'rap', "version": "paper-protocol", "semantic_contract": 'rap' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

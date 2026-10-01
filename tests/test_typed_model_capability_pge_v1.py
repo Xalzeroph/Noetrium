@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,9 +18,9 @@ from noetrium_platform.capabilities.model.api import (
     ModelCapabilityStreamSession,
     ModelCapabilityStreamTerminal,
     ModelProviderProfile,
-    MultimodalInferenceOutput,
-    MultimodalInferenceInput,
-    MultimodalContent,
+    MultimodalResponse,
+    MultimodalRequest,
+    MultimodalPart,
     NamedScalar,
     ProjectModelBinding,
     ProjectModelCapabilityClientPort,
@@ -43,13 +44,21 @@ from noetrium_platform.capabilities.model.api import (
     ValueInferenceInput,
     ValueInferenceOutput,
 )
-from noetrium_platform.capabilities.model.providers import (
-    FunctionalModelCapabilityProvider, QualifiedStructuredGenerationCapabilityProvider,
-)
+from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
+from tests._functional_model_capability_support import FunctionalModelCapabilityProvider
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    ModelEndpointReplicaSet,
+    ModelEndpointResponse,
+    QualifiedModelEndpointBinding,
+)
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from tests._model_tokenization_support import FixedModelRequestTokenizationProvider
+
+
+def _context() -> ExecutionContext:
+    return ExecutionContext("cap-run", "cap-trace", "cap-span")
 
 
 D = {name: char * 64 for name, char in {
@@ -144,7 +153,7 @@ def test_embedding_invocation_and_response_bind_exact_schema_and_digests() -> No
         "embedding", "model.embedding.input.v1", "model.embedding.output.v1"
     )
     payload = EmbeddingInput(("alpha", "beta"), normalize=True)
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "embed-1", payload)
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, "embed-1", payload, context=_context())
     output = EmbeddingOutput(
         (EmbeddingVector((1.0, 2.0)), EmbeddingVector((3.0, 4.0))),
         model_revision="rev-1",
@@ -180,7 +189,7 @@ def test_scoring_is_typed_and_rejects_duplicate_candidate_identity() -> None:
         (ScoredCandidate("a", 0.2), ScoredCandidate("b", 0.8)),
         model_revision="rev-1",
     )
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "score-1", request)
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, "score-1", request, context=_context())
     client = FunctionalModelCapabilityProvider(
         "scoring", _binding, lambda payload: output
     ).bind_capability(requirement)
@@ -222,7 +231,12 @@ def test_schema_drift_fails_before_handler_execution() -> None:
     client = FunctionalModelCapabilityProvider("embedding", _binding, handler).bind_capability(requirement)
     with pytest.raises(ValueError, match="schema"):
         ModelCapabilityInvocation(
-            requirement.digest(), "embedding", "wrong.schema", "embed-drift", EmbeddingInput(("x",))
+            requirement.digest(),
+            "embedding",
+            "wrong.schema",
+            "embed-drift",
+            _context(),
+            EmbeddingInput(("x",)),
         )
     assert not invoked
 
@@ -267,13 +281,15 @@ def test_binding_capability_or_schema_drift_fails_before_handler() -> None:
     assert not invoked
 
 
-def test_generation_provider_rejects_non_generation_before_binding_lookup() -> None:
+def test_qualified_provider_rejects_unadvertised_protocol_before_binding_lookup() -> None:
     from noetrium_platform.capabilities.model.api import ModelBindingDiagnosticCode
-    from noetrium_platform.capabilities.model.providers import QualifiedModelProjectProvider
 
     class ForbiddenBindingLookup:
         def binding_for(self, **kwargs):
-            raise AssertionError("non-generation requirement reached generation binding lookup")
+            raise AssertionError("unadvertised protocol reached binding lookup")
+
+        def replica_set_for(self, **kwargs):
+            raise AssertionError("unadvertised protocol reached replica lookup")
 
     requirement = ModelCapabilityRequirement(
         role="scientist",
@@ -282,16 +298,17 @@ def test_generation_provider_rejects_non_generation_before_binding_lookup() -> N
         output_schema_id="model.embedding.output.v1",
     )
     provider = QualifiedModelProjectProvider(
-        profile=ModelProviderProfile("generation-only", ("chat",)),
+        profile=ModelProviderProfile("generation-only", ("generation", "chat")),
         bindings=ForbiddenBindingLookup(),  # type: ignore[arg-type]
-        endpoint_factory=lambda binding: (_ for _ in ()).throw(AssertionError("endpoint touched")),
-        model_requests=object(),  # type: ignore[arg-type]
+        replica_pool_factory=lambda value: (_ for _ in ()).throw(
+            AssertionError("pool touched")
+        ),
+        model_requests=_CapabilityRecorder(),  # type: ignore[arg-type]
         tokenization_provider=FixedModelRequestTokenizationProvider(),
     )
     diagnostics = provider.diagnose(requirement)
     assert len(diagnostics) == 1
-    assert diagnostics[0].code is ModelBindingDiagnosticCode.CAPABILITY_PROTOCOL_UNSUPPORTED
-
+    assert diagnostics[0].code is ModelBindingDiagnosticCode.CAPABILITY_MISSING
 
 
 def test_ranking_capability_preserves_ordered_semantics_without_prompt_identity() -> None:
@@ -311,7 +328,7 @@ def test_ranking_capability_preserves_ordered_semantics_without_prompt_identity(
         (RankedCandidate("b", 1, 0.9), RankedCandidate("a", 2, 0.7)),
         model_revision="ranker-r1",
     )
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "rank-1", request)
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, "rank-1", request, context=_context())
     response = FunctionalModelCapabilityProvider(
         "ranking", _binding, lambda payload: output
     ).bind_capability(requirement).invoke(invocation)
@@ -340,7 +357,7 @@ def test_policy_inference_capability_returns_typed_normalized_action_distributio
         model_revision="policy-r3",
         selected_action_id="advance",
     )
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "policy-1", request)
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, "policy-1", request, context=_context())
     response = FunctionalModelCapabilityProvider(
         "policy-inference", _binding, lambda payload: output
     ).bind_capability(requirement).invoke(invocation)
@@ -361,29 +378,69 @@ def test_policy_inference_capability_returns_typed_normalized_action_distributio
 
 
 
-class _StructuredTextClient:
-    def __init__(self, binding: ProjectModelBinding) -> None:
+class _CapabilityRecorder:
+    durability = "test"
+
+    def record(self, **kwargs):
+        raise AssertionError("generation tests construct envelopes explicitly")
+
+    def record_operation(self, **kwargs):
+        raise AssertionError("operation recording is not used in this focused test")
+
+    def reconstruct(self, envelope):
+        raise AssertionError("reconstruction is not used")
+
+    def reconstruct_request_body(self, envelope):
+        raise AssertionError("reconstruction is not used")
+
+    def verify_visible_request(self, envelope, actual_body):
+        return None
+
+
+
+class _StructuredBindings:
+    def __init__(self, binding: QualifiedModelEndpointBinding) -> None:
+        self.binding = binding
+
+    def binding_for(self, *, role: str, capability_id: str, input_schema_id: str, output_schema_id: str, prompt_generation: str | None = None):
+        assert role == self.binding.role
+        assert prompt_generation == self.binding.prompt_generation
+        return self.binding
+
+    def replica_set_for(self, *, role: str, capability_id: str, input_schema_id: str, output_schema_id: str, prompt_generation: str | None = None):
+        assert role == self.binding.role
+        assert prompt_generation == self.binding.prompt_generation
+        return ModelEndpointReplicaSet((self.binding,))
+
+
+class _StructuredPool:
+    def __init__(self, binding: QualifiedModelEndpointBinding) -> None:
         self.binding = binding
         self.last_request = None
 
-    def complete(self, request):
-        self.last_request = request
-        return ProjectModelResponse(
-            request_digest=request.request_digest,
-            binding_digest=self.binding.digest(),
-            response_digest="f" * 64,
+    @property
+    def replica_set(self):
+        return ModelEndpointReplicaSet((self.binding,))
+
+    def snapshot(self):
+        return None
+
+    def complete(self, envelope, body):
+        self.last_request = SimpleNamespace(envelope=envelope, body=body)
+        response = ModelEndpointResponse(
+            request_id=envelope.request_id,
+            deployment_id=self.binding.deployment_id,
             text='{"answer": 42, "ok": true}',
             finish_reason="stop",
         )
-
-
-class _StructuredTextProvider:
-    def __init__(self, client: _StructuredTextClient) -> None:
-        self.client = client
-
-    def bind(self, requirement):
-        assert requirement.capability_id == "structured-generation"
-        return self.client
+        return SimpleNamespace(
+            request=SimpleNamespace(
+                deployment_id=self.binding.deployment_id,
+                deployment_generation=self.binding.deployment_generation,
+            ),
+            response=response,
+            dispatch_digest="e" * 64,
+        )
 
 
 class _JsonSchemaDecoder:
@@ -426,30 +483,67 @@ def _structured_binding(requirement: ModelCapabilityRequirement) -> ProjectModel
     )
 
 
-def test_structured_generation_adapts_qualified_text_generation_without_new_prompt_or_endpoint_authority() -> None:
+def test_structured_generation_uses_the_single_qualified_typed_provider() -> None:
     requirement = _structured_requirement()
-    binding = _structured_binding(requirement)
-    text_client = _StructuredTextClient(binding)
+    qualified = QualifiedModelEndpointBinding(
+        role=requirement.role,
+        capability_id=requirement.capability_id,
+        input_schema_id=requirement.input_schema_id,
+        output_schema_id=requirement.output_schema_id,
+        deployment_id="deployment-a",
+        deployment_generation=D["generation"],
+        base_url="http://127.0.0.1:8000",
+        model=_model(),
+        model_stack_digest=D["stack"],
+        qualification_certificate_digest=D["certificate"],
+        runtime_qualification_digest=D["runtime"],
+        host_identity_digest=D["host"],
+        prompt_generation=requirement.prompt_generation_id,
+        max_admitted_concurrency=2,
+        runtime_canary_evidence_digests=(D["canary"],),
+        tokenizer_sha256="9" * 64,
+        chat_template_sha256=None,
+        verified_capabilities=("structured-generation",),
+    )
+    pool = _StructuredPool(qualified)
     decoder = _JsonSchemaDecoder()
-    provider = QualifiedStructuredGenerationCapabilityProvider(_StructuredTextProvider(text_client), decoder)
+    provider = QualifiedModelProjectProvider(
+        ModelProviderProfile("qualified-text", ("structured-generation",)),
+        _StructuredBindings(qualified),
+        lambda replica_set: pool,
+        _CapabilityRecorder(),  # type: ignore[arg-type]
+        FixedModelRequestTokenizationProvider(),
+        structured_generation_decoder=decoder,
+    )
     envelope = ModelRequestEnvelope(
-        "model-request.v1", "structured-request-1",
-        ExecutionContext("run-s", "trace-s", "span-s"), requirement.role, _model(),
-        requirement.prompt_generation_id, requirement.prompt_id, requirement.prompt_digest,
+        "model-request.v1",
+        "structured-request-1",
+        ExecutionContext("run-s", "trace-s", "span-s"),
+        requirement.role,
+        _model(),
+        requirement.prompt_generation_id,
+        requirement.prompt_id,
+        requirement.prompt_digest,
         ArtifactBlobRef("7" * 64, 2, "application/json"),
     )
     payload = StructuredGenerationInput(
-        envelope, {"messages": ({"role": "user", "content": "return json"},)}, "9" * 64
+        envelope,
+        {"messages": ({"role": "user", "content": "return json"},)},
+        "9" * 64,
     )
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "structured-1", payload)
+    invocation = ModelCapabilityInvocation.from_requirement(
+        requirement,
+        "structured-1",
+        payload,
+        context=_context(),
+    )
     response = provider.bind_capability(requirement).invoke(invocation)
     assert response.output.document["answer"] == 42
     assert response.output.output_schema_sha256 == "9" * 64
-    assert response.output.source_response_digest == "f" * 64
+    assert len(response.output.source_response_digest) == 64
     assert response.output.model_revision == _model().revision
     assert decoder.schemas == ["9" * 64]
-    assert text_client.last_request.envelope is envelope
-    assert text_client.last_request.requirement_digest == requirement.digest()
+    assert pool.last_request.envelope is envelope
 
 
 def test_structured_generation_rejects_noncanonical_output_schema_before_text_provider() -> None:
@@ -470,45 +564,68 @@ def test_structured_generation_rejects_noncanonical_output_schema_before_text_pr
 
 def test_multimodal_inference_uses_content_addressed_refs_not_inline_media_or_paths() -> None:
     requirement = _requirement(
-        "multimodal-inference", "model.multimodal.input.v1", "model.multimodal.output.v1"
+        "multimodal-inference",
+        "model.multimodal.request.v1",
+        "model.multimodal.response.v1",
     )
     image = ArtifactBlobRef("a" * 64, 4096, "image/png")
     audio = ArtifactBlobRef("b" * 64, 8192, "audio/wav")
-    request = MultimodalInferenceInput(
-        (MultimodalContent("observation-image", image), MultimodalContent("observation-audio", audio)),
+    request = MultimodalRequest(
+        (
+            MultimodalPart("observation-image", image, modality_id="image"),
+            MultimodalPart("observation-audio", audio, modality_id="audio"),
+        ),
         instruction="identify the event",
     )
     evidence = ArtifactBlobRef("c" * 64, 1024, "application/json")
-    output = MultimodalInferenceOutput(
+    output = MultimodalResponse(
         model_revision="multimodal-r4",
         text="event detected",
-        content=(MultimodalContent("derived-evidence", evidence),),
+        parts=(
+            MultimodalPart(
+                "derived-evidence",
+                evidence,
+                modality_id="application/json",
+            ),
+        ),
     )
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, "multimodal-1", request)
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, "multimodal-1", request, context=_context())
     response = FunctionalModelCapabilityProvider(
         "multimodal-inference", _binding, lambda payload: output
     ).bind_capability(requirement).invoke(invocation)
     assert response.output.text == "event detected"
-    assert response.output.content[0].content.content_sha256 == "c" * 64
-    assert request.content[0].content.media_type == "image/png"
-    assert request.content[1].content.media_type == "audio/wav"
+    assert response.output.parts[0].content.content_sha256 == "c" * 64
+    assert request.parts[0].content.media_type == "image/png"
+    assert request.parts[1].content.media_type == "audio/wav"
     assert requirement.prompt_id is None
 
 
 def test_multimodal_identity_changes_with_content_digest_and_empty_output_fails_closed() -> None:
-    left = MultimodalInferenceInput(
-        (MultimodalContent("image", ArtifactBlobRef("d" * 64, 5, "image/png")),),
+    left = MultimodalRequest(
+        (
+            MultimodalPart(
+                "image",
+                ArtifactBlobRef("d" * 64, 5, "image/png"),
+                modality_id="image",
+            ),
+        ),
         instruction="inspect",
     )
-    right = MultimodalInferenceInput(
-        (MultimodalContent("image", ArtifactBlobRef("e" * 64, 5, "image/png")),),
+    right = MultimodalRequest(
+        (
+            MultimodalPart(
+                "image",
+                ArtifactBlobRef("e" * 64, 5, "image/png"),
+                modality_id="image",
+            ),
+        ),
         instruction="inspect",
     )
     assert left.digest() != right.digest()
-    with pytest.raises(ValueError, match="text or content"):
-        MultimodalInferenceOutput(model_revision="multimodal-r4")
+    with pytest.raises(ValueError, match="text or parts"):
+        MultimodalResponse(model_revision="multimodal-r4")
     with pytest.raises(TypeError, match="ArtifactBlobRef"):
-        MultimodalContent("image", b"raw-bytes")  # type: ignore[arg-type]
+        MultimodalPart("image", b"raw-bytes")  # type: ignore[arg-type]
 
 
 class _PullEmbeddingStream:
@@ -599,7 +716,7 @@ class _StreamingEmbeddingProvider:
 
 def _stream_fixture():
     requirement = _requirement('embedding', 'model.embedding.input.v1', 'model.embedding.output.v1')
-    invocation = ModelCapabilityInvocation.from_requirement(requirement, 'stream-1', EmbeddingInput(('alpha',)))
+    invocation = ModelCapabilityInvocation.from_requirement(requirement, 'stream-1', EmbeddingInput(('alpha',)), context=_context())
     binding = _binding(requirement)
     binding_digest = binding.digest()
     first = ModelCapabilityStreamChunk(

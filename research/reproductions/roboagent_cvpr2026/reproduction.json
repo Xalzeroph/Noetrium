@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "roboagent_cvpr2026",
-  "package_digest": "c93079a0c456a71d8d2c11c14327cdd3d684fd207f62a5efea844fd388605034",
-  "definition_digest": "87f0fedec0b991e30a5b4f1a0d986a0569d09b3167ebedb041d9022c7420a0a7",
+  "package_digest": "c63940a7cf01723c52fd45a9caa5c480730a8a1e18f7023b73dc8c38820646a4",
+  "definition_digest": "cd317e24352df72213153a27eae85695b6a92dc1bbe08af30bfe5cf65d28195a",
   "source_registry_digest": "0b3ad74ac3a4724a41459fdf4cb59a21de449af23739fab7aa2f6afc1fa298c0",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/roboagent_cvpr2026/program.py",
       "declaration_digest": "0250dc451e96950d7bf8e45d3af5c3e688aa44195399fa530dfd892442566154",
-      "content_sha256": "4a81b1d04bdf96fb78e59b43487ddfd22cd893b1ded1aa724ce21fac8c7bada1"
+      "content_sha256": "44fca0360ea7f663af0e27401f3d12a6459b830dc2dcd5f9eacf49e769399837"
     },
     {
       "kind": "study",
       "path": "research/reproductions/roboagent_cvpr2026/study.py",
       "declaration_digest": "f94216a7b9f88673d8b3c1bd1390c1f4eb3ffc2dec70e54ea32a805cd3ab76b2",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/roboagent_cvpr2026/program.py",
@@ -136,25 +136,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "roboagent_cvpr2026",
-    "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
+    "program_digest": "98acc62a2f10299229e138184e410087660b4115447f34afd0fecdabd8de9595",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:roboagent_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

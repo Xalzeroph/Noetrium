@@ -64,8 +64,6 @@ class VersionedMemoryGraph:
         base = self.snapshot()
         if not operations:
             raise MemoryGraphIntegrityError("cannot stage an empty memory graph edit")
-        if len(operations) > 8:
-            raise MemoryGraphIntegrityError("memory graph edit exceeds bounded operation count")
         nodes = {node.node_id: node for node in base.nodes}
         edges = {(edge.source_id, edge.target_id, edge.relation): edge for edge in base.edges}
         operation_digests: list[str] = []
@@ -93,6 +91,11 @@ class VersionedMemoryGraph:
                     dict(payload.get("transform", {})),
                     dict(payload.get("maintenance_contract", {})),
                     dict(payload.get("provenance", {})),
+                    (
+                        None
+                        if payload.get("selector") is None
+                        else dict(payload["selector"])
+                    ),
                 )
             elif operation.operation == "update_node":
                 current = nodes.get(operation.target_id)
@@ -117,15 +120,39 @@ class VersionedMemoryGraph:
                     dict(payload.get("transform", current.transform)),
                     dict(payload.get("maintenance_contract", current.maintenance_contract)),
                     dict(payload.get("provenance", current.provenance)),
+                    (
+                        current.selector
+                        if "selector" not in payload
+                        else (
+                            None
+                            if payload["selector"] is None
+                            else dict(payload["selector"])
+                        )
+                    ),
                 )
             elif operation.operation == "retire_node":
                 current = nodes.get(operation.target_id)
                 if current is None:
                     raise MemoryGraphIntegrityError("cannot retire a missing memory node")
                 nodes[operation.target_id] = MemoryNodeRecord(
-                    current.node_id, current.kind, current.label, current.content,
-                    f"g{_generation_number(base.generation) + 1}", False,
-                    current.evidence_ids, current.parent_ids,
+                    current.node_id,
+                    current.kind,
+                    current.label,
+                    current.content,
+                    f"g{_generation_number(base.generation) + 1}",
+                    False,
+                    current.evidence_ids,
+                    current.parent_ids,
+                    current.purpose,
+                    current.scope,
+                    current.mode,
+                    current.schema,
+                    current.access,
+                    current.sources,
+                    current.transform,
+                    current.maintenance_contract,
+                    current.provenance,
+                    current.selector,
                 )
             elif operation.operation == "create_edge":
                 source_id = str(operation.payload.get("source_id", ""))
@@ -146,6 +173,10 @@ class VersionedMemoryGraph:
                 if current is None:
                     raise MemoryGraphIntegrityError("cannot retire a missing memory edge")
                 edges[key] = MemoryEdgeRecord(source_id, target_id, relation, False)
+            else:
+                raise MemoryGraphIntegrityError(
+                    f"unsupported memory graph operation: {operation.operation!r}"
+                )
         active_edges = tuple(edge for edge in edges.values() if edge.active)
         self._validate_dag(nodes, active_edges)
         result = MemoryGraphSnapshot(

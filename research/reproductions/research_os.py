@@ -30,9 +30,11 @@ from noetrium_platform.research.execution.machines.api import (
     ResearchProgram as MachineResearchProgram,
 )
 from noetrium_platform.research.execution.workflow.api import MethodProgram
-from noetrium_platform.research.experimentation.lifecycle.api import (
+from noetrium_platform.research.experimentation.api import (
+    BenchmarkCutRequirement,
     BenchmarkTaskSet,
     ResearchStudyDefinition,
+    materialize_research_study_spec,
 )
 
 from .contracts import (
@@ -40,7 +42,7 @@ from .contracts import (
     ReproductionAssetRef,
     ReproductionDefinition,
     ReproductionLifecycle,
-    ReproductionMethodProgramFactoryBinding,
+    ReproductionMethodConfigurerBinding,
 )
 
 
@@ -262,7 +264,7 @@ class ReproductionExecutionRequest:
 
     package: str
     study_factory: str
-    benchmark: BenchmarkTaskSet
+    benchmark: object
     benchmark_split_ids: tuple[str, ...]
     benchmark_resolution_proof_digest: str
 
@@ -476,6 +478,7 @@ class ReproductionStudyFactoryBinding:
     benchmark_parameter: str
     parameter_names: tuple[str, ...]
     required_parameters: tuple[str, ...]
+    benchmark_requirements: tuple[BenchmarkCutRequirement, ...]
     binding_digest: str
 
     def __post_init__(self) -> None:
@@ -489,8 +492,38 @@ class ReproductionStudyFactoryBinding:
             raise ValueError("reproduction Study factory parameters must be unique")
         if any(name not in self.parameter_names for name in self.required_parameters):
             raise ValueError("reproduction Study factory required parameters drifted")
+        if type(self.benchmark_requirements) is not tuple or any(
+            type(row) is not BenchmarkCutRequirement
+            for row in self.benchmark_requirements
+        ):
+            raise TypeError(
+                "reproduction Study factory benchmark requirements must be typed tuple"
+            )
+        benchmark_requirement_ids = tuple(
+            row.benchmark_id for row in self.benchmark_requirements
+        )
+        if len(benchmark_requirement_ids) != len(set(benchmark_requirement_ids)):
+            raise ValueError(
+                "reproduction Study factory benchmark requirements must be unique"
+            )
         if len(self.binding_digest) != 64:
             raise ValueError("reproduction Study factory digest must be SHA-256 text")
+
+    def benchmark_requirement(
+        self,
+        benchmark_id: str,
+    ) -> BenchmarkCutRequirement | None:
+        matches = tuple(
+            row
+            for row in self.benchmark_requirements
+            if row.benchmark_id == benchmark_id
+        )
+        if len(matches) > 1:
+            raise ReproductionResearchOSCompileError(
+                f"{self.package} Study factory {self.qualname} declares multiple "
+                f"benchmark cut requirements for {benchmark_id!r}"
+            )
+        return None if not matches else matches[0]
 
     @property
     def benchmark_split_parameter(self) -> str | None:
@@ -521,52 +554,105 @@ class ReproductionStudyFactoryBinding:
 
 
 @dataclass(frozen=True, slots=True)
-class ReproductionMethodProgramBinding:
+class ReproductionMethodBinding:
     package: str
     asset: ReproductionAssetRef
     module: str
     qualname: str
-    program_digest: str | None
-    binding_kind: str = "symbol"
-    factory: ReproductionMethodProgramFactoryBinding | None = None
+    method_id: str
+    entrypoint: str
+    version: str
+    semantic_contract: str
+    configurer_args: tuple[JsonValue, ...]
+    configurer_kwargs: Mapping[str, JsonValue]
+    method_digest: str | None
+    configurer_binding: ReproductionMethodConfigurerBinding | None = None
 
     def __post_init__(self) -> None:
         if not self.package:
-            raise ValueError("reproduction MethodProgram binding package is required")
+            raise ValueError("reproduction Method binding package is required")
         if self.asset.kind is not ReproductionAssetKind.METHOD_PROGRAM:
-            raise ValueError("reproduction MethodProgram binding asset kind drifted")
-        if not self.module or not self.qualname:
-            raise ValueError("reproduction MethodProgram import coordinates are required")
-        if self.binding_kind not in {"symbol", "factory"}:
-            raise ValueError("reproduction MethodProgram binding kind is invalid")
-        if self.binding_kind == "symbol":
-            if self.factory is not None:
-                raise ValueError("symbol MethodProgram binding cannot carry factory metadata")
-            if type(self.program_digest) is not str or len(self.program_digest) != 64:
-                raise ValueError("symbol MethodProgram digest must be SHA-256 text")
-        else:
-            if type(self.factory) is not ReproductionMethodProgramFactoryBinding:
-                raise TypeError("factory MethodProgram binding requires typed factory")
-            if self.qualname != self.factory.qualname:
-                raise ValueError("factory MethodProgram qualname drifted")
-            if self.factory.exact:
-                if type(self.program_digest) is not str or len(self.program_digest) != 64:
-                    raise ValueError("exact factory MethodProgram requires SHA-256 digest")
-            elif self.program_digest is not None:
-                raise ValueError(
-                    "parameterized MethodProgram factory cannot claim a program digest"
-                )
+            raise ValueError("reproduction Method binding asset kind drifted")
+        for name, value in (
+            ("module", self.module),
+            ("qualname", self.qualname),
+            ("method_id", self.method_id),
+            ("entrypoint", self.entrypoint),
+            ("version", self.version),
+            ("semantic_contract", self.semantic_contract),
+        ):
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"reproduction Method {name} must be non-empty")
+        if type(self.configurer_args) is not tuple:
+            raise TypeError("reproduction Method configurer args must be tuple")
+        frozen_kwargs = freeze_json(self.configurer_kwargs)
+        if not isinstance(frozen_kwargs, Mapping):
+            raise TypeError("reproduction Method configurer kwargs must be object")
+        object.__setattr__(self, "configurer_kwargs", frozen_kwargs)
+        if self.method_digest is not None and (
+            type(self.method_digest) is not str or len(self.method_digest) != 64
+        ):
+            raise ValueError("reproduction Method digest must be SHA-256 text")
 
     @property
     def exact(self) -> bool:
-        return self.program_digest is not None
+        return self.method_digest is not None
 
     @property
     def binding_digest(self) -> str:
-        if self.factory is not None:
-            return self.factory.binding_digest
-        assert self.program_digest is not None
-        return self.program_digest
+        return canonical_digest({
+            "module": self.module,
+            "qualname": self.qualname,
+            "method_id": self.method_id,
+            "entrypoint": self.entrypoint,
+            "version": self.version,
+            "semantic_contract": self.semantic_contract,
+            "args": self.configurer_args,
+            "kwargs": self.configurer_kwargs,
+            "configurer_binding": (
+                None
+                if self.configurer_binding is None
+                else self.configurer_binding.binding_digest
+            ),
+            "method_digest": self.method_digest,
+        })
+
+
+def _materialize_method_digest(
+    configurer: object,
+    *,
+    method_id: str,
+    entrypoint: str,
+    version: str,
+    semantic_contract: str,
+    args: tuple[JsonValue, ...],
+    kwargs: Mapping[str, JsonValue],
+) -> str:
+    if not callable(configurer):
+        raise TypeError("Method configurer must be callable")
+    root = api.ResearchPortfolioBuilder("reproduction-probe")
+    program = root.program("reproduction-probe")
+    program.method(
+        "method",
+        configurer,
+        method_id=method_id,
+        entrypoint=entrypoint,
+        version=version,
+        semantic_contract=semantic_contract,
+        args=args,
+        kwargs=kwargs,
+    )
+    program.method_node("method", definitions=("method",))
+    frozen = root.freeze()
+    implementation = next(
+        row.implementation
+        for row in frozen.programs[0].definitions
+        if row.definition_id == "method"
+    )
+    digest = getattr(implementation, "method_digest", None)
+    if type(digest) is not str or len(digest) != 64:
+        raise TypeError("top-level Method materialization produced no stable digest")
+    return digest
 
 
 def _asset(
@@ -639,19 +725,25 @@ def resolve_study_factory_bindings(
             signature = inspect.signature(value)
         except (TypeError, ValueError):
             continue
-        if _annotation_text(signature.return_annotation) != "ResearchStudyDefinition":
+        metadata = getattr(value, "__noetrium_study_spec__", None)
+        if metadata is None:
             continue
-        parameters = tuple(signature.parameters.values())
-        benchmark_parameters = tuple(
-            parameter.name
-            for parameter in parameters
-            if "BenchmarkTaskSet" in _annotation_text(parameter.annotation)
-        )
-        if len(benchmark_parameters) != 1:
+        if not isinstance(metadata, Mapping):
             raise ReproductionResearchOSCompileError(
-                f"{definition.package} Study factory {name} must declare exactly one "
-                f"BenchmarkTaskSet parameter; found={benchmark_parameters}"
+                f"{definition.package} Study factory {name} metadata must be mapping"
             )
+        benchmark_parameter = metadata.get("benchmark_parameter")
+        if type(benchmark_parameter) is not str or not benchmark_parameter.strip():
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} has no benchmark parameter"
+            )
+        parameters = tuple(signature.parameters.values())
+        if benchmark_parameter not in signature.parameters:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} metadata references "
+                f"unknown benchmark parameter {benchmark_parameter!r}"
+            )
+        benchmark_parameters = (benchmark_parameter,)
         parameter_names = tuple(parameter.name for parameter in parameters)
         required_parameters = tuple(
             parameter.name
@@ -662,6 +754,41 @@ def resolve_study_factory_bindings(
                 inspect.Parameter.VAR_KEYWORD,
             }
         )
+        raw_benchmark_requirements = getattr(
+            value,
+            "__noetrium_benchmark_cut_requirements__",
+            (),
+        )
+        if type(raw_benchmark_requirements) is not tuple or any(
+            not isinstance(row, Mapping)
+            for row in raw_benchmark_requirements
+        ):
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} benchmark metadata is invalid"
+            )
+        benchmark_requirements = tuple(
+            BenchmarkCutRequirement(
+                str(row["benchmark_id"]),
+                str(row["revision_id"]),
+                tuple(row.get("required_split_ids", ())),
+                row.get("cut_digest"),
+            )
+            for row in raw_benchmark_requirements
+        )
+        unknown_benchmarks = tuple(
+            sorted(
+                {
+                    row.benchmark_id
+                    for row in benchmark_requirements
+                    if row.benchmark_id not in definition.catalog.benchmark_ids
+                }
+            )
+        )
+        if unknown_benchmarks:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} declares benchmark "
+                f"requirements outside its catalog: {unknown_benchmarks}"
+            )
         binding_digest = canonical_digest(
             {
                 "package": definition.package,
@@ -671,6 +798,9 @@ def resolve_study_factory_bindings(
                 "benchmark_parameter": benchmark_parameters[0],
                 "parameter_names": parameter_names,
                 "required_parameters": required_parameters,
+                "benchmark_requirement_digests": tuple(
+                    row.requirement_digest for row in benchmark_requirements
+                ),
             }
         )
         bindings.append(
@@ -682,6 +812,7 @@ def resolve_study_factory_bindings(
                 benchmark_parameters[0],
                 parameter_names,
                 required_parameters,
+                benchmark_requirements,
                 binding_digest,
             )
         )
@@ -711,11 +842,11 @@ def resolve_benchmark_split_consumers(
         if row.kind is ReproductionAssetKind.METHOD_PROGRAM
     )
     if method_assets:
-        method = resolve_method_program_binding(definition)
-        if method.factory is not None:
+        method = resolve_method_binding(definition)
+        if method.configurer_binding is not None:
             if any(
                 name in _BENCHMARK_SPLIT_PARAMETERS
-                for name in method.factory.unresolved_parameters
+                for name in method.configurer_binding.unresolved_parameters
             ):
                 consumers.add(f"method:{method.qualname}")
     return tuple(sorted(consumers))
@@ -742,10 +873,10 @@ def resolve_execution_requirements(
         if row.kind is ReproductionAssetKind.METHOD_PROGRAM
     )
     if method_assets:
-        method = resolve_method_program_binding(definition)
+        method = resolve_method_binding(definition)
         if not method.exact:
-            assert method.factory is not None
-            for parameter in method.factory.unresolved_parameters:
+            assert method.configurer_binding is not None
+            for parameter in method.configurer_binding.unresolved_parameters:
                 if parameter in _BENCHMARK_SPLIT_PARAMETERS:
                     continue
                 consumers.setdefault(parameter, set()).add(
@@ -871,11 +1002,11 @@ def bind_reproduction_execution(
     )
     method = None
     if method_assets:
-        method = resolve_method_program_binding(definition)
-        if method.factory is not None:
+        method = resolve_method_binding(definition)
+        if method.configurer_binding is not None:
             method_split_parameters = tuple(
                 name
-                for name in method.factory.unresolved_parameters
+                for name in method.configurer_binding.unresolved_parameters
                 if name in _BENCHMARK_SPLIT_PARAMETERS
             )
     has_split_axis = (
@@ -917,13 +1048,13 @@ def bind_reproduction_execution(
         )
 
     if method is not None:
-        if method.factory is not None:
+        if method.configurer_binding is not None:
             module = importlib.import_module(method.module)
             factory = getattr(module, method.qualname)
             signature = inspect.signature(factory)
             bound = signature.bind_partial(
-                *method.factory.args,
-                **dict(method.factory.kwargs),
+                *method.configurer_binding.args,
+                **dict(method.configurer_binding.kwargs),
             )
             bound_values = dict(frozen)
             if benchmark_split_id is not None:
@@ -955,7 +1086,7 @@ def expand_reproduction_benchmark_lanes(
     definition: ReproductionDefinition,
     *,
     study_factory: str,
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     benchmark_split_ids: tuple[str, ...],
     values: Mapping[str, object],
     resolution_proof_digests: tuple[str, ...] = (),
@@ -993,11 +1124,11 @@ def expand_reproduction_benchmark_lanes(
         if row.kind is ReproductionAssetKind.METHOD_PROGRAM
     )
     if method_assets:
-        method = resolve_method_program_binding(definition)
-        if method.factory is not None:
+        method = resolve_method_binding(definition)
+        if method.configurer_binding is not None:
             method_split_axis = any(
                 name in _BENCHMARK_SPLIT_PARAMETERS
-                for name in method.factory.unresolved_parameters
+                for name in method.configurer_binding.unresolved_parameters
             )
     split_aware = (
         study.benchmark_split_parameter is not None
@@ -1115,7 +1246,10 @@ def resolve_reproduction_execution_variants(
         )
     module = importlib.import_module(study.module)
     factory = getattr(module, study.qualname)
-    hints = get_type_hints(factory)
+    try:
+        hints = get_type_hints(factory)
+    except (NameError, TypeError):
+        hints = {}
     requirements = _requirements_for_study(definition, study_factory)
     if not requirements:
         return (
@@ -1247,7 +1381,7 @@ def expand_resolved_reproduction_benchmark_lanes(
     definition: ReproductionDefinition,
     *,
     study_factory: str,
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     benchmark_split_ids: tuple[str, ...],
     benchmark_resolution_proof_digest: str,
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
@@ -1309,7 +1443,7 @@ def _coerce_study_value(annotation: object, value: JsonValue) -> object:
 def materialize_reproduction_study(
     definition: ReproductionDefinition,
     binding: ReproductionExecutionBinding,
-    benchmark: BenchmarkTaskSet,
+    benchmark,
 ) -> ResearchStudyDefinition:
     """Materialize the exact Study selected by one execution binding."""
 
@@ -1372,6 +1506,14 @@ def materialize_reproduction_study(
             f"{definition.package} bound Study factory failed to materialize: "
             f"{study.qualname}"
         ) from exc
+    if isinstance(materialized, Mapping):
+        try:
+            materialized = materialize_research_study_spec(materialized)
+        except Exception as exc:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study spec failed Experimentation materialization: "
+                f"{study.qualname}"
+            ) from exc
     if type(materialized) is not ResearchStudyDefinition:
         raise ReproductionResearchOSCompileError(
             f"{definition.package} bound Study factory returned wrong type"
@@ -1379,11 +1521,11 @@ def materialize_reproduction_study(
     return materialized
 
 
-def materialize_reproduction_method_program(
+def materialize_reproduction_method(
     definition: ReproductionDefinition,
     binding: ReproductionExecutionBinding,
-) -> api.ResearchMethodProgramImplementation | None:
-    """Resolve the exact MethodProgram identity for one bound execution lane."""
+) -> object | None:
+    """Materialize one exact top-level Method implementation for a bound lane."""
 
     method_assets = tuple(
         row
@@ -1392,43 +1534,35 @@ def materialize_reproduction_method_program(
     )
     if not method_assets:
         return None
-    method = resolve_method_program_binding(definition)
-    if method.binding_kind == "symbol":
-        return api.ResearchMethodProgramImplementation.from_symbol(
-            "method",
-            module=method.module,
-            qualname=method.qualname,
-        )
-    assert method.factory is not None
-    merged_kwargs = dict(method.factory.kwargs)
-    if binding.benchmark_split_id is not None:
-        for parameter in method.factory.unresolved_parameters:
-            if parameter in _BENCHMARK_SPLIT_PARAMETERS:
-                merged_kwargs[parameter] = binding.benchmark_split_id
-    for requirement in _requirements_for_study(
-        definition,
-        binding.study_factory,
-    ):
-        if any(
-            consumer == f"method:{method.qualname}"
-            for consumer in requirement.consumers
-        ):
-            merged_kwargs[requirement.parameter] = binding.values[
-                requirement.parameter
-            ]
-    return api.ResearchMethodProgramImplementation.from_factory(
+    method = resolve_method_binding(definition)
+    args, kwargs = _method_configurer_call(definition, method, binding)
+    module = importlib.import_module(method.module)
+    configurer = getattr(module, method.qualname)
+    root = api.ResearchPortfolioBuilder("reproduction-method-probe")
+    program = root.program("reproduction-method-probe")
+    program.method(
         "method",
-        module=method.module,
-        qualname=method.qualname,
-        args=method.factory.args,
-        kwargs=merged_kwargs,
+        configurer,
+        method_id=method.method_id,
+        entrypoint=method.entrypoint,
+        version=method.version,
+        semantic_contract=method.semantic_contract,
+        args=args,
+        kwargs=kwargs,
+    )
+    program.method_node("method", definitions=("method",))
+    frozen = root.freeze()
+    return next(
+        row.implementation
+        for row in frozen.programs[0].definitions
+        if row.definition_id == "method"
     )
 
 
-def resolve_method_program_binding(
+def resolve_method_binding(
     definition: ReproductionDefinition,
-) -> ReproductionMethodProgramBinding:
-    """Resolve one declared MethodProgram symbol/factory without fallback."""
+) -> ReproductionMethodBinding:
+    """Resolve one package-local Method configurer through the top-level contract."""
 
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
@@ -1438,97 +1572,122 @@ def resolve_method_program_binding(
         module = importlib.import_module(module_name)
     except ImportError as exc:
         raise ReproductionResearchOSCompileError(
-            f"{definition.package} MethodProgram module cannot be imported: "
-            f"{module_name}"
+            f"{definition.package} Method module cannot be imported: {module_name}"
         ) from exc
 
     exported = getattr(module, "__all__", ())
-    if type(exported) not in {list, tuple}:
+    if type(exported) not in {list, tuple} or any(
+        type(name) is not str or not name for name in exported
+    ):
         raise ReproductionResearchOSCompileError(
-            f"{definition.package} MethodProgram module __all__ must be explicit"
+            f"{definition.package} Method module __all__ must be explicit"
         )
-    if any(type(name) is not str or not name for name in exported):
+    required_exports = {
+        "METHOD_SPEC",
+        "METHOD_CONFIGURER",
+        "METHOD_ENTRYPOINT",
+        "METHOD_CONFIGURER_ARGS",
+        "METHOD_CONFIGURER_KWARGS",
+    }
+    missing = tuple(sorted(required_exports - set(exported)))
+    if missing:
         raise ReproductionResearchOSCompileError(
-            f"{definition.package} MethodProgram module has invalid __all__"
+            f"{definition.package} Method module misses top-level exports: {missing}"
+        )
+    spec = getattr(module, "METHOD_SPEC", None)
+    configurer = getattr(module, "METHOD_CONFIGURER", None)
+    entrypoint = getattr(module, "METHOD_ENTRYPOINT", None)
+    default_args = getattr(module, "METHOD_CONFIGURER_ARGS", None)
+    default_kwargs = getattr(module, "METHOD_CONFIGURER_KWARGS", None)
+    if not isinstance(spec, Mapping):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} METHOD_SPEC must be a mapping"
+        )
+    method_id = spec.get("method_id")
+    version = spec.get("version", "1")
+    semantic_contract = spec.get("semantic_contract", "research.method.v1")
+    for field_name, value in (
+        ("method_id", method_id),
+        ("entrypoint", entrypoint),
+        ("version", version),
+        ("semantic_contract", semantic_contract),
+    ):
+        if type(value) is not str or not value.strip():
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Method {field_name} must be non-empty text"
+            )
+    if spec.get("entrypoint") != entrypoint:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} METHOD_SPEC entrypoint drifted"
+        )
+    if not callable(configurer):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} METHOD_CONFIGURER must be callable"
+        )
+    if type(default_args) is not tuple or not isinstance(default_kwargs, Mapping):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} Method configurer defaults are invalid"
         )
 
-    factory = definition.method_program_factory
-    if factory is not None:
-        if factory.qualname not in exported:
+    configurer_binding = definition.method_configurer
+    args = default_args
+    kwargs = default_kwargs
+    exact = True
+    if configurer_binding is not None:
+        if configurer_binding.qualname != getattr(configurer, "__name__", None):
             raise ReproductionResearchOSCompileError(
-                f"{definition.package} declared MethodProgram factory is not exported: "
-                f"{factory.qualname}"
-            )
-        value = getattr(module, factory.qualname, None)
-        if not callable(value):
-            raise ReproductionResearchOSCompileError(
-                f"{definition.package} declared MethodProgram factory is not callable: "
-                f"{factory.qualname}"
+                f"{definition.package} Method configurer binding qualname drifted"
             )
         try:
-            parameters = inspect.signature(value).parameters
+            parameters = inspect.signature(configurer).parameters
         except (TypeError, ValueError) as exc:
             raise ReproductionResearchOSCompileError(
-                f"{definition.package} MethodProgram factory signature is unavailable"
+                f"{definition.package} Method configurer signature is unavailable"
             ) from exc
+        visible_parameters = tuple(name for name in parameters if name != "method")
         unknown = tuple(
-            name for name in factory.unresolved_parameters if name not in parameters
+            name
+            for name in configurer_binding.unresolved_parameters
+            if name not in visible_parameters
         )
         if unknown:
             raise ReproductionResearchOSCompileError(
-                f"{definition.package} factory declares unknown unresolved parameters: "
-                f"{unknown}"
+                f"{definition.package} Method binding has unknown parameters: {unknown}"
             )
-        if not factory.exact:
-            return ReproductionMethodProgramBinding(
-                definition.package,
-                asset,
-                module_name,
-                factory.qualname,
-                None,
-                "factory",
-                factory,
-            )
+        args = configurer_binding.args
+        kwargs = configurer_binding.kwargs
+        exact = configurer_binding.exact
+
+    method_digest = None
+    if exact:
         try:
-            implementation = api.ResearchMethodProgramImplementation.from_factory(
-                "method",
-                module=module_name,
-                qualname=factory.qualname,
-                args=factory.args,
-                kwargs=factory.kwargs,
+            method_digest = _materialize_method_digest(
+                configurer,
+                method_id=method_id,
+                entrypoint=entrypoint,
+                version=version,
+                semantic_contract=semantic_contract,
+                args=args,
+                kwargs=kwargs,
             )
         except (TypeError, ValueError) as exc:
             raise ReproductionResearchOSCompileError(
-                f"{definition.package} exact MethodProgram factory failed to materialize"
+                f"{definition.package} exact Method configurer failed to materialize"
             ) from exc
-        return ReproductionMethodProgramBinding(
-            definition.package,
-            asset,
-            module_name,
-            factory.qualname,
-            implementation.program_digest,
-            "factory",
-            factory,
-        )
 
-    candidates: list[tuple[str, MethodProgram]] = []
-    for name in exported:
-        value = getattr(module, name, None)
-        if type(value) is MethodProgram:
-            candidates.append((name, value))
-    if len(candidates) != 1:
-        raise ReproductionResearchOSCompileError(
-            f"{definition.package} must export exactly one MethodProgram symbol or "
-            "declare method_program_factory; "
-            f"symbols={tuple(name for name, _ in candidates)}"
-        )
-    qualname, program = candidates[0]
-    return ReproductionMethodProgramBinding(
+    return ReproductionMethodBinding(
         definition.package,
         asset,
         module_name,
-        qualname,
-        program.program_digest,
+        getattr(configurer, "__name__"),
+        method_id,
+        entrypoint,
+        version,
+        semantic_contract,
+        args,
+        kwargs,
+        method_digest,
+        configurer_binding,
     )
 
 
@@ -1559,7 +1718,7 @@ def resolve_research_program_bindings(
             raise ReproductionResearchOSCompileError(
                 f"{definition.package} ResearchProgram module __all__ must be explicit"
             )
-        candidates: dict[str, tuple[str, MachineResearchProgram]] = {}
+        candidates: object = {}
         for name in exported:
             if type(name) is not str or not name:
                 raise ReproductionResearchOSCompileError(
@@ -1644,17 +1803,17 @@ def _validated_execution_binding(
     return validated
 
 
-def _method_factory_call(
+def _method_configurer_call(
     definition: ReproductionDefinition,
-    method: ReproductionMethodProgramBinding,
+    method: ReproductionMethodBinding,
     binding: ReproductionExecutionBinding | None,
 ) -> tuple[tuple[JsonValue, ...], Mapping[str, JsonValue]]:
-    if method.factory is None:
-        raise TypeError("reproduction MethodProgram symbol has no factory call")
-    kwargs: dict[str, JsonValue] = dict(method.factory.kwargs)
+    if method.configurer_binding is None:
+        return method.configurer_args, method.configurer_kwargs
+    kwargs: dict[str, JsonValue] = dict(method.configurer_binding.kwargs)
     if binding is not None:
         if binding.benchmark_split_id is not None:
-            for parameter in method.factory.unresolved_parameters:
+            for parameter in method.configurer_binding.unresolved_parameters:
                 if parameter in _BENCHMARK_SPLIT_PARAMETERS:
                     kwargs[parameter] = binding.benchmark_split_id
         for requirement in _requirements_for_study(
@@ -1665,13 +1824,28 @@ def _method_factory_call(
                 kwargs[requirement.parameter] = binding.values[
                     requirement.parameter
                 ]
-    return method.factory.args, kwargs
+    return method.configurer_binding.args, kwargs
+
+
+def bound_reproduction_program_id(
+    definition: ReproductionDefinition,
+    execution_binding: ReproductionExecutionBinding,
+) -> str:
+    """Return one stable ResearchProgram token for an exact execution lane."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("bound reproduction program id requires definition")
+    if type(execution_binding) is not ReproductionExecutionBinding:
+        raise TypeError("bound reproduction program id requires execution binding")
+    if execution_binding.package != definition.package:
+        raise ValueError("bound reproduction program id package identity drifted")
+    return f"{definition.package}.{execution_binding.binding_digest[:24]}"
 
 
 def _compile_reproduction_research_program(
     definition: ReproductionDefinition,
     execution_binding: ReproductionExecutionBinding | None,
-) -> api.ResearchProgram:
+):
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
     execution_binding = _validated_execution_binding(
@@ -1700,8 +1874,9 @@ def _compile_reproduction_research_program(
             execution_binding.study_factory,
         )
         benchmark_ids = (execution_binding.benchmark_id,)
-        program_id = (
-            f"{definition.package}.{execution_binding.binding_id}"
+        program_id = bound_reproduction_program_id(
+            definition,
+            execution_binding,
         )
 
     machine_dependencies = resolve_research_program_bindings(definition)
@@ -1724,39 +1899,42 @@ def _compile_reproduction_research_program(
             "ResearchProgram asset"
         )
 
-    builder = api.ResearchProgramBuilder(program_id)
+    root_builder = api.ResearchPortfolioBuilder(
+        f"reproduction-{program_id}"
+    )
+    builder = root_builder.program(program_id)
     executable_definition_ids: list[str] = []
     if method_assets:
-        method = resolve_method_program_binding(definition)
-        effective_program_digest = method.program_digest
+        method = resolve_method_binding(definition)
+        configurer_args, configurer_kwargs = _method_configurer_call(
+            definition,
+            method,
+            execution_binding,
+        )
+        effective_method_digest = method.method_digest
         effective_binding_digest = method.binding_digest
-        factory_args: tuple[JsonValue, ...] | None = None
-        factory_kwargs: Mapping[str, JsonValue] | None = None
-        if method.factory is not None and (
-            method.exact or execution_binding is not None
-        ):
-            factory_args, factory_kwargs = _method_factory_call(
-                definition,
-                method,
-                execution_binding,
+        materialized = method.exact or execution_binding is not None
+        if materialized:
+            module = importlib.import_module(method.module)
+            configurer = getattr(module, method.qualname)
+            effective_method_digest = _materialize_method_digest(
+                configurer,
+                method_id=method.method_id,
+                entrypoint=method.entrypoint,
+                version=method.version,
+                semantic_contract=method.semantic_contract,
+                args=configurer_args,
+                kwargs=configurer_kwargs,
             )
-            implementation = api.ResearchMethodProgramImplementation.from_factory(
-                "method",
-                module=method.module,
-                qualname=method.qualname,
-                args=factory_args,
-                kwargs=factory_kwargs,
-            )
-            effective_program_digest = implementation.program_digest
             effective_binding_digest = canonical_digest(
                 {
-                    "factory_binding_digest": method.binding_digest,
+                    "method_binding_digest": method.binding_digest,
                     "execution_binding_digest": (
                         None
                         if execution_binding is None
                         else execution_binding.binding_digest
                     ),
-                    "program_digest": effective_program_digest,
+                    "method_digest": effective_method_digest,
                 }
             )
 
@@ -1765,9 +1943,9 @@ def _compile_reproduction_research_program(
             "reproduction_method_id": definition.identity.method_id,
             "reproduction_definition_digest": definition.definition_digest,
             "asset_path": method.asset.path,
-            "binding_kind": method.binding_kind,
+            "binding_kind": "method-configurer",
             "binding_digest": effective_binding_digest,
-            "program_digest": effective_program_digest,
+            "method_digest": effective_method_digest,
             "execution_binding_digest": (
                 None
                 if execution_binding is None
@@ -1775,27 +1953,23 @@ def _compile_reproduction_research_program(
             ),
             "research_program_dependencies": machine_dependency_documents,
         }
-        if method.binding_kind == "symbol":
-            builder.method_program(
+        if materialized:
+            module = importlib.import_module(method.module)
+            configurer = getattr(module, method.qualname)
+            builder.method(
                 "method",
-                module=method.module,
-                qualname=method.qualname,
-                config=method_config,
-            )
-        elif effective_program_digest is not None:
-            assert factory_args is not None and factory_kwargs is not None
-            builder.method_program_factory(
-                "method",
-                module=method.module,
-                qualname=method.qualname,
-                args=factory_args,
-                kwargs=factory_kwargs,
+                configurer,
+                method_id=method.method_id,
+                entrypoint=method.entrypoint,
+                version=method.version,
+                semantic_contract=method.semantic_contract,
+                args=configurer_args,
+                kwargs=configurer_kwargs,
                 config=method_config,
             )
         else:
-            builder.definition(
+            builder.method(
                 "method",
-                kind=api.ResearchDefinitionKind.METHOD,
                 config={
                     **method_config,
                     "authority": "execution-binding-required",
@@ -1814,9 +1988,8 @@ def _compile_reproduction_research_program(
     else:
         for index, machine_binding in enumerate(machine_dependencies):
             definition_id = f"machine.{index:02d}"
-            builder.definition(
+            builder.custom_requirement(
                 definition_id,
-                kind=api.ResearchDefinitionKind.CUSTOM,
                 config={
                     "authority": "research-machine-program",
                     **_machine_dependency_document(machine_binding),
@@ -1890,12 +2063,7 @@ def _compile_reproduction_research_program(
             "study",
             *tuple(benchmark_definition_ids),
         ),
-        outputs=(
-            api.ResearchOutputSpec(
-                "report",
-                api.ResearchValueKind.ARTIFACT,
-            ),
-        ),
+        outputs=("report",),
         config={
             "reproduction_package": definition.package,
             "reproduction_method_id": definition.identity.method_id,
@@ -1916,12 +2084,17 @@ def _compile_reproduction_research_program(
             ),
         },
     )
-    return builder.freeze()
+    portfolio = root_builder.freeze()
+    if len(portfolio.programs) != 1:
+        raise ReproductionResearchOSCompileError(
+            "reproduction compiler must emit exactly one ResearchProgram"
+        )
+    return portfolio.programs[0]
 
 
 def compile_reproduction_research_program(
     definition: ReproductionDefinition,
-) -> api.ResearchProgram:
+):
     """Compile one reproduction template onto the current Product Research OS."""
 
     return _compile_reproduction_research_program(definition, None)
@@ -1930,7 +2103,7 @@ def compile_reproduction_research_program(
 def compile_bound_reproduction_research_program(
     definition: ReproductionDefinition,
     execution_binding: ReproductionExecutionBinding,
-) -> api.ResearchProgram:
+):
     """Compile one exact benchmark/treatment lane onto Product Research OS."""
 
     return _compile_reproduction_research_program(
@@ -2165,11 +2338,12 @@ __all__ = [
     "ReproductionExecutionResolution",
     "ReproductionExecutionRequirementKind",
     "ReproductionMachineProgramBinding",
-    "ReproductionMethodProgramBinding",
+    "ReproductionMethodBinding",
     "ReproductionStudyFactoryBinding",
     "ReproductionResearchOSCompileError",
     "bind_reproduction_execution",
     "compile_bound_reproduction_portfolio",
+    "bound_reproduction_program_id",
     "compile_bound_reproduction_research_program",
     "compile_reproduction_portfolio",
     "compile_resolved_reproduction_portfolio",
@@ -2180,12 +2354,12 @@ __all__ = [
     "expand_reproduction_benchmark_lanes",
     "expand_resolved_reproduction_benchmark_lanes",
     "is_research_os_executable",
-    "materialize_reproduction_method_program",
+    "materialize_reproduction_method",
     "materialize_reproduction_study",
     "resolve_benchmark_split_consumers",
     "resolve_execution_requirements",
     "resolve_reproduction_execution_variants",
-    "resolve_method_program_binding",
+    "resolve_method_binding",
     "resolve_study_factory_bindings",
     "resolve_research_program_bindings",
 ]

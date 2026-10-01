@@ -17,15 +17,6 @@ _REQUIRED_EFFECT_INTENT_OPERATIONS = (
 )
 
 _REQUIRED_WORKFLOW_OPERATIONS = {
-    "context_action": (
-        "environment.observe",
-        "method.ingest",
-        "method.recall",
-        "method.task_completed",
-        "environment.action_safety_preflight",
-        "environment.act_prepared",
-        "environment.reconcile_prepared_action",
-    ),
     "agent_turn": (
         "agent.run_turn",
         "capability.invoke",
@@ -39,17 +30,7 @@ _DISPATCH_AUTHORITIES = frozenset({
     "noetrium_platform/research/execution/participants/resolution.py",
     "noetrium_platform/research/execution/participants/checkpoint_operations.py",
     "noetrium_platform/research/execution/participants/session_lifecycle.py",
-    "noetrium_platform/research/experimentation/checkpoint/checkpoint_capture.py",
-    "noetrium_platform/research/experimentation/checkpoint/checkpoint_restore.py",
     "noetrium_platform/research/execution/workflow/runtime/effect_intents.py",
-    "noetrium_platform/composition/workflows/context_action/action_slot_guard.py",
-    "noetrium_platform/composition/workflows/context_action/action_capability.py",
-    "noetrium_platform/composition/workflows/context_action/action_authorization.py",
-    "noetrium_platform/composition/workflows/context_action/context_action_operations.py",
-    "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
-    "noetrium_platform/composition/workflows/context_action/action_reconciliation_operations.py",
-    "noetrium_platform/composition/workflows/context_action/method_completion.py",
-    "noetrium_platform/composition/workflows/context_action/action_recovery_binding.py",
     "noetrium_platform/composition/workflows/agent_turn/capability_effect_provider.py",
     "noetrium_platform/composition/workflows/agent_turn/agent_turn_operations.py",
     "noetrium_platform/composition/workflows/agent_turn/capability_operations.py",
@@ -96,7 +77,6 @@ def _audit_dispatch_authority(root: Path) -> list[SourceInvariantViolation]:
     scan_roots = (
         root / "noetrium_platform" / "research" / "experimentation" / "experiment",
         root / "noetrium_platform" / "research" / "execution" / "workflow" / "runtime",
-        root / "noetrium_platform" / "composition" / "workflows" / "context_action",
         root / "noetrium_platform" / "composition" / "workflows" / "agent_turn",
     )
     for base in scan_roots:

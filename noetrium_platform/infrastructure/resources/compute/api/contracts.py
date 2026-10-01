@@ -9,69 +9,16 @@ from noetrium_platform.foundation.governance.api import ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
-def _canonical_text_values(values: tuple[str, ...], field_name: str) -> tuple[str, ...]:
-    if type(values) is not tuple:
-        raise TypeError(f"{field_name} must be tuple")
-    if any(type(value) is not str or not value.strip() or value != value.strip() for value in values):
-        raise ValueError(f"{field_name} entries must be canonical text")
-    canonical = tuple(sorted(values))
-    if len(canonical) != len(set(canonical)):
-        raise ValueError(f"{field_name} entries must be unique")
-    return canonical
-
-
-def _canonical_labels(labels: tuple[tuple[str, str], ...], field_name: str) -> tuple[tuple[str, str], ...]:
-    if type(labels) is not tuple:
-        raise TypeError(f"{field_name} must be tuple")
-    normalized: list[tuple[str, str]] = []
-    for row in labels:
-        if type(row) is not tuple or len(row) != 2:
-            raise TypeError(f"{field_name} entries must be (key, value) tuples")
-        key, value = row
-        if type(key) is not str or type(value) is not str:
-            raise TypeError(f"{field_name} keys and values must be str")
-        if not key.strip() or key != key.strip() or value != value.strip():
-            raise ValueError(f"{field_name} entries must be canonical text")
-        normalized.append((key, value))
-    normalized.sort()
-    if len({key for key, _value in normalized}) != len(normalized):
-        raise ValueError(f"{field_name} keys must be unique")
-    return tuple(normalized)
-
-
-class ComputeDeviceHealth(StrEnum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNAVAILABLE = "unavailable"
-
-
 @dataclass(frozen=True, slots=True)
 class ComputeGPU:
     gpu_id: str
     memory_bytes: int
     model: str = ""
     labels: tuple[tuple[str, str], ...] = ()
-    health: ComputeDeviceHealth = ComputeDeviceHealth.HEALTHY
-    reserved_memory_bytes: int = 0
 
     def __post_init__(self) -> None:
         if not self.gpu_id.strip() or self.memory_bytes < 1:
             raise ValueError("GPU identity/memory must be valid")
-        if type(self.health) is not ComputeDeviceHealth:
-            raise TypeError("GPU health must be ComputeDeviceHealth")
-        if type(self.reserved_memory_bytes) is not int or not 0 <= self.reserved_memory_bytes < self.memory_bytes:
-            raise ValueError("GPU reserved_memory_bytes must be an integer below device memory")
-        object.__setattr__(self, "labels", _canonical_labels(self.labels, "GPU labels"))
-
-    @property
-    def schedulable_memory_bytes(self) -> int:
-        return self.memory_bytes - self.reserved_memory_bytes
-
-
-class ComputeHostSchedulingState(StrEnum):
-    ACTIVE = "active"
-    DRAINING = "draining"
-    DISABLED = "disabled"
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,36 +30,12 @@ class ComputeHost:
     gpus: tuple[ComputeGPU, ...] = ()
     labels: tuple[tuple[str, str], ...] = ()
     enabled: bool = True
-    scheduling_state: ComputeHostSchedulingState = ComputeHostSchedulingState.ACTIVE
-    reserved_cpu_cores: int = 0
-    reserved_memory_bytes: int = 0
 
     def __post_init__(self) -> None:
         if not self.host_id.strip() or self.cpu_cores < 1 or self.memory_bytes < 1:
             raise ValueError("host identity/capacity must be valid")
         if len({gpu.gpu_id for gpu in self.gpus}) != len(self.gpus):
             raise ValueError("GPU identities must be unique within a host")
-        if type(self.enabled) is not bool:
-            raise TypeError("host enabled must be bool")
-        if type(self.scheduling_state) is not ComputeHostSchedulingState:
-            raise TypeError("host scheduling_state must be ComputeHostSchedulingState")
-        if type(self.reserved_cpu_cores) is not int or not 0 <= self.reserved_cpu_cores < self.cpu_cores:
-            raise ValueError("host reserved_cpu_cores must be an integer below total CPU capacity")
-        if type(self.reserved_memory_bytes) is not int or not 0 <= self.reserved_memory_bytes < self.memory_bytes:
-            raise ValueError("host reserved_memory_bytes must be an integer below total memory capacity")
-        object.__setattr__(self, "labels", _canonical_labels(self.labels, "host labels"))
-
-    @property
-    def accepts_new_allocations(self) -> bool:
-        return self.enabled and self.scheduling_state is ComputeHostSchedulingState.ACTIVE
-
-    @property
-    def schedulable_cpu_cores(self) -> int:
-        return self.cpu_cores - self.reserved_cpu_cores
-
-    @property
-    def schedulable_memory_bytes(self) -> int:
-        return self.memory_bytes - self.reserved_memory_bytes
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,9 +48,6 @@ class ComputeCluster:
     def __post_init__(self) -> None:
         if not self.cluster_id.strip():
             raise ValueError("cluster_id must be non-empty")
-        if len(set(self.host_ids)) != len(self.host_ids):
-            raise ValueError("cluster host_ids must be unique")
-        object.__setattr__(self, "labels", _canonical_labels(self.labels, "cluster labels"))
 
 
 
@@ -152,10 +72,6 @@ class ComputeLeasePolicy:
 DEFAULT_COMPUTE_LEASE_POLICY = ComputeLeasePolicy()
 
 
-class ComputeInventoryConflict(RuntimeError):
-    """Exact observed inventory generation no longer matches authority."""
-
-
 class ComputePlacementUnavailable(RuntimeError):
     """Expected capacity exhaustion for one exact compute placement request."""
 
@@ -170,11 +86,6 @@ class GpuSharingMode(StrEnum):
     PREFER_IDLE_ALLOW_SHARED = "prefer-idle-allow-shared"
 
 
-class ComputePlacementPreference(StrEnum):
-    PACK = "pack"
-    SPREAD = "spread"
-
-
 @dataclass(frozen=True, slots=True)
 class ComputeRequirement:
     cpu_cores: int = 1
@@ -183,6 +94,7 @@ class ComputeRequirement:
     minimum_gpu_memory_bytes: int = 0
     required_gpu_free_memory_bytes: int = 0
     required_gpu_memory_fraction: float | None = None
+    gpu_admission_headroom_fraction: float = 0.0
     max_gpu_utilization_percent: int = 100
     cpu_headroom_cores: int = 0
     memory_headroom_bytes: int = 0
@@ -190,14 +102,6 @@ class ComputeRequirement:
     require_host_runtime: bool = False
     gpu_sharing_mode: GpuSharingMode = GpuSharingMode.IDLE_ONLY
     required_labels: tuple[tuple[str, str], ...] = ()
-    required_gpu_labels: tuple[tuple[str, str], ...] = ()
-    forbidden_host_labels: tuple[tuple[str, str], ...] = ()
-    preferred_host_labels: tuple[tuple[str, str], ...] = ()
-    allowed_host_ids: tuple[str, ...] = ()
-    forbidden_host_ids: tuple[str, ...] = ()
-    placement_preference: ComputePlacementPreference = ComputePlacementPreference.PACK
-    gpu_colocation_label: str | None = None
-    max_runtime_observation_age_seconds: float | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -219,6 +123,15 @@ class ComputeRequirement:
             raise ValueError(
                 "compute required_gpu_memory_fraction must be finite in (0, 1]"
             )
+        if (
+            isinstance(self.gpu_admission_headroom_fraction, bool)
+            or not isinstance(self.gpu_admission_headroom_fraction, (int, float))
+            or not math.isfinite(float(self.gpu_admission_headroom_fraction))
+            or not 0.0 <= float(self.gpu_admission_headroom_fraction) < 1.0
+        ):
+            raise ValueError(
+                "compute GPU admission headroom fraction must be finite in [0, 1)"
+            )
         if not 0 <= self.max_gpu_utilization_percent <= 100:
             raise ValueError("compute GPU utilization ceiling must be between 0 and 100")
         if self.max_cpu_load_ratio is not None and (
@@ -234,104 +147,9 @@ class ComputeRequirement:
             raise TypeError("compute require_host_runtime must be bool")
         if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
-        if type(self.placement_preference) is not ComputePlacementPreference:
-            raise TypeError("compute placement_preference must be ComputePlacementPreference")
-        if self.gpu_colocation_label is not None and (
-            type(self.gpu_colocation_label) is not str
-            or not self.gpu_colocation_label.strip()
-            or self.gpu_colocation_label != self.gpu_colocation_label.strip()
-        ):
-            raise ValueError("compute gpu_colocation_label must be canonical text or None")
-        if self.max_runtime_observation_age_seconds is not None and (
-            isinstance(self.max_runtime_observation_age_seconds, bool)
-            or not isinstance(self.max_runtime_observation_age_seconds, (int, float))
-            or not math.isfinite(float(self.max_runtime_observation_age_seconds))
-            or self.max_runtime_observation_age_seconds <= 0
-        ):
-            raise ValueError("compute runtime observation age must be finite and positive or None")
-        object.__setattr__(self, "required_labels", _canonical_labels(self.required_labels, "compute required host labels"))
-        object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
-        object.__setattr__(self, "forbidden_host_labels", _canonical_labels(self.forbidden_host_labels, "compute forbidden host labels"))
-        object.__setattr__(self, "preferred_host_labels", _canonical_labels(self.preferred_host_labels, "compute preferred host labels"))
-        object.__setattr__(self, "allowed_host_ids", _canonical_text_values(self.allowed_host_ids, "compute allowed host ids"))
-        object.__setattr__(self, "forbidden_host_ids", _canonical_text_values(self.forbidden_host_ids, "compute forbidden host ids"))
-        if set(self.allowed_host_ids) & set(self.forbidden_host_ids):
-            raise ValueError("compute allowed/forbidden host ids must be disjoint")
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
-
-
-@dataclass(frozen=True, slots=True)
-class ComputeAllocationRequest:
-    allocation_id: str
-    scope: ScopeIdentity
-    requirement: ComputeRequirement
-    placement_scope: ScopeIdentity | None = None
-
-    def __post_init__(self) -> None:
-        if type(self.allocation_id) is not str or not self.allocation_id.strip() or self.allocation_id != self.allocation_id.strip():
-            raise ValueError("compute allocation request id must be canonical text")
-        if type(self.scope) is not ScopeIdentity:
-            raise TypeError("compute allocation request scope must be ScopeIdentity")
-        if type(self.requirement) is not ComputeRequirement:
-            raise TypeError("compute allocation request requirement must be ComputeRequirement")
-        if self.placement_scope is not None and type(self.placement_scope) is not ScopeIdentity:
-            raise TypeError("compute allocation request placement_scope must be ScopeIdentity or None")
-
-    @property
-    def request_digest(self) -> str:
-        return canonical_digest(self)
-
-
-class ComputeBatchPlacementStrategy(StrEnum):
-    INDEPENDENT = "independent"
-    PACK = "pack"
-    STRICT_PACK = "strict-pack"
-    SPREAD = "spread"
-    STRICT_SPREAD = "strict-spread"
-
-
-@dataclass(frozen=True, slots=True)
-class ComputeAllocationBatch:
-    batch_id: str
-    requests: tuple[ComputeAllocationRequest, ...]
-    placement_strategy: ComputeBatchPlacementStrategy = ComputeBatchPlacementStrategy.INDEPENDENT
-
-    def __post_init__(self) -> None:
-        if type(self.batch_id) is not str or not self.batch_id.strip() or self.batch_id != self.batch_id.strip():
-            raise ValueError("compute allocation batch id must be canonical text")
-        if type(self.requests) is not tuple or not self.requests:
-            raise ValueError("compute allocation batch requires requests")
-        if any(type(row) is not ComputeAllocationRequest for row in self.requests):
-            raise TypeError("compute allocation batch requests must be typed")
-        if type(self.placement_strategy) is not ComputeBatchPlacementStrategy:
-            raise TypeError("compute allocation batch placement_strategy must be ComputeBatchPlacementStrategy")
-        canonical = tuple(sorted(self.requests, key=lambda row: row.allocation_id))
-        if len({row.allocation_id for row in canonical}) != len(canonical):
-            raise ValueError("compute allocation batch allocation ids must be unique")
-        object.__setattr__(self, "requests", canonical)
-
-    @property
-    def batch_digest(self) -> str:
-        return canonical_digest({
-            "batch_id": self.batch_id,
-            "placement_strategy": self.placement_strategy.value,
-            "request_digests": tuple(row.request_digest for row in self.requests),
-        })
-
-
-class ComputeBatchPlacementUnavailable(RuntimeError):
-    """Atomic compute batch cannot satisfy its group placement contract."""
-
-    def __init__(self, batch: ComputeAllocationBatch) -> None:
-        if type(batch) is not ComputeAllocationBatch:
-            raise TypeError("compute batch placement failure requires ComputeAllocationBatch")
-        self.batch = batch
-        super().__init__(
-            f"compute allocation batch cannot satisfy {batch.placement_strategy.value}: "
-            f"{batch.batch_id}"
-        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -474,4 +292,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeBatchPlacementStrategy", "ComputeBatchPlacementUnavailable", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]

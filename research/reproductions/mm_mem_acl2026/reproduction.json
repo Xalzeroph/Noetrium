@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mm_mem_acl2026",
-  "package_digest": "6b8a49692efdfbbc3e12a10cbe820ebb3e0ee32499bb86805f26eeb6b4cdc985",
-  "definition_digest": "5a28d88b6d8d97d71a1200d092b8152f715e2614196bf829bf6c514fa0f1d968",
+  "package_digest": "206da9ea039cd6874fc4452b778bd081ee9d07784a7c5abe3d564293e1fb9ec8",
+  "definition_digest": "9a546398ea23a2453727e5c33d7a9165619c807bdbb6121627bebe8bc871b5f8",
   "source_registry_digest": "23068ada425dff308cddf569cf3d93ed1d222dcfaa14899dd001f70f66d8e0bb",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/mm_mem_acl2026/program.py",
       "declaration_digest": "13b50f45093f6592223459bf4ae722e12f9163911c864157e977af343cccc01a",
-      "content_sha256": "4d131b540f2c0a1324773d789dda16916001c9b689e40636402ebc82aa3e8617"
+      "content_sha256": "b12e4e17947e3e1834a83bc0acc3f06b5efafc1b44a2f32659cd49c65a81823a"
     },
     {
       "kind": "study",
       "path": "research/reproductions/mm_mem_acl2026/study.py",
       "declaration_digest": "a53de3191abb026686688a125f722d615e58dae3f1b79bf94caaccbbb49e4bba",
-      "content_sha256": "82f1339ab5190e035a1f6401e9d848e03cbc68a14ba167736282ab322d4aa270"
+      "content_sha256": "7e05300dbd4d9fa226c09c47b751006335672c06fb6401b292691d201a92ed0f"
     }
   ],
   "primary_executable": "research/reproductions/mm_mem_acl2026/program.py",
@@ -172,17 +172,18 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "mm_mem_acl2026",
-    "program_digest": "86305140193d6349bf323bd96de5cc308a94178334c2d8416f59a0b3dd6fd344",
+    "program_digest": "d9c6b69ee6623fd4a07bff36a139b50f4164d3abc50f00a0d8eb54c14b02e1fe",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:mm_mem_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

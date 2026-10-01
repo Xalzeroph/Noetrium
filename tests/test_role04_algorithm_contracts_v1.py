@@ -61,6 +61,9 @@ def test_qualified_binding_checks_last_canary_digest() -> None:
     with pytest.raises(ValueError, match="runtime_canary_evidence_digests"):
         QualifiedModelEndpointBinding(
             role="planner", deployment_id="dep", deployment_generation="1" * 64,
+            capability_id="generation",
+            input_schema_id="model.generation.request.v1",
+            output_schema_id="model.generation.response.v1",
             base_url="http://127.0.0.1:30000", model=_model(),
             model_stack_digest="2" * 64, qualification_certificate_digest="3" * 64,
             runtime_qualification_digest="4" * 64, host_identity_digest="5" * 64,

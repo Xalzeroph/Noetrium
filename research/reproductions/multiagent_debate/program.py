@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, canonical_digest
+
 from collections.abc import Mapping
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import JsonObject, canonical_digest
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import MULTIAGENT_DEBATE_FIDELITY
 
@@ -64,7 +66,7 @@ def _agent_view(agent_index: int, round_index: int):
     if agent_index not in range(3) or round_index not in {1, 2}:
         raise ValueError("multi-agent debate view identity is invalid")
 
-    def view(request: MethodNodeRequest) -> JsonObject:
+    def view(request: MethodCall) -> JsonObject:
         question = _text(request.state.get("question"), "question")
         if round_index == 1:
             peer_snapshot: tuple[str, ...] = ()
@@ -101,11 +103,11 @@ def _agent_view(agent_index: int, round_index: int):
 def _record_response(agent_index: int, round_index: int):
     key = _response_key(round_index, agent_index)
 
-    def record(request: MethodNodeRequest) -> MethodNodeResult:
+    def record(request: MethodCall) -> MethodNodeResult:
         count = request.state.get("model_call_count", 0)
         if type(count) is not int or count < 0:
             raise ValueError("multi-agent debate model_call_count must be non-negative")
-        return MethodNodeResult(
+        return dict(
             value={
                 "agent_index": agent_index,
                 "round_index": round_index,
@@ -126,8 +128,8 @@ def _record_response(agent_index: int, round_index: int):
     return record
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "question": _text(request.state.get("question"), "question"),
             "rounds": (
@@ -158,7 +160,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_multiagent_debate_method_program() -> MethodProgram:
+def build_multiagent_debate_method_program(method, ) -> None:
     f = MULTIAGENT_DEBATE_FIDELITY
     configuration: JsonObject = {
         "paper": "Improving Factuality and Reasoning in Language Models through Multiagent Debate",
@@ -179,17 +181,9 @@ def build_multiagent_debate_method_program() -> MethodProgram:
         "reference_model": f.model_at_audited_gsm_script,
         "final_answer_format": f.final_answer_format,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="multiagent-debate",
-            implementation_version=f"paper-era-{f.audited_commit[:8]}",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="multiagent-debate.gsm8k.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
 
-    builder = MethodProgramBuilder(identity, entrypoint="round1_agent_0")
+
+    builder = method
     sequence: list[tuple[int, int]] = [
         (1, 0),
         (1, 1),
@@ -211,7 +205,7 @@ def build_multiagent_debate_method_program() -> MethodProgram:
             f"multiagent-debate.round{round_index}.agent{agent_index}",
             _AGENT_IDS[agent_index],
             (record_node,),
-            view_handler=_agent_view(agent_index, round_index),
+            view=_agent_view(agent_index, round_index),
             max_visits=1,
         )
         builder.compute(
@@ -222,29 +216,40 @@ def build_multiagent_debate_method_program() -> MethodProgram:
             max_visits=1,
         )
     builder.return_node("return", "multiagent-debate.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "multiagent-debate.independent-contexts",
             "multiagent-debate.previous-round-peer-snapshot",
             "multiagent-debate.transcript",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "model_call_count",
             "debate_round_count",
         ),
-        artifact_kinds=("multiagent_debate_transcript",),
+        artifacts=("multiagent_debate_transcript",),
     )
+    return builder
 
 
-MULTIAGENT_DEBATE_METHOD_PROGRAM = build_multiagent_debate_method_program()
+METHOD_CONFIGURER = build_multiagent_debate_method_program
+METHOD_ENTRYPOINT = "round1_agent_0"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "MULTIAGENT_DEBATE_METHOD_PROGRAM",
-    "build_multiagent_debate_method_program",
-    "multiagent_debate_initial_state",
+    'build_multiagent_debate_method_program',
+    'multiagent_debate_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'multiagent-debate', "version": "paper-protocol", "semantic_contract": 'multiagent-debate' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

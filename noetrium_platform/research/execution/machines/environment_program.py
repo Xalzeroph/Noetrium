@@ -32,6 +32,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineSnapshotStorePort,
     MachineStatus,
     canonical_digest,
+    execution_context_from_payload,
+    execution_context_payload,
     freeze_json,
     thaw_json,
 )
@@ -46,7 +48,6 @@ from .program import (
 from .rule_program import (
     ProgramRule,
     ProgramRuleSet,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -161,7 +162,6 @@ def environment_rule_set() -> ProgramRuleSet:
                 semantic=EnvironmentConcern.RECOVERY.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 
@@ -201,49 +201,6 @@ def environment_initial_data(spec: EnvironmentMachineSpec) -> JsonObject:
         "closed": False,
     }
 
-
-_CONTEXT_FIELDS = (
-    "run_id",
-    "trace_id",
-    "span_id",
-    "parent_span_id",
-    "study_id",
-    "condition_id",
-    "lifetime_id",
-    "branch_id",
-    "task_id",
-    "decision_cycle_id",
-    "checkpoint_id",
-    "operation_id",
-    "component_id",
-    "participant_generations",
-    "platform_generation",
-)
-
-
-def execution_context_payload(context: ExecutionContext) -> JsonObject:
-    if not isinstance(context, ExecutionContext):
-        raise TypeError("environment context must be ExecutionContext")
-    return {
-        field_name: getattr(context, field_name)
-        for field_name in _CONTEXT_FIELDS
-    }
-
-
-def execution_context_from_payload(value: JsonObject) -> ExecutionContext:
-    if not isinstance(value, Mapping):
-        raise TypeError("environment context payload must be an object")
-    decoded = thaw_json(value)
-    if not isinstance(decoded, dict):
-        raise TypeError("environment context payload must decode to an object")
-    unknown = set(decoded) - set(_CONTEXT_FIELDS)
-    if unknown:
-        raise ValueError(f"environment context payload has unknown fields: {sorted(unknown)}")
-    generations = decoded.get("participant_generations", ())
-    if not isinstance(generations, (tuple, list)):
-        raise TypeError("participant_generations must be a sequence")
-    decoded["participant_generations"] = tuple(tuple(row) for row in generations)
-    return ExecutionContext(**decoded)
 
 
 def _data(request: ProgramNodeRequest) -> dict[str, JsonValue]:

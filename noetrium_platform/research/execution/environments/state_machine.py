@@ -13,7 +13,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     EffectClass,
     EffectReceipt,
     ExecutionContext,
-    InMemoryMachineJournal,
     JsonObject,
     MachineJournalPort,
     MachineSnapshotStorePort,
@@ -579,10 +578,10 @@ class StateMachineEnvironmentRuntime:
     def __init__(
         self,
         *,
-        journal: MachineJournalPort | None = None,
+        journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
     ) -> None:
-        self._journal = journal if journal is not None else InMemoryMachineJournal()
+        self._journal = journal
         self._snapshot_store = snapshot_store
 
     def open_session(

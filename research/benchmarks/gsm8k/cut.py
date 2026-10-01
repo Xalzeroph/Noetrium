@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from noetrium.contracts import require_sha256
+from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkCutSpec,
     BenchmarkSourceKind,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
+    TaskArtifactSpec,
     TaskDefinition,
     TaskPackageSpec,
     TaskSetSplit,
@@ -81,6 +85,8 @@ def build_gsm8k_task_set(
     *,
     dataset_content_sha256: str,
     require_full_split_cardinality: bool = True,
+    source_reference: ArtifactReference | None = None,
+    content_references: Mapping[str, ArtifactReference] | None = None,
 ) -> BenchmarkTaskSet:
     """Freeze the official GSM8K JSONL cut without importing its runtime."""
 
@@ -94,6 +100,16 @@ def build_gsm8k_task_set(
     task_ids = tuple(row.task_id for row in ordered)
     if len(task_ids) != len(set(task_ids)):
         raise ValueError("GSM8K task ids must be unique")
+    if source_reference is not None and type(source_reference) is not ArtifactReference:
+        raise TypeError("GSM8K source_reference must be ArtifactReference or None")
+    references = {} if content_references is None else dict(content_references)
+    if content_references is not None:
+        if set(references) != set(task_ids):
+            raise ValueError(
+                "GSM8K content references must cover the exact materialized task set"
+            )
+        if any(type(value) is not ArtifactReference for value in references.values()):
+            raise TypeError("GSM8K content references must be ArtifactReference values")
 
     if require_full_split_cardinality:
         present = {row.split_id for row in ordered}
@@ -113,6 +129,7 @@ def build_gsm8k_task_set(
             family="grade_school_math",
             schema_id=GSM8K_TASK_SCHEMA_ID,
             content_digest=row.content_digest,
+            content_reference=references.get(row.task_id),
             lineage_refs=(
                 f"split:{row.split_id}",
                 f"source-index:{row.index}",
@@ -126,6 +143,9 @@ def build_gsm8k_task_set(
                 environment_requirement_id=None,
                 verifier_requirement_id="benchmark.gsm8k.exact-numeric.verifier",
                 verifier_isolation=TaskVerifierIsolation.SEPARATE,
+                artifacts=(
+                    TaskArtifactSpec("completion", "completion.json"),
+                ),
             ),
         )
         for row in ordered
@@ -143,6 +163,7 @@ def build_gsm8k_task_set(
         revision_id=revision,
         source_digest=dataset_content_sha256,
         task_schema_id=GSM8K_TASK_SCHEMA_ID,
+        source_reference=source_reference,
     ).build(
         tasks,
         splits=splits,

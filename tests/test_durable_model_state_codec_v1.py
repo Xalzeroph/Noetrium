@@ -44,7 +44,7 @@ def _deployment() -> ModelDeploymentSpec:
         executable="C:/runtime/python.exe",
         argv=("C:/runtime/python.exe", "-m", "server"),
         cwd=Path("C:/runtime"),
-        python_environment_id="env:test",
+        container_digest=_DIGEST,
         gpu_devices=("GPU-0",),
         environment=(("TOKENIZERS_PARALLELISM", "false"),),
         readiness_url="http://127.0.0.1:18000/health",

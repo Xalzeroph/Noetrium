@@ -20,6 +20,33 @@ class SoftwareActionKind(StrEnum):
 
 
 @dataclass(frozen=True, slots=True)
+class SoftwareContextPolicy:
+    """Model-facing context bounds for repository environments."""
+
+    max_text_chars: int = 12_000
+    max_workspace_files: int = 512
+    max_list_files: int = 512
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.max_text_chars) is not int
+            or self.max_text_chars < 1_000
+            or type(self.max_workspace_files) is not int
+            or self.max_workspace_files < 1
+            or type(self.max_list_files) is not int
+            or self.max_list_files < 1
+        ):
+            raise ValueError("software context policy bounds are invalid")
+
+    def record(self) -> dict[str, int]:
+        return {
+            "max_text_chars": self.max_text_chars,
+            "max_workspace_files": self.max_workspace_files,
+            "max_list_files": self.max_list_files,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class SoftwareEnvironmentSpec:
     environment_id: str
     revision: str
@@ -27,6 +54,7 @@ class SoftwareEnvironmentSpec:
     repository_digest: str = ""
     supported_actions: tuple[SoftwareActionKind, ...] = ()
     metadata: dict[str, JsonValue] = field(default_factory=dict)
+    context_policy: SoftwareContextPolicy = field(default_factory=SoftwareContextPolicy)
 
     def __post_init__(self) -> None:
         if not self.environment_id.strip() or not self.revision.strip() or not self.workspace_root.strip():
@@ -44,7 +72,13 @@ class SoftwareEnvironmentSpec:
             "workspace_root": self.workspace_root, "repository_digest": self.repository_digest,
             "supported_actions": [item.value for item in self.supported_actions],
             "metadata": thaw_json(self.metadata),
+            "context_policy": self.context_policy.record(),
         })
 
 
-__all__ = ["SoftwareActionKind", "SoftwareActionTimeoutError", "SoftwareEnvironmentSpec"]
+__all__ = [
+    "SoftwareActionKind",
+    "SoftwareActionTimeoutError",
+    "SoftwareContextPolicy",
+    "SoftwareEnvironmentSpec",
+]

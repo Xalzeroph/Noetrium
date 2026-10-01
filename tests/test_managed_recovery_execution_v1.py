@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.infrastructure.reliability.recovery.api import RecoveryLeaseBusy
 from noetrium_platform.composition.reliability_resources import (
     compose_resource_recovery_lease,
@@ -15,7 +15,7 @@ from noetrium_platform.infrastructure.reliability.recovery.execution.composition
 def test_recovery_execution_uses_platform_resource_authority_and_local_fence(
     tmp_path,
 ) -> None:
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(tmp_path / "meta")
     lease = compose_resource_recovery_lease(
         meta.resource_ownership,
         meta.resource_leases,

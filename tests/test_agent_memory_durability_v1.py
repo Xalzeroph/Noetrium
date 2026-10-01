@@ -5,7 +5,7 @@ from noetrium_platform.capabilities.participant.agent.api import (
     AgentObservation,
     AgentStepReceipt,
 )
-from noetrium_platform.research.execution.participants import MachineAgentMemory
+from noetrium_platform.research.execution.participants import AgentMemory
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     InMemoryMachineJournal,
@@ -36,13 +36,13 @@ def _receipt(index: int, *, verified: bool | None = True) -> AgentStepReceipt:
 
 def test_memory_machine_reopens_from_journal_without_domain_checkpoint() -> None:
     journal = InMemoryMachineJournal()
-    first = MachineAgentMemory.create_default("agent-a", journal=journal)
+    first = AgentMemory.create_default("agent-a", journal=journal)
     first.record(_receipt(1), _context())
     first.record(_receipt(2), _context())
     first_cut = first.cut()
     assert first_cut is not None
 
-    restored = MachineAgentMemory.create_default("agent-a", journal=journal)
+    restored = AgentMemory.create_default("agent-a", journal=journal)
     assert [record.record_id for record in restored.records] == [
         "memory:episode:action:1",
         "memory:episode:action:2",
@@ -60,7 +60,7 @@ def test_memory_machine_reopens_from_journal_without_domain_checkpoint() -> None
 
 
 def test_verified_read_firewall_is_program_semantics() -> None:
-    memory = MachineAgentMemory.create_default("agent-b")
+    memory = AgentMemory.create_default("agent-b", journal=InMemoryMachineJournal())
     memory.record(_receipt(1, verified=False), _context())
     goal = AgentGoal("goal", "move safely", {})
     observation = AgentObservation("obs", "world-v1", {"task": "move"})
@@ -75,9 +75,10 @@ def test_verified_read_firewall_is_program_semantics() -> None:
 
 
 def test_default_retention_policy_is_bounded_but_replaceable() -> None:
-    memory = MachineAgentMemory.create_default(
+    memory = AgentMemory.create_default(
         "agent-c",
         preset=MemoryPresetSpec(max_records=2, recall_limit=2),
+        journal=InMemoryMachineJournal(),
     )
     memory.record(_receipt(1), _context())
     memory.record(_receipt(2), _context())
@@ -90,6 +91,6 @@ def test_default_retention_policy_is_bounded_but_replaceable() -> None:
 
 
 def test_no_domain_checkpoint_surface_remains_on_machine_memory() -> None:
-    memory = MachineAgentMemory.create_default("agent-d")
+    memory = AgentMemory.create_default("agent-d", journal=InMemoryMachineJournal())
     assert not hasattr(memory, "checkpoint")
     assert not hasattr(memory, "restore")

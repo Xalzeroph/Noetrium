@@ -43,32 +43,24 @@ def test_shape_sync_materializes_missing_standard_planes(tmp_path: Path) -> None
         assert "AUTO-GENERATED registered-system plane stub" in text
 
 
-def test_unified_api_does_not_expose_registry_collision_escape_hatch() -> None:
+def test_unified_api_is_exactly_the_top_level_research_os_surface() -> None:
     from noetrium import api
 
-    assert not hasattr(api, "system")
-    assert api.search("ExperimentPlan") == ()
-    assert api.describe("ExperimentPlan") == ()
-    try:
-        api.resolve("ExperimentPlan")
-    except AttributeError:
-        pass
-    else:
-        raise AssertionError("non-Product registry symbols must not escape through unified API")
-
-
-def test_product_authoring_contracts_are_reachable_through_unified_api() -> None:
-    from noetrium import api
-
-    AgentMethodSpec = api.AgentMethodSpec
-    Study = api.Study
-
-    assert AgentMethodSpec.__module__.startswith(
-        "noetrium_platform.research.execution.workflow.api"
+    assert api.__all__ == (
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolio",
+        "ResearchOS",
+        "open_project",
     )
-    assert Study.__module__.startswith(
-        "noetrium_platform.research.experimentation.lifecycle.study"
-    )
-    for private_name in ("DeploymentStatusIdentity", "LocalCommandRunnerPort"):
-        assert api.owners(private_name) == ()
-        assert api.search(private_name) == ()
+    for private_name in (
+        "system",
+        "search",
+        "describe",
+        "resolve",
+        "owners",
+        "AgentMethodSpec",
+        "Study",
+        "DeploymentStatusIdentity",
+        "LocalCommandRunnerPort",
+    ):
+        assert not hasattr(api, private_name)

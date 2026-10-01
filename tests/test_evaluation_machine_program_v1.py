@@ -41,7 +41,7 @@ def _lock(program) -> ProgramLock:
 def _session(journal: InMemoryMachineJournal) -> ResearchMachineSession:
     program = compile_paired_evaluation_program()
     machine = MachineExecutor(
-        identity=MachineIdentity("evaluation:test", MachineKind.EVALUATION, "2", "g1"),
+        identity=MachineIdentity("evaluation:test", MachineKind.EVALUATION, "1", "g1"),
         program=program.machine_program_ref(_lock(program)),
         journal=journal,
         family=programmable_machine_family(MachineKind.EVALUATION),
@@ -60,7 +60,6 @@ def _receipt(branch_id: str, score: float) -> dict[str, object]:
         "workload_id": "workload-1",
         "environment_generation": "environment-v1",
         "task_manifest_digest": "a" * 64,
-        "measurement_semantics_digest": "d" * 64,
         "branch_writes": (),
         "lifetime_writes": (),
         "private_to_method_flows": (),
@@ -75,7 +74,6 @@ def test_paired_evaluation_is_journal_backed_and_restartable() -> None:
         paired_evaluation_initial_data(
             evaluation_id="eval-1",
             source_execution_digest="b" * 64,
-            measurement_semantics_digest="d" * 64,
         ),
         command_id="evaluation:start",
     )
@@ -124,7 +122,6 @@ def test_paired_evaluation_records_invalid_comparability_without_scoring_delta()
         paired_evaluation_initial_data(
             evaluation_id="eval-2",
             source_execution_digest="c" * 64,
-            measurement_semantics_digest="d" * 64,
         ),
         command_id="evaluation:start",
     )
@@ -145,5 +142,5 @@ def test_paired_evaluation_records_invalid_comparability_without_scoring_delta()
     result = session.previous_value
     assert result["valid"] is False
     assert "workload_id mismatch" in result["violations"]
-    assert result["metric_deltas"] == []
+    assert result["metric_deltas"] == ()
     assert session.data["valid_comparison_count"] == 0

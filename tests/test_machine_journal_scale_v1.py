@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 import pytest
 
@@ -10,6 +11,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineCommand,
     MachineCommit,
     MachineIntegrityError,
+    MachineStateDelta,
+    MachineStateMutation,
     TransitionProposal,
 )
 
@@ -33,7 +36,9 @@ def _commit(
         machine_id=machine_id,
         command_id=command_id,
         base_revision=revision - 1,
-        state_delta={"revision": revision},
+        state_delta=MachineStateDelta((
+            MachineStateMutation(("revision",), revision),
+        )),
     )
     return MachineCommit(
         machine_id=machine_id,
@@ -49,6 +54,24 @@ def _commit(
     )
 
 
+def test_small_hot_path_states_use_patch_after_initial_snapshot(tmp_path: Path) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    previous = None
+    for revision in range(1, 4):
+        commit = _commit(revision, previous_commit_id=previous)
+        journal.append(commit)
+        previous = commit.commit_id
+
+    path = next((tmp_path / "machines").glob("*.journal"))
+    rows = tuple(json.loads(line) for line in path.read_text("utf-8").splitlines())
+    assert tuple(row["state_encoding"] for row in rows) == (
+        "snapshot",
+        "patch",
+        "patch",
+    )
+    assert DirectoryMachineJournal(tmp_path).latest("scale-machine").revision == 3
+
+
 def test_single_writer_200_appends_do_not_redecode_committed_prefix(
     tmp_path: Path,
     monkeypatch,
@@ -56,10 +79,10 @@ def test_single_writer_200_appends_do_not_redecode_committed_prefix(
     decoded = 0
     original = journal_module._decode_commit
 
-    def counted(value):
+    def counted(value, *, previous_state=None):
         nonlocal decoded
         decoded += 1
-        return original(value)
+        return original(value, previous_state=previous_state)
 
     monkeypatch.setattr(journal_module, "_decode_commit", counted)
     journal = DirectoryMachineJournal(tmp_path)

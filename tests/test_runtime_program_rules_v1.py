@@ -15,7 +15,6 @@ from noetrium_platform.research.execution.machines import (
     ProgramNodeResult,
     ProgrammableMachineInterpreter,
     RuntimeConcern,
-    RuleDispatchMode,
     MachineEvent,
     ProgramRule,
     ProgramRuleSet,
@@ -123,7 +122,7 @@ def test_runtime_event_rule_executes_through_machine_journal() -> None:
     assert commit.event_payloads[1]["rule_ids"] == ("model-complete",)
 
 
-def test_runtime_all_mode_is_deterministic_and_sequential() -> None:
+def test_runtime_unbounded_matches_are_deterministic_and_sequential() -> None:
     rules = ProgramRuleSet(
         (
             ProgramRule(
@@ -141,7 +140,7 @@ def test_runtime_all_mode_is_deterministic_and_sequential() -> None:
                 priority=20,
             ),
         ),
-        mode=RuleDispatchMode.ALL,
+        max_matches=None,
     )
     downstream = ProgramHandlerRegistry()
 
@@ -282,3 +281,19 @@ def test_rule_set_is_part_of_runtime_program_identity() -> None:
     )
     assert left.rule_set_digest != right.rule_set_digest
     assert left_program.program_digest != right_program.program_digest
+
+
+def test_rule_set_max_matches_expresses_top_n() -> None:
+    rules = ProgramRuleSet(
+        (
+            ProgramRule("third", "event", "paper.third", priority=10),
+            ProgramRule("first", "event", "paper.first", priority=30),
+            ProgramRule("second", "event", "paper.second", priority=20),
+        ),
+        max_matches=2,
+    )
+    matches = rules.ordered_matches(MachineEvent("event"), {})
+    assert tuple(rule.rule_id for rule in matches) == ("first", "second")
+
+    unbounded = ProgramRuleSet(rules.rules, max_matches=None)
+    assert tuple(rule.rule_id for rule in unbounded.ordered_matches(MachineEvent("event"), {})) == ("first", "second", "third")

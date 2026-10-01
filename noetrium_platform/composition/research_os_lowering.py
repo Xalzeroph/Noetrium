@@ -37,11 +37,17 @@ from noetrium_platform.product.research_os import (
     ResearchDefinitionKind,
     ResearchImplementation,
     ResearchMachineProgramImplementation,
-    ResearchMethodProgramBindingKind,
-    ResearchMethodProgramImplementation,
+    ResearchComponent,
+    ResearchMethod,
+    ResearchMethodImplementation,
     ResearchNodeKind,
 )
 
+from .research_definition_authority import (
+    ResearchDefinitionBinding,
+    ResearchDefinitionBindingAuthorityPort,
+    ResearchDefinitionBindingMissing,
+)
 from .research_os_experiment import (
     ResearchOSExperimentClosure,
     ResearchOSExperimentClosureMissing,
@@ -50,6 +56,12 @@ from .research_os_experiment import (
 from .research_os_graph import (
     CompiledResearchOSGraphNode,
     CompiledResearchOSGraph,
+)
+
+from .research_os_scientific_analysis import (
+    compile_declarative_analysis_program,
+    compile_declarative_metric_program,
+    compile_declarative_study_measurement_program,
 )
 
 
@@ -125,30 +137,20 @@ class ResolvedResearchImplementation:
 
 
 @dataclass(frozen=True, slots=True)
-class ResolvedResearchMethodProgramImplementation:
-    """Resolved immutable MethodProgram symbol owned by one METHOD definition."""
-
+class ResolvedResearchMethodImplementation:
     definition_id: str
-    declared: ResearchMethodProgramImplementation
-    program: MethodProgram
+    declared: ResearchMethodImplementation
+    method: ResearchMethod
 
     def __post_init__(self) -> None:
         if type(self.definition_id) is not str or not self.definition_id.strip():
-            raise ValueError(
-                "resolved MethodProgram implementation definition_id is required"
-            )
-        if type(self.declared) is not ResearchMethodProgramImplementation:
-            raise TypeError(
-                "resolved MethodProgram implementation requires typed declaration"
-            )
-        if type(self.program) is not MethodProgram:
-            raise TypeError(
-                "resolved MethodProgram implementation requires exact MethodProgram"
-            )
-        if self.program.program_digest != self.declared.program_digest:
-            raise ValueError(
-                "resolved MethodProgram digest drifted from immutable declaration"
-            )
+            raise ValueError("resolved ResearchMethod definition_id is required")
+        if type(self.declared) is not ResearchMethodImplementation:
+            raise TypeError("resolved ResearchMethod requires typed declaration")
+        if type(self.method) is not ResearchMethod:
+            raise TypeError("resolved ResearchMethod requires ResearchMethod artifact")
+        if self.method.artifact_digest != self.declared.method_digest:
+            raise ValueError("resolved ResearchMethod digest drifted from declaration")
 
 
 @runtime_checkable
@@ -212,64 +214,29 @@ class ImportResearchImplementationResolver:
         )
 
 
-def resolve_method_program_implementation(
+def resolve_research_method_implementation(
     definition: ResearchDefinition,
-) -> ResolvedResearchMethodProgramImplementation:
-    """Resolve one frozen module-level MethodProgram and prove exact IR identity."""
-
+) -> ResolvedResearchMethodImplementation:
     if type(definition) is not ResearchDefinition:
-        raise TypeError("MethodProgram resolution requires ResearchDefinition")
+        raise TypeError("ResearchMethod resolution requires ResearchDefinition")
     if definition.kind is not ResearchDefinitionKind.METHOD:
-        raise ValueError("MethodProgram resolution requires METHOD definition")
+        raise ValueError("ResearchMethod resolution requires METHOD definition")
     declared = definition.implementation
-    if type(declared) is not ResearchMethodProgramImplementation:
+    if type(declared) is not ResearchMethodImplementation:
         raise TypeError(
-            "MethodProgram resolution requires ResearchMethodProgramImplementation"
+            "METHOD definition requires ResearchMethodImplementation"
         )
     try:
-        value: object = importlib.import_module(declared.module)
-        for part in declared.qualname.split("."):
-            value = getattr(value, part)
-    except (ImportError, AttributeError) as exc:
+        method = declared.resolve()
+    except Exception as exc:
         raise ResearchImplementationResolutionError(
-            "research MethodProgram can no longer be imported from frozen "
-            f"coordinates: {declared.module}:{declared.qualname}"
+            "research method could not be reconstructed from frozen identity: "
+            f"{declared.module}:{declared.qualname}"
         ) from exc
-    if declared.binding_kind is ResearchMethodProgramBindingKind.FACTORY:
-        if not callable(value):
-            raise ResearchImplementationResolutionError(
-                "frozen research MethodProgram factory no longer resolves to callable: "
-                f"{declared.module}:{declared.qualname}"
-            )
-        try:
-            value = value(
-                *(thaw_json(row) for row in declared.factory_args),
-                **dict(thaw_json(declared.factory_kwargs)),
-            )
-        except Exception as exc:
-            raise ResearchImplementationResolutionError(
-                "frozen research MethodProgram factory failed to reconstruct IR: "
-                f"{declared.module}:{declared.qualname}"
-            ) from exc
-    elif declared.binding_kind is not ResearchMethodProgramBindingKind.SYMBOL:
-        raise ResearchImplementationResolutionError(
-            "research MethodProgram binding kind is unsupported"
-        )
-    if type(value) is not MethodProgram:
-        raise ResearchImplementationResolutionError(
-            "frozen research MethodProgram binding no longer resolves to "
-            f"MethodProgram: {declared.module}:{declared.qualname}"
-        )
-    if value.program_digest != declared.program_digest:
-        raise ResearchImplementationResolutionError(
-            "research MethodProgram IR drifted from immutable revision: "
-            f"{declared.module}:{declared.qualname}; "
-            f"declared={declared.program_digest} observed={value.program_digest}"
-        )
-    return ResolvedResearchMethodProgramImplementation(
+    return ResolvedResearchMethodImplementation(
         definition.definition_id,
         declared,
-        value,
+        method,
     )
 
 
@@ -414,92 +381,6 @@ def _invoke_plain_callable(
 ) -> object:
     return implementation(payload) if accepts_payload else implementation()
 
-
-
-def compile_callable_method_definition(
-    definition: ResearchDefinition,
-    *,
-    resolved: ResolvedResearchImplementation | None = None,
-    resolver: ResearchImplementationResolverPort | None = None,
-) -> MethodProgram:
-    """Compile one ordinary paper METHOD callable into the canonical UMM IR.
-
-    The author callable is treated as one pure semantic compute boundary: the
-    wrapper itself performs no provider I/O. External effects still have to flow
-    through MethodProgram capabilities/runtime ports, so this helper cannot
-    silently become a second execution authority.
-    """
-
-    if type(definition) is not ResearchDefinition:
-        raise TypeError("callable method lowering requires ResearchDefinition")
-    if definition.kind is not ResearchDefinitionKind.METHOD:
-        raise ValueError("callable method lowering requires METHOD definition")
-    if definition.implementation is None:
-        raise ResearchImplementationResolutionError(
-            "METHOD definition has no paper implementation"
-        )
-    if resolved is not None and resolver is not None:
-        raise ValueError("method lowering accepts resolved or resolver, not both")
-    selected = (
-        resolved
-        if resolved is not None
-        else (
-            resolver
-            if resolver is not None
-            else ImportResearchImplementationResolver()
-        ).resolve(definition)
-    )
-    if (
-        selected.definition_id != definition.definition_id
-        or selected.declared != definition.implementation
-    ):
-        raise ResearchImplementationResolutionError(
-            "resolved METHOD implementation does not match frozen definition"
-        )
-    declared = selected.declared
-    implementation = selected.implementation
-    accepts_payload = _plain_callable_accepts_payload(implementation)
-
-    def invoke(request: MethodNodeRequest) -> MethodNodeResult:
-        value = _invoke_plain_callable(
-            implementation,
-            accepts_payload=accepts_payload,
-            payload=request.input_value,
-        )
-        if type(value) is MethodNodeResult:
-            return value
-        return MethodNodeResult(value=value)
-
-    config_value = definition.config
-    configuration = (
-        dict(config_value)
-        if isinstance(config_value, Mapping)
-        else {"research_definition_config": config_value}
-    )
-    configuration["research_definition_id"] = definition.definition_id
-    configuration["research_implementation_digest"] = (
-        declared.implementation_digest
-    )
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id=definition.definition_id,
-            implementation_version=declared.source_digest,
-            abi_version="research-os.callable-method.v1",
-            schema_version="json",
-            artifact_digest=declared.implementation_digest,
-        ),
-        configuration_digest=canonical_digest(definition.config),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="invoke")
-    builder.return_node(
-        "invoke",
-        f"research-os.method:{definition.definition_id}",
-        invoke,
-    )
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -648,12 +529,25 @@ class LoweredResearchMethodProgram:
 
     definition_id: str
     program: MethodProgram
+    components: tuple[ResearchComponent, ...] = ()
 
     def __post_init__(self) -> None:
         if type(self.definition_id) is not str or not self.definition_id.strip():
             raise ValueError("lowered method definition_id is required")
         if type(self.program) is not MethodProgram:
             raise TypeError("lowered method requires MethodProgram")
+        if type(self.components) is not tuple or any(
+            type(row) is not ResearchComponent for row in self.components
+        ):
+            raise TypeError(
+                "lowered method components must be ResearchComponent tuple"
+            )
+        ordered = tuple(
+            sorted(self.components, key=lambda row: (row.domain.value, row.host_id))
+        )
+        if len({row.host_id for row in ordered}) != len(ordered):
+            raise ValueError("lowered method component host ids must be unique")
+        object.__setattr__(self, "components", ordered)
 
 
 @dataclass(frozen=True, slots=True)
@@ -664,10 +558,11 @@ class LoweredResearchOSGraphNode:
     target: ResearchOSLoweringTarget
     implementations: tuple[
         ResolvedResearchImplementation
-        | ResolvedResearchMethodProgramImplementation
+        | ResolvedResearchMethodImplementation
         | ResolvedResearchMachineProgramImplementation,
         ...,
     ] = ()
+    platform_bindings: tuple[ResearchDefinitionBinding, ...] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
     method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
     machine_programs: tuple[LoweredResearchMachineProgram, ...] = ()
@@ -683,12 +578,17 @@ class LoweredResearchOSGraphNode:
             type(row)
             not in {
                 ResolvedResearchImplementation,
-                ResolvedResearchMethodProgramImplementation,
+                ResolvedResearchMethodImplementation,
                 ResolvedResearchMachineProgramImplementation,
             }
             for row in self.implementations
         ):
             raise TypeError("lowered implementations must be a typed tuple")
+        if type(self.platform_bindings) is not tuple or any(
+            type(row) is not ResearchDefinitionBinding
+            for row in self.platform_bindings
+        ):
+            raise TypeError("lowered platform bindings must be typed tuple")
         if type(self.platform_requirements) is not tuple or any(
             type(row) is not ResearchDefinition
             for row in self.platform_requirements
@@ -711,21 +611,33 @@ class LoweredResearchOSGraphNode:
 
         definitions = {row.definition_id: row for row in self.source.definitions}
         implementation_ids = tuple(row.definition_id for row in self.implementations)
+        platform_binding_ids = tuple(row.definition_id for row in self.platform_bindings)
         requirement_ids = tuple(row.definition_id for row in self.platform_requirements)
         method_ids = tuple(row.definition_id for row in self.method_programs)
         machine_ids = tuple(row.definition_id for row in self.machine_programs)
         if len(implementation_ids) != len(set(implementation_ids)):
             raise ValueError("lowered implementation definitions must be unique")
+        if len(platform_binding_ids) != len(set(platform_binding_ids)):
+            raise ValueError("lowered platform bindings must be unique")
         if len(requirement_ids) != len(set(requirement_ids)):
             raise ValueError("lowered platform requirements must be unique")
-        if set(implementation_ids) & set(requirement_ids):
-            raise ValueError("one research definition cannot be both implementation and requirement")
-        if set(implementation_ids) | set(requirement_ids) != set(definitions):
+        partitions = (
+            set(implementation_ids),
+            set(platform_binding_ids),
+            set(requirement_ids),
+        )
+        if any(partitions[i] & partitions[j] for i in range(3) for j in range(i + 1, 3)):
+            raise ValueError("one research definition cannot occupy two lowering partitions")
+        if set().union(*partitions) != set(definitions):
             raise ValueError("lowered definitions must partition source definitions")
         if any(definitions[key].implementation is None for key in implementation_ids):
             raise ValueError("implementation lowering contains platform-resolved definition")
         if any(definitions[key].implementation is not None for key in requirement_ids):
             raise ValueError("platform requirement contains paper implementation")
+        if any(definitions[key].implementation is not None for key in platform_binding_ids):
+            raise ValueError("platform binding contains paper implementation")
+        for row in self.platform_bindings:
+            row.validate_definition(definitions[row.definition_id])
         if len(method_ids) != len(set(method_ids)):
             raise ValueError("lowered method program definitions must be unique")
         if any(key not in implementation_ids for key in method_ids):
@@ -778,6 +690,9 @@ class LoweredResearchOSGraphNode:
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
         )
+        ordered_platform_bindings = tuple(
+            sorted(self.platform_bindings, key=lambda row: row.definition_id)
+        )
         ordered_requirements = tuple(
             sorted(self.platform_requirements, key=lambda row: row.definition_id)
         )
@@ -788,6 +703,7 @@ class LoweredResearchOSGraphNode:
             sorted(self.machine_programs, key=lambda row: row.definition_id)
         )
         object.__setattr__(self, "implementations", ordered_implementations)
+        object.__setattr__(self, "platform_bindings", ordered_platform_bindings)
         object.__setattr__(self, "platform_requirements", ordered_requirements)
         object.__setattr__(self, "method_programs", ordered_method_programs)
         object.__setattr__(self, "machine_programs", ordered_machine_programs)
@@ -805,6 +721,17 @@ class LoweredResearchOSGraphNode:
                         )
                         for row in ordered_implementations
                     ),
+                    "platform_bindings": tuple(
+                        (
+                            row.definition_id,
+                            row.kind.value,
+                            row.owner_system,
+                            row.provider_identity,
+                            row.binding_identity_digest,
+                            row.binding_digest,
+                        )
+                        for row in ordered_platform_bindings
+                    ),
                     "platform_requirements": tuple(
                         (
                             row.definition_id,
@@ -813,7 +740,11 @@ class LoweredResearchOSGraphNode:
                         for row in ordered_requirements
                     ),
                     "method_programs": tuple(
-                        (row.definition_id, row.program.program_digest)
+                        (
+                            row.definition_id,
+                            row.program.program_digest,
+                            tuple(component.artifact_digest for component in row.components),
+                        )
                         for row in ordered_method_programs
                     ),
                     "machine_programs": tuple(
@@ -895,6 +826,7 @@ class ResearchOSLoweringCompiler:
         self,
         resolver: ResearchImplementationResolverPort | None = None,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     ) -> None:
         resolved = (
             resolver
@@ -916,6 +848,15 @@ class ResearchOSLoweringCompiler:
                 "ResearchOSExperimentClosurePort"
             )
         self._experiment_closures = experiment_closures
+        if definition_bindings is not None and not isinstance(
+            definition_bindings,
+            ResearchDefinitionBindingAuthorityPort,
+        ):
+            raise TypeError(
+                "Research OS definition bindings must satisfy "
+                "ResearchDefinitionBindingAuthorityPort"
+            )
+        self._definition_bindings = definition_bindings
 
     def compile_node(
         self,
@@ -930,15 +871,24 @@ class ResearchOSLoweringCompiler:
         target = _NODE_TARGETS[node.node.kind]
         implementations: list[
             ResolvedResearchImplementation
-            | ResolvedResearchMethodProgramImplementation
+            | ResolvedResearchMethodImplementation
             | ResolvedResearchMachineProgramImplementation
         ] = []
+        platform_bindings: list[ResearchDefinitionBinding] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
         machine_programs: list[LoweredResearchMachineProgram] = []
         for definition in node.definitions:
             if definition.implementation is None:
-                requirements.append(definition)
+                if self._definition_bindings is None:
+                    requirements.append(definition)
+                    continue
+                try:
+                    binding = self._definition_bindings.resolve(definition)
+                except ResearchDefinitionBindingMissing:
+                    requirements.append(definition)
+                    continue
+                platform_bindings.append(binding)
                 continue
             if type(definition.implementation) is ResearchMachineProgramImplementation:
                 if target is ResearchOSLoweringTarget.EXPERIMENTATION:
@@ -957,20 +907,75 @@ class ResearchOSLoweringCompiler:
                     )
                 )
                 continue
-            if type(definition.implementation) is ResearchMethodProgramImplementation:
-                resolved_method = resolve_method_program_implementation(definition)
+            if type(definition.implementation) is ResearchMethodImplementation:
+                resolved_method = resolve_research_method_implementation(definition)
                 implementations.append(resolved_method)
                 if target is ResearchOSLoweringTarget.EXPERIMENTATION:
                     continue
                 if target is not ResearchOSLoweringTarget.METHOD_MACHINE:
                     raise ResearchImplementationResolutionError(
-                        "MethodProgram implementation may only execute through "
-                        f"METHOD/Experimentation targets: node={node.graph_node_id}"
+                        "ResearchMethod may only execute through METHOD/Experimentation "
+                        f"targets: node={node.graph_node_id}"
                     )
                 method_programs.append(
                     LoweredResearchMethodProgram(
                         definition.definition_id,
-                        resolved_method.program,
+                        resolved_method.method.program,
+                        resolved_method.method.components,
+                    )
+                )
+                continue
+            config = definition.config if isinstance(definition.config, Mapping) else {}
+            if (
+                definition.kind is ResearchDefinitionKind.METRIC
+                and target is ResearchOSLoweringTarget.EVALUATION_MACHINE
+                and config.get("metric_engine") == "universal_raw"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_metric_program(definition)
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
+                    )
+                )
+                continue
+            if (
+                definition.kind is ResearchDefinitionKind.METRIC
+                and target is ResearchOSLoweringTarget.EVALUATION_MACHINE
+                and config.get("metric_engine") == "study_measurement"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_study_measurement_program(
+                    definition
+                )
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
+                    )
+                )
+                continue
+            if (
+                definition.kind is ResearchDefinitionKind.ANALYSIS
+                and target is ResearchOSLoweringTarget.ANALYSIS_MACHINE
+                and config.get("analysis_engine") == "workbench"
+            ):
+                resolved = self._resolver.resolve(definition)
+                implementations.append(resolved)
+                program, operations = compile_declarative_analysis_program(definition)
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        program.kind,
+                        program,
+                        operations,
                     )
                 )
                 continue
@@ -979,16 +984,9 @@ class ResearchOSLoweringCompiler:
             if target is ResearchOSLoweringTarget.EXPERIMENTATION:
                 continue
             if definition.kind is ResearchDefinitionKind.METHOD:
-                method_programs.append(
-                    LoweredResearchMethodProgram(
-                        definition.definition_id,
-                        compile_callable_method_definition(
-                            definition,
-                            resolved=resolved,
-                        ),
-                    )
+                raise ResearchImplementationResolutionError(
+                    "METHOD definitions must use ResearchMethodImplementation"
                 )
-                continue
             machine_kind = _NODE_MACHINE_KINDS.get(node.node.kind)
             if machine_kind is None:
                 raise ResearchImplementationResolutionError(
@@ -1042,6 +1040,7 @@ class ResearchOSLoweringCompiler:
             source=node,
             target=target,
             implementations=tuple(implementations),
+            platform_bindings=tuple(platform_bindings),
             platform_requirements=tuple(requirements),
             method_programs=tuple(method_programs),
             machine_programs=tuple(machine_programs),
@@ -1098,11 +1097,13 @@ def compile_research_os_lowering(
     *,
     resolver: ResearchImplementationResolverPort | None = None,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     selected_node_ids: tuple[str, ...] | None = None,
 ) -> ResearchOSLoweringPlan:
     return ResearchOSLoweringCompiler(
         resolver,
         experiment_closures,
+        definition_bindings,
     ).compile(
         compilation,
         selected_node_ids=selected_node_ids,

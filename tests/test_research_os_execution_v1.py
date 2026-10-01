@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_checkpoint import (
@@ -20,7 +21,7 @@ from noetrium_platform.composition.research_os_execution import (
     StrictResearchOSControl,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSImmutableValueAuthority,
+    ResearchOSArtifactValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import (
     ResearchOSValueAuthorityMissing,
@@ -57,6 +58,7 @@ from noetrium_platform.composition.research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionNotFound,
@@ -72,8 +74,8 @@ from noetrium_platform.research.execution.graph.providers import (
 @dataclass
 class _ValueAuthority:
     authority_id: str = "data.authority"
-    supported_kinds: frozenset[api.ResearchValueKind] = frozenset(
-        {api.ResearchValueKind.DATA}
+    supported_kinds: frozenset[research_os_api.ResearchValueKind] = frozenset(
+        {research_os_api.ResearchValueKind.DATA}
     )
     rows: dict[str, JsonValue] = field(default_factory=dict)
     released: list[str] = field(default_factory=list)
@@ -165,12 +167,14 @@ class _Runtime:
         lowering,
         *,
         execution_cut_id,
+        attempt_id,
     ):
         commit_id = canonical_digest(
             {
                 "test-checkpoint": execution_cut_id,
                 "graph_node_id": node.graph_node_id,
                 "lowering_digest": lowering.lowering_digest,
+                "attempt_id": attempt_id,
             }
         )
         cut = MachineCut(
@@ -261,82 +265,90 @@ class _ReconciliationRuntime(_Runtime):
         )
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.node(
         "source",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),
+            research_os_api.ResearchOutputSpec("data", research_os_api.ResearchValueKind.DATA),
         ),
     )
     builder.node(
         "consume",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),
+            research_os_api.ResearchOutputSpec("result", research_os_api.ResearchValueKind.DATA),
         ),
     )
     builder.depends(
         "consume",
         "source",
         bindings=(
-            api.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 "source",
                 "data",
-                api.ResearchValueKind.DATA,
+                research_os_api.ResearchValueKind.DATA,
             ),
         ),
     )
-    return api.ResearchPortfolio("suite", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
-def _portfolio_v2() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio_v2() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.node(
         "source",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),
+            research_os_api.ResearchOutputSpec("data", research_os_api.ResearchValueKind.DATA),
         ),
         config={"revision": 2},
     )
     builder.node(
         "consume",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),
+            research_os_api.ResearchOutputSpec("result", research_os_api.ResearchValueKind.DATA),
         ),
     )
     builder.depends(
         "consume",
         "source",
         bindings=(
-            api.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 "source",
                 "data",
-                api.ResearchValueKind.DATA,
+                research_os_api.ResearchValueKind.DATA,
             ),
         ),
     )
-    return api.ResearchPortfolio("suite", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
-def _pool() -> ResearchExecutionPool:
+def _pool(*, exclusive_owner_generation: bool = False) -> ResearchExecutionPool:
     return ResearchExecutionPool(
         orchestration_concurrency_budget=ConcurrencyBudget(
             max_blocking_io_workers=2,
             max_cpu_workers=1,
             max_async_io_in_flight=2,
-        )
+        ),
+        exclusive_owner_generation=exclusive_owner_generation,
     )
 
 
-def _bound(tmp_path: Path, runtime, values, *, artifact_lineage=None):
+def _bound(
+    tmp_path: Path,
+    runtime,
+    values,
+    *,
+    artifact_lineage=None,
+    exclusive_owner_generation: bool = False,
+):
     revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
-    pool = _pool()
+    pool = _pool(exclusive_owner_generation=exclusive_owner_generation)
     control = StrictResearchOSControl(
         graph,
         pool,
@@ -365,7 +377,7 @@ def test_public_run_closes_preflight_before_creating_durable_cut(tmp_path: Path)
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="run")
-        target = api.ResearchExecutionTarget("execution-1", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-1", revision)
 
         receipt = research_os.run(target)
         assert receipt.state == "succeeded"
@@ -386,6 +398,50 @@ def test_public_run_closes_preflight_before_creating_durable_cut(tmp_path: Path)
         pool.close()
 
 
+def test_public_run_is_admitted_through_fleet_domain(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    _graph, pool, research_os = _bound(tmp_path, runtime, values)
+    observed: list[tuple[str, str | None, str | None]] = []
+    original = pool.open_fleet_group
+
+    def open_fleet_group(group_id: str, **kwargs):
+        observed.append(
+            (
+                group_id,
+                kwargs.get("tenant_id"),
+                kwargs.get("resource_id"),
+            )
+        )
+        return original(group_id, **kwargs)
+
+    monkeypatch.setattr(pool, "open_fleet_group", open_fleet_group)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="fleet-admission")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-fleet-admission",
+            revision,
+        )
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "succeeded"
+        assert len(observed) == 1
+        group_id, tenant_id, resource_id = observed[0]
+        assert group_id.startswith("research-os-fleet:suite:execution-fleet-admission:")
+        assert tenant_id == "suite"
+        assert resource_id == "research-os-fleet:execution-fleet-admission"
+        admission = pool.fleet_admission_snapshot()
+        assert admission.admitted_total == 1
+        assert admission.rejected_total == 0
+    finally:
+        pool.close()
+
+
 def test_run_cannot_switch_active_revision_without_explicit_migration(
     tmp_path: Path,
 ) -> None:
@@ -395,7 +451,7 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
     try:
         first_portfolio = _portfolio()
         first_revision = research_os.commit(first_portfolio, message="r1")
-        first_target = api.ResearchExecutionTarget("execution-revision", first_revision)
+        first_target = research_os_api.ResearchExecutionTarget("execution-revision", first_revision)
         research_os.run(first_target.for_node("paper", "source"))
         active_before = graph.active_cut(first_target.execution_id)
         assert active_before is not None
@@ -406,7 +462,7 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
             parents=(first_revision,),
             message="r2",
         )
-        second_target = api.ResearchExecutionTarget(
+        second_target = research_os_api.ResearchExecutionTarget(
             first_target.execution_id,
             second_revision,
         )
@@ -432,6 +488,130 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
         pool.close()
 
 
+
+def test_run_hot_replaces_quiescent_paused_revision_under_exclusive_owner_fence(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path, runtime, values, exclusive_owner_generation=True
+    )
+    try:
+        first_portfolio = _portfolio()
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        execution_id = "execution-hot-replace"
+        first_target = research_os_api.ResearchExecutionTarget(
+            execution_id, first_revision
+        )
+        assert (
+            research_os.run(first_target.for_node("paper", "source")).state
+            == "succeeded"
+        )
+        paused = research_os.pause(first_target)
+        assert paused.state == "paused"
+        first_active = graph.active_cut(execution_id)
+        assert first_active is not None
+        first_snapshot = graph.snapshot(first_active.cut_id)
+
+        second_portfolio = _portfolio_v2()
+        second_revision = research_os.commit(
+            second_portfolio,
+            parents=(first_revision,),
+            message="r2",
+        )
+        second_target = research_os_api.ResearchExecutionTarget(
+            execution_id, second_revision
+        )
+        receipt = research_os.run(second_target.for_node("paper", "source"))
+
+        second_compilation = compile_research_portfolio_graph(
+            second_revision, second_portfolio
+        )
+        second_cut = ResearchOSExecutionCut.from_compilation(
+            execution_id, second_compilation
+        )
+        active = graph.active_cut(execution_id)
+        assert active is not None
+        assert active.cut_id == second_cut.cut_id
+        assert receipt.state == "succeeded"
+        assert graph.snapshot(first_active.cut_id) == first_snapshot
+        assert graph.control_state(first_active.cut_id).phase is (
+            ResearchGraphControlPhase.PAUSED
+        )
+    finally:
+        pool.close()
+
+
+def test_run_supersedes_abandoned_revision_under_exclusive_owner_fence(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path, runtime, values, exclusive_owner_generation=True
+    )
+    try:
+        first_portfolio = _portfolio()
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        first_target = research_os_api.ResearchExecutionTarget(
+            "execution-abandoned-revision", first_revision
+        )
+        first_compilation = compile_research_portfolio_graph(
+            first_revision, first_portfolio
+        )
+        first_cut = ResearchOSExecutionCut.from_compilation(
+            first_target.execution_id, first_compilation
+        )
+        graph.ensure_execution(first_cut.cut_id, first_compilation.plan)
+        graph.move_active_cut(first_target.execution_id, first_cut.cut_id)
+        graph.mark_ready(first_cut.cut_id, "paper::source", now_ns=1)
+        claimed = graph.claim(
+            first_cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=2,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
+        )
+        graph.mark_running(
+            first_cut.cut_id,
+            "paper::source",
+            attempt_id=claimed.attempt_id or "",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=3,
+        )
+
+        second_portfolio = _portfolio_v2()
+        second_revision = research_os.commit(
+            second_portfolio, parents=(first_revision,), message="r2"
+        )
+        second_target = research_os_api.ResearchExecutionTarget(
+            first_target.execution_id, second_revision
+        )
+        receipt = research_os.run(second_target.for_node("paper", "source"))
+
+        second_compilation = compile_research_portfolio_graph(
+            second_revision, second_portfolio
+        )
+        second_cut = ResearchOSExecutionCut.from_compilation(
+            second_target.execution_id, second_compilation
+        )
+        active = graph.active_cut(second_target.execution_id)
+        assert active is not None
+        assert active.cut_id == second_cut.cut_id
+        assert receipt.state == "succeeded"
+        assert graph.snapshot(first_cut.cut_id).node("paper::source").state is (
+            ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+        )
+        assert graph.control_state(first_cut.cut_id).phase is (
+            ResearchGraphControlPhase.RECOVERY_REQUIRED
+        )
+        assert graph.snapshot(second_cut.cut_id).node("paper::source").state is (
+            ResearchGraphLiveNodeState.SUCCEEDED
+        )
+    finally:
+        pool.close()
+
 def test_node_scoped_preflight_does_not_admit_unselected_nodes(tmp_path: Path) -> None:
     runtime = _Runtime(reject=frozenset({"paper::consume"}))
     values = ResearchOSValueRouter((_ValueAuthority(),))
@@ -439,7 +619,7 @@ def test_node_scoped_preflight_does_not_admit_unselected_nodes(tmp_path: Path) -
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="selection admission")
-        target = api.ResearchExecutionTarget("execution-selection-admission", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-selection-admission", revision)
 
         receipt = research_os.run(target.for_node("paper", "source"))
         assert receipt.state == "succeeded"
@@ -465,7 +645,7 @@ def test_runtime_admission_failure_creates_no_execution_cut(tmp_path: Path) -> N
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="reject")
-        target = api.ResearchExecutionTarget("execution-reject", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-reject", revision)
 
         with pytest.raises(RuntimeError, match="runtime rejected"):
             research_os.run(target)
@@ -482,7 +662,7 @@ def test_missing_value_authority_fails_before_cut_creation(tmp_path: Path) -> No
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="missing authority")
-        target = api.ResearchExecutionTarget("execution-missing", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-missing", revision)
 
         with pytest.raises(ResearchOSValueAuthorityMissing):
             research_os.run(target)
@@ -499,7 +679,7 @@ def test_node_scoped_run_uses_dependency_closed_selection(tmp_path: Path) -> Non
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node selection")
-        target = api.ResearchExecutionTarget("execution-selection", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-selection", revision)
 
         source_receipt = research_os.run(target.for_node("paper", "source"))
         assert source_receipt.state == "succeeded"
@@ -543,7 +723,7 @@ def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="control")
-        target = api.ResearchExecutionTarget("execution-control", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-control", revision)
 
         assert research_os.run(target).state == "succeeded"
 
@@ -585,7 +765,7 @@ def test_resume_admission_failure_preserves_paused_control(tmp_path: Path) -> No
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="resume-preflight")
-        target = api.ResearchExecutionTarget("execution-resume-preflight", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-resume-preflight", revision)
         assert research_os.run(target).state == "succeeded"
         assert research_os.pause(target).state == "paused"
 
@@ -614,7 +794,7 @@ def test_node_pause_inspect_and_resume_preserve_graph_wide_activity(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node pause")
-        target = api.ResearchExecutionTarget("execution-node-pause", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-node-pause", revision)
         # Materialize the immutable cut without executing the target node.
         research_os.run(target.for_node("paper", "source"))
         active = graph.active_cut(target.execution_id)
@@ -651,7 +831,7 @@ def test_node_interrupt_claimed_before_start_can_resume_without_reconciliation(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node claimed interrupt")
-        target = api.ResearchExecutionTarget("execution-node-claimed", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-node-claimed", revision)
         compilation = compile_research_portfolio_graph(revision, portfolio)
         cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
         graph.ensure_execution(cut.cut_id, compilation.plan)
@@ -662,7 +842,7 @@ def test_node_interrupt_claimed_before_start_can_resume_without_reconciliation(
             "paper::source",
             owner_id="worker-a",
             now_ns=2,
-            lease_expires_at_ns=10**30,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
         )
 
         interrupted = research_os.interrupt(target.for_node("paper", "source"))
@@ -689,7 +869,7 @@ def test_node_running_interrupt_reconciles_locally_then_remains_paused(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node local recovery")
-        target = api.ResearchExecutionTarget("execution-node-recovery", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-node-recovery", revision)
         compilation = compile_research_portfolio_graph(revision, portfolio)
         cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
         graph.ensure_execution(cut.cut_id, compilation.plan)
@@ -700,7 +880,7 @@ def test_node_running_interrupt_reconciles_locally_then_remains_paused(
             "paper::source",
             owner_id="worker-a",
             now_ns=2,
-            lease_expires_at_ns=10**30,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
         )
         graph.mark_running(
             cut.cut_id,
@@ -746,7 +926,7 @@ def test_node_cancel_atomically_cancels_descendants_only(tmp_path: Path) -> None
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node cancel")
-        target = api.ResearchExecutionTarget("execution-node-cancel", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-node-cancel", revision)
         compilation = compile_research_portfolio_graph(revision, portfolio)
         cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
         graph.ensure_execution(cut.cut_id, compilation.plan)
@@ -784,7 +964,7 @@ def test_node_scoped_checkpoint_binds_exact_lower_machine_cut(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="node checkpoint")
-        target = api.ResearchExecutionTarget("execution-node-checkpoint", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-node-checkpoint", revision)
         research_os.run(target.for_node("paper", "source"))
 
         receipt = research_os.checkpoint(target.for_node("paper", "source"))
@@ -814,7 +994,7 @@ def test_running_interrupt_fences_attempt_and_requires_reconciliation(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="interrupt")
-        target = api.ResearchExecutionTarget("execution-interrupt", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-interrupt", revision)
         compilation = compile_research_portfolio_graph(revision, portfolio)
         cut = ResearchOSExecutionCut.from_compilation(
             target.execution_id,
@@ -874,7 +1054,7 @@ def test_active_retry_admission_failure_preserves_failed_attempt(tmp_path: Path)
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="retry-preflight")
-        target = api.ResearchExecutionTarget("execution-retry-preflight", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-retry-preflight", revision)
         receipt = research_os.run(target)
         assert receipt.state == "failed"
 
@@ -904,7 +1084,7 @@ def test_retry_and_reconcile_remain_proof_gated(tmp_path: Path) -> None:
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="proof-gated-control")
-        target = api.ResearchExecutionTarget("execution-proof-gated", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-proof-gated", revision)
         research_os.run(target)
 
         with pytest.raises(
@@ -1006,6 +1186,7 @@ class _ExecutionStoreWithoutActiveCut:
         now_ns,
         failure_type,
         failure_message,
+        failure_provenance,
     ):
         raise AssertionError("unused")
 
@@ -1105,25 +1286,25 @@ class _ArtifactRuntime(_Runtime):
         raise AssertionError(node.graph_node_id)
 
 
-def _artifact_portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _artifact_portfolio() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.node(
         "source",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
     builder.node(
         "derive",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -1131,14 +1312,14 @@ def _artifact_portfolio() -> api.ResearchPortfolio:
         "derive",
         "source",
         bindings=(
-            api.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 "source",
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    return api.ResearchPortfolio("suite", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
 def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> None:
@@ -1146,7 +1327,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
     blobs = DirectoryArtifactBlobStore(tmp_path / "artifact-blobs")
     registry = SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3")
     retention = SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3")
-    authority = ResearchOSImmutableValueAuthority(blobs, registry, retention)
+    authority = ResearchOSArtifactValueAuthority(blobs, registry, retention)
     values = ResearchOSValueRouter((authority,))
     lineage = SQLiteArtifactLineageStore(tmp_path / "artifact-lineage.sqlite3")
     graph, pool, research_os = _bound(
@@ -1158,7 +1339,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
     try:
         portfolio = _artifact_portfolio()
         revision = research_os.commit(portfolio, message="artifact lineage")
-        target = api.ResearchExecutionTarget("execution-artifact", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-artifact", revision)
         receipt = research_os.run(target)
         assert receipt.state == "succeeded"
 
@@ -1171,7 +1352,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
                 cut_id,
                 source_node.graph_node_id,
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
                 source_node.semantic_digest,
             )
         )
@@ -1180,7 +1361,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
                 cut_id,
                 derive_node.graph_node_id,
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
                 derive_node.semantic_digest,
             )
         )
@@ -1203,7 +1384,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
 
 def test_derived_artifact_without_lineage_authority_fails_before_cut(tmp_path: Path) -> None:
     runtime = _ArtifactRuntime()
-    authority = ResearchOSImmutableValueAuthority(
+    authority = ResearchOSArtifactValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "artifact-blobs"),
         SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3"),
@@ -1213,12 +1394,114 @@ def test_derived_artifact_without_lineage_authority_fails_before_cut(tmp_path: P
     try:
         portfolio = _artifact_portfolio()
         revision = research_os.commit(portfolio, message="lineage missing")
-        target = api.ResearchExecutionTarget("execution-lineage-missing", revision)
+        target = research_os_api.ResearchExecutionTarget("execution-lineage-missing", revision)
         with pytest.raises(
             ResearchOSExecutionUnsupported,
             match="ArtifactLineageRelationPort",
         ):
             research_os.run(target)
         assert graph.active_cut("execution-lineage-missing") is None
+    finally:
+        pool.close()
+
+
+def test_run_auto_reconciles_only_newly_fenced_abandoned_owner_generation(
+    tmp_path: Path,
+) -> None:
+    runtime = _ReconciliationRuntime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path,
+        runtime,
+        values,
+        exclusive_owner_generation=True,
+    )
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="abandoned-owner-auto-recovery")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-auto-abandoned-recovery",
+            revision,
+        )
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claim = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=2,
+            lease_expires_at_ns=(1 << 63) - 1,
+        )
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claim.attempt_id or "",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=3,
+        )
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "succeeded"
+        assert runtime.executed == ["paper::source", "paper::consume"]
+        attempts = graph.attempts(cut.cut_id, "paper::source")
+        assert attempts[0].state is ResearchGraphAttemptState.RECONCILED_RETRY
+        assert graph.node_control_state(
+            cut.cut_id, "paper::source"
+        ).phase is ResearchGraphNodeControlPhase.ACTIVE
+    finally:
+        pool.close()
+
+
+def test_run_does_not_auto_reconcile_preexisting_manual_recovery_intent(
+    tmp_path: Path,
+) -> None:
+    runtime = _ReconciliationRuntime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path,
+        runtime,
+        values,
+        exclusive_owner_generation=True,
+    )
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="manual-recovery-remains-explicit")
+        target = research_os_api.ResearchExecutionTarget(
+            "execution-manual-recovery",
+            revision,
+        )
+        compilation = compile_research_portfolio_graph(revision, portfolio)
+        cut = ResearchOSExecutionCut.from_compilation(target.execution_id, compilation)
+        graph.ensure_execution(cut.cut_id, compilation.plan)
+        graph.move_active_cut(target.execution_id, cut.cut_id)
+        graph.mark_ready(cut.cut_id, "paper::source", now_ns=1)
+        claim = graph.claim(
+            cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:manual-owner:worker",
+            now_ns=2,
+            lease_expires_at_ns=(1 << 63) - 1,
+        )
+        graph.mark_running(
+            cut.cut_id,
+            "paper::source",
+            attempt_id=claim.attempt_id or "",
+            owner_id="research-graph-scheduler:manual-owner:worker",
+            now_ns=3,
+        )
+        interrupted = research_os.interrupt(target.for_node("paper", "source"))
+        assert interrupted.state == "node_recovery_required"
+
+        receipt = research_os.run(target)
+
+        assert receipt.state == "node_recovery_required"
+        assert runtime.executed == []
+        assert graph.node_control_state(
+            cut.cut_id, "paper::source"
+        ).phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
     finally:
         pool.close()

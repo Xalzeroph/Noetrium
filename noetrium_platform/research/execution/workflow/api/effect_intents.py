@@ -20,6 +20,8 @@ class EffectIntentOperationPort(Protocol):
     @property
     def component_identity(self) -> ComponentIdentity: ...
 
+    def close(self) -> None: ...
+
     def inspect(
         self,
         intent: EffectIntent,

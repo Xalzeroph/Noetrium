@@ -27,18 +27,6 @@ class GpuRuntimeSnapshot:
     processes: tuple[GpuProcessStatus, ...] = ()
     detail: str = ""
     processes_complete: bool = True
-    observed_at_epoch_s: float | None = None
-
-    def __post_init__(self) -> None:
-        if type(self.available) is not bool or type(self.processes_complete) is not bool:
-            raise TypeError("GPU runtime availability flags must be bool")
-        if self.observed_at_epoch_s is not None and (
-            isinstance(self.observed_at_epoch_s, bool)
-            or not isinstance(self.observed_at_epoch_s, (int, float))
-            or not math.isfinite(float(self.observed_at_epoch_s))
-            or self.observed_at_epoch_s <= 0
-        ):
-            raise ValueError("GPU runtime observation timestamp must be finite and positive")
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,18 +80,8 @@ class HostRuntimeSnapshot:
     available: bool
     hosts: tuple[HostRuntimeStatus, ...] = ()
     detail: str = ""
-    observed_at_epoch_s: float | None = None
 
     def __post_init__(self) -> None:
-        if type(self.available) is not bool:
-            raise TypeError("host runtime available must be bool")
-        if self.observed_at_epoch_s is not None and (
-            isinstance(self.observed_at_epoch_s, bool)
-            or not isinstance(self.observed_at_epoch_s, (int, float))
-            or not math.isfinite(float(self.observed_at_epoch_s))
-            or self.observed_at_epoch_s <= 0
-        ):
-            raise ValueError("host runtime observation timestamp must be finite and positive")
         if len({item.host_id for item in self.hosts}) != len(self.hosts):
             raise ValueError("host runtime snapshot contains duplicate host identities")
 

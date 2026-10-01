@@ -17,7 +17,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adacm2_memory",
-      "program_digest": "a0c9e18145ab4ea46cd77d05918b40ed5d5c962ad1eeb6e7d95a743bacbd4fc1",
+      "program_digest": "fe325a8e49611e7f50e41a0dcf3dbbc72cfcbeaf34f1f8d876fc12cc5f04db16",
       "benchmark_ids": [
         "lvu"
       ],
@@ -42,7 +42,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adaptagent_acl2025",
-      "program_digest": "b4dfa2bf54eff2f92871b7570e5a7a91e54471ecb789675ca02888776c603683",
+      "program_digest": "461b0c70bd95dbb4acb21d453b3dbdf920c2432aa4aa63944371794d6b3b486f",
       "benchmark_ids": [
         "mind2web",
         "visualwebarena"
@@ -70,7 +70,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adas_meta_agent_search",
-      "program_digest": "cf35b036a70e74c0a60f5b73568b2af0e7c5ec63943d475cf08499b51b90540b",
+      "program_digest": "66b00ade80bccebfdfb958066bb7010fbde7a8ba7b6a17644feda332f403f215",
       "benchmark_ids": [
         "mgsm"
       ],
@@ -95,7 +95,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "aflow",
-      "program_digest": "c875e41d17d6a143ed5f2bfc21ad1747a5d448cb463949bc8a62a4d14a75ad55",
+      "program_digest": "4e041504e2a95c00f93a31c4807ccde2e0e1e1cbeeca26dfc931fb1073a83db2",
       "benchmark_ids": [
         "humaneval"
       ],
@@ -120,7 +120,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agemem_acl2026",
-      "program_digest": "6479b01f49d26b110a37f56f952d2704696deb917d7ead60400a742406448228",
+      "program_digest": "81841ffd0f46272c61fd51bd1ab9014757cb8b51cd84903975f87d0243e89245",
       "benchmark_ids": [
         "agentboard-pddl",
         "alfworld",
@@ -132,12 +132,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:agemem_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -151,7 +152,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agent_q_surrogate",
-      "program_digest": "329a63291f3ac6bf6c063da22222c49541f9e24358b45602588100d7de074558",
+      "program_digest": "0996759a0ea3cdf4dc0af04c7b27b9be1c4f6060c75612251760cc5b3ca31dd4",
       "benchmark_ids": [
         "webshop",
         "webvoyager"
@@ -177,7 +178,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agent_s3",
-      "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
+      "program_digest": "49601a836d2c2591303272c66ff435cbc19ba6e5e7288f3a49b6895d57e1eed9",
       "benchmark_ids": [
         "osworld"
       ],
@@ -204,7 +205,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agentless_swebench",
-      "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
+      "program_digest": "69dc836622e742d19f63decfa26e1b66ebc6ae3007bf4ba66eb7b84d8a8fc73f",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -231,7 +232,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agentsquare",
-      "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+      "program_digest": "042c9f0f455df2a0a68fbf38579b98a0a58770e395fa02fe1583199ca44594ac",
       "benchmark_ids": [
         "agentboard-pddl",
         "alfworld",
@@ -244,7 +245,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:agentsquare has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
@@ -303,7 +304,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "astranav_memory_cvpr2026",
-      "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
+      "program_digest": "b81ef71e8110be3bf7cfc1ca1763ffbea249974bd8d6cbd31b26ade242dd0b85",
       "benchmark_ids": [
         "goat-bench",
         "hm3d-ovon"
@@ -312,12 +313,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:astranav_memory_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -331,7 +333,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "autogen_agentchat",
-      "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
+      "program_digest": "12533664b8dba779c86f15a5526716bd46e28f457f8fc00daa9673609bbe2b35",
       "benchmark_ids": [
         "multiagentbench"
       ],
@@ -358,7 +360,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "camel_role_playing",
-      "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+      "program_digest": "7dcd12f73f9020f68ebee23786012d6a5630426fe0980d5a560577b6b2fcf063",
       "benchmark_ids": [
         "camel-ai-society"
       ],
@@ -383,7 +385,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "cer_acl2025",
-      "program_digest": "8ebfc988f65a4c7c013fcd5a228dd2b8cf9ec6f85399f4b80513350e061d5c6b",
+      "program_digest": "f79a23e27e25991f5a9e6bd3d6a67d4068c84cfc27bb1ddaeba396dbd6d8233c",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
@@ -411,7 +413,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ces_gui_cvpr2026",
-      "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
+      "program_digest": "0fbb38b4cf037b90f01e10434f9df7ae708c9d1e6fbb48d003144296d9b10cee",
       "benchmark_ids": [
         "aitz",
         "amex",
@@ -421,12 +423,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:ces_gui_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -440,7 +443,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "chain_of_thought_gsm8k",
-      "program_digest": "5558d77b82cb846d396e41d006c431b10f88a375a405bdcfb7337a87220c4808",
+      "program_digest": "f16f1e5ac1a262552a5ff2c71756cd067be2eb771d8f6433969633a4bf6d1cf5",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -465,7 +468,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "chatdev_v1",
-      "program_digest": "001e150a6f5b263ab66509d8ec4d28eccd55b8573437faaaba61ae6a2c421964",
+      "program_digest": "a50779dd74723e8f3d5a1b8414459d6221c8ee91a95c3737758df968dd92e0ae",
       "benchmark_ids": [
         "srdd"
       ],
@@ -490,14 +493,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "code_as_policies",
-      "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+      "program_digest": "dabb88e114f472175df4a9b0dea8e135ccc537a7e6e43a7db6c431c13ca12815",
       "benchmark_ids": [
         "robocodegen-37"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
+          "e95fedc1af8986de6ac10666c2e472e1b79418cda562794b4cb335e8b927b4ae"
         ],
         "blockers": []
       },
@@ -515,7 +518,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "cogagent",
-      "program_digest": "f5f69ab33d1dc2a5aa88c7e6a54b77117b5fb4bb2d8f01d4cd94387a57563f38",
+      "program_digest": "e45136d2ac26b5f2bfd05e209823cd6e9837938041506bfdc2145b87b075ec9e",
       "benchmark_ids": [
         "mind2web"
       ],
@@ -542,7 +545,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "crossha_cvpr2026",
-      "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+      "program_digest": "628d4d30f1a133df5e9a3d30344e97721d723f48d5be56766e44d60645d8c33d",
       "benchmark_ids": [
         "minecraft-openha"
       ],
@@ -556,6 +559,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -569,7 +573,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "d3d_vlp_cvpr2026",
-      "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
+      "program_digest": "e8ca50bb692797ae1acd0aaa2fc58e8212b97adada1f50eaeff70ed8fae09ff8",
       "benchmark_ids": [
         "hm3d-ovon",
         "navrag-ce",
@@ -581,12 +585,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:d3d_vlp_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -600,7 +605,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "dars_acl2025",
-      "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
+      "program_digest": "2bc3db3843254a8e1162b1325ce8ed5cfe46d2b14bd3110495c17311e409695f",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -627,7 +632,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "dejavu_cvpr2026",
-      "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
+      "program_digest": "bd89b5ef83688f412b7d156ac49ab839c31cebc1815435a25f15b96b10dd5c63",
       "benchmark_ids": [
         "libero"
       ],
@@ -641,6 +646,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -654,14 +660,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "deps_minecraft",
-      "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+      "program_digest": "ab607f6fcebb94fecfd2dba92f481728cec1bdf37a5653dfb553c05c303db281",
       "benchmark_ids": [
         "deps-minecraft-70"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
+          "8c4c3e56011fc8336334ed1b94764290770c807ad29b68f63cbdeda5be9ece30"
         ],
         "blockers": []
       },
@@ -679,7 +685,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "drvideo",
-      "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+      "program_digest": "ff1af7d70e5bc6973849aeb86f5611e42a3ff756f8e9c57e4bc607bd8964bc74",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -704,7 +710,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "eaglet_acl2026",
-      "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
+      "program_digest": "95fbbdc9a87844fd96f30950c8c3213a5ca87f0b694925407b1caf5d5e2a4e75",
       "benchmark_ids": [
         "alfworld",
         "scienceworld",
@@ -714,12 +720,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:eaglet_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -733,7 +740,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "echotrail_gui_cvprf2026",
-      "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
+      "program_digest": "84a9aa9dde143e61c1288e978463c31bc246d8187f2bb6ee1f0fe1b22463a709",
       "benchmark_ids": [
         "androidlab",
         "androidworld"
@@ -742,12 +749,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:echotrail_gui_cvprf2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -761,7 +769,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ego2web_cvpr2026",
-      "program_digest": "68adbfbe735bccb0a94b2e212184afa063e2991bc8a2a6caca0a5cc5a0adc803",
+      "program_digest": "bfcee0714817fdd44d13c23874be8337a7e1feb082d11cf5aa7b8acf3fea3158",
       "benchmark_ids": [
         "ego2web"
       ],
@@ -775,6 +783,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -788,7 +797,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "embodied_videoagent_iccv2025",
-      "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
+      "program_digest": "97a0ecf195861ab8fc832af5a6c456cfc9ec0e2d2241c483ca5a66a66fbe71cd",
       "benchmark_ids": [
         "ego4d-vq3d",
         "envqa",
@@ -817,7 +826,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "exact_vwa",
-      "program_digest": "44ae76151d89782c0a7399500bf203a40411e74b902d72f5155c4c6ff3918cb3",
+      "program_digest": "2f886746621e012dce1b37159752487497cc0b4650c9c564948afd43b72165bc",
       "benchmark_ids": [
         "osworld",
         "visualwebarena"
@@ -843,7 +852,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "flash_vstream_memory",
-      "program_digest": "db4b3fc8a3d1c18feb9bf2fda199308bf60e390e1be59d493cf473ca6d6ad9f8",
+      "program_digest": "efab89feedfba49e7295a0a14f9d2b4ec078b1c5b842305c9ce061b6f186d93e",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -868,7 +877,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "flow_modularized_agentic_workflow",
-      "program_digest": "728dc6f6cb3a948a2cf3cfecde8a52ae24f483e820d171927724a47470b9172a",
+      "program_digest": "31052aeb6c133f6855daa449ee92ad5e7e654a614d797b33727cd4ef6b36227e",
       "benchmark_ids": [
         "flow-practical-tasks"
       ],
@@ -893,7 +902,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "foreact_cvpr2026",
-      "program_digest": "0bcd82980326e78a34c4df7bbabff3496533bed75e5ad585f53d24bfd22e7dd1",
+      "program_digest": "ea0d4540d48f9145306784ee78f17f67bce7ad012a3fba8100c0e05fd8a754be",
       "benchmark_ids": [
         "foreact-real11"
       ],
@@ -907,6 +916,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -920,7 +930,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "gats",
-      "program_digest": "43d1362a434dd035086812c7454c237a455bf812d8b048e94c16e578cf67c79a",
+      "program_digest": "457c8d1fa3e29f8cbb9305a5ab9d5fa5fc961e27cfb34eb3a5eb6220a5e8e9ad",
       "benchmark_ids": [
         "gats-synthetic"
       ],
@@ -945,7 +955,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "generative_agents_memory",
-      "program_digest": "fa678ee040ee291772fc45702d6b68e7a5b4023ff9575138c58d7b9dd274997f",
+      "program_digest": "87490c0a192afbabd1e050083bd3d865c35f6230300e538f7cd431a59c047d4f",
       "benchmark_ids": [
         "generative-agents-smallville"
       ],
@@ -991,7 +1001,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "hats_cvpr2026",
-      "program_digest": "00233cd8ea8275a6c5ea97d170928af607121c462ac9a8ebf069f7e1b055d1f5",
+      "program_digest": "7840b4c145ff9e08b0391e4443405efa7e9cb3c4fdc0f678bf7a3ca2d0a82df8",
       "benchmark_ids": [
         "androidworld",
         "webarena"
@@ -1000,12 +1010,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:hats_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1019,7 +1030,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "hugginggpt",
-      "program_digest": "b74dd49a9f096097924e4ee5a2c404404ecefb58f03ef1cf4704e2dfa8094310",
+      "program_digest": "b9b6834aec74b74f388a26444b35da2caf11d8910da09aab6d0f94d34580d2fc",
       "benchmark_ids": [
         "hugginggpt-paper-tasks"
       ],
@@ -1056,7 +1067,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "implement_acl2026",
-      "program_digest": "8bf8f01fe419f8660bea9aec3f078b4b53ebef23579627e6d5443f332a9d037f",
+      "program_digest": "07cc8a04d6cf663fc2b9962965c4f663e5553e5e88863e7e2ee0617aac054830",
       "benchmark_ids": [
         "alfworld"
       ],
@@ -1070,6 +1081,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1083,7 +1095,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ishift_cvpr2026",
-      "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
+      "program_digest": "46738efc86e42f0a14bcb18ab8727e10845b6e4fd15bc08590a41c7e779114c9",
       "benchmark_ids": [
         "aitw",
         "androidcontrol",
@@ -1094,12 +1106,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:ishift_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1113,14 +1126,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "jarvis1_minecraft",
-      "program_digest": "bd05d081096e521fe2f6e178e47f369a7b08aa316a44c45a41eff3df23af7264",
+      "program_digest": "ef649b1c8dc00d47bcf3edca8fc2c78f61aafdfd6e818efacb07c45204ef15a7",
       "benchmark_ids": [
         "jarvis1-offline-185"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "453fbdb926610f3fe4b10b44ff029f3cda92f68f6c77e4799c35771568063434"
+          "0acdea536189dff698133994c94ddf237aac4d7d70eb1fdffa6cc5d3613bcf8d"
         ],
         "blockers": []
       },
@@ -1138,7 +1151,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lats_webshop",
-      "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+      "program_digest": "314b8c0b77df377a402a124d36a3301b81263f7c0fbd17d64089033872e5a9a9",
       "benchmark_ids": [
         "webshop"
       ],
@@ -1163,7 +1176,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lits_math500",
-      "program_digest": "b5098d27e6b7d8f858d24b57c921b87cc079cb946d4a8fabb1722ca0a56bdb42",
+      "program_digest": "2ea49cfb3bc957de03e1f5e24cd7b9e1145bd50da6cf9e0fc0eebb2b3f332c7e",
       "benchmark_ids": [
         "math500"
       ],
@@ -1188,7 +1201,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "live_swe_agent",
-      "program_digest": "540ea04fbb0a6961a2828350577834a460cc99b35ba0438025e59e701cc4b7d1",
+      "program_digest": "39b6a046c781169088674979c13e3f0e2b44a8a0a1e358354a7b196603c5625c",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -1215,7 +1228,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lmee_cvpr2026",
-      "program_digest": "56af943331571951c7be5af30341e9288dcb65e65a89a37aede1dfcdaedf7dc7",
+      "program_digest": "99997319a6987a70f62ff6f5cc4ef97648b3754f7654fc624284f13728996c66",
       "benchmark_ids": [
         "lmee-bench"
       ],
@@ -1229,6 +1242,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1242,7 +1256,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lvagent_iccv2025",
-      "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
+      "program_digest": "4f25f34ed580aaba822445152ea2a0e08e81fdbfe14efaf7b1e6fb1a8aa2fa0b",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -1269,7 +1283,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ma_lmm_memory",
-      "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+      "program_digest": "7764c51f84278714afbedf3c6fe7801311775bdbf55a1aca7b5e072f7586ad95",
       "benchmark_ids": [
         "lvu"
       ],
@@ -1317,7 +1331,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mem_gallery_acl2026",
-      "program_digest": "814bfd588c81175fea63bd1759b1c1ee49ae71779a800055ee941d99261aa168",
+      "program_digest": "87237d618de84f1bc152832026cbefdf1f4f9fe9901742272bb3849982573d21",
       "benchmark_ids": [
         "mem-gallery"
       ],
@@ -1331,6 +1345,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1344,7 +1359,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "memevolve",
-      "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
+      "program_digest": "8d6eb1c7e062e27bc56367058ea1455b8ff93c6f910596103bdc75ebb678a608",
       "benchmark_ids": [
         "evomembench",
         "memoryarena"
@@ -1372,7 +1387,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "memgpt_classic",
-      "program_digest": "b870ad5f6585fb7e22d49de60104f490a5fadd73695f26c6249de2e7a5503e9c",
+      "program_digest": "bce1ec43db877e015fe77ceeb7238d655618fe4ac5778f40b9e1b4bee24d9c62",
       "benchmark_ids": [
         "memoryarena"
       ],
@@ -1399,7 +1414,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "metagpt_software_company",
-      "program_digest": "41dccf6e16e8757360f2977fe28b4dedd63750366cd23f8aeb15b899c4b0cde3",
+      "program_digest": "ad251ba4a544d036a567f68eb6aae4473eef6f347e8e8acf3424c13ec2967471",
       "benchmark_ids": [
         "humaneval"
       ],
@@ -1424,7 +1439,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "minedojo",
-      "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+      "program_digest": "3fd722a72b37480d757db4f2aa31733f2fee575ca1c0b039589077e6c893b101",
       "benchmark_ids": [
         "minedojo"
       ],
@@ -1449,7 +1464,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mm_mem_acl2026",
-      "program_digest": "86305140193d6349bf323bd96de5cc308a94178334c2d8416f59a0b3dd6fd344",
+      "program_digest": "d9c6b69ee6623fd4a07bff36a139b50f4164d3abc50f00a0d8eb54c14b02e1fe",
       "benchmark_ids": [
         "hd-epic",
         "mlvu",
@@ -1460,12 +1475,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:mm_mem_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1479,7 +1495,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mmbench_gui_cvpr2026",
-      "program_digest": "116617a0797dd937b5363e7ff0e7986c0b6055bcfbbbcca248a013acfb8d9410",
+      "program_digest": "94edb7c7a3cb165f73fac8f0d311dd2322e4fb9359046b12b5915fedb1eb794b",
       "benchmark_ids": [
         "mmbench-gui"
       ],
@@ -1493,6 +1509,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1506,7 +1523,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "motus_cvpr2026",
-      "program_digest": "b947f3a6b8d82d2297866b2e091ce4fa6f75b57a5932dde394d4223b09da5009",
+      "program_digest": "c8f343b02449fe4817f4738428061b9622ff7e11d76bb9f636ddd153918178ed",
       "benchmark_ids": [
         "motus-realworld",
         "robotwin2"
@@ -1515,12 +1532,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:motus_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1534,7 +1552,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "moviechat_memory",
-      "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+      "program_digest": "8c46f7849be6cb74b87453dc8adae0195199ccba1b89ddc7e824d2d056025f92",
       "benchmark_ids": [
         "moviechat-1k"
       ],
@@ -1559,7 +1577,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "multiagent_debate",
-      "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+      "program_digest": "14a206ee577ca199c07c8209ef3370868ebebf37cb99723ff4f397edbb847ba5",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -1584,7 +1602,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "openwebvoyager_acl2025",
-      "program_digest": "997ac2ce5f24c16756ac2354a94841cfe71200561d392d4fd5e88edb1dbce364",
+      "program_digest": "6519bd1141d84799fc240fe08c575f9085af8c8f67d269148b84b6656b7ecb2c",
       "benchmark_ids": [
         "mind2web",
         "webvoyager"
@@ -1612,14 +1630,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "optimus1_minecraft",
-      "program_digest": "331088f1e05bfd018f9e567e55c900fa21c34eb350551d01bb2c89f10bac43c2",
+      "program_digest": "976027132931a2e0fa22dcd181c9736b84232882e8a0d0a38eabf3b56936c280",
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "d81d4132870d47205869ebcfb5eace837c4eb49cf0df3afd9487c6c8f27ed6d0"
+          "58f2038fd714c9b205b33427006452d125f54ed036ec3b02a0b57a6b5a292567"
         ],
         "blockers": []
       },
@@ -1637,14 +1655,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "optimus2_minecraft",
-      "program_digest": "82ff7207440219b9ed042d43bb8d539be73efea3491d4a8196bbd14b01b61c30",
+      "program_digest": "f2d9aaf016dddf791e92385d664802d60082ac48fc1a1c30719fc0a045b9bad9",
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "830dba0339c384410800761c3d19e392ec5f4c0d3d00917c41f9bb2244c47cf3"
+          "69f5a8250a72fd786eb830a22c134a3b4e46a0722e84e4576a6d24a9b39c28f3"
         ],
         "blockers": []
       },
@@ -1662,7 +1680,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "optimusvla_cvpr2026",
-      "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
+      "program_digest": "75a704566ad4b832abea1e1b3fa3a43d95e8fc83e954d9edd84085b413a94a87",
       "benchmark_ids": [
         "calvin",
         "libero",
@@ -1672,12 +1690,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'calvin' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:optimusvla_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1691,7 +1710,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "orbit_acl2026",
-      "program_digest": "53092527c1c4e408c8697c35305c9a78491340ef96db46d5268801666eda01ec",
+      "program_digest": "de9b87e8af64e5125c650b0420c2bd34990936bf843b7259a79e6fac8147cd76",
       "benchmark_ids": [
         "embodiedbench"
       ],
@@ -1705,6 +1724,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1718,7 +1738,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "os_symphony_acl2026",
-      "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
+      "program_digest": "f7671987e5f2e9f7d31c5489ce90a439944cfe3a1b0655c2f345d1016628277e",
       "benchmark_ids": [
         "macosarena",
         "osworld-verified",
@@ -1728,12 +1748,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'macosarena' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:os_symphony_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1768,7 +1789,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "providellm_memory",
-      "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+      "program_digest": "4fdca378fd15898543b20d03a548b8fe4233f3e500882b507a278eadb40bde13",
       "benchmark_ids": [
         "ego4d-goalstep"
       ],
@@ -1793,7 +1814,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "qlass_alfworld",
-      "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+      "program_digest": "1f4ae6a9a7ddc6c1a9b0bc0b5b3b911d2a15c7ac90d4b942f57a0b84d0851736",
       "benchmark_ids": [
         "alfworld",
         "webshop"
@@ -1802,7 +1823,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='qlass@df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9:alfworld-dev' splits=('eval_in_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1819,7 +1840,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "r2d2_acl2025",
-      "program_digest": "0b9dbaeb49f6ce024abbd30555b6f2ac3267a195c53146fc18e0803e9f025dfa",
+      "program_digest": "217c5312ddc32edc844d2b8c9ad74aaacf7c1cf949470e23b29bae33c09ee392",
       "benchmark_ids": [
         "webarena"
       ],
@@ -1846,7 +1867,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "rap_reasoning",
-      "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+      "program_digest": "9fa45098543ac2906a2ba85f6c7dbb30747b6f515cc13ae9a300c07d56d54575",
       "benchmark_ids": [
         "blocksworld"
       ],
@@ -1871,7 +1892,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "react_alfworld",
-      "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+      "program_digest": "61d64cbf895e754555637dff7d0209f8b347a9831fbeec5c691fa870a9f5c7c0",
       "benchmark_ids": [
         "alfworld",
         "webshop"
@@ -1880,7 +1901,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1897,7 +1918,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "refact_cvpr2026",
-      "program_digest": "3e00ae4a8065304a137c7861a466511570d3a7678f8173440eac4db4f01da1ef",
+      "program_digest": "2f9e251e797fdca6a170e8ba6ea645cea0abfe3f4134323ed40bc638ac9c6bda",
       "benchmark_ids": [
         "groundedvqa"
       ],
@@ -1911,6 +1932,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -1924,7 +1946,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "reflexion_alfworld",
-      "program_digest": "0ae6a8f4653099d5cf6c639e10171f9a57cd6d49cef0fd1cb18c0b3f43892c44",
+      "program_digest": "d59a695ceb728ca018dea3d7076478cd624b0b0752fc37b60737d797ce327ec7",
       "benchmark_ids": [
         "alfworld"
       ],
@@ -1932,7 +1954,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1949,7 +1971,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "rewind_memory",
-      "program_digest": "e8bd11f4a35558e876d7055f24db3b2ad2c788323c229c99dc68ebce6537aa34",
+      "program_digest": "9bc2d2b3bb2cab419ba30996117c707ea4cdc3c61cfe87eb35a220716cd82041",
       "benchmark_ids": [
         "moviechat-1k"
       ],
@@ -1974,7 +1996,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "roboagent_cvpr2026",
-      "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
+      "program_digest": "98acc62a2f10299229e138184e410087660b4115447f34afd0fecdabd8de9595",
       "benchmark_ids": [
         "alfworld",
         "embodiedbench"
@@ -1983,12 +2005,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:roboagent_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -2002,7 +2025,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "saycan",
-      "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+      "program_digest": "b240b1e11db7d5b45225e71993f39813ec5e7dfe51f79a8ae73a40cf698d2d69",
       "benchmark_ids": [
         "saycan-101"
       ],
@@ -2027,7 +2050,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "seeclick",
-      "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
+      "program_digest": "6d488ac40bfda35f20d5c503fb956a5bd19096cfa1121251ccd010d169a41323",
       "benchmark_ids": [
         "screenspot"
       ],
@@ -2054,7 +2077,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "self_consistency_gsm8k",
-      "program_digest": "7d0c19734b87a0dd8e64809db280a29a52523160fb3fd81ce7fade3ca77eea6e",
+      "program_digest": "1244238d295b0d0849af2aacf88cf49e59f296e1646062a02f8cc306384b131e",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -2079,7 +2102,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "self_refine",
-      "program_digest": "37e7e8c481e9f9f44247dafb87021e827058eb29cb32e535178a4bac3752c74b",
+      "program_digest": "ffd46dd370520439e11d2529b69ae039ad4ad612d7fbb8de122e6b4fe9331570",
       "benchmark_ids": [
         "commongen"
       ],
@@ -2106,7 +2129,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "star_toggle_cvpr2026",
-      "program_digest": "88274af24f47c5292e7a9b1a580d00203d6c8b736524359f03dbd685e18315fa",
+      "program_digest": "c80f45159aea17f28774bc6e84f2bdcb278225f4a849c8d54505fdfc11346d68",
       "benchmark_ids": [
         "state-control-benchmark"
       ],
@@ -2120,6 +2143,7 @@
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -2133,14 +2157,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "steve1_minecraft",
-      "program_digest": "b69b84e4ab2a9c7741ca819074db63776d2988599e029a0582f0e8805938975e",
+      "program_digest": "19604051e1373a89da2717c62bc325eb73e9222f6311cca292e49781d1a2e211",
       "benchmark_ids": [
         "steve1-paper-prompts"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "7b12e188906f8aab4ede599a4454bdffb1097acbcf6481f749f43f389891e77d"
+          "3ed30e4a52e03478a46153132df339b6bc02ac23912fa27f457b53bff3c6a8d3"
         ],
         "blockers": []
       },
@@ -2158,7 +2182,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "storm_wiki",
-      "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
+      "program_digest": "c61982fd6fb420dca88d05986f5eb354fbbe1658627db5c6094b9068e7f59479",
       "benchmark_ids": [
         "freshwiki"
       ],
@@ -2194,7 +2218,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "swe_agent_swebench",
-      "program_digest": "f3fd4fe910399a52fee901c523cc911f6ef69cc7e11048ef9468ec5d531a1c4f",
+      "program_digest": "3e31086d959ad93e8701edf173b54f1b6f32c492527a19ba10ee460e1cecf9b7",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -2221,7 +2245,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "toolformer",
-      "program_digest": "d1c53ab9d41bb698b7a90509d92d24eb6eb214ba9b82c3c63096360efaa18ad1",
+      "program_digest": "0d3a25b6a67ba5e5174f4e50b50967c7c0e1cc968ae162e7ca70af6b0b4aea51",
       "benchmark_ids": [
         "toolformer-eval"
       ],
@@ -2248,7 +2272,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "toolllm_toolbench",
-      "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
+      "program_digest": "ca33cda38bfaa33c7c2881fe8cefdf4e601a69d797839cbfdf1f762255592496",
       "benchmark_ids": [
         "toolbench"
       ],
@@ -2285,7 +2309,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "tree_of_thoughts",
-      "program_digest": "ddf1eadaa7460952fa6140b845ee739fb26a5c463450549897e0ada242a124c1",
+      "program_digest": "4fadc31bc94fe71e61dd685745837f7651beac5eee1882f14e0cca2925ece89c",
       "benchmark_ids": [
         "game24"
       ],
@@ -2310,7 +2334,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "tree_search_language_model_agents",
-      "program_digest": "c128710d2dddc1fe3dd5ecfe8695e37ca7282952d5873374cc88b49fb03f2fc3",
+      "program_digest": "95d75c78b984b1326605c4d84f29559869521293ea0996d56cc7e354f90e8603",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
@@ -2336,7 +2360,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ui_agile_cvprf2026",
-      "program_digest": "209ad95381ad60ad840c93130bb53abdd5285f78aad8e27fbe3f6bf2b143c298",
+      "program_digest": "0066af7f536ee07e6f3b329006745f228f14dd000c5d9fd27fc1e85f65650572",
       "benchmark_ids": [
         "androidcontrol",
         "screenspot-pro",
@@ -2346,12 +2370,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:ui_agile_cvprf2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -2365,7 +2390,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ui_tars_desktop_v001",
-      "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+      "program_digest": "255868b8c6fe0634c563fd7030e803fdb63fb402d51040ab131fbf28627e7ab9",
       "benchmark_ids": [
         "osworld"
       ],
@@ -2392,7 +2417,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "vca_video",
-      "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
+      "program_digest": "63eda586b595ed82ef2da42c7e1acd9ce6baf1483d48b5d9dd135cf6d207e665",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2417,7 +2442,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videoagent_memory",
-      "program_digest": "3290f872b44e13a9fed33eb9647b13309d9ae63f6e12a3d31db9d56b8c48994e",
+      "program_digest": "6c65d75b200f5cc9eae107d8614c14ac1725fe7f431e3fb5279466b64c39ed8e",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2442,7 +2467,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videoarm_cvpr2026",
-      "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
+      "program_digest": "469c6d5da720333372a77712cf1524e32bdbeb045ff3eb6ba3c1fbd9152c7b77",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2469,7 +2494,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videollamb_memory",
-      "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+      "program_digest": "c76085b40b752ade955af5c2c92822531a8419e8ea98e7b873152b748c875d6f",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2494,7 +2519,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "vilomem_cvpr2026",
-      "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
+      "program_digest": "8ec0befcac506c28b53a6877f6dab1f3020b39fafb69af72df9e90915640083f",
       "benchmark_ids": [
         "hallusionbench",
         "mathvision",
@@ -2507,12 +2532,13 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:vilomem_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
         ]
       },
       "benchmark_split_axis": {
         "required": true,
         "consumers": [
+          "study:build_ablation_matrix",
           "study:build_study"
         ]
       },
@@ -2526,14 +2552,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "vima_embodied",
-      "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+      "program_digest": "61538bbfcc2b19168c4464c99eb98aa261b5c1ef4654bca9ae71c46a62fafc4b",
       "benchmark_ids": [
         "vima-bench"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "a90293ec811827f02d346aa4b864d0dc46cb2cf7cc8644864519e53ad4600c1c"
+          "bcb777e09db6ac37cdb507bff58f82dec8f8b56aedbe629f194cf4c75b7876a1"
         ],
         "blockers": []
       },
@@ -2551,14 +2577,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "voyager_minecraft",
-      "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+      "program_digest": "cbc21cb80b304a9d55df4f68f85e6cfe31a9333c2c372930d66ed99fa85da620",
       "benchmark_ids": [
         "voyager-minecraft"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "b030849b41612394d474220b2ca9a6a6572ef5997eb66729e59fcac019d6f708"
+          "191499d95aefcbb69e6458d1851dc4f786e9e0410a68a156882b6a4c16160100"
         ],
         "blockers": []
       },
@@ -2576,7 +2602,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "watch_learn_cvpr2026",
-      "program_digest": "f82edfa5184a31613143de7b69f86477dd3dc1be376940c506a8e164dc5e5fd6",
+      "program_digest": "b3ab25d107afc03b190a84389306c3b10701a36f2c67bb5ddec25a63e7d0caaa",
       "benchmark_ids": [
         "osworld"
       ],
@@ -2603,7 +2629,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "webagent_r1_emnlp2025",
-      "program_digest": "4be7ab399e0ce55f83c30ee2bb6832eff771e54c880efb3632cc617819a0cd96",
+      "program_digest": "51721b2d1fcd2e23596eae712a39cc0fb41daa6a81c788fa2287921d8264ef6f",
       "benchmark_ids": [
         "webarena"
       ],
@@ -2630,7 +2656,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "webvoyager",
-      "program_digest": "6af022cad8657774f755301888528e141ab92f6a25bdf81401ab890b1aae0ac9",
+      "program_digest": "abf00b05983e2526d2ab09fe1b1e04bb63395b424bcb0cde2e37ed5e0f6f1339",
       "benchmark_ids": [
         "webvoyager"
       ],
@@ -2655,7 +2681,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "worldmm_memory",
-      "program_digest": "10b3ef727c3218eaa685fdf7edcbe4bca2b3fc064258ab1c73cf8d8792a5e8f5",
+      "program_digest": "9ad936ef98f7949d626205c59e416d2f777d2bc7e2cff18f1494cca36423f090",
       "benchmark_ids": [
         "egolifeqa"
       ],
@@ -2676,5 +2702,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "e83d4312f94fa56c0081275b79118b5351a137c7f65b712085b49d8538589ec8"
+  "status_digest": "fda104a6d3b52e05af0911cd84f31b6929ca8754f03ab82959650f1ce343a6dc"
 }

@@ -13,7 +13,9 @@ from research.benchmarks.mle_bench import (
     MleBenchCompetitionRecord,
     build_mle_bench_task_set,
 )
-from research.reproductions.mars_automated_ai_research import MARS_ARTIFACT_FIDELITY
+from research.reproductions.mars_automated_ai_research.fidelity import (
+    MARS_ARTIFACT_FIDELITY,
+)
 
 
 def _benchmark():

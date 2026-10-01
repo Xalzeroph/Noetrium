@@ -96,7 +96,7 @@ Noetrium ist bewusst breiter als eine Agent-Workflow-Bibliothek: Experimentdesig
 
 Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.
 
-- 31 registered system surfaces; 1 public API modules; 157 public symbols.
+- 31 registered system surfaces; 1 public API module; 4 public root symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.
@@ -124,8 +124,9 @@ Noetrium exposes one high-level Research OS API. Registered lower systems remain
 Author and control research through the same top-level API:
 
     from noetrium import api
-    program = api.ResearchProgramBuilder("paper")
-    research_os = api.ResearchOS(port)
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    program = portfolio.program("paper")
+    research_os = api.open_project(".")
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->

@@ -185,6 +185,96 @@ class AsyncIoExecutor:
                 raise RuntimeError("async I/O capacity accounting overflow")
             self._condition.notify_all()
 
+    def _acquire_many(
+        self,
+        count: int,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> None:
+        if type(count) is not int or count <= 0:
+            raise ValueError("async I/O atomic batch size must be positive")
+        if count > self._max_in_flight:
+            raise ValueError("async I/O atomic batch exceeds provider capacity")
+        with self._condition:
+            while self._available < count:
+                if self._closed:
+                    raise RuntimeError("async I/O executor is closed")
+                if self._cancelled(cancellation):
+                    raise TaskCancelled(cancellation.reason or "async I/O capacity wait cancelled")
+                remaining = None if deadline is None else deadline.remaining_seconds
+                if remaining is not None and remaining <= 0:
+                    raise TimeoutError("async I/O capacity wait deadline expired")
+                wait_for = (
+                    self._ADMISSION_POLL_SECONDS
+                    if remaining is None
+                    else min(self._ADMISSION_POLL_SECONDS, remaining)
+                )
+                self._condition.wait(wait_for)
+            if self._closed:
+                raise RuntimeError("async I/O executor is closed")
+            if self._cancelled(cancellation):
+                raise TaskCancelled(cancellation.reason or "async I/O capacity wait cancelled")
+            if deadline is not None and deadline.expired:
+                raise TimeoutError("async I/O capacity wait deadline expired")
+            self._available -= count
+
+    def _release_unbound_slots(self, count: int) -> None:
+        with self._condition:
+            self._available += count
+            if self._available > self._max_in_flight:
+                raise RuntimeError("async I/O capacity accounting overflow")
+            self._condition.notify_all()
+
+    def submit_atomic_batch(
+        self,
+        fns: tuple[Callable[[], T], ...],
+        *,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+    ) -> tuple[_AsyncFutureHandle[T], ...]:
+        if not isinstance(fns, tuple) or not fns:
+            raise ValueError("atomic async I/O batch requires a non-empty tuple")
+        if any(not callable(fn) for fn in fns):
+            raise TypeError("atomic async I/O batch entries must be callable")
+        count = len(fns)
+        self._acquire_many(
+            count,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+
+        handles = tuple(
+            _AsyncFutureHandle[T](loop=self._loop, on_physical_done=self._release)
+            for _ in fns
+        )
+        with self._condition:
+            if self._closed:
+                self._release_unbound_slots(count)
+                raise RuntimeError("async I/O executor is closed")
+            self._futures.update(handles)
+
+        async def invoke(fn: Callable[[], T]) -> T:
+            value = fn()
+            if not inspect.isawaitable(value):
+                raise TypeError("ASYNC_IO execution callable must return an awaitable")
+            return await value
+
+        def start_batch() -> None:
+            for handle, fn in zip(handles, fns, strict=True):
+                handle.start(lambda owned=fn: invoke(owned))
+
+        if self._cancelled(cancellation):
+            for handle in handles:
+                handle.cancel()
+        try:
+            self._loop.call_soon_threadsafe(start_batch)
+        except BaseException as exc:
+            for handle in handles:
+                handle.fail_submission(exc)
+            raise
+        return handles
+
     def submit(
         self,
         fn: Callable[..., T],

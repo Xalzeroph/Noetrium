@@ -2,7 +2,16 @@
 
 from dataclasses import dataclass
 
-from ..api import FigureRendererPort, ReportTableRendererPort, TableProgramExecutionPort, TableReaderPort
+from ..api import (
+    FigureRendererPort,
+    ReportTableRendererPort,
+    ResearchFigureFactoryPort,
+    ResearchLifecyclePort,
+    ResearchStatisticsPort,
+    ResearchTablePipelinePort,
+    TableProgramExecutionPort,
+    TableReaderPort,
+)
 from ..providers import (
     CsvTableReader,
     JsonlTableReader,
@@ -21,10 +30,10 @@ from ..runtime import (
 
 @dataclass(frozen=True, slots=True)
 class ResearchWorkbenchAssembly:
-    lifecycle: ResearchLifecycle
-    pipeline: TablePipeline
-    statistics: ScientificStatistics
-    figures: ResearchFigureFactory
+    lifecycle: ResearchLifecyclePort
+    pipeline: ResearchTablePipelinePort
+    statistics: ResearchStatisticsPort
+    figures: ResearchFigureFactoryPort
     csv_reader: TableReaderPort
     jsonl_reader: TableReaderPort
     table_renderer: ReportTableRendererPort
@@ -33,9 +42,13 @@ class ResearchWorkbenchAssembly:
     table_program: TableProgramExecutionPort
 
 
+def compose_standard_research_statistics() -> ResearchStatisticsPort:
+    return ScientificStatistics()
+
+
 def compose_standard_research_workbench() -> ResearchWorkbenchAssembly:
     pipeline = TablePipeline()
-    statistics = ScientificStatistics()
+    statistics = compose_standard_research_statistics()
     lifecycle = ResearchLifecycle(pipeline=pipeline, statistics=statistics)
     return ResearchWorkbenchAssembly(
         lifecycle=lifecycle,
@@ -51,4 +64,8 @@ def compose_standard_research_workbench() -> ResearchWorkbenchAssembly:
     )
 
 
-__all__ = ["ResearchWorkbenchAssembly", "compose_standard_research_workbench"]
+__all__ = [
+    "ResearchWorkbenchAssembly",
+    "compose_standard_research_statistics",
+    "compose_standard_research_workbench",
+]

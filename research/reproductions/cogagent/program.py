@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
 from collections.abc import Mapping, Sequence
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import JsonObject, JsonValue, canonical_digest
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import COGAGENT_FIDELITY
 
@@ -47,7 +49,7 @@ def cogagent_initial_state(
     }
 
 
-def _policy_view(request: MethodNodeRequest) -> JsonObject:
+def _policy_view(request: MethodCall) -> JsonObject:
     return {
         "task_instruction": request.state.get("task_instruction"),
         "screenshot_ref": request.state.get("screenshot_ref"),
@@ -64,7 +66,7 @@ def _policy_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_prediction(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_prediction(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("CogAgent GUI policy output must be an object")
@@ -87,7 +89,7 @@ def _record_prediction(request: MethodNodeRequest) -> MethodNodeResult:
         "operation": operation,
         "value": operation_value,
     }
-    return MethodNodeResult(
+    return dict(
         value=prediction,
         state_update={
             "prediction": prediction,
@@ -97,8 +99,8 @@ def _record_prediction(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "prediction": request.state.get("prediction", {}),
             "model_call_count": request.state.get("model_call_count", 0),
@@ -106,7 +108,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_cogagent_method_program() -> MethodProgram:
+def build_cogagent_method_program(method, ) -> None:
     configuration: JsonObject = {
         "model_size_billion": COGAGENT_FIDELITY.model_parameters_billion,
         "visual_parameters_billion": COGAGENT_FIDELITY.visual_parameters_billion,
@@ -115,22 +117,14 @@ def build_cogagent_method_program() -> MethodProgram:
         "dual_resolution_vision": True,
         "gui_input_representation": COGAGENT_FIDELITY.gui_input_representation,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="cogagent",
-            implementation_version="cvpr-2024-final",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="cogagent.gui-policy.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="policy")
+
+    builder = method
     builder.agent(
         "policy",
         "cogagent.gui-policy.predict",
         _AGENT_ID,
         ("record_prediction",),
-        view_handler=_policy_view,
+        view=_policy_view,
     )
     builder.compute(
         "record_prediction",
@@ -139,22 +133,33 @@ def build_cogagent_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "cogagent.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
             "cogagent.screenshot-binding",
             "cogagent.gui-prediction",
         ),
-        metric_names=("step_success_rate", "model_call_count"),
-        artifact_kinds=("cogagent_gui_prediction",),
+        metrics=("step_success_rate", "model_call_count"),
+        artifacts=("cogagent_gui_prediction",),
     )
+    return builder
 
 
-COGAGENT_METHOD_PROGRAM = build_cogagent_method_program()
+METHOD_CONFIGURER = build_cogagent_method_program
+METHOD_ENTRYPOINT = "policy"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "COGAGENT_METHOD_PROGRAM",
-    "build_cogagent_method_program",
-    "cogagent_initial_state",
+    'build_cogagent_method_program',
+    'cogagent_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'cogagent', "version": "paper-protocol", "semantic_contract": 'cogagent' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

@@ -6,6 +6,7 @@ meaning; providers and workers never become the source of truth.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
@@ -37,6 +38,9 @@ class MachineStatus(StrEnum):
     COMPLETED = "completed"
     FAILED = "failed"
     UNKNOWN = "unknown"
+
+
+STRUCTURED_STATE_DELTA_THRESHOLD_BYTES = 16 * 1024
 
 
 class MachineError(RuntimeError):
@@ -161,31 +165,195 @@ class MachineCommand:
 
 
 @dataclass(frozen=True, slots=True)
+class MachineStateMutation:
+    """One canonical copy-on-write mutation in authoritative Machine state."""
+
+    path: tuple[str, ...]
+    value: JsonValue = None
+    delete: bool = False
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.path) is not tuple
+            or not self.path
+            or any(
+                type(segment) is not str or not segment
+                for segment in self.path
+            )
+        ):
+            raise ValueError(
+                "machine state mutation path must be a non-empty string tuple"
+            )
+        if type(self.delete) is not bool:
+            raise TypeError("machine state mutation delete must be boolean")
+        if self.delete:
+            if self.value is not None:
+                raise ValueError(
+                    "machine state deletion cannot carry a replacement value"
+                )
+        else:
+            object.__setattr__(self, "value", freeze_json(self.value))
+
+    @classmethod
+    def set(
+        cls,
+        path: tuple[str, ...],
+        value: JsonValue,
+    ) -> "MachineStateMutation":
+        return cls(path, value, False)
+
+    @classmethod
+    def delete_path(
+        cls,
+        path: tuple[str, ...],
+    ) -> "MachineStateMutation":
+        return cls(path, None, True)
+
+
+def _validate_state_mutations(
+    mutations: tuple[MachineStateMutation, ...],
+) -> tuple[MachineStateMutation, ...]:
+    if type(mutations) is not tuple or any(
+        not isinstance(item, MachineStateMutation)
+        for item in mutations
+    ):
+        raise TypeError(
+            "transition proposal state_delta must be MachineStateMutation tuple"
+        )
+    ordered = tuple(sorted(mutations, key=lambda item: item.path))
+    for previous, current in zip(ordered, ordered[1:]):
+        if current.path[: len(previous.path)] == previous.path:
+            raise ValueError(
+                "machine state mutation paths cannot duplicate or overlap"
+            )
+    return ordered
+
+
+@dataclass(frozen=True, slots=True)
+class MachineStateDelta:
+    """Canonical immutable state-delta identity shared by proposal and executor."""
+
+    mutations: tuple[MachineStateMutation, ...] = ()
+    digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        ordered = _validate_state_mutations(self.mutations)
+        object.__setattr__(self, "mutations", ordered)
+        object.__setattr__(
+            self,
+            "digest",
+            canonical_digest(
+                tuple(
+                    (
+                        mutation.path,
+                        mutation.delete,
+                        mutation.value,
+                    )
+                    for mutation in ordered
+                )
+            ),
+        )
+
+    @classmethod
+    def set(
+        cls,
+        path: tuple[str, ...],
+        value: JsonValue,
+    ) -> "MachineStateDelta":
+        return cls((MachineStateMutation.set(path, value),))
+
+
+def _apply_mutation_group(
+    base: Mapping[str, JsonValue],
+    mutations: tuple[MachineStateMutation, ...],
+    depth: int,
+) -> dict[str, JsonValue]:
+    result: dict[str, JsonValue] = dict(base)
+    index = 0
+    while index < len(mutations):
+        segment = mutations[index].path[depth]
+        end = index + 1
+        while (
+            end < len(mutations)
+            and mutations[end].path[depth] == segment
+        ):
+            end += 1
+        group = mutations[index:end]
+        mutation = group[0]
+        if len(mutation.path) == depth + 1:
+            if len(group) != 1:
+                raise MachineIntegrityError(
+                    "machine state mutation group has overlapping leaf paths"
+                )
+            if mutation.delete:
+                if segment not in result:
+                    raise MachineIntegrityError(
+                        "machine state mutation deletes an absent path: "
+                        + ".".join(mutation.path)
+                    )
+                del result[segment]
+            else:
+                result[segment] = mutation.value
+        else:
+            current = result.get(segment)
+            if not isinstance(current, Mapping):
+                raise MachineIntegrityError(
+                    "machine state mutation parent path is not an object: "
+                    + ".".join(mutation.path)
+                )
+            result[segment] = _apply_mutation_group(
+                current,
+                group,
+                depth + 1,
+            )
+        index = end
+    return result
+
+
+def apply_machine_state_delta(
+    state: Mapping[str, JsonValue],
+    delta: MachineStateDelta,
+) -> JsonObject:
+    """Apply one validated canonical state delta with grouped COW."""
+
+    if not isinstance(state, Mapping):
+        raise TypeError("machine state delta base must be a mapping")
+    if not isinstance(delta, MachineStateDelta):
+        raise TypeError("machine state delta must be MachineStateDelta")
+    ordered = delta.mutations
+    if not ordered:
+        return state
+    frozen = freeze_json(
+        _apply_mutation_group(
+            state,
+            ordered,
+            0,
+        )
+    )
+    if not isinstance(frozen, Mapping):
+        raise MachineIntegrityError(
+            "machine state delta produced a non-object root"
+        )
+    return frozen
+
+
+@dataclass(frozen=True, slots=True)
 class TransitionProposal:
     machine_id: str
     command_id: str
     base_revision: int
-    state_delta: JsonObject = field(default_factory=dict)
+    state_delta: MachineStateDelta = field(default_factory=MachineStateDelta)
     emitted_commands: tuple[MachineCommand, ...] = ()
     output_refs: tuple[str, ...] = ()
     event_payloads: tuple[JsonValue, ...] = ()
     effect_intent_refs: tuple[str, ...] = ()
     wait_reason: str | None = None
     accepted_status: MachineStatus | None = None
-    before_state_digest: str | None = None
-    input_digest: str | None = None
-    program_digest: str | None = None
-    program_lock_digest: str | None = None
-    machine_kind: str | None = None
-    machine_version: str | None = None
     input_refs: tuple[str, ...] = ()
-    state_delta_ref: str | None = None
     evidence_refs: tuple[str, ...] = ()
     artifact_refs: tuple[str, ...] = ()
-    parent_transition_id: str | None = None
-    attempt_id: str | None = None
-    authority_epoch: int | None = None
     child_links: tuple[ChildMachineLink, ...] = ()
+    state_delta_digest: str = field(init=False)
     proposal_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -194,8 +362,10 @@ class TransitionProposal:
                 raise ValueError("transition proposal identity fields are required")
         if type(self.base_revision) is not int or self.base_revision < 0:
             raise ValueError("transition proposal base_revision must be non-negative")
-        if type(self.state_delta) is not dict and not hasattr(self.state_delta, "items"):
-            raise TypeError("transition proposal state_delta must be a mapping")
+        if not isinstance(self.state_delta, MachineStateDelta):
+            raise TypeError(
+                "transition proposal state_delta must be MachineStateDelta"
+            )
         if type(self.emitted_commands) is not tuple or any(
             not isinstance(item, MachineCommand) for item in self.emitted_commands
         ):
@@ -215,38 +385,21 @@ class TransitionProposal:
                 type(value) is not str or not value.strip() for value in values
             ):
                 raise TypeError(f"transition proposal {name} must be non-empty text tuple")
-        for name, value in ((
-            ("before_state_digest", self.before_state_digest),
-            ("input_digest", self.input_digest),
-            ("program_digest", self.program_digest),
-            ("program_lock_digest", self.program_lock_digest),
-        )):
-            if value is not None:
-                require_sha256(value, f"transition proposal {name}")
-        for name, value in ((
-            ("machine_kind", self.machine_kind),
-            ("machine_version", self.machine_version),
-            ("state_delta_ref", self.state_delta_ref),
-            ("parent_transition_id", self.parent_transition_id),
-            ("attempt_id", self.attempt_id),
-        )):
-            if value is not None and (type(value) is not str or not value.strip()):
-                raise ValueError(f"transition proposal {name} must be non-empty text")
-        if self.authority_epoch is not None and (
-            type(self.authority_epoch) is not int or self.authority_epoch < 0
-        ):
-            raise ValueError("transition proposal authority_epoch must be non-negative")
         if self.wait_reason is not None and (
             type(self.wait_reason) is not str or not self.wait_reason.strip()
         ):
             raise ValueError("transition proposal wait_reason must be non-empty")
         if self.accepted_status is not None and not isinstance(self.accepted_status, MachineStatus):
             raise TypeError("transition proposal accepted_status must be MachineStatus")
-        object.__setattr__(self, "state_delta", freeze_json(self.state_delta))
         object.__setattr__(
             self,
             "event_payloads",
             tuple(freeze_json(value) for value in self.event_payloads),
+        )
+        object.__setattr__(
+            self,
+            "state_delta_digest",
+            self.state_delta.digest,
         )
         object.__setattr__(
             self,
@@ -255,26 +408,16 @@ class TransitionProposal:
                 "machine_id": self.machine_id,
                 "command_id": self.command_id,
                 "base_revision": self.base_revision,
-                "state_delta": self.state_delta,
+                "state_delta_digest": self.state_delta_digest,
                 "emitted_commands": self.emitted_commands,
                 "output_refs": self.output_refs,
                 "event_payloads": self.event_payloads,
                 "effect_intent_refs": self.effect_intent_refs,
                 "wait_reason": self.wait_reason,
                 "accepted_status": None if self.accepted_status is None else self.accepted_status.value,
-                "before_state_digest": self.before_state_digest,
-                "input_digest": self.input_digest,
-                "program_digest": self.program_digest,
-                "program_lock_digest": self.program_lock_digest,
-                "machine_kind": self.machine_kind,
-                "machine_version": self.machine_version,
                 "input_refs": self.input_refs,
-                "state_delta_ref": self.state_delta_ref,
                 "evidence_refs": self.evidence_refs,
                 "artifact_refs": self.artifact_refs,
-                "parent_transition_id": self.parent_transition_id,
-                "attempt_id": self.attempt_id,
-                "authority_epoch": self.authority_epoch,
                 "child_links": self.child_links,
             }),
         )
@@ -384,7 +527,7 @@ class MachineCommit:
                 "revision": self.revision,
                 "proposal_digest": self.proposal_digest,
                 "command_digest": self.command_digest,
-                "state": self.state,
+                "state_digest": self.state_digest,
                 "output_refs": self.output_refs,
                 "event_payloads": self.event_payloads,
                 "effect_intent_refs": self.effect_intent_refs,
@@ -419,6 +562,13 @@ class MachineCut:
     state_digest: str
     program_digest: str
     program_lock_digest: str
+    _cut_digest: str | None = field(
+        init=False,
+        default=None,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         if type(self.machine_id) is not str or not self.machine_id.strip():
@@ -448,14 +598,18 @@ class MachineCut:
 
     @property
     def cut_digest(self) -> str:
-        return canonical_digest({
-            "machine_id": self.machine_id,
-            "revision": self.revision,
-            "commit_id": self.commit_id,
-            "state_digest": self.state_digest,
-            "program_digest": self.program_digest,
-            "program_lock_digest": self.program_lock_digest,
-        })
+        value = self._cut_digest
+        if value is None:
+            value = canonical_digest({
+                "machine_id": self.machine_id,
+                "revision": self.revision,
+                "commit_id": self.commit_id,
+                "state_digest": self.state_digest,
+                "program_digest": self.program_digest,
+                "program_lock_digest": self.program_lock_digest,
+            })
+            object.__setattr__(self, "_cut_digest", value)
+        return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -465,7 +619,18 @@ class MachineSnapshot:
     program: MachineProgramRef
     state: JsonObject
     parent_commit_id: str | None
-    snapshot_id: str = field(init=False)
+    _state_digest_hint: str | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+    )
+    state_digest: str = field(init=False)
+    _snapshot_id: str | None = field(
+        init=False,
+        default=None,
+        repr=False,
+        compare=False,
+    )
 
     def __post_init__(self) -> None:
         if type(self.machine_id) is not str or not self.machine_id.strip():
@@ -479,17 +644,33 @@ class MachineSnapshot:
         ):
             raise ValueError("machine snapshot parent_commit_id must be non-empty")
         object.__setattr__(self, "state", freeze_json(self.state))
-        object.__setattr__(
-            self,
-            "snapshot_id",
-            canonical_digest({
+        if self._state_digest_hint is None:
+            state_digest = canonical_digest(self.state)
+        else:
+            if self.parent_commit_id is None:
+                raise ValueError(
+                    "machine snapshot state digest hint requires a committed parent"
+                )
+            require_sha256(
+                self._state_digest_hint,
+                "machine snapshot state_digest hint",
+            )
+            state_digest = self._state_digest_hint
+        object.__setattr__(self, "state_digest", state_digest)
+
+    @property
+    def snapshot_id(self) -> str:
+        value = self._snapshot_id
+        if value is None:
+            value = canonical_digest({
                 "machine_id": self.machine_id,
                 "revision": self.revision,
                 "program": self.program,
-                "state": self.state,
+                "state_digest": self.state_digest,
                 "parent_commit_id": self.parent_commit_id,
-            }),
-        )
+            })
+            object.__setattr__(self, "_snapshot_id", value)
+        return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -532,6 +713,10 @@ __all__ = [
     "ProgramLock",
     "MachineSnapshot",
     "MachineStatus",
+    "MachineStateMutation",
+    "MachineStateDelta",
+    "STRUCTURED_STATE_DELTA_THRESHOLD_BYTES",
+    "apply_machine_state_delta",
     "MachineCommit",
     "MachineCut",
     "MachineIntegrityError",

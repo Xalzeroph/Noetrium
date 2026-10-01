@@ -7,7 +7,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 
-from .replica import OperationalModelEndpointReplicaSet
+from .replica import ModelEndpointReplicaSet
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,19 +22,23 @@ class OperationalModelServingInventory:
 
     model: ImmutableModelIdentity
     served_model_name: str
-    replica_set: OperationalModelEndpointReplicaSet
+    replica_set: ModelEndpointReplicaSet
 
     def __post_init__(self) -> None:
         if not isinstance(self.model, ImmutableModelIdentity):
             raise TypeError("operational model serving inventory requires ImmutableModelIdentity")
         if type(self.served_model_name) is not str or not self.served_model_name.strip():
             raise ValueError("operational model serving inventory served_model_name is required")
-        if not isinstance(self.replica_set, OperationalModelEndpointReplicaSet):
+        if not isinstance(self.replica_set, ModelEndpointReplicaSet):
             raise TypeError("operational model serving inventory requires replica set")
+        if self.replica_set.authority_kind != "operational":
+            raise ValueError(
+                "operational model serving inventory cannot admit qualified authority"
+            )
 
     @property
     def capacity(self) -> int:
-        return sum(replica.capacity for replica in self.replica_set.replicas)
+        return sum(replica.capacity for replica in self.replica_set.members)
 
     @property
     def identity_digest(self) -> str:

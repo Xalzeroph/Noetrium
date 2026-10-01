@@ -1,9 +1,8 @@
 from __future__ import annotations
+from research.reproductions._support import canonical_digest, require_sha256
 
 from dataclasses import dataclass
 from enum import StrEnum
-
-from noetrium.api import canonical_digest, require_sha256
 
 
 class StormWikiStage(StrEnum):

@@ -1,11 +1,15 @@
 from __future__ import annotations
+
+import pytest
 from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 from noetrium_platform.composition.model_requests import (
-    build_directory_model_request_recorder,
+    build_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointDispatchResult,
+    ModelEndpointError,
+    ModelEndpointRequestRejected,
     ModelEndpointPoolSnapshot,
     ModelEndpointRequest,
     ModelEndpointResponse,
@@ -16,13 +20,22 @@ from noetrium_platform.foundation.kernel.kernel import (
     EffectClass,
     ExecutionContext,
     ImmutableModelIdentity,
+    canonical_digest,
 )
+from noetrium_platform.research.execution.policy.api import (
+    ExecutionBudgetDelta,
+    ExecutionBudgetExceeded,
+    ExecutionBudgetPolicy,
+    ExecutionBudgetReservationRequest,
+)
+from noetrium_platform.research.execution.policy.runtime import SQLiteExecutionBudgetAuthority
+from tests._model_tokenization_support import FixedModelRequestTokenizationProvider
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
 from noetrium_platform.research.execution.workflow.composition import (
-    DispatchPoolBackedMethodAgentLoop,
-    EndpointBackedMethodAgentLoop,
+    MethodModelAgentLoop,
+    MethodModelAgentLoop,
     MethodModelEndpointBinding,
-    PromptViewChatRequestFactory,
+    MethodViewChatRequestFactory,
 )
 
 
@@ -76,14 +89,50 @@ def _request() -> MethodAgentRequest:
             "run-1",
             "trace-1",
             "span-1",
+            replay_level="observational",
+            trial_budget={
+                "max_tokens": 4096,
+                "max_turns": 10,
+                "max_messages": 100,
+                "max_model_calls": 10,
+            },
+            lifetime_id="assignment-1",
             task_id="gsm8k:test:00000",
             operation_id="method:run-1:program:reason:0",
         ),
     )
 
 
+def _runtime_dependencies(tmp_path, *, max_seconds=None):
+    tokenization = FixedModelRequestTokenizationProvider(input_tokens=9).bind(
+        model=_model(),
+        model_stack_digest="c" * 64,
+        tokenizer_sha256="d" * 64,
+        chat_template_sha256=None,
+    )
+    budget = SQLiteExecutionBudgetAuthority(
+        tmp_path / "model-budget.sqlite",
+        resource_policy_digest="e" * 64,
+        checkpoint_replay_proof_digest="f" * 64,
+    )
+    budget.open_scope(
+        ExecutionBudgetPolicy(
+            scope_id="assignment-1",
+            budget_id="test-budget",
+            budget_digest=canonical_digest({"budget": "test"}),
+            replay_level="observational",
+            max_tokens=4096,
+            max_turns=10,
+            max_messages=100,
+            max_model_calls=10,
+            max_seconds=max_seconds,
+        )
+    )
+    return tokenization, budget
+
+
 def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path) -> None:
-    factory = PromptViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {
             "temperature": 0,
@@ -95,32 +144,35 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
         agent_id="cot.reasoner",
         role="reasoner",
         model=_model(),
-        prompt_generation_id="cot.gsm8k.neurips2022.appendix-table20",
-        prompt_id="cot.gsm8k.neurips2022.appendix-table20",
-        prompt_digest="b" * 64,
         request_factory_digest=factory.digest,
     )
-    endpoint = _Endpoint()
-    recorder = build_directory_model_request_recorder(tmp_path / "model-requests")
-    loop = EndpointBackedMethodAgentLoop(
+    recorder = build_model_request_recorder(tmp_path / "model-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    loop = MethodModelAgentLoop(
         binding=binding,
-        endpoint=endpoint,
+        pool=_Pool(),
         recorder=recorder,
         request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
     )
 
-    result = loop.run(_request())
+    try:
+        result = loop.run(_request())
+    finally:
+        budget.close()
 
-    assert result.value == "The answer is 18."
-    assert len(endpoint.requests) == 1
-    sent = endpoint.requests[0]
+    assert result.value == "pooled answer"
+    sent = loop.pool.requests[0]
     assert sent.body["model"] == "qwen"
     assert sent.body["messages"][0]["content"] == "Q: How many?\nA:"
     assert sent.body["temperature"] == 0
     envelope = recorder._ledger.get(sent.request.request_id)
     assert envelope.prompt_digest == "b" * 64
     reconstructed = recorder.reconstruct(envelope)
-    assert reconstructed.compiled_prompt_text == "Q: How many?\nA:"
+    assert reconstructed.compiled_prompt_text == (
+        '[{"content":"Q: How many?\\nA:","role":"user"}]'
+    )
     assert result.effect_receipts[0].effect_class is EffectClass.RECONCILABLE
     assert (
         result.effect_receipts[0].certainty
@@ -128,87 +180,14 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
     )
     assert result.effect_receipts[0].provider_receipt
     assert result.events[0].kind == "model.invocation"
-    assert result.events[0].payload["input_tokens"] == 100
-    assert result.events[0].payload["output_tokens"] == 8
-
-
-def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> None:
-    from noetrium_platform.research.execution.workflow.api import (
-        MethodEvidenceStatus,
-        MethodRuntimeContext,
-    )
-    from noetrium_platform.composition.method_runtime import (
-        bind_standard_method_runtime,
-    )
-    from noetrium_platform.research.execution.workflow.providers import (
-        DirectoryEventMethodEvidence,
-    )
-    from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-    from research.reproductions.chain_of_thought_gsm8k import (
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        COT_GSM8K_PROMPT_BUNDLE_ID,
-        COT_GSM8K_PROMPT_DIGEST,
-        chain_of_thought_gsm8k_initial_state,
-    )
-
-    factory = PromptViewChatRequestFactory(
-        "qwen",
-        {"temperature": 0, "max_tokens": 512},
-    )
-    binding = MethodModelEndpointBinding(
-        agent_id="cot.reasoner",
-        role="reasoner",
-        model=_model(),
-        prompt_generation_id=COT_GSM8K_PROMPT_BUNDLE_ID,
-        prompt_id=COT_GSM8K_PROMPT_BUNDLE_ID,
-        prompt_digest=COT_GSM8K_PROMPT_DIGEST,
-        request_factory_digest=factory.digest,
-    )
-    loop = EndpointBackedMethodAgentLoop(
-        binding=binding,
-        endpoint=_Endpoint(),
-        recorder=build_directory_model_request_recorder(tmp_path / "requests"),
-        request_factory=factory,
-    )
-    runtime = MethodRuntimeContext(
-        ExecutionContext(
-            "cot-real-shape-run",
-            "trace",
-            "root",
-            task_id="gsm8k:test:00000",
-        ),
-        agent_loop=loop,
-        evidence=DirectoryEventMethodEvidence(tmp_path / "evidence"),
-        binding_plan_digest=binding.digest,
-    )
-    runtime = bind_standard_method_runtime(
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        runtime,
-        state_root=tmp_path / "machine",
-    )
-
-    result = UniversalMethodMachine(max_steps=8).run(
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        runtime=runtime,
-        initial_state=chain_of_thought_gsm8k_initial_state(
-            task_id="gsm8k:test:00000",
-            question="How much does Janet make?",
-        ),
-    )
-
-    assert result.evidence_status is MethodEvidenceStatus.COMPLETE
-    assert len(result.effect_receipts) == 1
-    assert {event.kind for event in result.events} >= {
-        "model.invocation",
-        "cot.reasoning-completion",
-    }
-    assert any(path.is_file() for path in (tmp_path / "machine" / "journal").rglob("*"))
-    assert list((tmp_path / "evidence" / "results").glob("*.json"))
+    assert result.events[0].payload["input_tokens"] == 9
+    assert result.events[0].payload["output_tokens"] == 3
 
 
 class _Pool:
     def __init__(self) -> None:
         self.requests = []
+        self.timeouts = []
         self.replica_set_digest = "d" * 64
 
     def snapshot(self):
@@ -219,7 +198,11 @@ class _Pool:
             replicas=(),
         )
 
-    def complete(self, request, body):
+    def stream(self, request, body, on_event, *, stream_idle_timeout_s=30.0):
+        raise AssertionError("streaming is not exercised by this test pool")
+
+    def complete(self, request, body, *, timeout_s=None):
+        self.timeouts.append(timeout_s)
         physical = ModelEndpointRequest(
             request=request,
             deployment_id="pool-qwen-a",
@@ -246,7 +229,7 @@ class _Pool:
 
 
 def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) -> None:
-    factory = PromptViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 64},
     )
@@ -254,21 +237,24 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
         agent_id="cot.reasoner",
         role="reasoner",
         model=_model(),
-        prompt_generation_id="pooled-pressure-v1",
-        prompt_id="pooled-pressure",
-        prompt_digest="c" * 64,
         request_factory_digest=factory.digest,
     )
     pool = _Pool()
-    recorder = build_directory_model_request_recorder(tmp_path / "pool-requests")
-    loop = DispatchPoolBackedMethodAgentLoop(
+    recorder = build_model_request_recorder(tmp_path / "pool-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    loop = MethodModelAgentLoop(
         binding=binding,
         pool=pool,
         recorder=recorder,
         request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
     )
 
-    result = loop.run(_request())
+    try:
+        result = loop.run(_request())
+    finally:
+        budget.close()
 
     assert result.value == "pooled answer"
     assert len(pool.requests) == 1
@@ -282,4 +268,183 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
     assert event.payload["selection_sequence"] == 1
     assert len(loop.identity_digest) == 64
     envelope = recorder._ledger.get(pool.requests[0].request.request_id)
-    assert recorder.reconstruct(envelope).compiled_prompt_text == "Q: How many?\nA:"
+    assert recorder.reconstruct(envelope).compiled_prompt_text == (
+        '[{"content":"Q: How many?\\nA:","role":"user"}]'
+    )
+
+
+def test_method_model_dispatch_uses_remaining_trial_deadline(tmp_path) -> None:
+    factory = MethodViewChatRequestFactory(
+        "qwen",
+        {"temperature": 0, "max_tokens": 64},
+    )
+    binding = MethodModelEndpointBinding(
+        agent_id="cot.reasoner",
+        role="reasoner",
+        model=_model(),
+        request_factory_digest=factory.digest,
+    )
+    pool = _Pool()
+    recorder = build_model_request_recorder(tmp_path / "deadline-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path, max_seconds=5.0)
+    loop = MethodModelAgentLoop(
+        binding=binding,
+        pool=pool,
+        recorder=recorder,
+        request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
+    )
+
+    try:
+        loop.run(_request())
+    finally:
+        budget.close()
+
+    assert len(pool.timeouts) == 1
+    assert pool.timeouts[0] is not None
+    assert 0.0 < pool.timeouts[0] <= 5.0
+
+
+class _RejectedPool(_Pool):
+    def complete(self, request, body, *, timeout_s=None):
+        raise ModelEndpointRequestRejected(
+            "request rejected before provider dispatch",
+            failure_kind="invalid_request",
+            retryable=False,
+            affects_replica_health=False,
+        )
+
+
+class _TimeoutPool(_Pool):
+    def complete(self, request, body, *, timeout_s=None):
+        raise ModelEndpointError(
+            "model request timed out after dispatch",
+            failure_kind="timeout",
+            retryable=True,
+            affects_replica_health=True,
+        )
+
+
+def _failure_loop(tmp_path, pool):
+    factory = MethodViewChatRequestFactory(
+        "qwen",
+        {"temperature": 0, "max_tokens": 64},
+    )
+    binding = MethodModelEndpointBinding(
+        agent_id="cot.reasoner",
+        role="reasoner",
+        model=_model(),
+        request_factory_digest=factory.digest,
+    )
+    recorder = build_model_request_recorder(tmp_path / "failure-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    return MethodModelAgentLoop(
+        binding=binding,
+        pool=pool,
+        recorder=recorder,
+        request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
+    ), budget
+
+
+def test_execution_budget_abort_releases_and_same_charge_can_retry(tmp_path) -> None:
+    _tokenization, budget = _runtime_dependencies(tmp_path)
+    requested = ExecutionBudgetDelta(model_calls=1, tokens=10)
+    try:
+        first = budget.reserve("assignment-1", "retryable-charge", requested)
+        reserved = budget.snapshot("assignment-1")
+        assert reserved.reserved.model_calls == 1
+        assert reserved.reserved.tokens == 10
+
+        aborted = budget.abort(first)
+        assert aborted.reserved.model_calls == 0
+        assert aborted.reserved.tokens == 0
+        assert aborted.usage.model_calls == 0
+        assert aborted.usage.tokens == 0
+
+        second = budget.reserve("assignment-1", "retryable-charge", requested)
+        assert second.reservation_digest == first.reservation_digest
+        retried = budget.snapshot("assignment-1")
+        assert retried.reserved.model_calls == 1
+        assert retried.reserved.tokens == 10
+
+        committed, violations = budget.commit(second, requested)
+        assert violations == ()
+        assert committed.reserved.model_calls == 0
+        assert committed.usage.model_calls == 1
+        assert committed.usage.tokens == 10
+    finally:
+        budget.close()
+
+
+def test_model_pre_dispatch_rejection_aborts_budget_reservation(tmp_path) -> None:
+    loop, budget = _failure_loop(tmp_path, _RejectedPool())
+    try:
+        with pytest.raises(ModelEndpointRequestRejected, match="before provider dispatch"):
+            loop.run(_request())
+        snapshot = budget.snapshot("assignment-1")
+        assert snapshot.reserved.model_calls == 0
+        assert snapshot.reserved.tokens == 0
+        assert snapshot.usage.model_calls == 0
+        assert snapshot.usage.tokens == 0
+    finally:
+        budget.close()
+
+
+def test_model_uncertain_failure_conservatively_commits_requested_budget(tmp_path) -> None:
+    loop, budget = _failure_loop(tmp_path, _TimeoutPool())
+    try:
+        with pytest.raises(ModelEndpointError, match="timed out after dispatch"):
+            loop.run(_request())
+        snapshot = budget.snapshot("assignment-1")
+        assert snapshot.reserved.model_calls == 0
+        assert snapshot.reserved.tokens == 0
+        assert snapshot.usage.model_calls == 1
+        assert snapshot.usage.tokens == 73
+    finally:
+        budget.close()
+
+
+def test_execution_budget_batch_reservation_is_atomic(tmp_path) -> None:
+    _tokenization, budget = _runtime_dependencies(tmp_path)
+    try:
+        accepted = budget.reserve_batch(
+            "assignment-1",
+            (
+                ExecutionBudgetReservationRequest(
+                    "batch-a",
+                    ExecutionBudgetDelta(model_calls=1, tokens=10),
+                ),
+                ExecutionBudgetReservationRequest(
+                    "batch-b",
+                    ExecutionBudgetDelta(model_calls=1, tokens=20),
+                ),
+            ),
+        )
+        assert tuple(row.charge_id for row in accepted) == ("batch-a", "batch-b")
+        after_accept = budget.snapshot("assignment-1")
+        assert after_accept.reserved.model_calls == 2
+        assert after_accept.reserved.tokens == 30
+        for reservation in accepted:
+            budget.abort(reservation)
+
+        with pytest.raises(ExecutionBudgetExceeded, match="reservation rejected"):
+            budget.reserve_batch(
+                "assignment-1",
+                tuple(
+                    ExecutionBudgetReservationRequest(
+                        f"overflow-{index}",
+                        ExecutionBudgetDelta(model_calls=1, tokens=1),
+                    )
+                    for index in range(11)
+                ),
+            )
+
+        after_reject = budget.snapshot("assignment-1")
+        assert after_reject.reserved.model_calls == 0
+        assert after_reject.reserved.tokens == 0
+        assert after_reject.usage.model_calls == 0
+    finally:
+        budget.close()

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from noetrium_platform.foundation.kernel.kernel import JsonValue, freeze_json
+
 
 @dataclass(frozen=True, slots=True)
 class ExperimentTaskSpec:
@@ -15,23 +17,33 @@ class ExperimentTaskSpec:
     lineage_id: str = ""
     depends_on_task_ids: tuple[str, ...] = ()
     retry_of_task_id: str | None = None
-    max_steps: int = 12
-    max_seconds: float = 180.0
+    max_steps: int | None = None
+    max_seconds: float | None = None
+    payload: JsonValue = None
 
     def __post_init__(self) -> None:
         if not self.task_id.strip() or not self.family.strip() or not self.objective.strip():
             raise ValueError("experiment task identity, family and objective are required")
         if not self.lineage_id.strip():
             object.__setattr__(self, "lineage_id", self.task_id)
-        if isinstance(self.max_steps, bool) or not isinstance(self.max_steps, int) or self.max_steps <= 0:
-            raise ValueError("experiment task max_steps must be a positive integer")
-        if (
+        object.__setattr__(self, "payload", freeze_json(self.payload))
+        if self.max_steps is not None and (
+            isinstance(self.max_steps, bool)
+            or not isinstance(self.max_steps, int)
+            or self.max_steps <= 0
+        ):
+            raise ValueError(
+                "experiment task max_steps must be a positive integer or None"
+            )
+        if self.max_seconds is not None and (
             isinstance(self.max_seconds, bool)
             or not isinstance(self.max_seconds, (int, float))
             or not math.isfinite(self.max_seconds)
             or self.max_seconds <= 0
         ):
-            raise ValueError("experiment task max_seconds must be finite and positive")
+            raise ValueError(
+                "experiment task max_seconds must be finite and positive or None"
+            )
         if len(set(self.depends_on_task_ids)) != len(self.depends_on_task_ids):
             raise ValueError("experiment task dependencies must be unique")
         if self.task_id in self.depends_on_task_ids or self.retry_of_task_id == self.task_id:

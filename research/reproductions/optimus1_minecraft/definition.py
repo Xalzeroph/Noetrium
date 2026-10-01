@@ -92,10 +92,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/optimus1_minecraft/study.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/optimus1_minecraft/memory.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/optimus1_minecraft/program.py",
         ),
@@ -179,10 +175,7 @@ REPRODUCTION = ReproductionDefinition(
         "NeurIPS 2024 paper-era memory state without explicit provenance.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_optimus1_minecraft_v1.py",
-        "tests/test_scientific_optimus_long_horizon_67_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "cca10c3b4be0a4d71d97895ee73923507d922f2b85f5e43ffe0642a9e3780f63",
-  "definition_digest": "46c6a3eb2e9766ebece78a50993e51e4aa6ab2f4436694766edab5f793e3bbb4",
+  "package_digest": "282467e20ef88d8d96188ffb6bc3c9b892059a485c086d95e7dcc7d6b9e4eb3f",
+  "definition_digest": "c908855e3ae13586a918af81e1b6e5fb623a3022132b846fcc3c6f16ac8849f6",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -51,8 +51,8 @@
       "module recombination"
     ],
     "platform_owned": [
-      "OptimizationMachine journal authority",
-      "ResearchProgram hosting",
+      "Method-owned component hosting",
+      "Method-owned optimization component on the shared Machine journal",
       "candidate execution/evaluation binding",
       "checkpoint and replay",
       "evidence and artifact lineage"
@@ -63,7 +63,7 @@
     "reference_publications": [
       "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html"
     ],
-    "catalog_digest": "bed5e610c7058e6d50b3f725bcc931a3e1b3f736144d568c255b3b1bf4508bf3"
+    "catalog_digest": "027e9dd2fb16ae67de5fa97ffe4a5fd2960e8b161aa32545075c69944fd0213e"
   },
   "source_lanes": [
     {
@@ -98,19 +98,19 @@
       "kind": "fidelity",
       "path": "research/reproductions/agentsquare/fidelity.py",
       "declaration_digest": "4b5efe06eb4dbd9002c199e9b8d57ca0dcab84e3f4fd174d42232c51885c538e",
-      "content_sha256": "0f778f071b8792a38c18f41e491e85a02fd9a3cd3929e2f4fa44d676578a6ee4"
+      "content_sha256": "7e2c8828017b14227ec8055b8d179dbfcf0d735d809d85a4383a60af26b65a7f"
     },
     {
-      "kind": "research_program",
+      "kind": "method_program",
       "path": "research/reproductions/agentsquare/program.py",
-      "declaration_digest": "3f4b6adfff57bab0f4bf5198b251e7c6bb2cb6e6979219302f527fd471436fa7",
-      "content_sha256": "b14e12b908525981bb13d7ac71c2f378b14eb23fe6f87d64e378ab7a5deb2ee7"
+      "declaration_digest": "7a486e45e84c10b7ba366fd7e5086eea5ba3bc5955b8e81f09493cad0e7368d2",
+      "content_sha256": "c72a239b80ea771196a209ef9eed8bb584e01d2c45b8925339191359dc1589c7"
     },
     {
       "kind": "study",
       "path": "research/reproductions/agentsquare/study.py",
       "declaration_digest": "2b561627a5beec587556ec385b02d5d0e19720549040513ef468a6894701cb01",
-      "content_sha256": "332466095416284579b8989ecde72cdd74a472702ecc96cd072ded7ae1b9b292"
+      "content_sha256": "1ff4997568b7be3fbe82cb7a373d848a2f89605fdb4dfcf455c5cf6e6414b40b"
     }
   ],
   "primary_executable": "research/reproductions/agentsquare/program.py",
@@ -216,14 +216,6 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_agentsquare_optimization_program_v1.py",
-      "content_sha256": "22a8325dc65dfe36491b1c59ba25f8aed5389e6ff24835e1699e83fdaf344f89"
-    },
-    {
-      "path": "tests/test_scientific_agentsquare_six_benchmark_studies_v1.py",
-      "content_sha256": "03f38b6974b5a4106b7f9608218e610c039a082fae15b5fe973eb6ccce74d549"
-    },
-    {
       "path": "tests/test_scientific_agentsquare_webshop_cut_v1.py",
       "content_sha256": "903f2761417445500a78f58b51160a7adbca405d083261b4b77321a48566a318"
     }
@@ -232,12 +224,12 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agentsquare",
-    "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+    "program_digest": "042c9f0f455df2a0a68fbf38579b98a0a58770e395fa02fe1583199ca44594ac",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:agentsquare has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {

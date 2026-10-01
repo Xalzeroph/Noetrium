@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import ast
 import hashlib
 import json
+import re
 from pathlib import Path
 import sys
 from typing import Any
@@ -94,14 +96,20 @@ def _callable(node: ast.FunctionDef | ast.AsyncFunctionDef, kind: str) -> dict[s
     }
 
 
-def _class(node: ast.ClassDef) -> dict[str, Any]:
+def _class(node: ast.ClassDef, *, public_methods_only: bool = False) -> dict[str, Any]:
     methods: list[dict[str, Any]] = []
     fields: list[dict[str, Any]] = []
     members: list[str] = []
     for child in node.body:
         if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if public_methods_only and child.name.startswith("_"):
+                continue
             methods.append(_callable(child, "method"))
-        elif isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
+        elif (
+            isinstance(child, ast.AnnAssign)
+            and isinstance(child.target, ast.Name)
+            and not child.target.id.startswith("_")
+        ):
             fields.append({
                 "name": child.target.id,
                 "annotation": _annotation(child.annotation),
@@ -125,10 +133,35 @@ def _class(node: ast.ClassDef) -> dict[str, Any]:
     }
 
 
-def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
+def _reexport_source(root: Path, source: Path, module: str) -> Path | None:
+    if module.startswith("."):
+        level = len(module) - len(module.lstrip("."))
+        suffix = module[level:]
+        base = source.parent
+        for _ in range(level - 1):
+            base = base.parent
+        target = base.joinpath(*suffix.split(".")) if suffix else base
+    else:
+        target = root.joinpath(*module.split("."))
+    file_path = target.with_suffix(".py")
+    if file_path.is_file():
+        return file_path
+    init_path = target / "__init__.py"
+    return init_path if init_path.is_file() else None
+
+
+def _symbols(
+    root: Path,
+    path: Path,
+    names: tuple[str, ...],
+    *,
+    seen: frozenset[tuple[Path, str]] = frozenset(),
+    public_methods_only: bool = False,
+) -> tuple[dict[str, Any], ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     definitions: dict[str, ast.AST] = {}
     reexports: dict[str, tuple[str, str]] = {}
+    star_reexports: list[str] = []
     for node in tree.body:
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
             definitions[node.name] = node
@@ -140,14 +173,16 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
         elif isinstance(node, ast.ImportFrom):
             module = "." * node.level + (node.module or "")
             for alias in node.names:
-                if alias.name != "*":
+                if alias.name == "*":
+                    star_reexports.append(module)
+                else:
                     reexports[alias.asname or alias.name] = (module, alias.name)
 
     result: list[dict[str, Any]] = []
     for name in names:
         node = definitions.get(name)
         if isinstance(node, ast.ClassDef):
-            result.append(_class(node))
+            result.append(_class(node, public_methods_only=public_methods_only))
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             result.append(_callable(node, "async_function" if isinstance(node, ast.AsyncFunctionDef) else "function"))
         elif node is not None:
@@ -162,7 +197,7 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
             })
         elif name in reexports:
             module, origin_name = reexports[name]
-            result.append({
+            row: dict[str, Any] = {
                 "schema_id": INTERFACE_SCHEMA_ID,
                 "schema_version": INTERFACE_SCHEMA_VERSION,
                 "name": name,
@@ -170,22 +205,192 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
                 "origin_module": module,
                 "origin_name": origin_name,
                 "doc": None,
-            })
+            }
+            source = _reexport_source(root, path, module)
+            key = (source.resolve(), origin_name) if source is not None else None
+            if source is not None and key not in seen:
+                row["resolved_schema"] = _symbols(
+                    root,
+                    source,
+                    (origin_name,),
+                    seen=seen | {key},
+                )[0]
+            result.append(row)
         else:
-            result.append({
-                "schema_id": INTERFACE_SCHEMA_ID,
-                "schema_version": INTERFACE_SCHEMA_VERSION,
-                "name": name,
-                "kind": "unknown",
-                "doc": None,
-            })
+            resolved_star: dict[str, Any] | None = None
+            for module in star_reexports:
+                source = _reexport_source(root, path, module)
+                key = (
+                    (source.resolve(), name)
+                    if source is not None
+                    else None
+                )
+                if source is None or key in seen:
+                    continue
+                candidate = _symbols(
+                    root,
+                    source,
+                    (name,),
+                    seen=seen | {key},
+                )[0]
+                if candidate.get("kind") != "unknown":
+                    resolved_star = {
+                        "schema_id": INTERFACE_SCHEMA_ID,
+                        "schema_version": INTERFACE_SCHEMA_VERSION,
+                        "name": name,
+                        "kind": "reexport",
+                        "origin_module": module,
+                        "origin_name": name,
+                        "resolved_schema": candidate,
+                        "doc": None,
+                    }
+                    break
+            if resolved_star is not None:
+                result.append(resolved_star)
+            else:
+                result.append({
+                    "schema_id": INTERFACE_SCHEMA_ID,
+                    "schema_version": INTERFACE_SCHEMA_VERSION,
+                    "name": name,
+                    "kind": "unknown",
+                    "doc": None,
+                })
     return tuple(result)
+
+
+def _public_symbol(
+    root: Path,
+    path: Path,
+    name: str,
+) -> dict[str, Any]:
+    return _symbols(
+        root,
+        path,
+        (name,),
+        public_methods_only=True,
+    )[0]
+
+
+def _literal_all(path: Path) -> tuple[str, ...]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets):
+            continue
+        raw = ast.literal_eval(node.value)
+        if not isinstance(raw, (tuple, list)) or any(not isinstance(item, str) for item in raw):
+            raise RuntimeError(f"{path}: __all__ must be a literal string sequence")
+        return tuple(raw)
+    raise RuntimeError(f"{path}: missing literal __all__")
 
 
 def _digest(value: object) -> str:
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(raw).hexdigest()
 
+
+
+_EXPECTED_PUBLIC_ROOTS = (
+    "ResearchPortfolioBuilder",
+    "ResearchPortfolio",
+    "ResearchOS",
+    "open_project",
+)
+_FORBIDDEN_REACHABLE_TOKENS = (
+    "ResearchProgramBuilder",
+    "ResearchMethodBuilder",
+    "ResearchComponentBuilder",
+    "ResearchNode",
+    "ResearchDefinition",
+    "ResearchInputBinding",
+    "ResearchOutputSpec",
+)
+_FORBIDDEN_REACHABLE_METHODS = frozenset({
+    "node",
+    "definition",
+    "protocol",
+    "study_protocol",
+    "trial_provider",
+    "depends",
+})
+
+
+def _identifier_words(value: object) -> set[str]:
+    words: set[str] = set()
+    if isinstance(value, str):
+        current: list[str] = []
+        for char in value:
+            if char.isalnum() or char == "_":
+                current.append(char)
+            elif current:
+                words.add("".join(current))
+                current.clear()
+        if current:
+            words.add("".join(current))
+        return words
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            words.update(_identifier_words(key))
+            words.update(_identifier_words(item))
+        return words
+    if isinstance(value, (tuple, list, set, frozenset)):
+        for item in value:
+            words.update(_identifier_words(item))
+    return words
+
+
+def _public_method_names(schema: Mapping[str, Any]) -> set[str]:
+    names: set[str] = set()
+    methods = schema.get("methods", ())
+    if isinstance(methods, list):
+        for method in methods:
+            if isinstance(method, Mapping):
+                name = method.get("name")
+                if isinstance(name, str) and not name.startswith("_"):
+                    names.add(name)
+    return names
+
+
+def _assert_downstream_boundary(
+    public_symbols: tuple[str, ...],
+    reachable_dsl: dict[str, Any],
+) -> None:
+    if public_symbols != _EXPECTED_PUBLIC_ROOTS:
+        raise RuntimeError(
+            "noetrium.api must expose exactly the four canonical roots: "
+            f"{_EXPECTED_PUBLIC_ROOTS!r}; got {public_symbols!r}"
+        )
+    words = _identifier_words(reachable_dsl)
+    leaked = set(_FORBIDDEN_REACHABLE_TOKENS).intersection(words)
+    leaked.update(
+        word
+        for word in words
+        if (
+            word.endswith("Provider")
+            or word.endswith("Port")
+        )
+        and word != "ResearchPortfolio"
+    )
+    if leaked:
+        raise RuntimeError(
+            "downstream reachable DSL leaked lower-layer authoring/runtime types: "
+            f"{tuple(sorted(leaked))!r}"
+        )
+    forbidden_methods: dict[str, tuple[str, ...]] = {}
+    for name, schema in reachable_dsl.items():
+        if not isinstance(schema, Mapping):
+            continue
+        bad = _public_method_names(schema).intersection(
+            _FORBIDDEN_REACHABLE_METHODS
+        )
+        if bad:
+            forbidden_methods[name] = tuple(sorted(bad))
+    if forbidden_methods:
+        raise RuntimeError(
+            "downstream reachable DSL leaked lower-graph methods: "
+            f"{forbidden_methods!r}"
+        )
 
 def build_document(root: Path) -> dict[str, Any]:
     surfaces = build_surfaces(root)
@@ -201,7 +406,7 @@ def build_document(root: Path) -> dict[str, Any]:
                 "module": api.module,
                 "source": api.source,
                 "symbols": list(api.symbols),
-                "symbol_schemas": list(_symbols(source, api.symbols)),
+                "symbol_schemas": list(_symbols(root, source, api.symbols)),
             })
         systems.append({
             "system_key": surface.system_key,
@@ -209,6 +414,46 @@ def build_document(root: Path) -> dict[str, Any]:
             "facade_module": surface.facade_module,
             "api_modules": modules,
         })
+    public_source = root / "noetrium/api/__init__.py"
+    public_symbols = _literal_all(public_source)
+    public_api = {
+        "module": "noetrium.api",
+        "source": public_source.relative_to(root).as_posix(),
+        "symbols": list(public_symbols),
+        "symbol_schemas": list(_symbols(root, public_source, public_symbols)),
+    }
+
+    product_source = root / "noetrium_platform/product/research_os.py"
+    method_source = root / "noetrium_platform/research/execution/method/authoring.py"
+    runtime_source = root / "noetrium/_research_os_runtime.py"
+    reachable_dsl = {
+        "portfolio_programs": _public_symbol(root, product_source, "ResearchPortfolioProgramsDSL"),
+        "portfolio_handoffs": _public_symbol(root, product_source, "ResearchPortfolioHandoffsDSL"),
+        "program": _public_symbol(root, product_source, "ResearchProgramDSL"),
+        "program_methods": _public_symbol(root, product_source, "ResearchProgramMethodsDSL"),
+        "program_experiments": _public_symbol(root, product_source, "ResearchProgramExperimentsDSL"),
+        "program_data": _public_symbol(root, product_source, "ResearchProgramDataDSL"),
+        "program_requirements": _public_symbol(root, product_source, "ResearchProgramRequirementsDSL"),
+        "program_reports": _public_symbol(root, product_source, "ResearchProgramReportsDSL"),
+        "program_extensions": _public_symbol(root, product_source, "ResearchProgramExtensionsDSL"),
+        "method": _public_symbol(root, method_source, "ResearchMethodDSL"),
+        "method_contract": _public_symbol(root, method_source, "ResearchMethodContractDSL"),
+        "method_components": _public_symbol(root, method_source, "ResearchMethodComponentsDSL"),
+        "method_flow": _public_symbol(root, method_source, "ResearchMethodFlowDSL"),
+        "method_call": _public_symbol(root, method_source, "ResearchMethodCall"),
+        "method_transition": _public_symbol(root, method_source, "ResearchMethodTransition"),
+        "memory": _public_symbol(root, method_source, "ResearchMemoryDSL"),
+        "memory_component": _public_symbol(root, method_source, "ResearchComponentDSL"),
+        "memory_call": _public_symbol(root, method_source, "ResearchComponentCall"),
+        "memory_transition": _public_symbol(root, method_source, "ResearchComponentTransition"),
+        "memory_scope": _public_symbol(root, method_source, "MemoryScope"),
+        "runtime": _public_symbol(root, runtime_source, "ResearchOS"),
+        "runtime_execution": _public_symbol(root, runtime_source, "ResearchExecutionDSL"),
+        "runtime_revisions": _public_symbol(root, runtime_source, "ResearchRevisionDSL"),
+    }
+
+    _assert_downstream_boundary(public_symbols, reachable_dsl)
+
     document = {
         "schema": SCHEMA,
         "generator": "scripts/generate_interface_schemas.py",
@@ -216,7 +461,41 @@ def build_document(root: Path) -> dict[str, Any]:
         "interface_schema": {
             "schema_id": INTERFACE_SCHEMA_ID,
             "schema_version": INTERFACE_SCHEMA_VERSION,
-            "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
+            "description": (
+                "The single downstream Research Portfolio / Research OS API plus "
+                "schema-only DSL types reachable from those roots."
+            ),
+        },
+        "public_api": public_api,
+        "reachable_dsl": reachable_dsl,
+        "authoring_inspection": {
+            "entrypoint": "noetrium.api",
+            "public_roots": list(public_symbols),
+            "authoring_root": "ResearchPortfolioBuilder",
+            "portfolio_type": "ResearchPortfolio",
+            "portfolio_systems": (
+                "ResearchPortfolioBuilder -> programs/handoffs"
+            ),
+            "program_dsl": (
+                "ResearchPortfolioBuilder.programs.create -> ResearchProgramDSL -> "
+                "methods/experiments/data/requirements/reports/extensions"
+            ),
+            "method_dsl": (
+                "ResearchProgramDSL.methods.define(configure) -> "
+                "ResearchMethodDSL -> contract/components/flow"
+            ),
+            "memory_dsl": (
+                "ResearchMethodDSL.components.memory -> ResearchMemoryDSL -> "
+                "write/update/retrieve/verify/forget/consolidate/semantic"
+            ),
+            "runtime_root": "ResearchOS",
+            "project_opener": "open_project",
+            "boundary": (
+                "Only noetrium.api is downstream-importable. Program/Method/Memory/"
+                "Runtime system DSL types are schema-reachable Product facades; provider "
+                "selection, deployment, resources, Docker, model/environment lifecycle "
+                "and recovery remain platform-owned."
+            ),
         },
         "systems": systems,
     }

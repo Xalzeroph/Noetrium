@@ -50,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/ui_tars_desktop_v001/scaffold.py',
         ),
     ),
+    primary_executable="research/reproductions/ui_tars_desktop_v001/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -58,7 +59,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('matched execution still requires an exact immutable OSWorld task/harness cut plus deployment-qualified GUI and VLM bindings',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_ui_tars_desktop_v001.py', 'tests/test_scientific_ui_tars_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_ui_tars_desktop_v001.py',),
 )
 
 __all__ = ["REPRODUCTION"]

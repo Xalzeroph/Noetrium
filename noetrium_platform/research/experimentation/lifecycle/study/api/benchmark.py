@@ -144,6 +144,7 @@ class TaskDefinition:
     family: str
     schema_id: str
     content_digest: str
+    content: JsonObject | None = None
     content_reference: ArtifactReference | None = None
     lineage_refs: tuple[str, ...] = ()
     package: TaskPackageSpec | None = None
@@ -153,6 +154,13 @@ class TaskDefinition:
         for name, value in (("task_id", self.task_id), ("revision_id", self.revision_id), ("family", self.family), ("schema_id", self.schema_id)):
             _text(value, f"task definition {name}")
         _sha(self.content_digest, "task definition content_digest")
+        if self.content is not None:
+            if not isinstance(self.content, Mapping):
+                raise TypeError("task definition content must be a JSON object or None")
+            frozen_content = freeze_json(self.content)
+            if canonical_digest(frozen_content) != self.content_digest:
+                raise ValueError("task definition inline content digest mismatch")
+            object.__setattr__(self, "content", frozen_content)
         if self.content_reference is not None and type(self.content_reference) is not ArtifactReference:
             raise TypeError("task definition content_reference must be ArtifactReference or None")
         _ids(self.lineage_refs, "task definition lineage_refs", allow_empty=True)
@@ -380,6 +388,111 @@ class BenchmarkTaskSet:
         return tuple(by_id[task_id] for task_id in matches[0].task_ids)
 
 
+_BENCHMARK_CUT_REQUIREMENT_ATTR = "__noetrium_benchmark_cut_requirements__"
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkCutRequirement:
+    """Exact scientific Benchmark cut required by one Study authoring surface."""
+
+    benchmark_id: str
+    revision_id: str
+    required_split_ids: tuple[str, ...] = ()
+    cut_digest: str | None = None
+    requirement_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.benchmark_id, "benchmark cut requirement benchmark_id")
+        _text(self.revision_id, "benchmark cut requirement revision_id")
+        split_ids = _ids(
+            self.required_split_ids,
+            "benchmark cut requirement required_split_ids",
+            allow_empty=True,
+        )
+        ordered = tuple(sorted(split_ids))
+        object.__setattr__(self, "required_split_ids", ordered)
+        if self.cut_digest is not None:
+            _sha(self.cut_digest, "benchmark cut requirement cut_digest")
+        object.__setattr__(
+            self,
+            "requirement_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.benchmark-cut-requirement.v1",
+                    "benchmark_id": self.benchmark_id,
+                    "revision_id": self.revision_id,
+                    "required_split_ids": ordered,
+                    "cut_digest": self.cut_digest,
+                }
+            ),
+        )
+
+    def matches(self, benchmark: BenchmarkTaskSet) -> bool:
+        if type(benchmark) is not BenchmarkTaskSet:
+            raise TypeError(
+                "benchmark cut requirement matches requires BenchmarkTaskSet"
+            )
+        if (
+            benchmark.benchmark_id != self.benchmark_id
+            or benchmark.revision_id != self.revision_id
+        ):
+            return False
+        if self.cut_digest is not None and benchmark.cut_digest != self.cut_digest:
+            return False
+        available = {row.split_id for row in benchmark.splits}
+        return all(split_id in available for split_id in self.required_split_ids)
+
+
+def benchmark_cut_requirements(factory: object) -> tuple[BenchmarkCutRequirement, ...]:
+    """Read immutable exact-cut declarations attached to one Study factory."""
+
+    rows = getattr(factory, _BENCHMARK_CUT_REQUIREMENT_ATTR, ())
+    if type(rows) is not tuple or any(
+        type(row) is not BenchmarkCutRequirement for row in rows
+    ):
+        raise TypeError(
+            "Study benchmark cut requirements must be a typed immutable tuple"
+        )
+    return rows
+
+
+def requires_benchmark_cut(
+    benchmark_id: str,
+    revision_id: str,
+    *,
+    split_ids: tuple[str, ...] = (),
+    cut_digest: str | None = None,
+):
+    """Declare the exact Benchmark identity a Study factory is allowed to consume."""
+
+    requirement = BenchmarkCutRequirement(
+        benchmark_id,
+        revision_id,
+        split_ids,
+        cut_digest,
+    )
+
+    def decorate(factory):
+        if not callable(factory):
+            raise TypeError("benchmark cut requirement can decorate only callables")
+        existing = benchmark_cut_requirements(factory)
+        if any(row.benchmark_id == requirement.benchmark_id for row in existing):
+            raise ValueError(
+                "Study factory declares multiple exact cuts for benchmark "
+                f"{requirement.benchmark_id!r}"
+            )
+        ordered = tuple(
+            sorted(
+                (*existing, requirement),
+                key=lambda row: (row.benchmark_id, row.requirement_digest),
+            )
+        )
+        setattr(factory, _BENCHMARK_CUT_REQUIREMENT_ATTR, ordered)
+        return factory
+
+    return decorate
+
+
 @dataclass(frozen=True, slots=True)
 class BenchmarkCutSpec:
     """Low-friction compiler for one immutable benchmark cut.
@@ -451,7 +564,7 @@ class BenchmarkCutSpec:
 
 
 __all__ = [
-    "BenchmarkCutSpec", "BenchmarkTaskSet", "BenchmarkResolutionRegistration", "BenchmarkResolutionRegistry", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
+    "BenchmarkCutRequirement", "BenchmarkCutSpec", "BenchmarkTaskSet", "BenchmarkResolutionRegistration", "BenchmarkResolutionRegistry", "benchmark_cut_requirements", "requires_benchmark_cut", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
     "TaskVerifierIsolation", "TaskGraph", "TaskGraphEdge",
     "TaskGraphRelation", "TaskSetSplit", "TrialBudget", "BenchmarkSourceKind",
     "BenchmarkSourceSpec", "BenchmarkSourceResolution", "BenchmarkSourcePort",

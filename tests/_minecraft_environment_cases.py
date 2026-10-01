@@ -139,6 +139,7 @@ def test_state_projection_reuses_v034_reduction_invariant_and_is_bounded() -> No
             {
                 "action_id": "action-1",
                 "verified": True,
+                "effect_disposition": "applied",
                 "action": {"tool": "wait"},
                 "outcome": {"status": "applied", "waited_ms": 1},
             },
@@ -157,6 +158,7 @@ def test_state_projection_reuses_v034_reduction_invariant_and_is_bounded() -> No
             {
                 "action_id": None,
                 "verified": False,
+                "effect_disposition": "unknown",
                 "action": {"tool": "observe_entities"},
                 "outcome": {"status": "partial"},
             },
@@ -327,6 +329,7 @@ def test_minecraft_action_evidence_is_bound_to_request_identity_and_status() -> 
             "action": {"tool": "craft_item", "item": "stick"},
             "outcome": {"status": "applied", "code": "ITEM_CRAFTED", "crafted": 4},
             "verified": True,
+            "effect_disposition": "applied",
         },
     )
     evidence = MinecraftActionResultEvidence.from_event(
@@ -357,6 +360,7 @@ def test_minecraft_action_evidence_is_bound_to_request_identity_and_status() -> 
                     "action": {"tool": "craft_item"},
                     "outcome": {"status": "rejected", "code": "NO_RECIPE"},
                     "verified": True,
+                    "effect_disposition": "rejected",
                 },
             ),
             expected_action_id="action-1",
@@ -372,6 +376,7 @@ def test_minecraft_action_evidence_is_bound_to_request_identity_and_status() -> 
                     "action": {"tool": "craft_item"},
                     "outcome": {"code": "ITEM_CRAFTED"},
                     "verified": True,
+                    "effect_disposition": "applied",
                 },
             ),
             expected_action_id="action-1",
@@ -426,6 +431,7 @@ class _SessionBridge:
                     {
                         "action_id": payload["action_id"],
                         "verified": True,
+                        "effect_disposition": "applied",
                         "action": {"tool": "wait"},
                         "outcome": {"status": "applied", "waited_ms": payload["ms"]},
                     },
@@ -445,6 +451,56 @@ class _SessionBridge:
         self.closed = True
         self.started = False
         self.close_calls += 1
+
+
+class _EntityProjectionBridge(_SessionBridge):
+    def command(self, command, payload, *, timeout_s):
+        if command != "observe_entities":
+            return super().command(command, payload, timeout_s=timeout_s)
+        del timeout_s
+        self.calls.append((command, dict(payload)))
+        events = (
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 11,
+                    "uuid": "rabbit-a",
+                    "name": "rabbit",
+                    "mob_type": "Rabbit",
+                    "type": "animal",
+                    "position": {"x": 2, "y": 64, "z": 0},
+                    "distance": 2.0,
+                },
+                sequence=2,
+            ),
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 12,
+                    "uuid": "rabbit-b",
+                    "name": "rabbit",
+                    "mob_type": "Rabbit",
+                    "type": "animal",
+                    "position": {"x": 5, "y": 64, "z": 0},
+                    "distance": 5.0,
+                },
+                sequence=3,
+            ),
+            MinecraftObservationEvent(
+                "entity_observation",
+                {
+                    "id": 21,
+                    "uuid": "player-alice",
+                    "username": "Alice",
+                    "name": "player",
+                    "type": "player",
+                    "position": {"x": 3, "y": 64, "z": 1},
+                    "distance": 3.2,
+                },
+                sequence=4,
+            ),
+        )
+        return MinecraftBridgeCommandResult(command, True, True, events, {})
 
 
 class _NoEntityObservationBridge(_SessionBridge):
@@ -468,6 +524,7 @@ class _AcceptedUnverifiedBridge(_SessionBridge):
                 {
                     "action_id": payload["action_id"],
                     "verified": False,
+                    "effect_disposition": "unknown",
                     "action": {"tool": command},
                     "outcome": {"status": "partial", "code": "WAIT_UNCONFIRMED"},
                 },
@@ -522,6 +579,13 @@ class _EvidenceBridge(_SessionBridge):
                 {
                     "action_id": self.action_id,
                     "verified": self.verified,
+                    "effect_disposition": (
+                        "applied"
+                        if self.status == "applied"
+                        else "rejected"
+                        if self.status == "rejected"
+                        else "unknown"
+                    ),
                     "action": {"tool": self.tool},
                     "outcome": {"status": self.status, "code": "TEST_OUTCOME"},
                 },
@@ -552,6 +616,14 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
     )
     context = ExecutionContext("run", "trace", "span", task_id="task")
 
+    descriptor = session.capability_descriptors()[0]
+    assert descriptor.action_types == tuple(
+        contract.action_type for contract in minecraft_action_catalog()
+    )
+    assert descriptor.metadata["action_contracts"] == [
+        contract.as_payload() for contract in minecraft_action_catalog()
+    ]
+
     observed = session.observe(context)
     assert observed.payload["state"]["position"] == {"x": 1.0, "y": 2.0, "z": 3.0}
     assert observed.payload["state"]["inventory"] == {"oak_log": 2}
@@ -569,6 +641,45 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
     assert len(bridge.calls) == call_count
     session.close()
     assert bridge.closed is True
+
+
+def test_minecraft_decision_view_aggregates_by_default_and_can_expand_entities() -> None:
+    bridge = _EntityProjectionBridge()
+    spec = MinecraftEnvironmentSpec(
+        endpoint=MinecraftEndpointSpec(),
+        bridge=MinecraftBridgeSpec(command=("fake-node",), cwd="."),
+        max_entities=8,
+    )
+    session = MinecraftEnvironmentSession(
+        session_id="mc-context-session",
+        implementation=MinecraftEnvironmentImplementation(spec, lambda _spec: bridge),
+        bridge=bridge,
+    )
+    context = ExecutionContext("run", "trace", "span", task_id="task")
+
+    observed = session.observe(context)
+    raw_entities = observed.payload["state"]["nearby_entities"]
+    assert len(raw_entities) == 3
+    assert raw_entities[0]["runtime_id"] in {11, 12, 21}
+
+    summary = observed.payload["decision_view"]
+    assert summary["kind"] == "minecraft_decision_view.v1"
+    nearby = summary["state"]["nearby_entities"]
+    assert nearby["mode"] == "summary"
+    assert nearby["counts"] == {"player": 1, "rabbit": 2}
+    assert len(nearby["rows"]) == 2
+    assert any(row[1] == "Alice" for row in nearby["rows"])
+    assert any(row[0] == 11 for row in nearby["rows"])
+    assert all("rabbit-" not in str(row) for row in nearby["rows"])
+
+    detailed = session._decision_view(detailed_entities=True)
+    detailed_nearby = detailed["state"]["nearby_entities"]
+    assert detailed_nearby["mode"] == "detailed"
+    assert len(detailed_nearby["rows"]) == 3
+    assert {row[0] for row in detailed_nearby["rows"]} == {11, 12, 21}
+    assert "state_digest" not in detailed
+    assert "last_event_sequence" not in detailed["state"]
+    session.close()
 
 
 def test_minecraft_session_prepared_action_binds_exact_identity_before_effect() -> None:
@@ -930,6 +1041,7 @@ class _FakeProcess:
                 {
                     "action_id": message.get("action_id"),
                     "verified": True,
+                    "effect_disposition": "applied",
                     "action": {"tool": "wait"},
                     "outcome": {
                         "status": "applied",
@@ -940,6 +1052,26 @@ class _FakeProcess:
                 request_id,
             )
             self._ack(command, request_id, verified=True)
+        elif command == "reconcile_action":
+            self._ack(
+                command,
+                request_id,
+                disposition="not_applied",
+                state="terminal",
+                durability="crash_durable",
+                outcome={
+                    "status": "rejected",
+                    "code": "COLLECTION_FAILED",
+                    "errors": [
+                        {
+                            "phase": "collectblock",
+                            "name": "NoPath",
+                            "code": "NoPath",
+                            "message": "No path to the goal!",
+                        }
+                    ],
+                },
+            )
         elif command == "quit":
             self._ack(command, request_id)
             self.returncode = 0
@@ -1063,6 +1195,38 @@ def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> No
     request = ActionRequest("action-1", "wait", {"ms": 1}, context)
     proof = bridge.reconcile_action("action-1", request=request, context=context)
     assert proof.disposition is ActionReconciliationDisposition.APPLIED
+
+    durable_request = ActionRequest("durable-action", "wait", {"ms": 1}, context)
+    durable = bridge.reconcile_action(
+        "durable-action", request=durable_request, context=context
+    )
+    assert durable.disposition is ActionReconciliationDisposition.NOT_APPLIED
+    assert durable.diagnostics["proof_source"] == "process_action_journal"
+    assert durable.diagnostics["provider_outcome"]["code"] == "COLLECTION_FAILED"
+    assert durable.diagnostics["provider_outcome"]["errors"][0]["name"] == "NoPath"
+    bridge.close()
+
+
+def test_jsonl_bridge_reuses_local_unknown_action_proof_without_reconcile_round_trip() -> None:
+    task_group = make_task_group("minecraft-bridge-local-unknown")
+    bridge = JsonlMinecraftBridge(
+        endpoint=MinecraftEndpointSpec(port=25565),
+        spec=MinecraftBridgeSpec(command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1),
+        agent=MinecraftAgentSpec(version="1.21.6"),
+        operating_system=TEST_OPERATING_SYSTEM,
+        process_factory=lambda _command, **_kwargs: _FakeProcess(),
+        process_supervisor=build_process_supervisor(task_group),
+        task_group=task_group,
+    )
+    bridge.start()
+    bridge._action_proofs["action-1"] = ActionReconciliationDisposition.UNKNOWN
+    before = bridge._request_counter
+    context = ExecutionContext("run", "trace", "span", task_id="task")
+    request = ActionRequest("action-1", "wait", {"ms": 1}, context)
+    proof = bridge.reconcile_action("action-1", request=request, context=context)
+    assert proof.disposition is ActionReconciliationDisposition.UNKNOWN
+    assert proof.diagnostics["proof_source"] == "action_result_event"
+    assert bridge._request_counter == before
     bridge.close()
 
 
@@ -1283,6 +1447,32 @@ def test_minecraft_composition_joins_generic_participant_endpoint_without_second
     assert endpoint.implementation is assembly.implementation
 
 
+
+
+def test_minecraft_agent_observation_uses_canonical_decision_view_not_raw_state() -> None:
+    from noetrium_platform.composition.minecraft_agent import MinecraftAgentObservationPort
+
+    bridge = _EntityProjectionBridge()
+    spec = MinecraftEnvironmentSpec(
+        endpoint=MinecraftEndpointSpec(),
+        bridge=MinecraftBridgeSpec(command=("fake-node",), cwd="."),
+        max_entities=8,
+    )
+    session = MinecraftEnvironmentSession(
+        session_id="mc-agent-context",
+        implementation=MinecraftEnvironmentImplementation(spec, lambda _spec: bridge),
+        bridge=bridge,
+    )
+    context = ExecutionContext("run", "trace", "span", task_id="task")
+
+    observation = MinecraftAgentObservationPort(session).observe(context)
+    entities = observation.state["nearby_entities"]
+    assert entities["mode"] == "summary"
+    assert entities["counts"] == {"player": 1, "rabbit": 2}
+    assert len(entities["rows"]) == 2
+    assert "events" not in observation.state
+    assert observation.evidence_payload["events"]
+    session.close()
 
 
 def test_minecraft_agent_executor_preserves_effect_identity_and_possible_certainty() -> None:

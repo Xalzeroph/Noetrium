@@ -1,17 +1,51 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from time import monotonic
 
 from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerCommandRunnerPort,
     DockerContainerObservation,
+    DockerContainerProcessObservation,
     DockerManagedContainerPort,
     LABEL_AUTHORITY,
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
+
+
+def discover_docker_root(
+    runner: DockerCommandRunnerPort,
+    *,
+    docker_executable: str = "docker",
+    command_timeout_seconds: float = 15.0,
+) -> Path | None:
+    """Best-effort discovery of the physical filesystem backing Docker state."""
+
+    if not docker_executable.strip():
+        raise ValueError("Docker executable is required")
+    if command_timeout_seconds <= 0:
+        raise ValueError("Docker command timeout must be positive")
+    result = runner.run(
+        (
+            docker_executable,
+            "info",
+            "--format",
+            "{{.DockerRootDir}}",
+        ),
+        timeout_seconds=float(command_timeout_seconds),
+    )
+    if result.returncode != 0:
+        return None
+    raw = result.stdout.strip()
+    if not raw:
+        return None
+    path = Path(raw).expanduser()
+    if not path.is_absolute():
+        return None
+    return path.absolute()
 
 
 class DockerContainerRuntimeError(RuntimeError):
@@ -21,9 +55,14 @@ class DockerContainerRuntimeError(RuntimeError):
 class DockerCliManagedContainerProvider(DockerManagedContainerPort):
     """Observe/remove only explicitly Noetrium-labelled Docker containers."""
 
+    # Bound argv size while amortizing Docker CLI/process startup across the
+    # entire managed-container set. Typical reconciliations need one batch.
+    _INSPECT_BATCH_SIZE = 256
+
     def __init__(
         self,
-        runner: DockerCommandRunnerPort,
+        control_runner: DockerCommandRunnerPort,
+        expansion_runner: DockerCommandRunnerPort,
         *,
         authority_id: str,
         docker_executable: str = "docker",
@@ -39,7 +78,8 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             raise ValueError("docker executable is required")
         if command_timeout_seconds <= 0:
             raise ValueError("Docker command timeout must be positive")
-        self._runner = runner
+        self._control_runner = control_runner
+        self._expansion_runner = expansion_runner
         self._authority_id = authority_id
         self._docker = docker_executable
         self._timeout = float(command_timeout_seconds)
@@ -48,39 +88,79 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
     def docker_executable(self) -> str:
         return self._docker
 
+    def assert_expansion_admissible(self) -> None:
+        """Fence storage-expanding Docker effects through the physical admission group."""
+
+        result = self._expansion_runner.run(
+            (
+                self._docker,
+                "info",
+                "--format",
+                "{{.DockerRootDir}}",
+            ),
+            timeout_seconds=self._timeout,
+        )
+        if result.returncode != 0:
+            raise DockerContainerRuntimeError(
+                "Docker expansion admission probe failed with exit code "
+                f"{result.returncode}"
+            )
+
     @staticmethod
     def _missing(stderr: str) -> bool:
         lowered = stderr.casefold()
         return "no such object" in lowered or "no such container" in lowered
 
     @staticmethod
-    def _decode_inspect(stdout: str) -> DockerContainerObservation:
+    def _decode_inspect_rows(
+        stdout: str,
+    ) -> tuple[DockerContainerObservation, ...]:
         try:
             payload = json.loads(stdout)
-            row = payload[0]
-            config = row["Config"]
-            state = row["State"]
+            if not isinstance(payload, list):
+                raise TypeError("Docker inspect payload is not an array")
+            rows: list[DockerContainerObservation] = []
+            for row in payload:
+                if not isinstance(row, dict):
+                    raise TypeError("Docker inspect row is not an object")
+                config = row["Config"]
+                state = row["State"]
+                if not isinstance(config, dict) or not isinstance(state, dict):
+                    raise TypeError("Docker inspect row sections are invalid")
+                labels = config.get("Labels") or {}
+                if not isinstance(labels, dict):
+                    raise TypeError("Docker inspect labels are not an object")
+                rows.append(
+                    DockerContainerObservation(
+                        str(row["Id"]),
+                        str(row["Name"]).lstrip("/"),
+                        str(config["Image"]),
+                        bool(state["Running"]),
+                        {
+                            str(key): str(value)
+                            for key, value in labels.items()
+                        },
+                    )
+                )
         except (json.JSONDecodeError, IndexError, KeyError, TypeError) as exc:
             raise DockerContainerRuntimeError(
                 "Docker inspect returned malformed container state"
             ) from exc
-        labels = config.get("Labels") or {}
-        if not isinstance(labels, dict):
+        return tuple(rows)
+
+    @classmethod
+    def _decode_inspect(cls, stdout: str) -> DockerContainerObservation:
+        rows = cls._decode_inspect_rows(stdout)
+        if len(rows) != 1:
             raise DockerContainerRuntimeError(
-                "Docker inspect labels are not an object"
+                "Docker inspect returned unexpected container cardinality"
             )
-        return DockerContainerObservation(
-            str(row["Id"]),
-            str(row["Name"]).lstrip("/"),
-            str(config["Image"]),
-            bool(state["Running"]),
-            {str(key): str(value) for key, value in labels.items()},
-        )
+        return rows[0]
 
     def inspect(self, reference: str) -> DockerContainerObservation | None:
         if not reference.strip():
             raise ValueError("Docker container reference is required")
-        result = self._runner.run(
+        result = self._control_runner.run(
             (self._docker, "inspect", reference),
             timeout_seconds=self._timeout,
         )
@@ -92,12 +172,48 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             )
         return self._decode_inspect(result.stdout)
 
+    def inspect_process(
+        self,
+        reference: str,
+    ) -> DockerContainerProcessObservation | None:
+        if not reference.strip():
+            raise ValueError("Docker container reference is required")
+        result = self._control_runner.run(
+            (self._docker, "inspect", reference),
+            timeout_seconds=self._timeout,
+        )
+        if result.returncode != 0:
+            if self._missing(result.stderr):
+                return None
+            raise DockerContainerRuntimeError(
+                f"Docker inspect failed with exit code {result.returncode}"
+            )
+        try:
+            payload = json.loads(result.stdout)
+            row = payload[0]
+            state = row["State"]
+            pid = int(state["Pid"])
+            started_at = str(state["StartedAt"])
+        except (json.JSONDecodeError, IndexError, KeyError, TypeError, ValueError) as exc:
+            raise DockerContainerRuntimeError(
+                "Docker inspect returned malformed process state"
+            ) from exc
+        container = self._decode_inspect(result.stdout)
+        if not container.running:
+            return None
+        return DockerContainerProcessObservation(
+            container=container,
+            pid=pid,
+            started_at=started_at,
+        )
+
     def list_managed(self) -> tuple[DockerContainerObservation, ...]:
-        result = self._runner.run(
+        result = self._control_runner.run(
             (
                 self._docker,
                 "ps",
                 "-aq",
+                "--no-trunc",
                 "--filter",
                 f"label={MANAGED_CONTAINER_LABEL}={MANAGED_CONTAINER_LABEL_VALUE}",
                 "--filter",
@@ -110,15 +226,39 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
                 "Docker managed-container listing failed with exit code "
                 f"{result.returncode}"
             )
-        rows: list[DockerContainerObservation] = []
-        for container_id in (
+        container_ids = tuple(
             line.strip()
             for line in result.stdout.splitlines()
             if line.strip()
-        ):
-            observed = self.inspect(container_id)
-            if observed is not None:
-                rows.append(observed)
+        )
+        if not container_ids:
+            return ()
+
+        rows: list[DockerContainerObservation] = []
+        for offset in range(0, len(container_ids), self._INSPECT_BATCH_SIZE):
+            batch = container_ids[offset : offset + self._INSPECT_BATCH_SIZE]
+            inspected = self._control_runner.run(
+                (self._docker, "inspect", *batch),
+                timeout_seconds=self._timeout,
+            )
+            if inspected.returncode != 0:
+                raise DockerContainerRuntimeError(
+                    "Docker managed-container batch inspect failed with exit code "
+                    f"{inspected.returncode}"
+                )
+            decoded = self._decode_inspect_rows(inspected.stdout)
+            if len(decoded) != len(batch):
+                raise DockerContainerRuntimeError(
+                    "Docker managed-container batch inspect cardinality drifted"
+                )
+            rows.extend(decoded)
+
+        expected = set(container_ids)
+        observed_ids = {row.container_id for row in rows}
+        if len(rows) != len(observed_ids) or observed_ids != expected:
+            raise DockerContainerRuntimeError(
+                "Docker managed-container batch inspect identity drifted"
+            )
         return tuple(sorted(rows, key=lambda row: row.container_id))
 
     def wait_running(
@@ -141,6 +281,74 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             f"Docker container did not become running before timeout: {state}"
         )
 
+    def start(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 10.0,
+    ) -> DockerContainerObservation:
+        if timeout_seconds <= 0:
+            raise ValueError("Docker start timeout must be positive")
+        observed = self.inspect(reference)
+        if observed is None:
+            raise DockerContainerRuntimeError(
+                "cannot start missing Docker container"
+            )
+        if observed.running:
+            return observed
+        result = self._control_runner.run(
+            (self._docker, "start", observed.container_id),
+            timeout_seconds=min(self._timeout, float(timeout_seconds)),
+        )
+        if result.returncode != 0:
+            raise DockerContainerRuntimeError(
+                f"Docker start failed with exit code {result.returncode}"
+            )
+        return self.wait_running(
+            observed.container_id,
+            timeout_seconds=float(timeout_seconds),
+        )
+
+    def stop(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 30.0,
+    ) -> DockerContainerObservation:
+        if timeout_seconds <= 0:
+            raise ValueError("Docker stop timeout must be positive")
+        observed = self.inspect(reference)
+        if observed is None:
+            raise DockerContainerRuntimeError(
+                "cannot stop missing Docker container"
+            )
+        if not observed.running:
+            return observed
+        result = self._control_runner.run(
+            (
+                self._docker,
+                "stop",
+                "--time",
+                str(max(1, int(timeout_seconds))),
+                observed.container_id,
+            ),
+            timeout_seconds=max(self._timeout, float(timeout_seconds) + 5.0),
+        )
+        if result.returncode != 0 and not self._missing(result.stderr):
+            raise DockerContainerRuntimeError(
+                f"Docker stop failed with exit code {result.returncode}"
+            )
+        remaining = self.inspect(observed.container_id)
+        if remaining is None:
+            raise DockerContainerRuntimeError(
+                "Docker stopped container disappeared; warm reuse requires retained container"
+            )
+        if remaining.running:
+            raise DockerContainerRuntimeError(
+                "Docker container remained running after stop"
+            )
+        return remaining
+
     def remove(self, reference: str, *, force: bool = True) -> None:
         observed = self.inspect(reference)
         if observed is None:
@@ -149,7 +357,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         if force:
             argv.append("-f")
         argv.append(observed.container_id)
-        result = self._runner.run(tuple(argv), timeout_seconds=self._timeout)
+        result = self._control_runner.run(tuple(argv), timeout_seconds=self._timeout)
         if result.returncode != 0 and not self._missing(result.stderr):
             # Docker can commit removal and then lose the command response when
             # the daemon/socket restarts. Re-observe the immutable container ID
@@ -175,4 +383,5 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
 __all__ = [
     "DockerCliManagedContainerProvider",
     "DockerContainerRuntimeError",
+    "discover_docker_root",
 ]

@@ -1,27 +1,23 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256
+
 from collections.abc import Mapping, Sequence
 import json
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-)
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
+
 
 from .fidelity import TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY
 from .search import ToolLLMObservationStatus
@@ -234,13 +230,13 @@ def toolllm_toolbench_initial_state(
     }
 
 
-def _prepare_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_retrieval(request: MethodCall) -> MethodNodeResult:
     if request.state.get("retrieval_mode") != "retrieved-top5":
-        return MethodNodeResult(value={"retrieval": "not-required"}, next_node="policy")
+        return dict(value={"retrieval": "not-required"}, next_node="policy")
     vector = request.state.get("retrieval_query_vector")
     if not isinstance(vector, Sequence) or isinstance(vector, (str, bytes, bytearray)):
         raise TypeError("ToolLLM retrieval query vector must be a sequence")
-    return MethodNodeResult(
+    return dict(
         value={
             "projection_digest": _text(
                 request.state.get("projection_digest"),
@@ -263,7 +259,7 @@ def _prepare_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_retrieval(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("ToolLLM semantic retrieval result must be a mapping")
@@ -295,7 +291,7 @@ def _record_retrieval(request: MethodNodeRequest) -> MethodNodeResult:
         raise RuntimeError("ToolLLM retriever returned no materializable API")
     if len(selected) > TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.default_retrieved_api_count:
         raise ValueError("ToolLLM retriever exceeded paper top-k")
-    return MethodNodeResult(
+    return dict(
         value={"selected_tool_ids": tuple(selected)},
         state_update={"selected_tool_ids": tuple(selected)},
         next_node="policy",
@@ -317,7 +313,7 @@ def _selected_schemas(state: Mapping[str, JsonValue]) -> tuple[JsonValue, ...]:
     return tuple(schemas)
 
 
-def _policy_view(request: MethodNodeRequest) -> JsonObject:
+def _policy_view(request: MethodCall) -> JsonObject:
     frame = _top_frame(request.state)
     return {
         "task_instruction": _text(
@@ -465,7 +461,7 @@ def _advance_after_child(
                 "siblings": (),
             },
         )
-        return MethodNodeResult(
+        return dict(
             value={"descend": child_id, "tree_depth": child_depth},
             state_update={"frames": frames, "explored": explored},
             next_node="policy",
@@ -476,14 +472,14 @@ def _advance_after_child(
         "next_sibling",
     ) >= TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.tree_beam_size:
         frames = frames[:-1]
-    return MethodNodeResult(
+    return dict(
         value={"leaf": True, "tree_depth": child_depth},
         state_update={"frames": frames, "explored": explored},
         next_node="policy" if frames else "return",
     )
 
 
-def _record_generation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_generation(request: MethodCall) -> MethodNodeResult:
     candidate = _candidate(request.previous_value)
     query_count = _integer(request.state.get("query_count", 0), "query_count") + 1
     update: JsonObject = {
@@ -492,7 +488,7 @@ def _record_generation(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if query_count >= TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.max_query_count:
         update["budget_exhausted"] = True
-        return MethodNodeResult(
+        return dict(
             value={"budget_exhausted": True, "query_count": query_count},
             state_update=update,
             next_node="return",
@@ -500,13 +496,13 @@ def _record_generation(request: MethodNodeRequest) -> MethodNodeResult:
 
     action_name = candidate.get("action_name")
     if action_name is None:
-        return MethodNodeResult(
+        return dict(
             value={"candidate": "thought-only"},
             state_update=update,
             next_node="commit_thought",
         )
     if action_name == _FINISH_NAME:
-        return MethodNodeResult(
+        return dict(
             value={"candidate": "finish"},
             state_update=update,
             next_node="finish",
@@ -520,19 +516,19 @@ def _record_generation(request: MethodNodeRequest) -> MethodNodeResult:
         )
     }
     if action_name not in selected:
-        return MethodNodeResult(
+        return dict(
             value={"candidate": "hallucinated-function", "action_name": action_name},
             state_update=update,
             next_node="hallucination",
         )
-    return MethodNodeResult(
+    return dict(
         value={"candidate": "tool-call", "action_name": action_name},
         state_update=update,
         next_node="prepare_tool",
     )
 
 
-def _commit_thought(request: MethodNodeRequest) -> MethodNodeResult:
+def _commit_thought(request: MethodCall) -> MethodNodeResult:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
@@ -553,7 +549,7 @@ def _commit_thought(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _hallucination(request: MethodNodeRequest) -> MethodNodeResult:
+def _hallucination(request: MethodCall) -> MethodNodeResult:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
@@ -585,12 +581,12 @@ def _hallucination(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_tool(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_tool(request: MethodCall) -> MethodNodeResult:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
     action_name = _text(candidate.get("action_name"), "action_name")
-    return MethodNodeResult(
+    return dict(
         value={
             "function_name": action_name,
             "arguments": _text(
@@ -602,7 +598,7 @@ def _prepare_tool(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _tool_target(request: MethodNodeRequest) -> str:
+def _tool_target(request: MethodCall) -> str:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
@@ -644,7 +640,7 @@ def _tool_observation(value: JsonValue) -> tuple[str, ToolLLMObservationStatus]:
     return content, status
 
 
-def _record_tool(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_tool(request: MethodCall) -> MethodNodeResult:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
@@ -671,7 +667,7 @@ def _record_tool(request: MethodNodeRequest) -> MethodNodeResult:
         child_trajectory=trajectory,
         child_depth=child_depth,
     )
-    return MethodNodeResult(
+    return dict(
         value=result.value,
         state_update={**dict(result.state_update), "tool_call_count": tool_calls},
         next_node=result.next_node,
@@ -725,7 +721,7 @@ def _finish_input(candidate: Mapping[str, JsonValue]) -> tuple[str, str]:
         raise ValueError("ToolLLM give_answer requires final_answer")
     return return_type, final_answer
 
-def _finish(request: MethodNodeRequest) -> MethodNodeResult:
+def _finish(request: MethodCall) -> MethodNodeResult:
     candidate = request.state.get("current_candidate")
     if not isinstance(candidate, Mapping):
         raise TypeError("ToolLLM current candidate must be a mapping")
@@ -751,7 +747,7 @@ def _finish(request: MethodNodeRequest) -> MethodNodeResult:
 
     if status is ToolLLMObservationStatus.GIVE_ANSWER:
         terminal = (*_sequence(request.state.get("terminal", ()), "terminal"), trajectory)
-        return MethodNodeResult(
+        return dict(
             value={"finish": "give_answer", "final_answer": final_answer},
             state_update={
                 "explored": explored,
@@ -778,7 +774,7 @@ def _finish(request: MethodNodeRequest) -> MethodNodeResult:
         "next_sibling",
     ) >= TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.tree_beam_size:
         frames = frames[:-1]
-    return MethodNodeResult(
+    return dict(
         value={"finish": "give_up_and_restart"},
         state_update={
             "explored": explored,
@@ -791,11 +787,11 @@ def _finish(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     terminal = _sequence(request.state.get("terminal", ()), "terminal")
     give_up = _sequence(request.state.get("give_up", ()), "give_up")
     explored = _sequence(request.state.get("explored", ()), "explored")
-    return MethodNodeResult(
+    return dict(
         value={
             "task_success": bool(terminal),
             "final_answer": request.state.get("final_answer", ""),
@@ -818,11 +814,11 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_toolllm_toolbench_method_program(
+def build_toolllm_toolbench_method_program(method,
     capability_ids: Sequence[str],
     *,
     retrieval_mode: str = "oracle",
-) -> MethodProgram:
+) -> None:
     if isinstance(capability_ids, (str, bytes, bytearray)) or not isinstance(
         capability_ids,
         Sequence,
@@ -856,32 +852,23 @@ def build_toolllm_toolbench_method_program(
         "final_answer_back_length": fidelity.final_answer_back_length,
         "prune_back_length": fidelity.prune_back_length,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="toolllm",
-            implementation_version=fidelity.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="toolllm.toolbench.dfsdt.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
 
-    entrypoint = "prepare_retrieval" if retrieval_mode == "retrieved-top5" else "policy"
-    builder = MethodProgramBuilder(identity, entrypoint=entrypoint)
+
+    builder = method
+    builder.route(
+        "prepare_retrieval",
+        "toolllm.api-retriever.prepare",
+        _prepare_retrieval,
+        ("retrieve", "policy") if retrieval_mode == "retrieved-top5" else ("policy",),
+    )
     if retrieval_mode == "retrieved-top5":
-        builder.route(
-            "prepare_retrieval",
-            "toolllm.api-retriever.prepare",
-            _prepare_retrieval,
-            ("retrieve", "policy"),
-        )
         builder.capability(
             "retrieve",
             "toolllm.api-retriever.query",
             _SEMANTIC_CAPABILITY,
             ("record_retrieval",),
-            effect_class=EffectClass.PURE,
-            evidence_obligations=("toolllm.api-selection",),
+            effect='pure',
+            evidence=("toolllm.api-selection",),
         )
         builder.compute(
             "record_retrieval",
@@ -895,7 +882,7 @@ def build_toolllm_toolbench_method_program(
         "toolllm.dfsdt.generate",
         _POLICY_AGENT_ID,
         ("record_generation",),
-        view_handler=_policy_view,
+        view=_policy_view,
         max_visits=fidelity.max_query_count,
     )
     builder.route(
@@ -932,9 +919,9 @@ def build_toolllm_toolbench_method_program(
         capability_ids,
         _tool_target,
         ("record_tool",),
-        effect_class=EffectClass.NON_IDEMPOTENT,
+        effect='non_idempotent',
         max_visits=fidelity.max_query_count,
-        evidence_obligations=("toolllm.tool-effect",),
+        evidence=("toolllm.tool-effect",),
     )
     builder.route(
         "record_tool",
@@ -951,30 +938,42 @@ def build_toolllm_toolbench_method_program(
         max_visits=fidelity.max_query_count,
     )
     builder.return_node("return", "toolllm.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(
-            (_SEMANTIC_CAPABILITY,)
+    builder.configure(configuration)
+    builder.requires(*(_SEMANTIC_CAPABILITY,)
             if retrieval_mode == "retrieved-top5"
-            else ()
-        ),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+            else ())
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "toolllm.trajectory",
             "toolllm.api-selection",
             "toolllm.tool-effect",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "query_count",
             "tool_call_count",
             "give_up_count",
         ),
-        artifact_kinds=("toolllm_trajectory",),
+        artifacts=("toolllm_trajectory",),
     )
+    return builder
 
+
+METHOD_CONFIGURER = build_toolllm_toolbench_method_program
+METHOD_ENTRYPOINT = "prepare_retrieval"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "build_toolllm_toolbench_method_program",
-    "toolllm_toolbench_initial_state",
+    'build_toolllm_toolbench_method_program',
+    'toolllm_toolbench_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'toolllm', "version": "paper-protocol", "semantic_contract": 'toolllm' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, "METHOD_SPEC")))

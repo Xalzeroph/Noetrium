@@ -190,11 +190,28 @@ def sync_project(project_root: Path) -> ProjectSyncReceipt:
     manifest_path = root / _MANIFEST_PATH
     if not manifest_path.is_file() or manifest_path.is_symlink():
         raise ValueError("project sync requires canonical project.manifest.json")
-    manifest = decode_project_manifest_bytes(manifest_path.read_bytes())
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = decode_project_manifest_bytes(manifest_bytes)
     if manifest.template_revision != project_template_revision():
         raise ValueError(
             "project sync requires the current project template revision"
         )
+    platform = installed_platform_identity()
+    rebound_manifest = ProjectManifest(
+        project=manifest.project,
+        template_revision=manifest.template_revision,
+        provenance=ProjectToolProvenance(
+            tool_id="noetrium-cli",
+            tool_version=platform.version,
+            platform_artifact_sha256=platform.artifact_sha256,
+        ),
+        capability_requirements=manifest.capability_requirements,
+        provider_bindings=manifest.provider_bindings,
+        method_requirements=manifest.method_requirements,
+        configuration_refs=manifest.configuration_refs,
+        study_ids=manifest.study_ids,
+    )
+    rebound_manifest_bytes = encode_project_manifest(rebound_manifest)
     project_id = manifest.project.identity.project_id
     package = project_package_name(project_id)
     core_path = root / "src" / package / "core.py"
@@ -207,7 +224,17 @@ def sync_project(project_root: Path) -> ProjectSyncReceipt:
             project_id,
         ).encode("utf-8"),
     }
-    lock_path = root.parent / f".{root.name}.noetrium-sync.lock"
+    if rebound_manifest_bytes != manifest_bytes:
+        generated[_MANIFEST_PATH] = rebound_manifest_bytes
+    state_root = root / ".noetrium"
+    if state_root.is_symlink() or (state_root.exists() and not state_root.is_dir()):
+        raise ValueError("project sync state root must be a real directory")
+    state_root.mkdir(parents=True, exist_ok=True)
+    lock_root = state_root / "locks"
+    if lock_root.is_symlink() or (lock_root.exists() and not lock_root.is_dir()):
+        raise ValueError("project sync lock root must be a real directory")
+    lock_root.mkdir(parents=True, exist_ok=True)
+    lock_path = lock_root / "project-sync.lock"
     with InterprocessFileLock(lock_path):
         # core.py is user-owned and intentionally not parsed or rewritten by sync.
         # The generated shell is independent of scientific topology.

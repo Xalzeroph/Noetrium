@@ -6,9 +6,6 @@ from dataclasses import replace
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity
 from noetrium_platform.capabilities.participant.core.api import ParticipantCheckpoint
 from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeHandle
-from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantTopology
 from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
@@ -96,12 +93,11 @@ def spec():
     )
 
 
-def runtime(store=None):
+def runtime():
     from tests_support import EmptyWorkflowSurfaceFactory
     return build_experiment_runtime_for_test(
         trial_protocol=NoOpTrialProtocol(),
         participant_adapters=(SidecarAdapter(),),
-        checkpoint_store=store,
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )
 
@@ -117,26 +113,6 @@ def test_custom_participant_runs_without_method_environment_or_agent():
     assert any("sidecar.resolve:controller" in row for row in ids)
     assert any("sidecar.open_session:controller" in row for row in ids)
     assert any("sidecar.close:controller" in row for row in ids)
-
-
-def test_custom_participant_checkpoint_restore_needs_no_runtime_core_change(tmp_path):
-    SidecarSession.restore_payloads.clear()
-    store = DirectoryRunCheckpointStore(tmp_path / "cp")
-    identity = RunIdentity("run", "session", "trace")
-    cycle1 = DecisionCycleIdentity("run", "dc1", "session", "task1", "trace")
-    with runtime(store).open_run(spec(), run_identity=identity) as run:
-        run.execute(task="one", input_payload=1, cycle_identity=cycle1)
-        checkpoint_id = run.latest_checkpoint_id
-    assert checkpoint_id
-
-    restored = runtime(store).open_run(
-        spec(), run_identity=identity,
-        restore_checkpoint_id=checkpoint_id,
-        restore_cycle_identity=cycle1,
-    )
-    restored.close()
-    assert SidecarSession.restore_payloads == [b"sidecar-state"]
-
 
 class DependencyPlugin:
     def __init__(self, role: str) -> None:

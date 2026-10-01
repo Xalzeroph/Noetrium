@@ -38,7 +38,7 @@ def frozen(ds):
 
 class RuntimeModelPortsV112Tests(unittest.TestCase):
     def test_deployment_verifier_is_read_only_and_exact(self):
-        d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","d1"),)),(d,)); m=frozen(ds)
+        d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),)),(d,)); m=frozen(ds)
         refs=FrozenDeploymentVerificationPort().verify(m,ds)
         self.assertTrue(any(ref.startswith("model-stack:d1:") for ref in refs))
         with self.assertRaises(ValueError):
@@ -46,7 +46,7 @@ class RuntimeModelPortsV112Tests(unittest.TestCase):
 
     def test_live_qualification_receipt_is_durable_and_role_bound(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","d1"),)),(d,)); m=frozen(ds)
+            root=Path(td); d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),)),(d,)); m=frozen(ds)
             heartbeats=FileServiceHeartbeatStore(root/"heartbeats")
             hb=ServiceHeartbeat("d1",d.stack.digest(),123,"start",h("argv"),True,d.certificate.digest(),time.time())
             heartbeats.write(hb)
@@ -60,7 +60,7 @@ class RuntimeModelPortsV112Tests(unittest.TestCase):
 
     def test_live_qualification_rejects_certificate_drift(self):
         with tempfile.TemporaryDirectory() as td:
-            root=Path(td); d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","d1"),)),(d,)); m=frozen(ds)
+            root=Path(td); d=deployment(); ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),)),(d,)); m=frozen(ds)
             heartbeats=FileServiceHeartbeatStore(root/"heartbeats")
             heartbeats.write(ServiceHeartbeat("d1",d.stack.digest(),123,"start",h("argv"),True,h("wrong-cert"),time.time()))
             port=HeartbeatRuntimeQualificationVerifier(heartbeats,RuntimeQualificationPublisher(DirectoryRuntimeQualificationEvidenceStore(root/"q"), (d,)),max_heartbeat_age_seconds=10)

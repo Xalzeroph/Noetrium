@@ -9,7 +9,7 @@ import tempfile
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntent
 
-from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
+from noetrium_platform.infrastructure.reliability.effect.runtime import sqlite_effect_intent_journal
 from noetrium_platform.capabilities.environment.api import ActionRequest, action_request_digest
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, ExecutionContext, canonical_bytes
 
@@ -34,8 +34,8 @@ def test_sqlite_journal_round_trips_opaque_recovery_handle_without_platform_inte
             operation_id="dc:environment.act", recovery_handle=handle,
         )
         path = Path(td) / "actions.sqlite3"
-        SQLiteEffectIntentJournal(path).prepare(intent)
-        reopened = SQLiteEffectIntentJournal(path).load(intent.intent_id)
+        sqlite_effect_intent_journal(path).prepare(intent)
+        reopened = sqlite_effect_intent_journal(path).load(intent.intent_id)
         assert reopened is not None
         assert reopened.intent.recovery_handle == handle
         assert reopened.intent.source_generation == "world-7"

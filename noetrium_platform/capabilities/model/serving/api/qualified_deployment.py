@@ -34,12 +34,30 @@ class ResourceEnvelope:
     ttft_p99_seconds: float
     tpot_p99_seconds: float
     minimum_output_tokens_per_second: float
+    preferred_operating_concurrency: int | None = None
 
     def __post_init__(self) -> None:
         if self.peak_gpu_memory_bytes_per_device <= 0 or self.peak_host_memory_bytes <= 0:
             raise ValueError("resource envelope requires measured positive memory peaks")
         if type(self.max_qualified_concurrency) is not int or self.max_qualified_concurrency <= 0:
             raise ValueError("qualified concurrency must be positive")
+        preferred = self.preferred_operating_concurrency
+        if preferred is None:
+            preferred = self.max_qualified_concurrency
+            object.__setattr__(
+                self,
+                "preferred_operating_concurrency",
+                preferred,
+            )
+        if (
+            type(preferred) is not int
+            or preferred <= 0
+            or preferred > self.max_qualified_concurrency
+        ):
+            raise ValueError(
+                "preferred operating concurrency must be positive and "
+                "cannot exceed qualified concurrency"
+            )
         _require_positive_finite(self.ttft_p99_seconds, "ttft_p99_seconds")
         _require_positive_finite(self.tpot_p99_seconds, "tpot_p99_seconds")
         _require_positive_finite(
@@ -63,7 +81,20 @@ class QualificationCertificate:
 @dataclass(frozen=True, slots=True)
 class RoleModelAssignment:
     role: str
+    capability_id: str
+    input_schema_id: str
+    output_schema_id: str
     deployment_id: str
+
+    def __post_init__(self) -> None:
+        for name in ("role", "capability_id", "input_schema_id", "output_schema_id", "deployment_id"):
+            value=getattr(self,name)
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"model assignment {name} is required")
+
+    @property
+    def protocol_key(self) -> tuple[str, str, str, str]:
+        return (self.role,self.capability_id,self.input_schema_id,self.output_schema_id)
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,20 +102,30 @@ class RoleModelManifest:
     assignments: tuple[RoleModelAssignment, ...]
 
     def __post_init__(self) -> None:
-        roles=[x.role for x in self.assignments]
-        if len(roles)!=len(set(roles)):
-            raise ValueError("each LLM role must have exactly one deployment; fallback lists are forbidden")
-        if any(not x.deployment_id for x in self.assignments):
-            raise ValueError("deployment_id is required")
+        keys=[x.protocol_key for x in self.assignments]
+        if len(keys)!=len(set(keys)):
+            raise ValueError("each model role/capability protocol must have exactly one deployment")
+        if not self.assignments:
+            raise ValueError("model manifest requires at least one capability assignment")
 
-    def deployment_for(self, role: str) -> str:
-        matches=[x.deployment_id for x in self.assignments if x.role==role]
+    def deployment_for(
+        self,
+        role: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+    ) -> str:
+        key=(role,capability_id,input_schema_id,output_schema_id)
+        matches=[x.deployment_id for x in self.assignments if x.protocol_key==key]
         if len(matches)!=1:
-            raise KeyError(f"role has no frozen deployment assignment: {role}")
+            raise KeyError(f"model capability has no frozen deployment assignment: {key}")
         return matches[0]
 
     def digest(self) -> str:
-        return _digest([asdict(x) for x in sorted(self.assignments,key=lambda x:x.role)])
+        return _digest([
+            asdict(x)
+            for x in sorted(self.assignments,key=lambda x:x.protocol_key)
+        ])
 
 
 @dataclass(frozen=True, slots=True)

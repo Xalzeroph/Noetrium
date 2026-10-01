@@ -151,10 +151,10 @@ def test_proposal_rejects_stale_topology() -> None:
         )
 
 
-def test_platform_composition_exposes_evolution_through_a_narrow_port() -> None:
-    from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+def test_platform_composition_exposes_evolution_through_a_narrow_port(tmp_path) -> None:
+    from noetrium_platform.composition.platform_meta import build_platform_meta
 
-    meta = build_in_memory_platform_meta()
+    meta = build_platform_meta(tmp_path / "meta")
 
     assert meta.evolution.systems is meta.systems
     assert meta.evolution.assess().topology_generation == meta.systems.generation

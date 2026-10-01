@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 import base64
 import json
 import time
@@ -409,6 +409,39 @@ class _EmbodiedSessionAdapter(EnvironmentDiagnosticsPort):
             self._environment.close()
             self._closed = True
 
+    @staticmethod
+    def _decision_view(event: EmbodiedEvent, payload: dict[str, object]) -> dict[str, object] | None:
+        """Project one embodied observation into the model-facing context.
+
+        Backends own the semantic observation representation. The adapter only
+        separates decision state from provenance/transport evidence. A backend
+        may provide its own decision_view inside normalized_payload; otherwise
+        the normalized observation itself is used after removing backend-only
+        metadata. Raw bytes, hashes, event ids and sequencing remain available
+        through the trajectory/evidence path.
+        """
+
+        if event.kind is not EmbodiedEventKind.OBSERVATION:
+            return None
+        backend_view = payload.get("decision_view")
+        if isinstance(backend_view, Mapping):
+            observation = dict(backend_view)
+        else:
+            observation = {
+                key: value
+                for key, value in payload.items()
+                if key not in {"backend_metadata", "decision_view"}
+            }
+        # These outcome fields are part of the agent's decision state even
+        # when a backend supplies a narrower custom view.
+        for key in ("reward", "success", "done", "terminated", "truncated"):
+            if key in payload:
+                observation.setdefault(key, payload[key])
+        return {
+            "kind": "embodied_decision_view.v1",
+            "observation": observation,
+        }
+
     def _record(
         self,
         events: tuple[EmbodiedEvent, ...],
@@ -420,6 +453,7 @@ class _EmbodiedSessionAdapter(EnvironmentDiagnosticsPort):
             if self._trajectory_sink is not None:
                 self._trajectory_sink.capture(event, context)
             payload = dict(thaw_json(event.normalized_payload))
+            decision_view = self._decision_view(event, payload)
             payload.update({
                 "event_id": event.event_id,
                 "event_kind": event.kind.value,
@@ -428,6 +462,8 @@ class _EmbodiedSessionAdapter(EnvironmentDiagnosticsPort):
                 "status": event.status,
                 "raw_payload_sha256": event.raw_payload_sha256,
             })
+            if decision_view is not None:
+                payload["decision_view"] = decision_view
             self._last_observation = Observation(
                 observation_id=event.event_id,
                 generation=str(event.sequence),

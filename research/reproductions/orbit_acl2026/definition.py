@@ -32,6 +32,6 @@ REPRODUCTION=ReproductionDefinition(
     ),
     blockers=("Matched execution requires the pinned ORBIT code/training configuration and EmbodiedBench release.", "Training-efficiency and generalization claims require GPU training plus interactive environment receipts."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 __all__=["REPRODUCTION"]

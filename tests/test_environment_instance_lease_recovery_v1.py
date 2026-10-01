@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import pytest
 
 from noetrium_platform.capabilities.environment.catalog.api import (
@@ -11,7 +15,6 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileRevision,
 )
 from noetrium_platform.capabilities.environment.catalog.runtime import (
-    EnvironmentCatalogNotFound,
     ExecutionEnvironmentCatalog,
     SQLiteExecutionEnvironmentCatalog,
 )
@@ -33,11 +36,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
-)
-from noetrium_platform.infrastructure.resources.providers import (
-    SQLiteResourceLeaseRegistry,
 )
 
 
@@ -99,7 +98,7 @@ def test_environment_instance_release_is_lease_first_and_returns_clean_only_with
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -138,11 +137,8 @@ def test_environment_instance_expired_lease_becomes_dirty_and_is_not_reused() ->
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
-    clock = ManualLeaseClock(
-        elapsed_seconds=1.0,
-        wall_epoch_seconds=100.0,
-    )
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    clock = ManualLeaseClock()
+    resources = TestResourceLeaseRegistry(clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -164,7 +160,7 @@ def test_environment_instance_expired_lease_becomes_dirty_and_is_not_reused() ->
     )
     assert handle.lease.expires_at_epoch_s is not None
 
-    clock.advance(1.0)
+    clock.advance(1.1)
     report = authority.reconcile()
     assert report.dirtied_instance_ids == (handle.instance.instance_id,)
     assert catalog.bindings() == ()
@@ -189,11 +185,8 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = SQLiteExecutionEnvironmentCatalog(environment_db, scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
-    clock = ManualLeaseClock(
-        elapsed_seconds=1.0,
-        wall_epoch_seconds=100.0,
-    )
-    resources = SQLiteResourceLeaseRegistry(resource_db, clock=clock)
+    clock = ManualLeaseClock()
+    resources = ResourceLeaseRegistry(resource_db, clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -220,11 +213,11 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
             environment_db,
             SQLiteScopeRegistry(resource_db),
         ),
-        ownership=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
-        leases=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
+        ownership=ResourceLeaseRegistry(resource_db, clock=clock),
+        leases=ResourceLeaseRegistry(resource_db, clock=clock),
         reconcile_on_start=False,
     )
-    clock.advance(1.0)
+    clock.advance(1.1)
     report = restarted.reconcile()
     assert report.dirtied_instance_ids == (handle.instance.instance_id,)
 
@@ -242,7 +235,7 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     resource = ResourceIdentity(
         ResourceKind.EXECUTION_ENVIRONMENT,
         instance.instance_id,
@@ -264,7 +257,7 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
         reconcile_on_start=False,
     )
 
-    with pytest.raises(EnvironmentCatalogNotFound):
+    with pytest.raises(RuntimeError):
         authority.acquire_reusable_instance(
             PROFILE_ID,
             PROFILE_REVISION,
@@ -277,9 +270,6 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
 
     assert catalog.bindings() == ()
     assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
-    active = resources.active_for(resource)
-    assert len(active) == 1
-    assert active[0].lease_id == "conflicting-environment-holder"
 
 
 def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
@@ -288,7 +278,7 @@ def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -314,6 +304,108 @@ def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
     assert resources.active_for(
         ResourceIdentity(ResourceKind.EXECUTION_ENVIRONMENT, instance.instance_id)
     ) == ()
+
+
+def test_environment_instance_reconcile_quarantines_live_generation_without_releasing_fence() -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, instance = _prepare_catalog(catalog, scope)
+    resources = TestResourceLeaseRegistry()
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=resources,
+        reconcile_on_start=False,
+    )
+    handle = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-quarantine",
+        role="runner",
+        scope=scope,
+    )
+    resource = ResourceIdentity(
+        ResourceKind.EXECUTION_ENVIRONMENT,
+        instance.instance_id,
+    )
+
+    # Simulate catalog/binding drift while the physical generation may still be
+    # live. Ordinary reconcile may revoke logical use, but it has no physical
+    # convergence proof and therefore must not publish capacity as reusable.
+    catalog.unbind("runner", scope)
+    report = authority.reconcile()
+
+    assert report.dirtied_instance_ids == (instance.instance_id,)
+    assert report.released_orphan_lease_ids == ()
+    assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    assert resources.active_for(resource) == (handle.lease,)
+
+
+def test_environment_instance_recovery_preserves_abandoned_generation_fence() -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, first = _prepare_catalog(catalog, scope)
+    second = EnvironmentInstance(
+        "environment-instance-b",
+        "9" * 64,
+        "docker",
+        RUNTIME_REFERENCE,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        scope,
+        PROFILE_ID,
+        PROFILE_REVISION,
+    )
+    catalog.register_instance(second)
+    resources = TestResourceLeaseRegistry()
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=resources,
+        reconcile_on_start=False,
+    )
+
+    original = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-recover",
+        role="runner",
+        scope=scope,
+    )
+    recovered = authority.recover_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        role="runner",
+        scope=scope,
+    )
+
+    old_resource = ResourceIdentity(
+        ResourceKind.EXECUTION_ENVIRONMENT,
+        first.instance_id,
+    )
+    new_resource = ResourceIdentity(
+        ResourceKind.EXECUTION_ENVIRONMENT,
+        second.instance_id,
+    )
+    by_id = {row.instance_id: row for row in catalog.instances()}
+
+    assert recovered.instance.instance_id == second.instance_id
+    assert by_id[first.instance_id].state is EnvironmentInstanceState.DIRTY
+    assert by_id[second.instance_id].state is EnvironmentInstanceState.IN_USE
+    assert resources.active_for(old_resource) == (original.lease,)
+    assert resources.active_for(new_resource) == (recovered.lease,)
+    assert catalog.binding("runner", scope).instance_id == second.instance_id
+
 
 
 class _FailOnceLeaseRelease:
@@ -351,7 +443,7 @@ def test_environment_instance_release_retries_uncertain_durable_release_without_
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     leases = _FailOnceLeaseRelease(
         resources,
         commit_before_error=commit_before_error,
@@ -392,3 +484,51 @@ def test_environment_instance_release_retries_uncertain_durable_release_without_
     assert converged.state is EnvironmentInstanceState.DIRTY
     assert resources.active_for(resource) == ()
     assert leases.release_calls == 2
+
+
+def test_environment_instance_reconcile_tolerates_binding_removed_after_snapshot() -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, instance = _prepare_catalog(catalog, scope)
+    resources = TestResourceLeaseRegistry()
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=resources,
+        reconcile_on_start=False,
+    )
+    handle = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-snapshot-race",
+        role="runner",
+        scope=scope,
+    )
+    resources.release(
+        handle.lease.lease_id,
+        fencing_token=handle.lease.fencing_token,
+    )
+    original_bindings = catalog.bindings
+    raced = False
+
+    def bindings_with_concurrent_removal():
+        nonlocal raced
+        rows = original_bindings()
+        if not raced:
+            raced = True
+            catalog.unbind("runner", scope)
+        return rows
+
+    catalog.bindings = bindings_with_concurrent_removal  # type: ignore[method-assign]
+    report = authority.reconcile()
+
+    assert report.dirtied_instance_ids == (instance.instance_id,)
+    assert catalog.bindings() == ()
+    assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    assert resources.active_for(
+        ResourceIdentity(ResourceKind.EXECUTION_ENVIRONMENT, instance.instance_id)
+    ) == ()

@@ -21,3 +21,8 @@ dist
 build
 *.egg-info
 configs/server_profiles/*.local.*
+
+.env
+**/.env
+.noetrium
+.noetrium/**

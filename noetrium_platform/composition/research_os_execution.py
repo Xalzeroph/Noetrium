@@ -10,7 +10,13 @@ from noetrium_platform.evidence.artifact.lineage.relation.api import (
     ArtifactLineageEdge,
     ArtifactLineageRelationPort,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    Deadline,
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskContextPort,
+    TaskFailureScope,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonObject,
@@ -32,12 +38,14 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphControlStorePort,
+    ResearchGraphCutSwitchFence,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNodeControlStorePort,
+    ResearchGraphOwnerGenerationRecoveryPort,
     ResearchGraphReconciliationDisposition,
 )
 
@@ -48,6 +56,7 @@ from .research_os_checkpoint import (
     ResearchOSNodeCheckpointPort,
     ResearchOSNodeCheckpointProof,
 )
+from .research_definition_authority import ResearchDefinitionBindingAuthorityPort
 from .research_os_experiment import ResearchOSExperimentClosurePort
 from .research_graph import ResearchGraphControlHalt, ResearchGraphNodeControlHalt
 from .research_os_graph import (
@@ -66,6 +75,7 @@ from .research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from .research_os_migration import (
+    ResearchOSExecutionActivation,
     ResearchOSExecutionCut,
     ResearchOSExecutionMigrationPlan,
     ResearchOSReuseMaterializerPort,
@@ -148,6 +158,13 @@ class ResearchOSNodeRuntimePort(Protocol):
         execution_cut_id: str,
         deadline: Deadline | None,
     ) -> JsonValue: ...
+
+
+@runtime_checkable
+class ResearchOSPortfolioRuntimePort(Protocol):
+    """Optional portfolio-scoped runtime composition before node admission."""
+
+    def bind_portfolio(self, compilation: CompiledResearchOSGraph) -> None: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -338,6 +355,7 @@ def prepare_research_os_execution(
     values: ResearchOSValueRouter,
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     artifact_lineage: ArtifactLineageRelationPort | None = None,
     selection_seed_node_ids: tuple[str, ...] | None = None,
 ) -> PreparedResearchOSExecution:
@@ -360,6 +378,8 @@ def prepare_research_os_execution(
         target.revision,
         portfolio,
     )
+    if isinstance(runtime, ResearchOSPortfolioRuntimePort):
+        runtime.bind_portfolio(compilation)
     if selection_seed_node_ids is None:
         selected_node_ids = _execution_selection_node_ids(compilation, target)
     else:
@@ -374,6 +394,7 @@ def prepare_research_os_execution(
     lowering = compile_research_os_lowering(
         compilation,
         experiment_closures=experiment_closures,
+        definition_bindings=definition_bindings,
         selected_node_ids=selected_node_ids,
     )
     validate_research_os_value_authorities(
@@ -496,8 +517,16 @@ class PreparedResearchOSNodeExecutor:
             raise ValueError("research node execution lowering admission drifted")
 
         task_context.checkpoint()
+        execution_attempt_id = canonical_digest(
+            {
+                "schema": "noetrium.research-node-attempt.v1",
+                "execution_cut_id": self._prepared.cut.cut_id,
+                "graph_node_id": node.graph_node_id,
+                "attempt_id": task_context.task_id,
+            }
+        )
         scientific_context = ExecutionContext(
-            run_id=self._prepared.cut.cut_id,
+            run_id=execution_attempt_id,
             trace_id=canonical_digest(
                 {
                     "execution_cut_id": self._prepared.cut.cut_id,
@@ -507,6 +536,7 @@ class PreparedResearchOSNodeExecutor:
             span_id=node.graph_node_id,
             task_id=task_context.task_id,
             component_id=node.graph_node_id,
+            execution_tenant_id=self._prepared.target.portfolio_id,
         )
         input_references = lookup_research_os_node_input_references(
             self._prepared.cut.cut_id,
@@ -631,6 +661,7 @@ class StrictResearchOSControl(
         values: ResearchOSValueRouter,
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
         artifact_lineage: ArtifactLineageRelationPort | None = None,
         checkpoints: ResearchOSGraphCheckpointStorePort | None = None,
     ) -> None:
@@ -661,6 +692,14 @@ class StrictResearchOSControl(
         self._runtime = runtime
         self._values = values
         self._experiment_closures = experiment_closures
+        if definition_bindings is not None and not isinstance(
+            definition_bindings,
+            ResearchDefinitionBindingAuthorityPort,
+        ):
+            raise TypeError(
+                "Research OS control definition_bindings must satisfy typed port"
+            )
+        self._definition_bindings = definition_bindings
         if artifact_lineage is not None and not isinstance(
             artifact_lineage,
             ArtifactLineageRelationPort,
@@ -999,6 +1038,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if (
@@ -1012,6 +1052,7 @@ class StrictResearchOSControl(
         source_lowering = compile_research_os_lowering(
             source,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
         )
         reuse_proofs = self._migration_reuse_proofs(
             plan,
@@ -1187,6 +1228,28 @@ class StrictResearchOSControl(
                 resolved_state = "cancelled"
             else:
                 resolved_state = "durable"
+        node_rows = []
+        for node_record in snapshot.nodes:
+            node_control = self._store.node_control_state(
+                cut.cut_id,
+                node_record.node_id,
+            )
+            node_rows.append({
+                "graph_node_id": node_record.node_id,
+                "state": node_record.state.value,
+                "attempt_number": node_record.attempt_number,
+                "attempt_id": node_record.attempt_id,
+                "failure_type": node_record.failure_type,
+                "failure_message": node_record.failure_message,
+                "failure_provenance": (
+                    None
+                    if node_record.failure_provenance is None
+                    else node_record.failure_provenance.as_payload()
+                ),
+                "blocked_by_node_ids": node_record.blocked_by_node_ids,
+                "control_phase": node_control.phase.value,
+                "control_generation": node_control.generation,
+            })
         payload: JsonObject = {
             "cut_id": cut.cut_id,
             "graph_digest": compilation.plan.graph_digest,
@@ -1195,6 +1258,7 @@ class StrictResearchOSControl(
             "control_phase": control.phase.value,
             "control_generation": control.generation,
             "states": states,
+            "nodes": tuple(node_rows),
         }
         if request.target.node is not None:
             target_node = self._target_graph_node(request, compilation)
@@ -1210,6 +1274,11 @@ class StrictResearchOSControl(
                 "attempt_id": node_record.attempt_id,
                 "failure_type": node_record.failure_type,
                 "failure_message": node_record.failure_message,
+                "failure_provenance": (
+                    None
+                    if node_record.failure_provenance is None
+                    else node_record.failure_provenance.as_payload()
+                ),
                 "blocked_by_node_ids": node_record.blocked_by_node_ids,
                 "control_phase": node_control.phase.value,
                 "control_generation": node_control.generation,
@@ -1231,6 +1300,162 @@ class StrictResearchOSControl(
             payload,
         )
 
+    def _activate_run_cut(
+        self,
+        execution_id: str,
+        compilation: CompiledResearchOSGraph,
+    ) -> ResearchOSExecutionActivation:
+        """Activate RUN, automatically superseding a provably abandoned prior cut.
+
+        A revision change must never steal a live execution.  The managed local
+        runtime can, however, prove exclusivity through its outer process-generation
+        fence.  In that case old scheduler generations are recovered first; any
+        current-generation/non-expired work still blocks the switch.  Abandoned
+        RUNNING work remains reconciliation debt on the immutable source cut and is
+        never reused by the fresh target cut.
+        """
+        cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
+        observed = self._store.active_execution_snapshot(execution_id)
+        if observed is None or observed.active_cut.cut_id == cut.cut_id:
+            return activate_research_os_execution_cut(
+                execution_id, compilation, self._store
+            )
+        if (
+            not self._pool.can_recover_abandoned_owner_generations
+            or not isinstance(self._store, ResearchGraphOwnerGenerationRecoveryPort)
+        ):
+            return activate_research_os_execution_cut(
+                execution_id, compilation, self._store
+            )
+
+        now_ns = time.time_ns()
+        source_cut_id = observed.active_cut.cut_id
+        snapshot = self._store.recover_abandoned_owner_generation(
+            source_cut_id,
+            current_owner_generation_id=self._pool.owner_generation_id,
+            now_ns=now_ns,
+        )
+        snapshot = self._store.recover_expired(source_cut_id, now_ns=now_ns)
+        still_active = tuple(
+            node.node_id
+            for node in snapshot.nodes
+            if node.state in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+            }
+        )
+        if still_active:
+            raise ResearchGraphExecutionConflict(
+                "logical Research OS execution still has live work in the active cut; "
+                f"revision supersession refused: {still_active}"
+            )
+
+        source_control = self._store.control_state(source_cut_id)
+        if snapshot.reconciliation_required_node_ids:
+            if source_control.phase in {
+                ResearchGraphControlPhase.ACTIVE,
+                ResearchGraphControlPhase.DRAINING,
+            }:
+                source_control = self._store.require_recovery(
+                    source_cut_id,
+                    expected_generation=source_control.generation,
+                    now_ns=now_ns,
+                )
+            elif source_control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
+                raise ResearchGraphExecutionConflict(
+                    "abandoned source cut has reconciliation debt in an incompatible "
+                    f"control phase: {source_control.phase.value}"
+                )
+
+        target_snapshot = self._store.ensure_execution(cut.cut_id, compilation.plan)
+        active = self._store.active_cut(execution_id)
+        if active is None or active.cut_id != source_cut_id:
+            raise ResearchGraphExecutionConflict(
+                "research active cut changed while abandoned revision was fenced"
+            )
+        source_snapshot = self._store.snapshot(source_cut_id)
+        source_control = self._store.control_state(source_cut_id)
+        source_fence = ResearchGraphCutSwitchFence(
+            source_cut_id,
+            active.generation,
+            source_snapshot.generation,
+            source_control,
+            tuple(
+                self._store.node_control_state(source_cut_id, node.node_id)
+                for node in source_snapshot.nodes
+            ),
+        )
+        active = self._store.move_active_cut(
+            execution_id,
+            cut.cut_id,
+            expected_cut_id=source_cut_id,
+            source_fence=source_fence,
+        )
+        return ResearchOSExecutionActivation(cut, active, target_snapshot)
+
+    def _recover_abandoned_run_nodes(
+        self,
+        request: ResearchControlRequest,
+        portfolio: ResearchPortfolio,
+        prepared: PreparedResearchOSExecution,
+        activation: ResearchOSExecutionActivation,
+    ) -> tuple[str, ...]:
+        """Reconcile only work fenced as abandoned by this RUN generation.
+
+        User-driven interrupt/recovery intent is deliberately excluded: only a
+        node observed RUNNING before this call and changed to RECONCILE_REQUIRED
+        by the exclusive owner-generation fence is eligible for automatic
+        recovery.  Lower authority remains the sole source of the disposition.
+        """
+        if (
+            not self._pool.can_recover_abandoned_owner_generations
+            or not isinstance(self._store, ResearchGraphOwnerGenerationRecoveryPort)
+        ):
+            return ()
+        before = activation.snapshot
+        after = self._store.recover_abandoned_owner_generation(
+            activation.cut.cut_id,
+            current_owner_generation_id=self._pool.owner_generation_id,
+            now_ns=time.time_ns(),
+        )
+        abandoned = tuple(
+            node.node_id
+            for node in before.nodes
+            if node.state is ResearchGraphLiveNodeState.RUNNING
+            and after.node(node.node_id).state
+            is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+        )
+        for graph_node_id in abandoned:
+            compiled = prepared.compilation.node(graph_node_id)
+            recovery_target = request.target.for_node(
+                compiled.ref.program_id,
+                compiled.ref.node_id,
+            )
+            self._reconcile(
+                ResearchControlRequest(
+                    ResearchControlAction.RECONCILE,
+                    recovery_target,
+                ),
+                portfolio,
+            )
+            node_control = self._store.node_control_state(
+                activation.cut.cut_id,
+                graph_node_id,
+            )
+            if node_control.phase is ResearchGraphNodeControlPhase.PAUSED:
+                resumed = self._store.resume_node(
+                    activation.cut.cut_id,
+                    graph_node_id,
+                    expected_generation=node_control.generation,
+                    now_ns=time.time_ns(),
+                )
+                if resumed.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                    raise ResearchGraphExecutionConflict(
+                        "automatic abandoned-generation recovery did not reactivate "
+                        f"node control: {graph_node_id}={resumed.phase.value}"
+                    )
+        return abandoned
+
     def _run(
         self,
         request: ResearchControlRequest,
@@ -1247,12 +1472,12 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
-        activation = activate_research_os_execution_cut(
+        activation = self._activate_run_cut(
             request.target.execution_id,
             prepared.compilation,
-            self._store,
         )
         if activation.cut != prepared.cut:
             raise ValueError("Research OS active cut drifted from preflight cut")
@@ -1262,6 +1487,12 @@ class StrictResearchOSControl(
                 "RUN requires an active graph control phase; use RESUME for a "
                 f"paused execution, actual={control.phase.value}"
             )
+        self._recover_abandoned_run_nodes(
+            request,
+            portfolio,
+            prepared,
+            activation,
+        )
         return self._drive(
             request,
             prepared,
@@ -1284,6 +1515,7 @@ class StrictResearchOSControl(
             prepared.compilation,
             executor,
             execution_pool=self._pool,
+            tenant_id=prepared.target.portfolio_id,
             execution_store=self._store,
             execution_id=prepared.cut.cut_id,
             task_group_id=(
@@ -1292,9 +1524,36 @@ class StrictResearchOSControl(
             ),
             selected_node_ids=prepared.selected_node_ids,
         )
+        fleet_group = self._pool.open_fleet_group(
+            (
+                "research-os-fleet:"
+                f"{prepared.target.portfolio_id}:"
+                f"{prepared.target.execution_id}:{prepared.cut.cut_id}"
+            ),
+            tenant_id=prepared.target.portfolio_id,
+            resource_id=f"research-os-fleet:{prepared.target.execution_id}",
+        )
+
+        def run_portfolio(task_context: TaskContextPort):
+            task_context.checkpoint()
+            value = scheduler.execute()
+            task_context.checkpoint()
+            return value
+
         try:
             try:
-                report = scheduler.execute()
+                fleet_handle = fleet_group.submit(
+                    ExecutionSpec(
+                        task_id=(
+                            "research-os-fleet-run:"
+                            f"{prepared.target.execution_id}:{prepared.cut.cut_id}"
+                        ),
+                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                        failure_scope=TaskFailureScope.CALLER,
+                    ),
+                    run_portfolio,
+                )
+                report = fleet_handle.result()
             except ResearchGraphControlHalt:
                 observed = self._store.active_execution_snapshot(
                     request.target.execution_id
@@ -1353,7 +1612,23 @@ class StrictResearchOSControl(
                     },
                 )
         finally:
-            scheduler.close()
+            close_errors: list[BaseException] = []
+            try:
+                scheduler.close()
+            except BaseException as exc:
+                close_errors.append(exc)
+            try:
+                self._pool.close_fleet_group(
+                    fleet_group,
+                    cancel_pending=False,
+                )
+            except BaseException as exc:
+                close_errors.append(exc)
+            if close_errors:
+                raise ExceptionGroup(
+                    "Research OS fleet execution shutdown failed",
+                    close_errors,
+                )
         return self._execution_receipt(
             request,
             prepared,
@@ -1537,6 +1812,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if prepared.compilation != compilation or prepared.cut != cut:
@@ -1730,6 +2006,7 @@ class StrictResearchOSControl(
                 self._runtime,
                 self._values,
                 experiment_closures=self._experiment_closures,
+                definition_bindings=self._definition_bindings,
                 artifact_lineage=self._artifact_lineage,
                 selection_seed_node_ids=retry_seed_node_ids,
             )
@@ -1813,6 +2090,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if prepared.compilation != compilation or prepared.cut != cut:
@@ -1960,6 +2238,7 @@ class StrictResearchOSControl(
             lowering_plan = compile_research_os_lowering(
                 compilation,
                 experiment_closures=self._experiment_closures,
+                definition_bindings=self._definition_bindings,
                 selected_node_ids=succeeded_ids,
             )
             lowered = {
@@ -1982,10 +2261,16 @@ class StrictResearchOSControl(
             if record.state is ResearchGraphLiveNodeState.SUCCEEDED:
                 node = compiled_by_id[record.node_id]
                 lowering = lowered[record.node_id]
+                attempt = self._store.attempt_state(
+                    cut.cut_id,
+                    record.node_id,
+                    record.attempt_number,
+                )
                 proof = self._runtime.checkpoint_node(
                     node,
                     lowering,
                     execution_cut_id=cut.cut_id,
+                    attempt_id=attempt.attempt_id,
                 )
                 if type(proof) is not ResearchOSNodeCheckpointProof:
                     raise TypeError(
@@ -2107,6 +2392,22 @@ class StrictResearchOSControl(
             "failed_node_ids": report.failed_node_ids,
             "blocked_node_ids": report.blocked_node_ids,
             "cancelled_node_ids": report.cancelled_node_ids,
+            "node_results": tuple(
+                {
+                    "graph_node_id": node.node_id,
+                    "semantic_digest": node.semantic_digest,
+                    "state": node.state.value,
+                    "failure_type": node.failure_type,
+                    "failure_message": node.failure_message,
+                    "failure_provenance": (
+                        None
+                        if node.failure_provenance is None
+                        else node.failure_provenance.as_payload()
+                    ),
+                    "blocked_by_node_ids": node.blocked_by_node_ids,
+                }
+                for node in report.nodes
+            ),
         }
         return ResearchControlReceipt(
             request.action,
@@ -2130,6 +2431,7 @@ __all__ = [
     "ResearchOSExecutionUnsupported",
     "ResearchOSNodeAdmission",
     "ResearchOSNodeRuntimePort",
+    "ResearchOSPortfolioRuntimePort",
     "StrictResearchOSControl",
     "prepare_research_os_execution",
 ]

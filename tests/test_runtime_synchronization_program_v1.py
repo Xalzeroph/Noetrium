@@ -13,13 +13,12 @@ from noetrium_platform.research.execution.machines import (
     SynchronizationAction,
     SynchronizationDeciderRegistry,
     SynchronizationDecision,
-    SynchronizationMode,
     SynchronizationPoint,
-    SynchronizationPresetSpec,
+    SynchronizationThresholdSpec,
     SynchronizationProgram,
     SynchronizationRuntimeBinding,
     synchronization_initial_data,
-    synchronization_program_from_preset,
+    synchronization_program_from_threshold,
     synchronization_runtime_module,
     synchronization_runtime_operations,
 )
@@ -49,8 +48,8 @@ def _host(program, journal):
 
 
 def test_barrier_waits_and_resumes_on_same_runtime_machine() -> None:
-    program, registry = synchronization_program_from_preset(
-        SynchronizationPresetSpec(SynchronizationMode.BARRIER_ALL),
+    program, registry = synchronization_program_from_threshold(
+        SynchronizationThresholdSpec(minimum_fraction_numerator=1, minimum_fraction_denominator=1),
         program_id="paper.barrier-all",
     )
     binding = SynchronizationRuntimeBinding(program, registry)
@@ -121,8 +120,8 @@ def test_barrier_waits_and_resumes_on_same_runtime_machine() -> None:
 
 
 def test_asynchronous_preset_releases_current_arrivals_immediately() -> None:
-    program, registry = synchronization_program_from_preset(
-        SynchronizationPresetSpec(SynchronizationMode.ASYNCHRONOUS),
+    program, registry = synchronization_program_from_threshold(
+        SynchronizationThresholdSpec(),
         program_id="paper.async",
     )
     binding = SynchronizationRuntimeBinding(program, registry)
@@ -156,11 +155,8 @@ def test_asynchronous_preset_releases_current_arrivals_immediately() -> None:
 
 
 def test_quorum_waits_until_threshold_then_releases_arrived_set() -> None:
-    program, registry = synchronization_program_from_preset(
-        SynchronizationPresetSpec(
-            SynchronizationMode.QUORUM,
-            quorum=2,
-        ),
+    program, registry = synchronization_program_from_threshold(
+        SynchronizationThresholdSpec(minimum_arrivals=2),
         program_id="paper.quorum",
     )
     binding = SynchronizationRuntimeBinding(program, registry)
@@ -241,8 +237,8 @@ def test_synchronization_binding_rejects_decider_identity_drift() -> None:
 
 
 def test_synchronization_resume_rejects_unknown_participant() -> None:
-    program, registry = synchronization_program_from_preset(
-        SynchronizationPresetSpec(SynchronizationMode.BARRIER_ALL),
+    program, registry = synchronization_program_from_threshold(
+        SynchronizationThresholdSpec(minimum_fraction_numerator=1, minimum_fraction_denominator=1),
         program_id="paper.barrier-strict",
     )
     binding = SynchronizationRuntimeBinding(program, registry)
@@ -285,3 +281,20 @@ def test_synchronization_resume_rejects_unknown_participant() -> None:
             payload={"arrival_participant_ids": ("intruder",)},
             resume_waiting=True,
         )
+
+
+def test_synchronization_threshold_supports_fractional_quorum() -> None:
+    majority = SynchronizationThresholdSpec(
+        minimum_arrivals=1,
+        minimum_fraction_numerator=1,
+        minimum_fraction_denominator=2,
+    )
+    assert majority.required_arrivals(5) == 3
+    assert majority.required_arrivals(6) == 3
+
+    stronger = SynchronizationThresholdSpec(
+        minimum_arrivals=2,
+        minimum_fraction_numerator=3,
+        minimum_fraction_denominator=4,
+    )
+    assert stronger.required_arrivals(8) == 6

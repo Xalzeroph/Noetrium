@@ -1,21 +1,8 @@
-"""Test-only legacy Experiment orchestration harness.
+"""Test-only helpers for current project execution composition.
 
-These modules preserve historical subsystem regression tests after the
-production parallel Experiment runtime path was retired. They are not packaged
-or imported by noetrium_platform.
+Legacy Experiment checkpoint/run-cycle harnesses were retired with the
+independent Experimentation checkpoint authority. Import concrete helpers from
+their modules; this package performs no eager legacy imports.
 """
 
-from .decision_runtime import DecisionCycleRuntimeForTest, identity_context
-from .cycle import RunCycleExecutionForTest, RunCycleExecutorForTest, RunIdentityMismatch
-from .lifecycle_session import RunSessionForTest
-from .run_runtime import RunRuntimeForTest
-
-__all__ = [
-    "DecisionCycleRuntimeForTest",
-    "RunCycleExecutionForTest",
-    "RunCycleExecutorForTest",
-    "RunIdentityMismatch",
-    "RunRuntimeForTest",
-    "RunSessionForTest",
-    "identity_context",
-]
+__all__: list[str] = []

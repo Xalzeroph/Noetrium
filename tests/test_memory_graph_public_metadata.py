@@ -63,3 +63,40 @@ def test_public_memory_graph_preserves_typed_node_metadata() -> None:
     assert node.transform["operator"] == "GROUP_BY"
     assert node.access == ("MEMORY_ASK",)
     assert node.provenance["source"] == "verified"
+
+
+def test_retire_preserves_public_typed_node_metadata() -> None:
+    node = MemoryNodeRecord(
+        "memory:typed",
+        "state",
+        "typed",
+        "typed-content",
+        "g0",
+        purpose="semantic responsibility",
+        scope="minecraft",
+        mode="CURRENT",
+        schema={"kind": "object"},
+        access=("MEMORY_ASK", "EXACT"),
+        sources=("evidence:seed",),
+        transform={"operator": "PROJECT"},
+        maintenance_contract={"refresh": "on_receipt"},
+        provenance={"source": "verified"},
+    )
+    graph = VersionedMemoryGraph(MemoryGraphSnapshot("g0", (node,), ()))
+    transaction = graph.stage(
+        (MemoryGraphOperation("retire_node", "memory:typed"),),
+        rationale_digest="retire-preserve-metadata",
+    )
+    graph.activate(transaction)
+    retired = graph.snapshot().node("memory:typed")
+    assert retired is not None
+    assert not retired.active
+    assert retired.purpose == node.purpose
+    assert retired.scope == node.scope
+    assert retired.mode == node.mode
+    assert retired.schema == node.schema
+    assert retired.access == node.access
+    assert retired.sources == node.sources
+    assert retired.transform == node.transform
+    assert retired.maintenance_contract == node.maintenance_contract
+    assert retired.provenance == node.provenance

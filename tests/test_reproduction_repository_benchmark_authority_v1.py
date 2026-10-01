@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -12,6 +14,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskSetSplit,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkCutRequirement,
     BenchmarkResolutionRegistration,
     BenchmarkResolutionRegistry,
 )
@@ -56,9 +59,10 @@ def test_repository_authority_never_promotes_external_materialization_to_exact_c
     assert "alfworld" not in authority.benchmark_ids
 
 
-def _freshwiki_resolution() -> BenchmarkSourceResolution:
-    source_digest = canonical_digest({"fixture": "freshwiki"})
-    revision = "fixture:freshwiki"
+def _freshwiki_resolution(
+    revision: str = "fixture:freshwiki",
+) -> BenchmarkSourceResolution:
+    source_digest = canonical_digest({"fixture": "freshwiki", "revision": revision})
     source = BenchmarkSourceSpec(
         source_id="freshwiki",
         kind=BenchmarkSourceKind.HTTP,
@@ -160,3 +164,44 @@ def test_materialized_cut_closes_asset_authority_but_not_paper_split_authority()
         match="requires paper-owned split selection",
     ):
         authority.resolve(STORM, study[0])
+
+
+def test_repository_authority_selects_declared_cut_from_multiple_revisions() -> None:
+    first = _freshwiki_resolution("fixture:freshwiki:v1")
+    second = _freshwiki_resolution("fixture:freshwiki:v2")
+    registry = BenchmarkResolutionRegistry(
+        (
+            BenchmarkResolutionRegistration(
+                first,
+                canonical_digest({"proof": "freshwiki-v1"}),
+            ),
+            BenchmarkResolutionRegistration(
+                second,
+                canonical_digest({"proof": "freshwiki-v2"}),
+            ),
+        )
+    )
+    authority = RepositoryBenchmarkAuthority.discover(registry)
+    study = resolve_study_factory_bindings(STORM)[0]
+
+    with pytest.raises(
+        ReproductionResearchOSCompileError,
+        match="ambiguous exact cuts",
+    ):
+        authority.resolve(STORM, study)
+
+    exact_study = replace(
+        study,
+        benchmark_requirements=(
+            BenchmarkCutRequirement(
+                "freshwiki",
+                "fixture:freshwiki:v2",
+                ("test",),
+            ),
+        ),
+    )
+    selections = authority.resolve(STORM, exact_study)
+    assert len(selections) == 1
+    assert selections[0].benchmark.revision_id == "fixture:freshwiki:v2"
+    assert selections[0].benchmark_split_ids == ("test",)
+    assert len(selections[0].resolution_proof_digest) == 64

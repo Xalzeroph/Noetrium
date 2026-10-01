@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.lvu import (
     LVU_BENCHMARK_ID,
     LVUFullVideoProtocol,
@@ -21,7 +19,7 @@ def build_adacm2_lvu_cut(
     records: tuple[LVUVideoRecord, ...],
     *,
     dataset_content_sha256: str,
-) -> BenchmarkTaskSet:
+):
     resolution = bind_lvu_full_video_cut(
         records,
         dataset_content_sha256=dataset_content_sha256,

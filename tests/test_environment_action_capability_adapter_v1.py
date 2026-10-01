@@ -8,6 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     ActionRequest,
     ActionResult,
     Observation,
+    EnvironmentCapabilityDescriptor,
     action_request_digest,
 )
 from noetrium_platform.composition.environment_capabilities import (
@@ -137,6 +138,38 @@ def _request() -> CapabilityRequest:
     )
 
 
+
+class _DescribedEnvironment(_DurableEnvironment):
+    def capability_descriptors(self):
+        return (
+            EnvironmentCapabilityDescriptor(
+                capability_id="minecraft.world",
+                version="1",
+                action_types=("collect_block",),
+                metadata={
+                    "action_contracts": (
+                        {
+                            "action_type": "collect_block",
+                            "category": "resource",
+                            "description": "Collect matching blocks.",
+                            "arguments": "{block:string, count?:1..64}",
+                            "mutates_world": True,
+                        },
+                    )
+                },
+            ),
+        )
+
+
+def test_environment_bridge_projects_provider_contract_metadata() -> None:
+    adapter = EnvironmentSessionCapabilityAdapter(_DescribedEnvironment())
+    descriptor = adapter.describe("environment.act")
+    rows = descriptor.metadata["environment_capabilities"]
+    assert rows[0]["capability_id"] == "minecraft.world"
+    contract = rows[0]["metadata"]["action_contracts"][0]
+    assert contract["action_type"] == "collect_block"
+    assert contract["arguments"] == "{block:string, count?:1..64}"
+
 def test_effectful_environment_bridge_requires_generic_effect_executor() -> None:
     adapter = EnvironmentSessionCapabilityAdapter(_DurableEnvironment())
     with pytest.raises(RuntimeError, match="CapabilityEffectExecutor"):
@@ -173,6 +206,46 @@ def test_prepared_bridge_preserves_outer_capability_identity_and_inner_environme
     assert reconciliation.result.effect is not None
     assert reconciliation.result.effect.request_digest == capability_request_digest(request)
     assert reconciliation.result.diagnostics["environment_effect"]["request_digest"] == inner_digest
+
+
+def test_environment_bridge_separates_decision_view_from_raw_evidence() -> None:
+    class DecisionEnvironment(_DurableEnvironment):
+        def execute_prepared_action(self, request, handle):
+            base = _result(request)
+            return ActionResult(
+                action_id=base.action_id,
+                accepted=base.accepted,
+                observation=Observation(
+                    "obs-decision",
+                    "env-gen-2",
+                    {
+                        "kind": "rich_environment_result",
+                        "events": (
+                            {"kind": "raw_event", "payload": {"large": "raw"}},
+                        ),
+                        "decision_view": {
+                            "kind": "decision.v1",
+                            "state": {"health": 20},
+                        },
+                    },
+                    ("artifact-1",),
+                ),
+                effect=base.effect,
+                diagnostics=base.diagnostics,
+            )
+
+    environment = DecisionEnvironment()
+    adapter = EnvironmentSessionCapabilityAdapter(environment)
+    request = _request()
+    handle = adapter.prepare_capability_effect(request)
+    result = adapter.execute_prepared_capability(request, handle)
+
+    observation = result.payload["observation"]
+    assert observation["payload"]["kind"] == "decision.v1"
+    assert observation["payload"]["state"]["health"] == 20
+    assert "events" not in observation["payload"]
+    assert result.evidence["observation"]["payload"]["events"][0]["kind"] == "raw_event"
+    assert result.evidence["observation"]["payload"]["decision_view"]["kind"] == "decision.v1"
 
 
 def test_environment_bridge_delegates_checkpoint_restore_and_close() -> None:

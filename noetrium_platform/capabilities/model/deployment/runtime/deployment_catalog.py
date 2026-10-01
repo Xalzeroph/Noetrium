@@ -7,8 +7,6 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentSpec,
     ModelDesiredState,
 )
-from noetrium_platform.substrate.api import PythonEnvironmentLookupPort
-
 from noetrium_platform.capabilities.model.asset.api import ModelAssetDeploymentAdmissionPort
 from .deployment_registry import ModelDeploymentRegistry
 
@@ -20,15 +18,11 @@ class ModelDeploymentCatalog:
         self,
         asset_registry: ModelAssetDeploymentAdmissionPort,
         deployment_registry: ModelDeploymentRegistry,
-        python_environments: PythonEnvironmentLookupPort,
     ) -> None:
         self._asset_registry = asset_registry
         self._deployment_registry = deployment_registry
-        self._python_environments = python_environments
 
     def put_deployment(self, spec: ModelDeploymentSpec) -> ModelDeploymentSpec:
-        if spec.python_environment_id is not None:
-            self._python_environments.get(spec.python_environment_id)
         normalized = replace(
             spec,
             tags=tuple(sorted({tag.strip() for tag in spec.tags if tag.strip()})),
@@ -57,8 +51,6 @@ class ModelDeploymentCatalog:
                 continue
             if selector.engine is not None and spec.engine != selector.engine:
                 continue
-            if selector.python_environment_id is not None and spec.python_environment_id != selector.python_environment_id:
-                continue
             values.append(spec)
         return tuple(values)
 
@@ -72,10 +64,13 @@ class ModelDeploymentCatalog:
 
     def set_gpu_devices(self, deployment_id: str, gpu_devices: tuple[str, ...]) -> ModelDeploymentSpec:
         normalized = tuple(dict.fromkeys(str(device).strip() for device in gpu_devices if str(device).strip()))
-        return self.put_deployment(replace(self.deployment(deployment_id), gpu_devices=normalized))
-
-    def set_python_environment(self, deployment_id: str, environment_id: str | None) -> ModelDeploymentSpec:
-        return self.put_deployment(replace(self.deployment(deployment_id), python_environment_id=environment_id))
+        return self.put_deployment(
+            replace(
+                self.deployment(deployment_id),
+                gpu_devices=normalized,
+                gpu_memory_reservation_bytes=(),
+            )
+        )
 
     def remove(self, deployment_id: str) -> bool:
         return self._deployment_registry.remove(deployment_id)

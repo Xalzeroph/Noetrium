@@ -78,6 +78,23 @@ class UnifiedExecutionAuthority:
             cancellation=cancellation,
         )
 
+    def _try_acquire(
+        self,
+        owner_group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ):
+        if self._permits is None:
+            return None
+        return self._permits.try_acquire(
+            owner_group_id,
+            lane_kind,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+
     def _acquire_many(
         self,
         owner_group_id: str,
@@ -193,9 +210,12 @@ class UnifiedExecutionAuthority:
         deadline: Deadline | None = None,
         cancellation: CancellationTokenPort | None = None,
     ) -> tuple[Any, ...]:
-        if lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+        if lane_kind not in {
+            ExecutionLaneKind.BLOCKING_IO,
+            ExecutionLaneKind.ASYNC_IO,
+        }:
             raise ValueError(
-                "atomic execution batch currently supports BLOCKING_IO only"
+                "atomic execution batch requires BLOCKING_IO or ASYNC_IO"
             )
         if not isinstance(fns, tuple) or not fns:
             raise ValueError("atomic execution batch requires a non-empty tuple")
@@ -209,8 +229,13 @@ class UnifiedExecutionAuthority:
             deadline=deadline,
             cancellation=cancellation,
         )
+        provider = (
+            self._blocking_io
+            if lane_kind is ExecutionLaneKind.BLOCKING_IO
+            else self._async_io
+        )
         try:
-            raw_handles = self._blocking_io.submit_atomic_batch(
+            raw_handles = provider.submit_atomic_batch(
                 fns,
                 deadline=deadline,
                 cancellation=cancellation,
@@ -237,6 +262,116 @@ class UnifiedExecutionAuthority:
                     lambda _handle, owned_lease=lease: owned_lease.release()
                 )
         return tuple(raw_handles)
+
+    def try_submit(
+        self,
+        owner_group_id: str,
+        spec: ExecutionSpec,
+        fn: Callable[..., T],
+        /,
+        *args: Any,
+        deadline: Deadline | None = None,
+        cancellation: CancellationTokenPort | None = None,
+        **kwargs: Any,
+    ) -> Any | None:
+        """Submit immediately or return None without joining an admission queue."""
+
+        if self._permits is None:
+            return None
+
+        if spec.lane_kind is ExecutionLaneKind.SERIAL:
+            lane = self._lane_resolver(
+                owner_group_id,
+                spec.lane_id or "",
+                spec.capacity,
+            )
+            if spec.mailbox_policy is SerialMailboxPolicy.COALESCE:
+                existing = lane.try_coalesce(
+                    spec.coalesce_key or "",
+                    fn,
+                    *args,
+                    cancellation=cancellation,
+                    **kwargs,
+                )
+                if existing is not None:
+                    return existing
+            lease = self._try_acquire(
+                owner_group_id,
+                ExecutionLaneKind.SERIAL,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            if lease is None:
+                return None
+            try:
+                if spec.mailbox_policy is SerialMailboxPolicy.COALESCE:
+                    outcome = lane.try_submit_coalesced(
+                        spec.coalesce_key or "",
+                        fn,
+                        *args,
+                        cancellation=cancellation,
+                        **kwargs,
+                    )
+                    if outcome is None:
+                        raw = None
+                        enqueued_new = False
+                        work_completion = None
+                    else:
+                        raw, enqueued_new, work_completion = outcome
+                else:
+                    raw = lane.try_submit(
+                        fn,
+                        *args,
+                        cancellation=cancellation,
+                        **kwargs,
+                    )
+                    enqueued_new = raw is not None
+                    work_completion = raw
+            except BaseException:
+                self._release(lease)
+                raise
+            if raw is None:
+                self._release(lease)
+                return None
+            if enqueued_new:
+                assert work_completion is not None
+                work_completion.add_done_callback(
+                    lambda _handle: self._release(lease)
+                )
+            else:
+                self._release(lease)
+            return raw
+
+        if spec.lane_kind is ExecutionLaneKind.BLOCKING_IO:
+            provider = self._blocking_io
+        elif spec.lane_kind is ExecutionLaneKind.ASYNC_IO:
+            provider = self._async_io
+        elif spec.lane_kind is ExecutionLaneKind.CPU:
+            provider = self._cpu
+        else:
+            raise ValueError(f"unsupported execution lane: {spec.lane_kind}")
+
+        lease = self._try_acquire(
+            owner_group_id,
+            spec.lane_kind,
+            deadline=deadline,
+            cancellation=cancellation,
+        )
+        if lease is None:
+            return None
+        try:
+            raw = provider.submit(
+                fn,
+                *args,
+                deadline=deadline,
+                cancellation=cancellation,
+                **kwargs,
+            )
+        except BaseException:
+            self._release(lease)
+            raise
+        raw.add_done_callback(lambda _handle: lease.release())
+        return raw
 
     def submit(
         self,

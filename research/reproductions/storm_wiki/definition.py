@@ -11,7 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
-    ReproductionMethodProgramFactoryBinding,
+    ReproductionMethodConfigurerBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -51,10 +51,11 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/storm_wiki/study.py',
         ),
     ),
-    method_program_factory=ReproductionMethodProgramFactoryBinding(
+    method_configurer=ReproductionMethodConfigurerBinding(
         qualname="build_storm_wiki_method_program",
         kwargs={"search_capability_id": "retrieval.search.paper-era"},
     ),
+    primary_executable="research/reproductions/storm_wiki/program.py",
     reported_results=(
         ReportedResult(
             claim_id='storm_editor_organized_gain',
@@ -97,7 +98,7 @@ REPRODUCTION = ReproductionDefinition(
         'no matched NAACL execution evidence has yet been produced',
     ),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_storm_wiki_v1.py', 'tests/test_scientific_storm_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_storm_wiki_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

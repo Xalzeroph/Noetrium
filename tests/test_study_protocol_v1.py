@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    StudyConcurrencyPolicy,
+    AssignmentWorkload,
     StudyAssignment,
     StudyMetricAggregate,
     StudyMetricObservation,
@@ -28,8 +28,8 @@ def _protocol() -> StudyProtocol:
         "c" * 64,
         ("success_rate", "utility"),
         "d" * 64,
+        (AssignmentWorkload(("task-1",)),),
         ("standard",),
-        StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
     )
 
 
@@ -77,7 +77,7 @@ def test_study_aggregation_is_stable_for_large_baseline_small_variance() -> None
     )
 
     assert control.mean == pytest.approx(baseline + 1.0)
-    assert control.variance == pytest.approx(2.0)
+    assert control.sample_variance == pytest.approx(2.0)
     assert control.standard_error == pytest.approx(1.0)
 
 
@@ -109,21 +109,27 @@ def test_study_contracts_reject_bool_as_integer_identity() -> None:
             "study", "workload",
             (StudyVariantSpec("control", VariantKind.CONTROL, "fixed", "a" * 64),),
             True, "b" * 64, ("score",), "c" * 64,
+            (AssignmentWorkload(("task-1",)),),
             ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
         )
     with pytest.raises(TypeError, match="repetition must be an integer"):
-        StudyAssignment("study", "control", True, "seed")
-    with pytest.raises(TypeError, match="max_parallel_repetitions must be an integer"):
-        StudyConcurrencyPolicy(
-            True, False, "shared", "shared", "shared",
-            "runtime-hierarchical-v1", "deterministic-priority-fair-v1",
-            3600.0, 1,
+        StudyAssignment(
+            "study",
+            "control",
+            True,
+            "seed",
+            AssignmentWorkload(("task-1",)),
         )
 
 
 def test_study_contracts_reject_implicit_scalar_coercion() -> None:
-    assignment = StudyAssignment("study", "control", 0, "seed")
+    assignment = StudyAssignment(
+        "study",
+        "control",
+        0,
+        "seed",
+        AssignmentWorkload(("task-1",)),
+    )
     with pytest.raises(TypeError, match="must be numeric"):
         StudyMetricObservation(assignment, (("score", "1.0"),))
     with pytest.raises(TypeError, match="count must be an integer"):
@@ -144,13 +150,13 @@ def test_study_digest_fields_require_canonical_sha256() -> None:
         StudyProtocol(
             "study", "workload",
             (StudyVariantSpec("control", VariantKind.CONTROL, "fixed", "a" * 64),),
-            1, "bogus", (), "b" * 64, ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
+            1, "bogus", (), "b" * 64,
+            (AssignmentWorkload(("task-1",)),), ("standard",),
         )
     with pytest.raises(ValueError):
         StudyProtocol(
             "study", "workload",
             (StudyVariantSpec("control", VariantKind.CONTROL, "fixed", "a" * 64),),
-            1, "b" * 64, (), "bogus", ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
+            1, "b" * 64, (), "bogus",
+            (AssignmentWorkload(("task-1",)),), ("standard",),
         )

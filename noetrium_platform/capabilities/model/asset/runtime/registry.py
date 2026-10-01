@@ -33,7 +33,7 @@ class ModelAssetRegistry:
             / "assets"
         )
         self._root.mkdir(parents=True, exist_ok=True)
-        self._retired_root = self._root / "_retired"
+        self._retired_root = self._root / "_retiring"
         self._retired_root.mkdir(parents=True, exist_ok=True)
         self._lock_root = (
             directories.root(ManagedDirectoryKind.LOCKS)

@@ -37,10 +37,14 @@
   },
   "base": {
     "profile_id": "base",
-    "image_env": "PLATFORM_IMAGE",
-    "dockerfile": "deploy/Dockerfile",
-    "compose": "deploy/compose.yaml",
-    "build_mode": "evidence-bound-wheel"
+    "image_env": "PLATFORM_ENVIRONMENT_BASE_IMAGE",
+    "dockerfile": "deploy/environments/base/Dockerfile",
+    "compose": "deploy/environments/base/compose.yaml",
+    "build_mode": "dependency-runtime",
+    "content_inputs": [
+      "deploy/environments/base/Dockerfile",
+      "deploy/environments/base/entrypoint.sh"
+    ]
   },
   "profiles": [
     {
@@ -97,7 +101,19 @@
           }
         ],
         "parameters": []
-      }
+      },
+      "content_inputs": [
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/package.json",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/package-lock.json",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/action_recovery.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/bridge.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/combat.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/interactions.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/inventory.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/movement.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/resources.js",
+        "noetrium_platform/capabilities/environment/minecraft/providers/assets/mineflayer_bridge/runtime.js"
+      ]
     },
     {
       "profile_id": "embodied",

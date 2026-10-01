@@ -1,30 +1,40 @@
 from __future__ import annotations
 
+from pathlib import Path
+import tempfile
 from threading import RLock
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os_graph import (
     bind_research_portfolio_scheduler,
     compile_research_portfolio_graph,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
+from noetrium_platform.research.execution.graph.providers.sqlite import SQLiteResearchGraphExecutionStore
+
+
+
+def _graph_store(label: str) -> SQLiteResearchGraphExecutionStore:
+    root = Path(tempfile.mkdtemp(prefix=f"noetrium-{label}-"))
+    return SQLiteResearchGraphExecutionStore(root / "research-graph.sqlite3")
 
 
 def _method(payload=None):
     return payload
 
 
-def _search_program() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("search-paper")
+def _search_program() -> research_os_api.ResearchProgram:
+    builder = research_os_api.ResearchProgramBuilder("search-paper")
     builder.method("method", implementation=_method)
     builder.experiment(
         "explore",
         definitions=("method",),
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "candidates",
-                api.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -32,17 +42,17 @@ def _search_program() -> api.ResearchProgram:
         "select",
         depends_on=("explore",),
         outputs=(
-            api.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "best",
-                api.ResearchValueKind.SELECTION,
+                research_os_api.ResearchValueKind.SELECTION,
             ),
         ),
     )
     return builder.freeze()
 
 
-def _confirm_program() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("confirm-paper")
+def _confirm_program() -> research_os_api.ResearchProgram:
+    builder = research_os_api.ResearchProgramBuilder("confirm-paper")
     builder.environment(
         "environment",
         config={"family": "minecraft"},
@@ -54,8 +64,8 @@ def _confirm_program() -> api.ResearchProgram:
     return builder.freeze()
 
 
-def _portfolio(input_name: str = "candidate") -> api.ResearchPortfolio:
-    builder = api.ResearchPortfolioBuilder("suite")
+def _portfolio(input_name: str = "candidate") -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchPortfolioBuilder("suite")
     builder.program(_search_program())
     builder.program(_confirm_program())
     builder.depends(
@@ -64,18 +74,18 @@ def _portfolio(input_name: str = "candidate") -> api.ResearchPortfolio:
         downstream_program_id="confirm-paper",
         downstream_node_id="confirm",
         bindings=(
-            api.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 input_name,
                 "best",
-                api.ResearchValueKind.SELECTION,
+                research_os_api.ResearchValueKind.SELECTION,
             ),
         ),
     )
     return builder.freeze()
 
 
-def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
-    return api.ResearchGraphRevision(
+def _revision(portfolio: research_os_api.ResearchPortfolio) -> research_os_api.ResearchGraphRevision:
+    return research_os_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -85,7 +95,7 @@ def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
 
 class _Execution:
     def __init__(self) -> None:
-        self.order: list[api.ResearchNodeRef] = []
+        self.order: list[research_os_api.ResearchNodeRef] = []
         self._lock = RLock()
 
     def execute(self, context, node, *, deadline) -> None:
@@ -125,18 +135,18 @@ def test_portfolio_compiles_same_and_cross_paper_dependencies_into_one_graph() -
         "search-paper::select",
     )
     confirm = compilation.node("confirm-paper::confirm")
-    assert confirm.ref == api.ResearchNodeRef("confirm-paper", "confirm")
+    assert confirm.ref == research_os_api.ResearchNodeRef("confirm-paper", "confirm")
     assert confirm.definitions[0].definition_id == "environment"
     assert confirm.definitions[0].platform_resolved
 
     assert len(confirm.incoming_edges) == 1
     edge = confirm.incoming_edges[0]
-    assert edge.upstream == api.ResearchNodeRef("search-paper", "select")
+    assert edge.upstream == research_os_api.ResearchNodeRef("search-paper", "select")
     assert tuple(
         (binding.input_name, binding.output_name, binding.kind)
         for binding in edge.bindings
     ) == (
-        ("candidate", "best", api.ResearchValueKind.SELECTION),
+        ("candidate", "best", research_os_api.ResearchValueKind.SELECTION),
     )
     assert confirm.upstream_refs == (edge.upstream,)
     assert confirm.incoming_dependency_digests == (edge.dependency_digest,)
@@ -168,6 +178,8 @@ def test_compiled_portfolio_runs_through_the_same_research_graph_scheduler() -> 
         compilation,
         execution,
         execution_pool=pool,
+        execution_store=_graph_store(compilation.plan.graph_id),
+        execution_id=f"test:{compilation.plan.graph_id}",
     )
     try:
         report = scheduler.execute()
@@ -183,9 +195,9 @@ def test_compiled_portfolio_runs_through_the_same_research_graph_scheduler() -> 
         "search-paper::select",
     }
     positions = {ref: index for index, ref in enumerate(execution.order)}
-    assert positions[api.ResearchNodeRef("search-paper", "explore")] < positions[
-        api.ResearchNodeRef("search-paper", "select")
+    assert positions[research_os_api.ResearchNodeRef("search-paper", "explore")] < positions[
+        research_os_api.ResearchNodeRef("search-paper", "select")
     ]
-    assert positions[api.ResearchNodeRef("search-paper", "select")] < positions[
-        api.ResearchNodeRef("confirm-paper", "confirm")
+    assert positions[research_os_api.ResearchNodeRef("search-paper", "select")] < positions[
+        research_os_api.ResearchNodeRef("confirm-paper", "confirm")
     ]

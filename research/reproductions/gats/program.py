@@ -1,25 +1,22 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-)
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
 
 from .fidelity import GATS_REPRODUCIBILITY_FIDELITY
 
@@ -153,7 +150,7 @@ def _expanded_actions(node_id: str, nodes: Mapping[str, JsonObject]) -> set[str]
     }
 
 
-def _select_node(request: MethodNodeRequest) -> MethodNodeResult:
+def _select_node(request: MethodCall) -> MethodNodeResult:
     nodes = _node_map(request.state)
     goal = _text(request.state.get("goal_state"), "goal_state")
     expandable: list[JsonObject] = []
@@ -169,7 +166,7 @@ def _select_node(request: MethodNodeRequest) -> MethodNodeResult:
             expandable.append(row)
 
     if not expandable:
-        return MethodNodeResult(
+        return dict(
             value={"search_exhausted": True},
             state_update={"search_exhausted": True},
             next_node="return",
@@ -194,19 +191,19 @@ def _select_node(request: MethodNodeRequest) -> MethodNodeResult:
     selected = max(expandable, key=score)
     selected_id = _text(selected.get("node_id"), "selected node")
     if _text(selected.get("state"), "selected state") == goal:
-        return MethodNodeResult(
+        return dict(
             value={"goal_node_id": selected_id},
             state_update={"best_node_id": selected_id},
             next_node="return",
         )
-    return MethodNodeResult(
+    return dict(
         value={"selected_node_id": selected_id},
         state_update={"selected_node_id": selected_id},
         next_node="expand",
     )
 
 
-def _expand(request: MethodNodeRequest) -> MethodNodeResult:
+def _expand(request: MethodCall) -> MethodNodeResult:
     nodes_tuple = _nodes(request.state)
     nodes = _node_map(request.state)
     selected_id = _text(request.state.get("selected_node_id"), "selected_node_id")
@@ -250,7 +247,7 @@ def _expand(request: MethodNodeRequest) -> MethodNodeResult:
         "reward": reward,
         "terminal": terminal,
     }
-    return MethodNodeResult(
+    return dict(
         value={
             "node_id": child_id,
             "state": next_state,
@@ -272,7 +269,7 @@ def _expand(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _backprop(request: MethodNodeRequest) -> MethodNodeResult:
+def _backprop(request: MethodCall) -> MethodNodeResult:
     child_id = _text(request.state.get("expanded_child_id"), "expanded_child_id")
     nodes_tuple = _nodes(request.state)
     nodes = {_text(row.get("node_id"), "node_id"): row for row in nodes_tuple}
@@ -296,7 +293,7 @@ def _backprop(request: MethodNodeRequest) -> MethodNodeResult:
     iteration = _integer(request.state.get("iteration", 0), "iteration") + 1
     terminal = child.get("terminal") is True
     budget_exhausted = iteration >= 20
-    return MethodNodeResult(
+    return dict(
         value={
             "iteration": iteration,
             "terminal": terminal,
@@ -330,7 +327,7 @@ def _plan_for(node_id: str, nodes: Mapping[str, JsonObject]) -> tuple[str, ...]:
     return tuple(actions)
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     nodes = _node_map(request.state)
     goal = _text(request.state.get("goal_state"), "goal_state")
     goal_nodes = [
@@ -346,7 +343,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
         best = nodes[_text(request.state.get("best_node_id"), "best_node_id")]
         success = False
     best_id = _text(best.get("node_id"), "best node")
-    return MethodNodeResult(
+    return dict(
         value={
             "task_success": success,
             "plan": _plan_for(best_id, nodes),
@@ -363,7 +360,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_gats_stress_b20_method_program() -> MethodProgram:
+def build_gats_stress_b20_method_program(method, ) -> None:
     fidelity = GATS_REPRODUCIBILITY_FIDELITY
     configuration: JsonObject = {
         "source_commit": fidelity.source.commit,
@@ -375,17 +372,9 @@ def build_gats_stress_b20_method_program() -> MethodProgram:
         "stress_categories": fidelity.stress_categories,
         "stress_tasks_per_category": fidelity.stress_tasks_per_category,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="gats-stress-b20",
-            implementation_version=fidelity.source.commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="gats.stress-b20.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     visits = 21
-    builder = MethodProgramBuilder(identity, entrypoint="select")
+    builder = method
     builder.route(
         "select",
         "gats.ucb.select",
@@ -408,20 +397,31 @@ def build_gats_stress_b20_method_program() -> MethodProgram:
         max_visits=20,
     )
     builder.return_node("return", "gats.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=("gats.search-tree", "gats.direct-transition"),
-        metric_names=("task_success", "search_nodes", "plan_cost"),
-        artifact_kinds=("gats_search_tree",),
+    builder.configure(configuration)
+    builder.policy(
+        execution='checkpointable',
+        evidence=("gats.search-tree", "gats.direct-transition"),
+        metrics=("task_success", "search_nodes", "plan_cost"),
+        artifacts=("gats_search_tree",),
     )
+    return builder
 
 
-GATS_STRESS_B20_METHOD_PROGRAM = build_gats_stress_b20_method_program()
+METHOD_CONFIGURER = build_gats_stress_b20_method_program
+METHOD_ENTRYPOINT = "select"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "GATS_STRESS_B20_METHOD_PROGRAM",
-    "build_gats_stress_b20_method_program",
-    "gats_stress_initial_state",
+    'build_gats_stress_b20_method_program',
+    'gats_stress_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'gats', "version": "paper-protocol", "semantic_contract": 'gats' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

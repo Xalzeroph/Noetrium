@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
 
 from .fidelity import GENERATIVE_AGENTS_AUDITED_COMMIT
 from .retrieval import GenerativeMemoryNode, retrieve_top
@@ -81,7 +78,7 @@ def generative_agents_initial_state(
     }
 
 
-def _retrieve(request: MethodNodeRequest) -> MethodNodeResult:
+def _retrieve(request: MethodCall) -> MethodNodeResult:
     scores = retrieve_top(
         _memory_nodes(request.state.get("memories", ())),
         focal_embedding=_vector(
@@ -89,7 +86,7 @@ def _retrieve(request: MethodNodeRequest) -> MethodNodeResult:
             "focal_embedding",
         ),
     )
-    return MethodNodeResult(
+    return dict(
         value={
             "retrieved_memory_ids": tuple(row.node.node_id for row in scores),
             "retrieval_scores": tuple(
@@ -119,7 +116,7 @@ def _retrieve(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _reflection_view(request: MethodNodeRequest) -> JsonObject:
+def _reflection_view(request: MethodCall) -> JsonObject:
     return {
         "agent_id": request.state.get("agent_id"),
         "observation": request.state.get("observation"),
@@ -131,7 +128,7 @@ def _reflection_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_reflection(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         reflections = (value,)
@@ -145,13 +142,13 @@ def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
             raise TypeError("Generative Agents reflection output must be text sequence")
     else:
         raise TypeError("Generative Agents reflection output must be text or object")
-    return MethodNodeResult(
+    return dict(
         value={"reflections": reflections},
         state_update={"reflections": reflections},
     )
 
 
-def _planning_view(request: MethodNodeRequest) -> JsonObject:
+def _planning_view(request: MethodCall) -> JsonObject:
     return {
         "agent_id": request.state.get("agent_id"),
         "observation": request.state.get("observation"),
@@ -161,7 +158,7 @@ def _planning_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_plan(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_plan(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         plan = value
@@ -170,10 +167,10 @@ def _record_plan(request: MethodNodeRequest) -> MethodNodeResult:
     else:
         raise TypeError("Generative Agents planning output must be text or object")
     plan = _text(plan, "plan")
-    return MethodNodeResult(value={"plan": plan}, state_update={"plan": plan})
+    return dict(value={"plan": plan}, state_update={"plan": plan})
 
 
-def _behavior_view(request: MethodNodeRequest) -> JsonObject:
+def _behavior_view(request: MethodCall) -> JsonObject:
     return {
         "agent_id": request.state.get("agent_id"),
         "observation": request.state.get("observation"),
@@ -184,7 +181,7 @@ def _behavior_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_behavior(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_behavior(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         behavior = value
@@ -193,15 +190,15 @@ def _record_behavior(request: MethodNodeRequest) -> MethodNodeResult:
     else:
         raise TypeError("Generative Agents behavior output must be text or object")
     behavior = _text(behavior, "behavior")
-    return MethodNodeResult(
+    return dict(
         value={"behavior": behavior},
         state_update={"behavior": behavior},
         next_node="return",
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "agent_id": request.state.get("agent_id"),
             "retrieved_memory_ids": request.state.get("retrieved_memory_ids", ()),
@@ -212,11 +209,11 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_generative_agents_method_program(
+def build_generative_agents_method_program(method,
     *,
     enable_reflection: bool = True,
     enable_planning: bool = True,
-) -> MethodProgram:
+) -> None:
     if type(enable_reflection) is not bool or type(enable_planning) is not bool:
         raise TypeError("Generative Agents ablation flags must be boolean")
 
@@ -227,15 +224,7 @@ def build_generative_agents_method_program(
         "enable_planning": enable_planning,
         "population_protocol": 25,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="generative-agents",
-            implementation_version=GENERATIVE_AGENTS_AUDITED_COMMIT[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="generative-agents.uist2023.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     after_retrieve = (
         "reflection"
         if enable_reflection
@@ -243,7 +232,7 @@ def build_generative_agents_method_program(
         if enable_planning
         else "behavior"
     )
-    builder = MethodProgramBuilder(identity, entrypoint="retrieve")
+    builder = method
     builder.compute(
         "retrieve",
         "generative-agents.memory.retrieve",
@@ -257,7 +246,7 @@ def build_generative_agents_method_program(
             "generative-agents.memory.reflect",
             _REFLECTION_AGENT,
             ("record_reflection",),
-            view_handler=_reflection_view,
+            view=_reflection_view,
         )
         builder.compute(
             "record_reflection",
@@ -271,7 +260,7 @@ def build_generative_agents_method_program(
             "generative-agents.plan",
             _PLANNING_AGENT,
             ("record_plan",),
-            view_handler=_planning_view,
+            view=_planning_view,
         )
         builder.compute(
             "record_plan",
@@ -284,7 +273,7 @@ def build_generative_agents_method_program(
         "generative-agents.behavior",
         _BEHAVIOR_AGENT,
         ("record_behavior",),
-        view_handler=_behavior_view,
+        view=_behavior_view,
     )
     builder.compute(
         "record_behavior",
@@ -293,31 +282,42 @@ def build_generative_agents_method_program(
         ("return",),
     )
     builder.return_node("return", "generative-agents.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "generative-agents.memory-retrieval",
             "generative-agents.reflection",
             "generative-agents.plan",
             "generative-agents.behavior",
         ),
-        metric_names=(
+        metrics=(
             "believability_score",
             "reflection_count",
             "model_call_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "generative_agents_memory_projection",
             "generative_agents_behavior_trace",
         ),
     )
+    return builder
 
 
-GENERATIVE_AGENTS_METHOD_PROGRAM = build_generative_agents_method_program()
+METHOD_CONFIGURER = build_generative_agents_method_program
+METHOD_ENTRYPOINT = "retrieve"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "GENERATIVE_AGENTS_METHOD_PROGRAM",
-    "build_generative_agents_method_program",
-    "generative_agents_initial_state",
+    'build_generative_agents_method_program',
+    'generative_agents_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'generative-agents', "version": "paper-protocol", "semantic_contract": 'generative-agents' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

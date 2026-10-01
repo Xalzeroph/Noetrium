@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from noetrium_platform.foundation.kernel.kernel import MachineJournalPort
+
 from noetrium_platform.capabilities.environment.api.provider import (
     EnvironmentProviderCapabilities,
     EnvironmentSessionServices,
@@ -52,11 +54,12 @@ def compose_state_machine_environment(
     spec: StateMachineEnvironmentSpec,
     *,
     dynamics: StateMachineDynamicsPort,
+    journal: MachineJournalPort,
 ) -> StateMachineEnvironmentAssembly:
     implementation = StateMachineEnvironmentImplementation(spec, dynamics)
     return StateMachineEnvironmentAssembly(
         implementation=implementation,
-        runtime=StateMachineEnvironmentRuntime(),
+        runtime=StateMachineEnvironmentRuntime(journal=journal),
     )
 
 

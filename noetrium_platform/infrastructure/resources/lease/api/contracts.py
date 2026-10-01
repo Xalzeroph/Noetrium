@@ -19,6 +19,38 @@ class ResourceKind(StrEnum):
     CONTAINER = "container"
     NETWORK_ENDPOINT = "network-endpoint"
     RECOVERY = "recovery"
+    RUNTIME_FABRIC = "runtime-fabric"
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceLeasePolicy:
+    """Universal TTL/renewal policy for generic durable resource leases."""
+
+    ttl_seconds: float = 120.0
+    renewal_interval_seconds: float = 30.0
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(float(self.ttl_seconds)) or self.ttl_seconds <= 0:
+            raise ValueError("resource lease ttl_seconds must be finite and > 0")
+        if (
+            not math.isfinite(float(self.renewal_interval_seconds))
+            or self.renewal_interval_seconds <= 0
+        ):
+            raise ValueError(
+                "resource lease renewal_interval_seconds must be finite and > 0"
+            )
+        if self.renewal_interval_seconds >= self.ttl_seconds:
+            raise ValueError(
+                "resource lease renewal interval must be shorter than ttl"
+            )
+
+
+DEFAULT_RESOURCE_LEASE_POLICY = ResourceLeasePolicy()
+
+
+class ResourceLeaseCardinality(StrEnum):
+    SINGLE_ACTIVE = "single-active"
+    MULTI_ACTIVE = "multi-active"
 
 
 class ResourceOwnership(StrEnum):
@@ -39,10 +71,6 @@ class ResourceIdentity:
     resource_id: str
 
     def __post_init__(self) -> None:
-        if type(self.kind) is not ResourceKind:
-            raise TypeError("resource kind must be ResourceKind")
-        if type(self.resource_id) is not str:
-            raise TypeError("resource_id must be str")
         if not self.resource_id.strip():
             raise ValueError("resource_id must be non-empty")
 
@@ -56,14 +84,7 @@ class ResourceOwner:
     resource: ResourceIdentity
     scope: ScopeIdentity
     ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED
-
-    def __post_init__(self) -> None:
-        if type(self.resource) is not ResourceIdentity:
-            raise TypeError("resource owner resource must be ResourceIdentity")
-        if type(self.scope) is not ScopeIdentity:
-            raise TypeError("resource owner scope must be ScopeIdentity")
-        if type(self.ownership) is not ResourceOwnership:
-            raise TypeError("resource owner ownership must be ResourceOwnership")
+    lease_cardinality: ResourceLeaseCardinality = ResourceLeaseCardinality.SINGLE_ACTIVE
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,32 +101,16 @@ class ResourceLease:
     released_at_epoch_s: float | None = None
 
     def __post_init__(self) -> None:
-        if type(self.lease_id) is not str or type(self.purpose) is not str:
-            raise TypeError("lease_id and purpose must be str")
         if not self.lease_id.strip() or not self.purpose.strip():
             raise ValueError("lease identity and purpose must be non-empty")
-        if type(self.resource) is not ResourceIdentity:
-            raise TypeError("lease resource must be ResourceIdentity")
-        if type(self.holder_scope) is not ScopeIdentity:
-            raise TypeError("lease holder_scope must be ScopeIdentity")
-        if type(self.state) is not LeaseState:
-            raise TypeError("lease state must be LeaseState")
-        if type(self.holder_generation) is not int:
-            raise TypeError("lease holder_generation must be int")
         if self.holder_generation < 1:
             raise ValueError("lease holder generation must be >= 1")
-        if type(self.fencing_token) is not int:
-            raise TypeError("lease fencing_token must be int")
         if self.fencing_token < 1:
             raise ValueError("lease fencing token must be >= 1")
-        if self.expires_at_epoch_s is not None and type(self.expires_at_epoch_s) not in (int, float):
-            raise TypeError("lease expiry must be int or float")
         if self.expires_at_epoch_s is not None and (
             not math.isfinite(float(self.expires_at_epoch_s)) or self.expires_at_epoch_s <= 0
         ):
             raise ValueError("lease expiry must be a finite positive epoch timestamp")
-        if self.acquired_at_epoch_s is not None and type(self.acquired_at_epoch_s) not in (int, float):
-            raise TypeError("lease acquisition must be int or float")
         if self.acquired_at_epoch_s is not None and (
             not math.isfinite(float(self.acquired_at_epoch_s)) or self.acquired_at_epoch_s <= 0
         ):
@@ -144,6 +149,9 @@ __all__ = [
     "ResourceIdentity",
     "ResourceKind",
     "ResourceLease",
+    "ResourceLeaseCardinality",
+    "ResourceLeasePolicy",
+    "DEFAULT_RESOURCE_LEASE_POLICY",
     "ResourceOwner",
     "ResourceOwnership",
 ]

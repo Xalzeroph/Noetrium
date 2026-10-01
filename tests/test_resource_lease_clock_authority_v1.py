@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 from pathlib import Path
 
 import pytest
@@ -15,11 +19,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
-)
-from noetrium_platform.infrastructure.resources.providers import (
-    SQLiteResourceLeaseRegistry,
 )
 from noetrium_platform.infrastructure.reliability.recovery.api.lease import (
     RecoveryLeaseBusy,
@@ -28,8 +28,8 @@ from noetrium_platform.infrastructure.reliability.recovery.api.lease import (
 
 def _registry(kind: str, tmp_path: Path, clock: ManualLeaseClock):
     if kind == "memory":
-        return InMemoryResourceLeaseRegistry(clock=clock)
-    return SQLiteResourceLeaseRegistry(
+        return TestResourceLeaseRegistry(clock=clock)
+    return ResourceLeaseRegistry(
         tmp_path / "lease-clock.sqlite3",
         clock=clock,
     )
@@ -257,7 +257,7 @@ def test_recovery_authority_ignores_wall_clock_jumps(
     clock.jump_wall(5_000_000.0)
     assert recovery.assert_owned("runtime-owner", "manifest-a") == acquired
 
-    clock.jump_wall(-5_020_000.0)
+    clock.jump_wall(-10_000_000.0)
     clock.advance(9.0, wall_seconds=0.0)
     assert recovery.assert_owned("runtime-owner", "manifest-a").owner_id == (
         "runtime-owner"

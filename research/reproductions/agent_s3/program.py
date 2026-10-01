@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .context import (
     AgentS3GeneratorTurn,
@@ -105,7 +102,7 @@ def _reflection_turns(state: Mapping[str, JsonValue]) -> tuple[AgentS3Reflection
     return tuple(result)
 
 
-def _projected_context(request: MethodNodeRequest):
+def _projected_context(request: MethodCall):
     return project_agent_s3_context(
         generator_turns=_generator_turns(request.state),
         reflection_turns=_reflection_turns(request.state),
@@ -139,7 +136,7 @@ def agent_s3_initial_state(
     }
 
 
-def _reflection_view(request: MethodNodeRequest) -> JsonObject:
+def _reflection_view(request: MethodCall) -> JsonObject:
     view = _projected_context(request)
     return {
         "phase": "trajectory_reflection",
@@ -165,7 +162,7 @@ def _reflection_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_reflection(request: MethodCall) -> MethodNodeResult:
     text = _model_text(request.previous_value, "reflection response")
     rows = list(_sequence(request.state.get("reflection_turns", ()), "reflection_turns"))
     observation = request.state.get("observation", {})
@@ -180,7 +177,7 @@ def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
     count = request.state.get("model_call_count", 0)
     if type(count) is not int or count < 0:
         raise ValueError("Agent S3 model_call_count must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value={"reflection": text},
         state_update={
             "reflection_turns": tuple(rows),
@@ -189,7 +186,7 @@ def _record_reflection(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _worker_view(request: MethodNodeRequest) -> JsonObject:
+def _worker_view(request: MethodCall) -> JsonObject:
     view = _projected_context(request)
     latest_reflection = (
         view.reflection_turns[-1].text if view.reflection_turns else ""
@@ -215,7 +212,7 @@ def _worker_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_worker(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_worker(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     use_code_agent = False
     code_request = ""
@@ -242,7 +239,7 @@ def _record_worker(request: MethodNodeRequest) -> MethodNodeResult:
     count = request.state.get("model_call_count", 0)
     if type(count) is not int or count < 0:
         raise ValueError("Agent S3 model_call_count must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value={
             "use_code_agent": use_code_agent,
             "action": pending_action,
@@ -257,7 +254,7 @@ def _record_worker(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _code_agent_view(request: MethodNodeRequest) -> JsonObject:
+def _code_agent_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "bounded_code_agent",
         "task_id": request.state.get("task_id"),
@@ -272,12 +269,12 @@ def _code_agent_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_code_agent(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_code_agent(request: MethodCall) -> MethodNodeResult:
     action = _model_text(request.previous_value, "code-agent response")
     count = request.state.get("model_call_count", 0)
     if type(count) is not int or count < 0:
         raise ValueError("Agent S3 model_call_count must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value={"action": action},
         state_update={
             "pending_action": action,
@@ -287,8 +284,8 @@ def _record_code_agent(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_action(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _prepare_action(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "interface": AGENT_S3_FIDELITY.action_interface,
@@ -298,7 +295,7 @@ def _prepare_action(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_environment(request: MethodCall) -> MethodNodeResult:
     result = thaw_json(request.previous_value)
     if not isinstance(result, Mapping):
         raise TypeError("Agent S3 environment result must be an object")
@@ -335,7 +332,7 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
         or action.strip() == AGENT_S3_FIDELITY.task_completion_command
     )
     next_iteration = iteration + 1
-    return MethodNodeResult(
+    return dict(
         value={
             "iteration": next_iteration,
             "success": success,
@@ -362,8 +359,8 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "success": request.state.get("success") is True,
@@ -378,7 +375,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_agent_s3_method_program() -> MethodProgram:
+def build_agent_s3_method_program(method, ) -> None:
     f = AGENT_S3_FIDELITY
     configuration: JsonObject = {
         "repository": f.repository,
@@ -397,22 +394,14 @@ def build_agent_s3_method_program() -> MethodProgram:
         "code_agent_languages": f.code_agent_languages,
         "host_safety_max_turns": _HOST_SAFETY_MAX_TURNS,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="agent-s3",
-            implementation_version=f.release,
-            abi_version="noetrium.method-machine.v1",
-            schema_version="agent-s3.v0.3.2.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="reflection")
+
+    builder = method
     builder.agent(
         "reflection",
         "agent-s3.trajectory.reflect",
         _REFLECTION_AGENT,
         ("record_reflection",),
-        view_handler=_reflection_view,
+        view=_reflection_view,
         max_visits=_HOST_SAFETY_MAX_TURNS,
     )
     builder.compute(
@@ -427,7 +416,7 @@ def build_agent_s3_method_program() -> MethodProgram:
         "agent-s3.worker",
         _WORKER_AGENT,
         ("record_worker",),
-        view_handler=_worker_view,
+        view=_worker_view,
         max_visits=_HOST_SAFETY_MAX_TURNS,
     )
     builder.route(
@@ -442,7 +431,7 @@ def build_agent_s3_method_program() -> MethodProgram:
         "agent-s3.code-agent",
         _CODE_AGENT,
         ("record_code_agent",),
-        view_handler=_code_agent_view,
+        view=_code_agent_view,
         max_visits=f.code_agent_budget,
     )
     builder.compute(
@@ -464,9 +453,9 @@ def build_agent_s3_method_program() -> MethodProgram:
         "agent-s3.environment.act",
         _ENVIRONMENT_ACTION_CAPABILITY,
         ("record_environment",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=_HOST_SAFETY_MAX_TURNS,
-        evidence_obligations=("agent-s3.environment-effect",),
+        evidence=("agent-s3.environment-effect",),
     )
     builder.route(
         "record_environment",
@@ -476,36 +465,47 @@ def build_agent_s3_method_program() -> MethodProgram:
         max_visits=_HOST_SAFETY_MAX_TURNS,
     )
     builder.return_node("return", "agent-s3.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_ENVIRONMENT_ACTION_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_ENVIRONMENT_ACTION_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "agent-s3.context-projection",
             "agent-s3.reflection",
             "agent-s3.environment-effect",
             "agent-s3.trajectory",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "model_call_count",
             "device_action_count",
             "iteration_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "agent_s3_trajectory",
             "agent_s3_reflection",
             "agent_s3_screenshot",
         ),
     )
+    return builder
 
 
-AGENT_S3_METHOD_PROGRAM = build_agent_s3_method_program()
+METHOD_CONFIGURER = build_agent_s3_method_program
+METHOD_ENTRYPOINT = "reflection"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "AGENT_S3_METHOD_PROGRAM",
-    "agent_s3_initial_state",
-    "build_agent_s3_method_program",
+    'agent_s3_initial_state',
+    'build_agent_s3_method_program',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'agent-s3', "version": "paper-protocol", "semantic_contract": 'agent-s3' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

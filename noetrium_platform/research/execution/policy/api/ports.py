@@ -32,6 +32,15 @@ class ExecutionAdmissionPort(Protocol):
         cancellation: CancellationTokenPort | None,
     ) -> ExecutionPermitLeasePort: ...
 
+    def try_acquire(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        deadline: Deadline | None,
+        cancellation: CancellationTokenPort | None,
+    ) -> ExecutionPermitLeasePort | None: ...
+
     def acquire_many(
         self,
         group_id: str,

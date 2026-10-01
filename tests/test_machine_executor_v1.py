@@ -18,6 +18,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIntegrityError,
     MachineKind,
     MachineProgramRef,
+    MachineStateDelta,
     ProgramLock,
     MachineExecutor,
     MachineExecutionError,
@@ -33,7 +34,7 @@ class IncrementInterpreter:
             machine_id=state.machine_id,
             command_id=command.command_id,
             base_revision=state.revision,
-            state_delta={"count": count + 1},
+            state_delta=MachineStateDelta.set(("count",), count + 1),
             event_payloads=({"type": "increment", "command_id": command.command_id},),
         )
 
@@ -45,7 +46,7 @@ class EmittingIncrementInterpreter:
             machine_id=state.machine_id,
             command_id=command.command_id,
             base_revision=state.revision,
-            state_delta={"count": count + 1},
+            state_delta=MachineStateDelta.set(("count",), count + 1),
             event_payloads=({"type": "increment", "command_id": command.command_id},),
             emitted_commands=(MachineCommand(
                 command_id=f"child-{command.command_id}",

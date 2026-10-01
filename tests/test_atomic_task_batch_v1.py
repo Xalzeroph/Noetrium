@@ -122,3 +122,20 @@ def test_atomic_batch_never_starts_partial_ready_set_when_workers_are_insufficie
     finally:
         pool.close_experiment_group(group)
         pool.close()
+
+
+def test_atomic_batch_accepts_singleton_ready_set() -> None:
+    pool = _pool()
+    group = pool.open_experiment_group("atomic-singleton")
+
+    def run(context):
+        context.checkpoint()
+        return "only"
+
+    try:
+        handles = group.submit_atomic_batch(((_spec("only"), run),))
+        assert len(handles) == 1
+        assert handles[0].result(timeout=2.0) == "only"
+    finally:
+        pool.close_experiment_group(group)
+        pool.close()

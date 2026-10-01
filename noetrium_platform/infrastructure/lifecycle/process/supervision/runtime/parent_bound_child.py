@@ -18,8 +18,7 @@ import os
 import signal
 import subprocess
 import sys
-
-from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
+import time
 
 
 _child_group: int | None = None
@@ -371,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
             and not _owner_dead
         ):
             _owner_died()
-        blocking_wait(0.05)
+        time.sleep(0.05)
 
 
 if __name__ == "__main__":

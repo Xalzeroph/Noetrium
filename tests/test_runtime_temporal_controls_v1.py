@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import math
+import time
 from pathlib import Path
 
 import pytest
@@ -74,6 +76,43 @@ def test_readiness_probe_time_controls_must_be_finite(invalid: float) -> None:
         HttpEndpointReadinessProbe(object(), "http://127.0.0.1", poll_interval_s=invalid)
     with pytest.raises(ValueError, match="finite and positive"):
         HttpEndpointReadinessProbe(object(), "http://127.0.0.1", request_timeout_s=invalid)
+
+
+def test_http_readiness_does_not_wait_forever_for_peer_tcp_close() -> None:
+    async def scenario() -> None:
+        release = asyncio.Event()
+
+        async def handler(reader, writer) -> None:
+            try:
+                await reader.readuntil(b"\r\n\r\n")
+                writer.write(
+                    b"HTTP/1.1 200 OK\r\n"
+                    b"Content-Length: 0\r\n"
+                    b"Connection: keep-alive\r\n\r\n"
+                )
+                await writer.drain()
+                await release.wait()
+            finally:
+                writer.close()
+
+        server = await asyncio.start_server(handler, "127.0.0.1", 0)
+        port = server.sockets[0].getsockname()[1]
+        probe = HttpEndpointReadinessProbe(
+            object(),
+            f"http://127.0.0.1:{port}/health",
+            request_timeout_s=0.05,
+        )
+        started = time.monotonic()
+        try:
+            status = await asyncio.wait_for(probe._status(), timeout=0.5)
+            assert status == 200
+            assert time.monotonic() - started < 0.5
+        finally:
+            release.set()
+            server.close()
+            await server.wait_closed()
+
+    asyncio.run(scenario())
 
 
 @pytest.mark.parametrize("invalid", NONFINITE)

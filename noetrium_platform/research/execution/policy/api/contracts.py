@@ -1,17 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+import math
 
 from ..scheduling.api import ExecutionPriority
-from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind, ExecutionPermitRejected
-
-
-class AdmissionMode(StrEnum):
-    """Group-level behavior when hierarchical capacity is unavailable."""
-
-    BLOCK = "block"
-    REJECT = "reject"
+from noetrium_platform.foundation.kernel.concurrency.api import Deadline, ExecutionLaneKind, ExecutionPermitRejected
 
 
 class AdmissionRejected(ExecutionPermitRejected):
@@ -48,7 +41,11 @@ class AdmissionBudget:
         async_io = require_limit(self.max_async_io_in_flight, name="max_async_io_in_flight", fallback=total)
         cpu = require_limit(self.max_cpu_in_flight, name="max_cpu_in_flight", fallback=total)
         serial = require_limit(self.max_serial_in_flight, name="max_serial_in_flight", fallback=total)
-        waiting = require_limit(self.max_waiting, name="max_waiting", fallback=total)
+        waiting = require_limit(
+            self.max_waiting,
+            name="max_waiting",
+            fallback=blocking + async_io + cpu + serial,
+        )
         for name, value in (
             ("max_total_in_flight", total),
             ("max_in_flight_per_group", group),
@@ -116,13 +113,38 @@ class AdmissionIdentity:
 @dataclass(frozen=True, slots=True)
 class AdmissionIntent:
     priority: ExecutionPriority = ExecutionPriority.NORMAL
-    mode: AdmissionMode = AdmissionMode.BLOCK
+    queue_wait_timeout_seconds: float | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.priority, ExecutionPriority):
             raise TypeError("admission priority must be ExecutionPriority")
-        if not isinstance(self.mode, AdmissionMode):
-            raise TypeError("admission mode must be AdmissionMode")
+        timeout = self.queue_wait_timeout_seconds
+        if timeout is None:
+            return
+        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)):
+            raise TypeError("admission queue_wait_timeout_seconds must be numeric or None")
+        timeout = float(timeout)
+        if timeout < 0 or not math.isfinite(timeout):
+            raise ValueError("admission queue_wait_timeout_seconds must be finite and non-negative")
+        object.__setattr__(self, "queue_wait_timeout_seconds", timeout)
+
+    @property
+    def reject_if_wait_required(self) -> bool:
+        return self.queue_wait_timeout_seconds == 0.0
+
+    def constrain_wait_deadline(
+        self,
+        deadline: Deadline | None,
+        *,
+        started_monotonic: float,
+    ) -> Deadline | None:
+        timeout = self.queue_wait_timeout_seconds
+        if timeout is None or timeout == 0.0:
+            return deadline
+        local = Deadline(started_monotonic + timeout)
+        if deadline is None:
+            return local
+        return Deadline(min(deadline.monotonic_deadline, local.monotonic_deadline))
 
 
 @dataclass(frozen=True, slots=True)

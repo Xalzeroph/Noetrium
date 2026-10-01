@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "exact_vwa",
-  "package_digest": "1559d7bfd9866f3096af0e3d76485fe112259642115fc2079a2c7b39de2ac48b",
-  "definition_digest": "d368ab60e481a14d2fbcffbe82133ebf04ae33f249a0dbdf4023b2a6fc508174",
+  "package_digest": "16815fe66bb27662ecf60fd4653ed12e3b7e8eef6756a9f66deb03d8e07eda90",
+  "definition_digest": "d6e00f2937e79c8452496a51257a91a2aa5515c8b6efb77c541eb7e6f424578f",
   "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -83,19 +83,13 @@
       "kind": "method_program",
       "path": "research/reproductions/exact_vwa/program.py",
       "declaration_digest": "10f230739802ccc7d61e0de03b11087f64f13287a3c1a155ce8b1249ea20fe48",
-      "content_sha256": "1aaf6cb371ac904caaa921b5ea0b4e9af4ec734514ecc89057de814dca825d9c"
+      "content_sha256": "a5c6a72de20cc8e0d4145669a2bea83f73fb84e25ac8b8ff7aa2f7a3c859fa83"
     },
     {
       "kind": "study",
       "path": "research/reproductions/exact_vwa/study.py",
       "declaration_digest": "edafb18475de48eef7e51e7daf752b404e9306bd69bb05d2107cefe5d3d7bbdd",
-      "content_sha256": "c253550f6ff4f0af91ebee1154fb074e2ff4049680aabf7133e513653a712264"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/exact_vwa/branch.py",
-      "declaration_digest": "01dfc1fbacc5f9aca4693921ab2815066685fbdd46a7014c31557dffa0ab0421",
-      "content_sha256": "0229d80684f0111e453a8a0c7ed75a509448ef26a6bc471104a46803e104e47a"
+      "content_sha256": "f155c36a6238249507a73c4894e7facfeb4e26e9304cfc022180bdf09456b0c6"
     }
   ],
   "primary_executable": "research/reproductions/exact_vwa/program.py",
@@ -116,15 +110,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_exact_vwa_v1.py",
-      "content_sha256": "9fd02d324a7a52a31acee1856dfa807e5e56432b7fee541c9008a4708b8a30fc"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "exact_vwa",
-    "program_digest": "44ae76151d89782c0a7399500bf203a40411e74b902d72f5155c4c6ff3918cb3",
+    "program_digest": "2f886746621e012dce1b37159752487497cc0b4650c9c564948afd43b72165bc",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

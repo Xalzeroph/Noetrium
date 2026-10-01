@@ -1,13 +1,13 @@
-"""The universal method-machine ABI.
+"""Typed Method authoring ABI lowered into the universal ResearchProgram kernel.
 
-This module is deliberately small: a downstream method supplies a bounded
-state machine and node functions, while Noetrium owns operation envelopes,
-capability access, checkpoints, interrupts, and deterministic evidence.
+A downstream method supplies bounded scientific semantics and node functions.
+Noetrium lowers those semantics into ResearchProgram and owns Machine commits,
+operation envelopes, capabilities, checkpoints, interrupts, and evidence.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 import inspect
@@ -18,6 +18,7 @@ from noetrium_platform.capabilities.api import (
     CapabilityResult,
 )
 from noetrium_platform.capabilities.api import MethodProgramIdentity
+from noetrium_platform.capabilities.api import ArtifactReference
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectClass,
@@ -31,6 +32,12 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from .dispatch import OperationDispatchPort
+from noetrium_platform.research.execution.machines.api.host_runtime import (
+    ResearchProgramHostPort,
+)
+from noetrium_platform.research.execution.policy.api import (
+    ExecutionBudgetAuthorityPort,
+)
 
 
 class MethodNodeKind(StrEnum):
@@ -157,9 +164,10 @@ class MethodNodeRequest:
     input_value: JsonValue
     context: ExecutionContext
     previous_value: JsonValue = None
+    effect_receipts: Sequence[EffectReceipt] = ()
     capabilities: CapabilityPort | None = None
     child_machines: MethodChildMachinePort | None = None
-    visit_counts: tuple[tuple[str, int], ...] = ()
+    visit_counts: Mapping[str, int] = field(default_factory=dict)
     checkpoint: JsonValue = None
     parent_machine_id: str | None = None
 
@@ -172,6 +180,10 @@ class MethodNodeRequest:
             raise TypeError("method node request state must be a mapping")
         if not isinstance(self.context, ExecutionContext):
             raise TypeError("method node request context must be ExecutionContext")
+        if not isinstance(self.effect_receipts, Sequence):
+            raise TypeError(
+                "method node request effect_receipts must be an EffectReceipt sequence"
+            )
         if self.parent_machine_id is not None and (
             type(self.parent_machine_id) is not str
             or not self.parent_machine_id.strip()
@@ -192,13 +204,13 @@ class MethodNodeRequest:
                 self.child_machines.identity_digest,
                 "method child-machine port identity_digest",
             )
-        if not isinstance(self.visit_counts, tuple) or any(
-            not isinstance(item, tuple) or len(item) != 2
-            or not isinstance(item[0], str) or not item[0].strip()
-            or type(item[1]) is not int or item[1] < 0
-            for item in self.visit_counts
+        if not isinstance(self.visit_counts, Mapping) or any(
+            type(key) is not str or not key.strip()
+            or type(count) is not int or count < 0
+            for key, count in self.visit_counts.items()
         ):
-            raise TypeError("method node request visit_counts must be typed pairs")
+            raise TypeError("method node request visit_counts must be a non-negative mapping")
+        object.__setattr__(self, "visit_counts", freeze_json(self.visit_counts))
         object.__setattr__(self, "state", freeze_json(self.state))
         object.__setattr__(self, "input_value", freeze_json(self.input_value))
         object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
@@ -275,112 +287,6 @@ class AsyncMethodAgentLoopPort(Protocol):
     async def run_async(self, request: MethodAgentRequest) -> MethodAgentResult: ...
 
 
-@dataclass(frozen=True, slots=True)
-class MethodAuthoritativeState:
-    run_id: str
-    program_digest: str
-    sequence: int
-    current_node: str
-    state: JsonObject
-    previous_value: JsonValue = None
-    visit_counts: tuple[tuple[str, int], ...] = ()
-    events: tuple[MethodEvent, ...] = ()
-    effect_receipts: tuple[EffectReceipt, ...] = ()
-    checkpoint_value: JsonValue = None
-    binding_plan_digest: str | None = None
-    runtime_binding_digest: str | None = None
-    schema_digest: str | None = None
-
-    def __post_init__(self) -> None:
-        if any(not isinstance(value, str) or not value.strip() for value in (self.run_id, self.program_digest, self.current_node)):
-            raise ValueError("method authoritative state identity fields are required")
-        require_sha256(self.program_digest, "method authoritative state program_digest")
-        if type(self.sequence) is not int or self.sequence < 0:
-            raise ValueError("method authoritative state sequence must be non-negative")
-        if not isinstance(self.state, Mapping):
-            raise TypeError("method authoritative state must be a mapping")
-        if not isinstance(self.visit_counts, tuple) or any(
-            not isinstance(item, tuple) or len(item) != 2
-            or not isinstance(item[0], str) or not item[0].strip()
-            or type(item[1]) is not int or item[1] < 0
-            for item in self.visit_counts
-        ):
-            raise TypeError("method authoritative visit_counts must be typed pairs")
-        if len({item[0] for item in self.visit_counts}) != len(self.visit_counts):
-            raise ValueError("method authoritative visit_counts must have unique node ids")
-        if not isinstance(self.events, tuple) or any(not isinstance(item, MethodEvent) for item in self.events):
-            raise TypeError("method authoritative events must be MethodEvent tuple")
-        if not isinstance(self.effect_receipts, tuple) or any(not isinstance(item, EffectReceipt) for item in self.effect_receipts):
-            raise TypeError("method authoritative effect_receipts must be EffectReceipt tuple")
-        for name, value in (("binding_plan_digest", self.binding_plan_digest), ("runtime_binding_digest", self.runtime_binding_digest), ("schema_digest", self.schema_digest)):
-            if value is not None:
-                require_sha256(value, f"method authoritative state {name}")
-        object.__setattr__(self, "state", freeze_json(self.state))
-        object.__setattr__(self, "previous_value", freeze_json(self.previous_value))
-        object.__setattr__(self, "checkpoint_value", freeze_json(self.checkpoint_value))
-
-
-@dataclass(frozen=True, slots=True)
-class MethodTransitionRecord:
-    post_state: MethodAuthoritativeState
-    executed_node: str
-    emitted_events: tuple[MethodEvent, ...] = ()
-    emitted_effect_receipts: tuple[EffectReceipt, ...] = ()
-    emitted_child_links: tuple[ChildMachineLink, ...] = ()
-    interrupt: MethodInterrupt | None = None
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.post_state, MethodAuthoritativeState):
-            raise TypeError("method transition requires MethodAuthoritativeState")
-        if not isinstance(self.executed_node, str) or not self.executed_node.strip():
-            raise ValueError("method transition executed_node is required")
-        if not isinstance(self.emitted_events, tuple) or any(not isinstance(item, MethodEvent) for item in self.emitted_events):
-            raise TypeError("method transition emitted_events must be MethodEvent tuple")
-        if not isinstance(self.emitted_effect_receipts, tuple) or any(not isinstance(item, EffectReceipt) for item in self.emitted_effect_receipts):
-            raise TypeError("method transition emitted_effect_receipts must be EffectReceipt tuple")
-        if not isinstance(self.emitted_child_links, tuple) or any(
-            not isinstance(item, ChildMachineLink) for item in self.emitted_child_links
-        ):
-            raise TypeError("method transition emitted_child_links must be ChildMachineLink tuple")
-        if self.interrupt is not None and not isinstance(self.interrupt, MethodInterrupt):
-            raise TypeError("method transition interrupt must be MethodInterrupt")
-
-
-@dataclass(frozen=True, slots=True)
-class MethodControlRecord:
-    state: MethodAuthoritativeState
-    status: MethodRunStatus
-    failure: str | None = None
-    failure_code: str | None = None
-    failure_phase: str | None = None
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.state, MethodAuthoritativeState):
-            raise TypeError("method control record requires MethodAuthoritativeState")
-        if not isinstance(self.status, MethodRunStatus):
-            raise TypeError("method control status must be MethodRunStatus")
-        for value in (self.failure_code, self.failure_phase):
-            if value is not None and (not isinstance(value, str) or not value.strip()):
-                raise ValueError("method control failure metadata must be non-empty when provided")
-        if self.failure is not None and not isinstance(self.failure, str):
-            raise TypeError("method control failure must be text or None")
-        if self.status is MethodRunStatus.SUCCEEDED and any(
-            value is not None for value in (self.failure, self.failure_code, self.failure_phase)
-        ):
-            raise ValueError("succeeded method control cannot carry failure metadata")
-
-
-@runtime_checkable
-class MethodTransitionAuthorityPort(Protocol):
-    @property
-    def machine_id(self) -> str: ...
-
-    def open(self, *, run_id: str, program: "MethodProgram", initial_state: JsonObject, resume: bool, binding_plan_digest: str | None = None, runtime_binding_digest: str | None = None, schema_digest: str | None = None) -> MethodAuthoritativeState: ...
-    def commit(self, transition: MethodTransitionRecord) -> MethodAuthoritativeState: ...
-    def commit_control(self, record: MethodControlRecord) -> MethodAuthoritativeState: ...
-    def checkpoint(self, state: MethodAuthoritativeState) -> "MethodCheckpoint": ...
-
-
 @runtime_checkable
 class MethodSchemaPort(Protocol):
     def validate(self, schema_id: str, value: JsonValue, *, location: str) -> None: ...
@@ -389,6 +295,10 @@ class MethodSchemaPort(Protocol):
 def _callable_digest(handler: Callable[..., object] | None) -> str:
     if handler is None:
         return canonical_digest({"callable": None})
+    frozen = getattr(handler, "__noetrium_handler_digest__", None)
+    if type(frozen) is str:
+        require_sha256(frozen, "method handler frozen digest")
+        return frozen
     try:
         source = inspect.getsource(handler)
     except (OSError, TypeError):
@@ -411,7 +321,7 @@ class MethodNodeSpec:
     capability_target: MethodCapabilityTargetHandler | None = None
     capability_targets: tuple[str, ...] = ()
     effect_class: EffectClass = EffectClass.PURE
-    max_visits: int = 1
+    max_visits: int | None = 1
     input_schema: str = "json"
     output_schema: str = "json"
     evidence_obligations: tuple[str, ...] = ()
@@ -432,8 +342,12 @@ class MethodNodeSpec:
             raise TypeError("method node kind must be MethodNodeKind")
         if not isinstance(self.effect_class, EffectClass):
             raise TypeError("method node effect_class must be EffectClass")
-        if type(self.max_visits) is not int or self.max_visits < 1:
-            raise ValueError("method node max_visits must be a positive integer")
+        if self.max_visits is not None and (
+            type(self.max_visits) is not int or self.max_visits < 1
+        ):
+            raise ValueError(
+                "method node max_visits must be a positive integer or None"
+            )
         if any(not isinstance(value, str) or not value.strip() for value in (self.input_schema, self.output_schema)):
             raise ValueError("method node schemas must be non-empty text")
         if not isinstance(self.evidence_obligations, tuple) or any(
@@ -590,7 +504,7 @@ class MethodGraph:
 
 @dataclass(frozen=True, slots=True)
 class MethodProgram:
-    """Immutable downstream program definition hosted by UniversalMethodMachine."""
+    """Immutable downstream program definition lowered into the universal ResearchProgram host."""
 
     program_identity: MethodProgramIdentity
     graph: MethodGraph
@@ -686,7 +600,7 @@ class MethodProgramBuilder:
         handler: MethodNodeHandler,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -706,7 +620,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect_class: EffectClass = EffectClass.PURE,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -727,7 +641,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         effect_class: EffectClass = EffectClass.NON_IDEMPOTENT,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -765,7 +679,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view_handler: MethodAgentViewHandler,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -786,7 +700,7 @@ class MethodProgramBuilder:
         next_nodes: tuple[str, ...] = (),
         *,
         view_handler: MethodAgentViewHandler,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
         input_schema: str = "json",
         output_schema: str = "json",
         evidence_obligations: tuple[str, ...] = (),
@@ -816,7 +730,7 @@ class MethodProgramBuilder:
         handler: MethodNodeHandler,
         next_nodes: tuple[str, ...],
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id, operation_type, next_nodes, handler,
@@ -828,7 +742,7 @@ class MethodProgramBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id,
@@ -843,7 +757,7 @@ class MethodProgramBuilder:
         node_id: str,
         next_nodes: tuple[str, ...] = (),
         *,
-        max_visits: int = 1,
+        max_visits: int | None = 1,
     ) -> "MethodProgramBuilder":
         return self.add(MethodNodeSpec(
             node_id,
@@ -934,11 +848,6 @@ class MethodCheckpoint:
         }))
 
 
-@runtime_checkable
-class MethodCheckpointStorePort(Protocol):
-    def save(self, checkpoint: MethodCheckpoint) -> None: ...
-    def load(self, run_id: str) -> MethodCheckpoint | None: ...
-
 
 @dataclass(frozen=True, slots=True)
 class MethodRunResult:
@@ -955,11 +864,13 @@ class MethodRunResult:
     step_count: int = 0
     visit_counts: tuple[tuple[str, int], ...] = ()
     evidence_status: MethodEvidenceStatus = MethodEvidenceStatus.UNKNOWN
+    evidence_reference: ArtifactReference | None = None
     binding_plan_digest: str | None = None
     runtime_binding_digest: str | None = None
     schema_digest: str | None = None
     failure_code: str | None = None
     failure_phase: str | None = None
+    failure_id: str | None = None
     diagnostics: JsonObject = field(default_factory=dict)
     run_digest: str = field(init=False)
 
@@ -988,6 +899,18 @@ class MethodRunResult:
             raise TypeError("method run visit_counts must be typed pairs")
         if not isinstance(self.evidence_status, MethodEvidenceStatus):
             raise TypeError("method run evidence_status must be MethodEvidenceStatus")
+        if self.evidence_reference is not None and type(
+            self.evidence_reference
+        ) is not ArtifactReference:
+            raise TypeError(
+                "method run evidence_reference must be ArtifactReference or null"
+            )
+        if self.failure_id is not None and (
+            not isinstance(self.failure_id, str) or not self.failure_id.strip()
+        ):
+            raise ValueError("method run failure_id must be non-empty text or null")
+        if self.status is MethodRunStatus.SUCCEEDED and self.failure_id is not None:
+            raise ValueError("successful method run cannot carry failure_id")
         if not isinstance(self.diagnostics, Mapping):
             raise TypeError("method run diagnostics must be a mapping")
         object.__setattr__(self, "value", freeze_json(self.value))
@@ -1012,6 +935,7 @@ class MethodRunResult:
             "schema_digest": self.schema_digest,
             "failure_code": self.failure_code,
             "failure_phase": self.failure_phase,
+            "failure_id": self.failure_id,
             "diagnostics": self.diagnostics,
         }))
 
@@ -1021,7 +945,10 @@ class MethodEvidencePort(Protocol):
     """Authoritative evidence sink injected by composition."""
 
     def record_checkpoint(self, checkpoint: MethodCheckpoint) -> None: ...
-    def record_result(self, result: MethodRunResult) -> None: ...
+    def record_result(
+        self,
+        result: MethodRunResult,
+    ) -> ArtifactReference | None: ...
 
     def validate_result(self, result: MethodRunResult, obligations: tuple[str, ...]) -> MethodEvidenceStatus: ...
 
@@ -1044,9 +971,10 @@ class MethodRuntimeContext:
     observation: MethodObservationPort | None = None
     agent_loop: MethodAgentLoopPort | AsyncMethodAgentLoopPort | None = None
     schemas: MethodSchemaPort | None = None
-    transitions: MethodTransitionAuthorityPort | None = None
+    program_host: ResearchProgramHostPort | None = None
+    machine_id: str | None = None
     child_machines: MethodChildMachinePort | None = None
-    async_dispatcher: "AsyncOperationDispatchPort | None" = None
+    execution_budget: ExecutionBudgetAuthorityPort | None = None
     binding_plan_digest: str | None = None
     runtime_binding_digest: str | None = None
     schema_digest: str | None = None
@@ -1054,6 +982,32 @@ class MethodRuntimeContext:
     def __post_init__(self) -> None:
         if not isinstance(self.execution, ExecutionContext):
             raise TypeError("method runtime execution must be ExecutionContext")
+        if self.program_host is not None and not isinstance(
+            self.program_host, ResearchProgramHostPort
+        ):
+            raise TypeError(
+                "method runtime program_host must satisfy ResearchProgramHostPort"
+            )
+        if self.machine_id is not None and (
+            type(self.machine_id) is not str or not self.machine_id.strip()
+        ):
+            raise ValueError("method runtime machine_id must be non-empty text")
+        if (self.program_host is None) != (self.machine_id is None):
+            raise ValueError(
+                "method runtime program_host and machine_id must be bound together"
+            )
+        if self.execution_budget is not None and not isinstance(
+            self.execution_budget,
+            ExecutionBudgetAuthorityPort,
+        ):
+            raise TypeError(
+                "method runtime execution_budget must satisfy "
+                "ExecutionBudgetAuthorityPort"
+            )
+        if self.execution.trial_budget and self.execution_budget is None:
+            raise RuntimeError(
+                "scientific TrialBudget requires the shared execution-budget authority"
+            )
         if self.child_machines is not None:
             if not isinstance(self.child_machines, MethodChildMachinePort):
                 raise TypeError(
@@ -1080,45 +1034,19 @@ class MethodRuntimeContext:
             "child_machine_port_identity_digest": (
                 self.child_machines.identity_digest
             ),
+            "execution_budget_identity_digest": (
+                None
+                if self.execution_budget is None
+                else self.execution_budget.identity_digest
+            ),
         })
 
 
-@runtime_checkable
-class MethodMachinePort(Protocol):
-    """Public host seam; composition chooses the concrete runtime provider."""
-
-    def run(
-        self,
-        program: MethodProgram,
-        *,
-        runtime: MethodRuntimeContext,
-        input_value: JsonValue = None,
-        initial_state: Mapping[str, JsonValue] | None = None,
-        resume: bool = False,
-    ) -> MethodRunResult: ...
-
-    async def run_async(
-        self,
-        program: MethodProgram,
-        *,
-        runtime: MethodRuntimeContext,
-        input_value: JsonValue = None,
-        initial_state: Mapping[str, JsonValue] | None = None,
-        resume: bool = False,
-    ) -> MethodRunResult: ...
-
-
-@runtime_checkable
-class AsyncOperationDispatchPort(Protocol):
-    async def dispatch_async(self, **kwargs: object) -> object: ...
-
-
 __all__ = [
-    "AsyncMethodAgentLoopPort", "AsyncOperationDispatchPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult",
-    "MethodCheckpoint", "MethodCheckpointStorePort", "MethodEvidencePort", "MethodEvent", "MethodEvidenceStatus",
+    "AsyncMethodAgentLoopPort", "MethodAgentLoopPort", "MethodAgentRequest", "MethodAgentResult",
+    "MethodCheckpoint", "MethodEvidencePort", "MethodEvent", "MethodEvidenceStatus",
     "MethodExecutionClass", "MethodGraph", "MethodInterrupt", "MethodNodeHandler", "MethodNodeKind", "MethodNodeRequest",
     "MethodNodeResult", "MethodNodeSpec", "MethodObservationPort", "MethodProgram", "MethodProgramBuilder",
     "MethodChildMachinePort",
-    "MethodRunResult", "MethodMachinePort", "MethodRunStatus", "MethodRuntimeContext", "MethodRuntimePort", "MethodSchemaPort",
-    "MethodAuthoritativeState", "MethodControlRecord", "MethodTransitionAuthorityPort", "MethodTransitionRecord",
+    "MethodRunResult", "MethodRunStatus", "MethodRuntimeContext", "MethodRuntimePort", "MethodSchemaPort",
 ]

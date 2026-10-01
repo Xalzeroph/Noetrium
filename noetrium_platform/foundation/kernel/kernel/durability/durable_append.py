@@ -150,6 +150,27 @@ def append_bytes(
         raise DurableAppendError(f"append failed for {path}") from exc
 
 
+def write_all_file_descriptor(
+    fd: int,
+    payload: bytes | bytearray | memoryview,
+) -> None:
+    """Write a complete byte payload to an already-owned descriptor.
+
+    Descriptor creation/close and semantic ownership remain with the caller.
+    The kernel owns the partial-write loop so raw os.write never escapes the
+    filesystem/process durability boundary.
+    """
+    if type(fd) is not int or fd < 0:
+        raise ValueError("file descriptor must be a non-negative integer")
+    view = memoryview(payload)
+    offset = 0
+    while offset < len(view):
+        written = os.write(fd, view[offset:])
+        if written <= 0:
+            raise OSError("file-descriptor write made no progress")
+        offset += written
+
+
 def durable_append_bytes(path: Path, payload: bytes) -> None:
     """Append bytes and make the new complete prefix crash-durable."""
     append_bytes(
@@ -165,4 +186,5 @@ __all__ = [
     "PersistentAppendFile",
     "append_bytes",
     "durable_append_bytes",
+    "write_all_file_descriptor",
 ]

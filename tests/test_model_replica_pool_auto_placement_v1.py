@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
-import threading
 
 import pytest
 
@@ -17,9 +16,11 @@ from noetrium_platform.capabilities.model.deployment.composition import (
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.concurrency.api import ContentAddressedSingleFlight
 from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelIdentity
 from noetrium_platform.capabilities.model.stack.api import (
     ModelArtifactClosure,
+    ModelServingPolicy,
     ModelStackSpec,
     RuntimeBuildIdentity,
 )
@@ -27,6 +28,12 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
     EndpointAllocationRequest,
     EndpointAllocationState,
+)
+from noetrium_platform.infrastructure.resources.lease.api import (
+    LeaseState,
+    ResourceIdentity,
+    ResourceKind,
+    ResourceLease,
 )
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation,
@@ -37,16 +44,6 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeRequirement,
     GpuSharingMode,
 )
-
-
-def _exception_leaf_messages(exc: BaseException) -> tuple[str, ...]:
-    if isinstance(exc, BaseExceptionGroup):
-        return tuple(
-            message
-            for child in exc.exceptions
-            for message in _exception_leaf_messages(child)
-        )
-    return (str(exc),)
 
 
 def _vllm_stack(
@@ -69,7 +66,7 @@ def _vllm_stack(
         ),
         ModelArtifactClosure("weights", "tokenizer", "config"),
         RuntimeBuildIdentity(
-            "container",
+            "c" * 64,
             "engine",
             "lock",
             "cuda",
@@ -98,6 +95,22 @@ class Catalog:
         self.rows[spec.deployment_id] = spec
         return spec
 
+    def deployment(self, deployment_id):
+        return self.rows[deployment_id]
+
+    def deployments(self):
+        return tuple(self.rows[key] for key in sorted(self.rows))
+
+    def select(self, selector):
+        required_tags = set(selector.tags)
+        return tuple(
+            spec
+            for spec in self.deployments()
+            if required_tags.issubset(spec.tags)
+            and (selector.model_id is None or selector.model_id == spec.model_id)
+            and (selector.engine is None or selector.engine == spec.engine)
+        )
+
 
 class Runtime:
     def __init__(self, catalog):
@@ -122,6 +135,9 @@ class Runtime:
             canonical_digest(spec),
             canonical_digest({"fake-applied": deployment_id}),
         )
+
+    def start(self, generation):
+        return self.status(generation.deployment_id)
 
     def remove_deployment(self, generation):
         current = self.generation(generation.deployment_id)
@@ -166,6 +182,8 @@ class Scheduler:
         self.released = []
         self.requirements = []
         self.rows = {}
+        self.excluded_gpu_history = []
+        self.invalid_unbound_gpu_ids = set()
 
     def candidates(self, requirement, *, scope=None):
         return (self.host,)
@@ -179,9 +197,17 @@ class Scheduler:
         placement_scope=None,
         ttl_seconds=None,
         now=None,
+        excluded_gpus=frozenset(),
     ):
         self.requirements.append(requirement)
-        if self.next >= 2:
+        self.excluded_gpu_history.append(excluded_gpus)
+        while (
+            self.next < len(self.host.gpus)
+            and (self.host.host_id, self.host.gpus[self.next].gpu_id)
+            in excluded_gpus
+        ):
+            self.next += 1
+        if self.next >= len(self.host.gpus):
             raise ComputePlacementUnavailable(requirement)
         gpu = self.host.gpus[self.next]
         self.next += 1
@@ -197,6 +223,13 @@ class Scheduler:
         )
         self.rows[row.allocation_id] = row
         return row
+
+    def unbound_placement_satisfies(self, allocation, requirement):
+        del requirement
+        return not any(
+            gpu_id in self.invalid_unbound_gpu_ids
+            for gpu_id in allocation.gpu_ids
+        )
 
     def confirm_bound(self, proof):
         current = self.rows[proof.allocation_id]
@@ -236,6 +269,32 @@ class Scheduler:
         )
         self.rows[proof.allocation_id] = rebound
         return rebound
+
+    def allocations(self, *, scope=None):
+        return tuple(
+            row for row in self.rows.values()
+            if scope is None or row.scope == scope
+        )
+
+    def reacquire(
+        self,
+        allocation,
+        *,
+        ttl_seconds,
+        now=None,
+    ):
+        current = self.rows[allocation.allocation_id]
+        return current
+
+    def retain_many(self, allocations, *, now=None):
+        del now
+        retained = tuple(
+            replace(row, lease_expires_at_epoch_s=None)
+            for row in allocations
+        )
+        for row in retained:
+            self.rows[row.allocation_id] = row
+        return retained
 
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
@@ -311,6 +370,38 @@ class Endpoints:
         self.rows[proof.allocation_id] = rebound
         return rebound
 
+    def active(self):
+        return tuple(
+            row for row in self.rows.values()
+            if row.state.is_live
+        )
+
+    def get(self, allocation_id):
+        return self.rows[allocation_id]
+
+    def reacquire(
+        self,
+        allocation,
+        *,
+        ttl_seconds=None,
+        now=None,
+    ):
+        current = self.rows[allocation.allocation_id]
+        assert current.state in {
+            EndpointAllocationState.RESERVED, EndpointAllocationState.BOUND
+        }
+        return current
+
+    def retain_many(self, allocations, *, now=None):
+        del now
+        retained = tuple(
+            replace(row, lease_expires_at_epoch_s=None)
+            for row in allocations
+        )
+        for row in retained:
+            self.rows[row.allocation_id] = row
+        return retained
+
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
         current = self.rows[allocation.allocation_id]
@@ -323,6 +414,27 @@ class Endpoints:
     def recover_release(self, allocation, *, now=None):
         del now
         return self.release(allocation)
+
+
+class RuntimeFabricLeases:
+    def __init__(self, *lease_ids: str) -> None:
+        resource = ResourceIdentity(ResourceKind.RUNTIME_FABRIC, "host-runtime-fabric")
+        self.rows = tuple(
+            ResourceLease(
+                lease_id,
+                resource,
+                PLATFORM_SCOPE,
+                "runtime-fabric-consumer",
+            )
+            for lease_id in lease_ids
+        )
+
+    def active_for(self, resource):
+        return tuple(
+            row
+            for row in self.rows
+            if row.resource == resource and row.state is LeaseState.ACTIVE
+        )
 
 
 class Guard:
@@ -363,6 +475,119 @@ class EndpointGuards:
         return guard
 
 
+def _stale_warm_realization_fixture(tmp_path):
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    first = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    request = ModelReplicaPoolRequest(
+        pool_id="stale-warm",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        model_stack=_vllm_stack(),
+        cwd=Path(tmp_path),
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        replica_count=1,
+    )
+    lease = first.ensure(request)
+    placement = lease.report.placements[0]
+    lease.close()
+    first.detach_all()
+    scheduler.rows[placement.compute.allocation_id] = replace(
+        scheduler.rows[placement.compute.allocation_id],
+        lease_expires_at_epoch_s=1.0,
+    )
+    endpoints.rows[placement.endpoint.allocation_id] = replace(
+        endpoints.rows[placement.endpoint.allocation_id],
+        lease_expires_at_epoch_s=1.0,
+    )
+    return catalog, runtime, scheduler, endpoints, request, placement
+
+
+def _pressure_pool(
+    tmp_path,
+    *,
+    catalog,
+    runtime,
+    scheduler,
+    endpoints,
+    lease_ids=("runtime-fabric-consumer:own",),
+):
+    return LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+        realization_singleflight=ContentAddressedSingleFlight(
+            Path(tmp_path) / "single-flight"
+        ),
+        runtime_fabric_leases=RuntimeFabricLeases(*lease_ids),
+        runtime_fabric_consumer_lease_id="runtime-fabric-consumer:own",
+        runtime_fabric_consumer_lock_path=(
+            Path(tmp_path) / "runtime-fabric-consumers.lock"
+        ),
+    )
+
+
+def test_pressure_reclaim_refuses_when_foreign_runtime_consumer_is_active(tmp_path) -> None:
+    catalog, runtime, scheduler, endpoints, _request, placement = (
+        _stale_warm_realization_fixture(tmp_path)
+    )
+    pool = _pressure_pool(
+        tmp_path,
+        catalog=catalog,
+        runtime=runtime,
+        scheduler=scheduler,
+        endpoints=endpoints,
+        lease_ids=(
+            "runtime-fabric-consumer:own",
+            "runtime-fabric-consumer:foreign",
+        ),
+    )
+
+    assert pool.reclaim_one_stale_warm_realization() is None
+    assert placement.deployment_id not in runtime.removed
+    assert placement.compute.allocation_id in scheduler.rows
+
+
+def test_pressure_reclaim_never_retires_local_active_consumer(tmp_path) -> None:
+    catalog, runtime, scheduler, endpoints, request, _placement = (
+        _stale_warm_realization_fixture(tmp_path)
+    )
+    pool = _pressure_pool(
+        tmp_path,
+        catalog=catalog,
+        runtime=runtime,
+        scheduler=scheduler,
+        endpoints=endpoints,
+    )
+    active = pool.ensure(request)
+    try:
+        assert pool.reclaim_one_stale_warm_realization() is None
+        active.assert_healthy()
+    finally:
+        active.close()
+        pool.detach_all()
+
+
 def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_port_input(
     tmp_path,
 ) -> None:
@@ -388,7 +613,7 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -412,6 +637,14 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     )
     assert all(row.compute.is_bound for row in lease.report.placements)
     assert all(
+        row.compute.lease_expires_at_epoch_s is None
+        for row in lease.report.placements
+    )
+    assert all(
+        row.endpoint.lease_expires_at_epoch_s is None
+        for row in lease.report.placements
+    )
+    assert all(
         row.compute.binding_binder_identity_digest
         == row.generation.applied_runtime_digest
         for row in lease.report.placements
@@ -427,6 +660,13 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     lease.assert_healthy()
 
     lease.close()
+    assert runtime.removed == []
+    assert scheduler.released == []
+    assert endpoints.released == []
+    assert compute_guards.created[0].closed is False
+    assert endpoint_guards.created[0].closed is False
+
+    pool.close_all()
     assert len(runtime.removed) == 2
     assert len(scheduler.released) == 2
     assert len(endpoints.released) == 2
@@ -475,7 +715,7 @@ def test_model_pool_rebinds_compute_and_endpoint_after_runtime_recovery(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -508,6 +748,11 @@ def test_model_pool_rebinds_compute_and_endpoint_after_runtime_recovery(
     )
 
     lease.close()
+    assert runtime.removed == []
+    assert scheduler.released == []
+    assert endpoints.released == []
+
+    pool.close_all()
     assert runtime.removed == [row.deployment_id]
     assert scheduler.released == [row.compute.allocation_id]
     assert endpoints.released == [row.endpoint.allocation_id]
@@ -562,7 +807,7 @@ def test_model_pool_binding_retries_torn_status_generation_observation(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -643,7 +888,7 @@ def test_model_pool_rebinds_if_runtime_restarts_between_compute_and_endpoint_bin
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -722,7 +967,7 @@ def test_model_pool_generation_churn_fails_closed_without_releasing_resources(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -751,6 +996,10 @@ def test_model_pool_generation_churn_fails_closed_without_releasing_resources(
 
     runtime.churning = False
     lease.close()
+    assert scheduler.released == []
+    assert endpoints.released == []
+
+    pool.close_all()
     assert scheduler.released == [row.compute.allocation_id]
     assert endpoints.released == [row.endpoint.allocation_id]
     assert compute_guards.created[0].closed is True
@@ -790,8 +1039,8 @@ def test_model_endpoint_binding_requires_applied_runtime_generation(
                 scope=PLATFORM_SCOPE,
                 model_id="qwen3-8b",
                 engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
+            model_stack=_vllm_stack(),
+                    cwd=Path(tmp_path),
                 compute=ComputeRequirement(
                     cpu_cores=2,
                     memory_bytes=1024,
@@ -831,8 +1080,11 @@ def test_auto_model_replica_pool_uses_multiple_shared_slots_on_one_gpu(
             placement_scope=None,
             ttl_seconds=None,
             now=None,
+            excluded_gpus=frozenset(),
         ):
             del placement_scope, ttl_seconds, now
+            if (self.host.host_id, "GPU-shared") in excluded_gpus:
+                raise ComputePlacementUnavailable(requirement)
             self.requirements.append(requirement)
             if self.next >= 2:
                 raise ComputePlacementUnavailable(requirement)
@@ -872,7 +1124,7 @@ def test_auto_model_replica_pool_uses_multiple_shared_slots_on_one_gpu(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -908,14 +1160,19 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
         compute_lease_guards=ComputeGuards(),
         endpoint_lease_guards=EndpointGuards(),
     )
-    stack = _vllm_stack(
-        engine_args=(
-            "--gpu-memory-utilization",
-            "0.97",
-            "--max-num-seqs",
-            "64",
-            "--enable-prefix-caching",
-        )
+    stack = replace(
+        _vllm_stack(
+            engine_args=(
+                "--max-num-seqs",
+                "64",
+            )
+        ),
+        serving_policy=ModelServingPolicy(
+            prefix_caching=True,
+            prefix_cache_hash_algorithm="sha256",
+            chunked_prefill=True,
+            max_batch_tokens=4096,
+        ),
     )
     lease = pool.ensure(
         ModelReplicaPoolRequest(
@@ -923,7 +1180,6 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -936,9 +1192,13 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
         )
     )
     argv = lease.report.placements[0].deployment.argv
-    assert argv[argv.index("--gpu-memory-utilization") + 1] == "0.97"
+    assert "--gpu-memory-utilization" not in argv
     assert argv[argv.index("--max-num-seqs") + 1] == "64"
     assert "--enable-prefix-caching" in argv
+    assert argv[argv.index("--prefix-caching-hash-algo") + 1] == "sha256"
+    assert "--enable-chunked-prefill" in argv
+    assert argv[argv.index("--max-num-batched-tokens") + 1] == "4096"
+    assert argv[argv.index("--scheduling-policy") + 1] == "fcfs"
     assert f"model-stack:{stack.digest()}" in lease.report.placements[0].deployment.tags
     lease.close()
 
@@ -959,7 +1219,6 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
     )
     stack = _vllm_stack(
         engine_args=(
-            "--gpu-memory-utilization=0.75",
             "--cpu-offload-gb",
             "2.5",
         )
@@ -971,7 +1230,6 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -985,7 +1243,7 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
     )
 
     effective = scheduler.requirements[0]
-    assert effective.required_gpu_memory_fraction == 0.75
+    assert effective.required_gpu_memory_fraction is None
     assert effective.memory_bytes == base_memory + int(2.5 * 1024**3)
     assert lease.report.placements[0].compute.memory_bytes == effective.memory_bytes
     lease.close()
@@ -999,7 +1257,6 @@ def test_frozen_vllm_stack_rejects_ad_hoc_runtime_drift(tmp_path) -> None:
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1026,7 +1283,6 @@ def test_auto_vllm_pool_rejects_internal_dp_without_owned_rpc_endpoint(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1070,8 +1326,8 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
                 scope=PLATFORM_SCOPE,
                 model_id="qwen3-8b",
                 engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
+            model_stack=_vllm_stack(),
+                    cwd=Path(tmp_path),
                 compute=ComputeRequirement(
                     cpu_cores=2,
                     memory_bytes=1024,
@@ -1132,7 +1388,7 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
         scope=PLATFORM_SCOPE,
         model_id="qwen3-8b",
         engine="vllm",
-        python_environment_id="vllm",
+            model_stack=_vllm_stack(),
         cwd=Path(tmp_path),
         compute=ComputeRequirement(
             cpu_cores=2,
@@ -1148,11 +1404,13 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
         match="creation failed with pending cleanup",
     ) as raised:
         pool.ensure(request)
-    messages = _exception_leaf_messages(raised.value)
-    assert any("simulated startup failure" in message for message in messages)
     assert any(
-        "simulated creation cleanup failure" in message
-        for message in messages
+        "simulated startup failure" in str(item)
+        for item in raised.value.exceptions
+    )
+    assert any(
+        "simulated creation cleanup failure" in str(item)
+        for item in raised.value.exceptions
     )
     assert pool.pending_cleanup_count == 1
 
@@ -1168,275 +1426,6 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
 
     assert pool.pending_cleanup_count == 0
     assert len(runtime.removed) == 1
-    assert len(scheduler.released) == 1
-    assert len(endpoints.released) == 1
-    assert compute_guards.created[0].closed is True
-    assert endpoint_guards.created[0].closed is True
-
-
-def test_failed_creation_uses_recovery_retirement_after_exact_stop(
-    tmp_path,
-) -> None:
-    class RejectingFleet(Fleet):
-        def reconcile(self):
-            rows = super().reconcile()
-            return tuple(
-                replace(
-                    row,
-                    runtime_state=ModelRuntimeState.ERROR,
-                    detail="simulated startup failure",
-                )
-                for row in rows
-            )
-
-    class RecoveryOnlyScheduler(Scheduler):
-        def release(self, allocation):
-            raise AssertionError(
-                "failed-creation cleanup must not use live compute release"
-            )
-
-        def recover_release(self, allocation):
-            Scheduler.release(self, allocation)
-
-    class RecoveryOnlyEndpoints(Endpoints):
-        def release(self, allocation):
-            raise AssertionError(
-                "failed-creation cleanup must not use live endpoint release"
-            )
-
-        def recover_release(self, allocation, *, now=None):
-            del now
-            return Endpoints.release(self, allocation)
-
-    catalog = Catalog()
-    runtime = Runtime(catalog)
-    scheduler = RecoveryOnlyScheduler()
-    endpoints = RecoveryOnlyEndpoints()
-    compute_guards = ComputeGuards()
-    endpoint_guards = EndpointGuards()
-    pool = LocalModelReplicaPoolRuntime(
-        deployment_catalog=catalog,
-        deployment_runtime=runtime,
-        fleet=RejectingFleet(catalog),
-        compute_scheduler=scheduler,
-        endpoint_allocations=endpoints,
-        compute_lease_guards=compute_guards,
-        endpoint_lease_guards=endpoint_guards,
-    )
-
-    with pytest.raises(RuntimeError, match="automatic model replica failed"):
-        pool.ensure(
-            ModelReplicaPoolRequest(
-                pool_id="failed-creation-recovery-retirement",
-                scope=PLATFORM_SCOPE,
-                model_id="qwen3-8b",
-                engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
-                compute=ComputeRequirement(
-                    cpu_cores=2,
-                    memory_bytes=1024,
-                    gpu_count=1,
-                    minimum_gpu_memory_bytes=40 * 1024**3,
-                ),
-                replica_count=1,
-            )
-        )
-
-    assert pool.pending_cleanup_count == 0
-    assert pool.active_lease_count == 0
-    assert len(runtime.removed) == 1
-    assert len(scheduler.released) == 1
-    assert len(endpoints.released) == 1
-    assert compute_guards.created[0].closed is True
-    assert endpoint_guards.created[0].closed is True
-
-
-def test_model_replica_pool_close_uses_recovery_retirement_after_exact_stop(
-    tmp_path,
-) -> None:
-    class RecoveryOnlyScheduler(Scheduler):
-        def release(self, allocation):
-            raise AssertionError("live compute release must not be used after model stop")
-
-        def recover_release(self, allocation):
-            Scheduler.release(self, allocation)
-
-    class RecoveryOnlyEndpoints(Endpoints):
-        def release(self, allocation):
-            raise AssertionError("live endpoint release must not be used after model stop")
-
-        def recover_release(self, allocation, *, now=None):
-            del now
-            return Endpoints.release(self, allocation)
-
-    catalog = Catalog()
-    runtime = Runtime(catalog)
-    scheduler = RecoveryOnlyScheduler()
-    endpoints = RecoveryOnlyEndpoints()
-    pool = LocalModelReplicaPoolRuntime(
-        deployment_catalog=catalog,
-        deployment_runtime=runtime,
-        fleet=Fleet(catalog),
-        compute_scheduler=scheduler,
-        endpoint_allocations=endpoints,
-        compute_lease_guards=ComputeGuards(),
-        endpoint_lease_guards=EndpointGuards(),
-    )
-    lease = pool.ensure(
-        ModelReplicaPoolRequest(
-            pool_id="recovery-retirement",
-            scope=PLATFORM_SCOPE,
-            model_id="qwen3-8b",
-            engine="vllm",
-            python_environment_id="vllm",
-            cwd=Path(tmp_path),
-            compute=ComputeRequirement(
-                cpu_cores=2,
-                memory_bytes=1024,
-                gpu_count=1,
-                minimum_gpu_memory_bytes=40 * 1024**3,
-            ),
-            replica_count=1,
-        )
-    )
-
-    lease.close()
-
-    assert len(runtime.removed) == 1
-    assert len(scheduler.released) == 1
-    assert len(endpoints.released) == 1
-    assert pool.active_lease_count == 0
-
-
-def test_model_replica_pool_close_is_idempotent_after_prior_exact_retirement(
-    tmp_path,
-) -> None:
-    class IdempotentRetirementRuntime(Runtime):
-        def remove_deployment(self, generation):
-            if generation.deployment_id not in self.catalog.rows:
-                return True
-            return super().remove_deployment(generation)
-
-    catalog = Catalog()
-    runtime = IdempotentRetirementRuntime(catalog)
-    scheduler = Scheduler()
-    endpoints = Endpoints()
-    pool = LocalModelReplicaPoolRuntime(
-        deployment_catalog=catalog,
-        deployment_runtime=runtime,
-        fleet=Fleet(catalog),
-        compute_scheduler=scheduler,
-        endpoint_allocations=endpoints,
-        compute_lease_guards=ComputeGuards(),
-        endpoint_lease_guards=EndpointGuards(),
-    )
-    lease = pool.ensure(
-        ModelReplicaPoolRequest(
-            pool_id="prior-exact-retirement",
-            scope=PLATFORM_SCOPE,
-            model_id="qwen3-8b",
-            engine="vllm",
-            python_environment_id="vllm",
-            cwd=Path(tmp_path),
-            compute=ComputeRequirement(
-                cpu_cores=2,
-                memory_bytes=1024,
-                gpu_count=1,
-                minimum_gpu_memory_bytes=40 * 1024**3,
-            ),
-            replica_count=1,
-        )
-    )
-    placement = lease.report.placements[0]
-
-    assert runtime.remove_deployment(placement.generation) is True
-    assert placement.deployment_id not in catalog.rows
-
-    lease.close()
-
-    assert len(scheduler.released) == 1
-    assert len(endpoints.released) == 1
-    assert pool.active_lease_count == 0
-
-
-def test_failed_creation_does_not_treat_missing_desired_as_physical_convergence(
-    tmp_path,
-) -> None:
-    class DesiredLossRuntime(Runtime):
-        def __init__(self, catalog):
-            super().__init__(catalog)
-            self.applied_uncertain = True
-
-        def remove_deployment(self, generation):
-            if generation.deployment_id not in self.catalog.rows:
-                if self.applied_uncertain:
-                    raise RuntimeError("applied generation still physically uncertain")
-                self.removed.append(generation.deployment_id)
-                return True
-            return super().remove_deployment(generation)
-
-    class LosingDesiredFleet(Fleet):
-        def reconcile(self):
-            rows = super().reconcile()
-            self.catalog.rows.clear()
-            return tuple(
-                replace(
-                    row,
-                    runtime_state=ModelRuntimeState.ERROR,
-                    detail="desired state disappeared during startup",
-                )
-                for row in rows
-            )
-
-    catalog = Catalog()
-    runtime = DesiredLossRuntime(catalog)
-    scheduler = Scheduler()
-    endpoints = Endpoints()
-    compute_guards = ComputeGuards()
-    endpoint_guards = EndpointGuards()
-    pool = LocalModelReplicaPoolRuntime(
-        deployment_catalog=catalog,
-        deployment_runtime=runtime,
-        fleet=LosingDesiredFleet(catalog),
-        compute_scheduler=scheduler,
-        endpoint_allocations=endpoints,
-        compute_lease_guards=compute_guards,
-        endpoint_lease_guards=endpoint_guards,
-    )
-
-    with pytest.raises(
-        ExceptionGroup,
-        match="creation failed with pending cleanup",
-    ) as raised:
-        pool.ensure(
-            ModelReplicaPoolRequest(
-                pool_id="desired-loss-does-not-prove-stop",
-                scope=PLATFORM_SCOPE,
-                model_id="qwen3-8b",
-                engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
-                compute=ComputeRequirement(
-                    cpu_cores=2,
-                    memory_bytes=1024,
-                    gpu_count=1,
-                    minimum_gpu_memory_bytes=40 * 1024**3,
-                ),
-                replica_count=1,
-            )
-        )
-    assert "applied generation still physically uncertain" in str(raised.value)
-    assert pool.pending_cleanup_count == 1
-    assert scheduler.released == []
-    assert endpoints.released == []
-    assert compute_guards.created[0].closed is False
-    assert endpoint_guards.created[0].closed is False
-
-    runtime.applied_uncertain = False
-    pool.close_all()
-
-    assert pool.pending_cleanup_count == 0
     assert len(scheduler.released) == 1
     assert len(endpoints.released) == 1
     assert compute_guards.created[0].closed is True
@@ -1478,7 +1467,7 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1490,7 +1479,7 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
     )
 
     try:
-        lease.close()
+        pool.close_all()
     except ExceptionGroup as error:
         assert any(
             isinstance(item, RuntimeError)
@@ -1505,108 +1494,11 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
     assert compute_guards.created[0].closed is False
     assert endpoint_guards.created[0].closed is False
 
-    lease.close()
+    pool.close_all()
     assert len(scheduler.released) == 2
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed is True
     assert endpoint_guards.created[0].closed is True
-
-
-def test_concurrent_lease_close_and_pool_close_all_do_not_deadlock(
-    tmp_path,
-) -> None:
-    class BlockingRuntime(Runtime):
-        def __init__(self, catalog):
-            super().__init__(catalog)
-            self.remove_entered = threading.Event()
-            self.allow_remove = threading.Event()
-
-        def remove_deployment(self, generation):
-            self.remove_entered.set()
-            if not self.allow_remove.wait(timeout=5.0):
-                raise RuntimeError("timed out waiting to release model teardown")
-            return super().remove_deployment(generation)
-
-    catalog = Catalog()
-    runtime = BlockingRuntime(catalog)
-    scheduler = Scheduler()
-    endpoints = Endpoints()
-    pool = LocalModelReplicaPoolRuntime(
-        deployment_catalog=catalog,
-        deployment_runtime=runtime,
-        fleet=Fleet(catalog),
-        compute_scheduler=scheduler,
-        endpoint_allocations=endpoints,
-        compute_lease_guards=ComputeGuards(),
-        endpoint_lease_guards=EndpointGuards(),
-    )
-    lease = pool.ensure(
-        ModelReplicaPoolRequest(
-            pool_id="concurrent-close",
-            scope=PLATFORM_SCOPE,
-            model_id="qwen3-8b",
-            engine="vllm",
-            python_environment_id="vllm",
-            cwd=Path(tmp_path),
-            compute=ComputeRequirement(
-                cpu_cores=2,
-                memory_bytes=1024,
-                gpu_count=1,
-                minimum_gpu_memory_bytes=40 * 1024**3,
-            ),
-            replica_count=1,
-        )
-    )
-
-    original_close = lease.close
-    pool_close_entered_lease = threading.Event()
-    errors: list[BaseException] = []
-
-    def observed_close() -> None:
-        if threading.current_thread().name == "pool-close-all":
-            pool_close_entered_lease.set()
-        original_close()
-
-    lease.close = observed_close
-
-    def close_lease() -> None:
-        try:
-            original_close()
-        except BaseException as exc:
-            errors.append(exc)
-
-    def close_pool() -> None:
-        try:
-            pool.close_all()
-        except BaseException as exc:
-            errors.append(exc)
-
-    lease_thread = threading.Thread(
-        target=close_lease,
-        name="external-lease-close",
-        daemon=True,
-    )
-    pool_thread = threading.Thread(
-        target=close_pool,
-        name="pool-close-all",
-        daemon=True,
-    )
-    lease_thread.start()
-    assert runtime.remove_entered.wait(timeout=2.0)
-
-    pool_thread.start()
-    assert pool_close_entered_lease.wait(timeout=2.0)
-    runtime.allow_remove.set()
-
-    lease_thread.join(timeout=3.0)
-    pool_thread.join(timeout=3.0)
-
-    assert not lease_thread.is_alive(), "external lease close deadlocked"
-    assert not pool_thread.is_alive(), "pool close_all deadlocked"
-    assert errors == []
-    assert pool.active_lease_count == 0
-    assert len(scheduler.released) == 1
-    assert len(endpoints.released) == 1
 
 
 def test_model_replica_pool_runtime_retires_forgotten_active_lease(tmp_path) -> None:
@@ -1632,7 +1524,7 @@ def test_model_replica_pool_runtime_retires_forgotten_active_lease(tmp_path) -> 
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1686,7 +1578,7 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
         scope=PLATFORM_SCOPE,
         model_id="qwen3-8b",
         engine="vllm",
-        python_environment_id="vllm",
+            model_stack=_vllm_stack(),
         cwd=Path(tmp_path),
         compute=ComputeRequirement(
             cpu_cores=2,
@@ -1701,13 +1593,14 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
         pool.close_all()
     except ExceptionGroup as error:
         assert any(
-            "simulated model stop uncertainty" in message
-            for message in _exception_leaf_messages(error)
+            "simulated model stop uncertainty" in str(item)
+            for item in error.exceptions
         )
     else:
         raise AssertionError("uncertain model stop must keep pool cleanup retryable")
 
-    assert pool.active_lease_count == 1
+    assert pool.active_lease_count == 0
+    assert pool.warm_owner_count == 1
     try:
         pool.ensure(request)
     except RuntimeError as error:
@@ -1717,3 +1610,519 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
 
     pool.close_all()
     assert pool.active_lease_count == 0
+
+
+def test_model_replica_pool_recovers_fencing_cleared_durable_realization(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+
+    def build_pool():
+        return LocalModelReplicaPoolRuntime(
+            deployment_catalog=catalog,
+            deployment_runtime=runtime,
+            fleet=Fleet(catalog),
+            compute_scheduler=scheduler,
+            endpoint_allocations=endpoints,
+            compute_lease_guards=ComputeGuards(),
+            endpoint_lease_guards=EndpointGuards(),
+        )
+
+    request = ModelReplicaPoolRequest(
+        pool_id="crash-recovery",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        cwd=Path(tmp_path) / "runtime-workdir",
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        model_stack=_vllm_stack(),
+        replica_count=1,
+    )
+    first_pool = build_pool()
+    first = first_pool.ensure(request)
+    row = first.report.placements[0]
+    first.close()
+    first_pool.detach_all()
+
+    scheduler.rows[row.compute.allocation_id] = replace(
+        scheduler.rows[row.compute.allocation_id],
+        binding_proof_digest=None,
+        binding_binder_identity_digest=None,
+        binding_evidence_ref=None,
+        bound_at_epoch_s=None,
+    )
+    endpoints.rows[row.endpoint.allocation_id] = replace(
+        endpoints.rows[row.endpoint.allocation_id],
+        state=EndpointAllocationState.RESERVED,
+        binding_proof_digest=None,
+        binding_binder_identity_digest=None,
+        binding_evidence_ref=None,
+        bound_at_epoch_s=None,
+    )
+
+    second_pool = build_pool()
+    second = second_pool.ensure(request)
+    recovered = second.report.placements[0]
+    applied = runtime.generation(recovered.deployment_id).applied_runtime_digest
+    assert applied is not None
+    assert recovered.deployment_id == row.deployment_id
+    assert recovered.compute.binding_binder_identity_digest == applied
+    assert recovered.endpoint.binding_binder_identity_digest == applied
+    assert recovered.endpoint.state is EndpointAllocationState.BOUND
+    assert scheduler.next == 1
+
+    second.close()
+    second_pool.close_all()
+
+
+
+
+def test_fleet_launch_exception_reselects_gpu_when_capacity_drift_is_proven(tmp_path) -> None:
+    catalog = Catalog()
+    scheduler = Scheduler()
+
+    class DriftOnceFleet(Fleet):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.failed = False
+
+        def reconcile(self):
+            if not self.failed:
+                self.failed = True
+                spec = next(iter(self.catalog.rows.values()))
+                scheduler.invalid_unbound_gpu_ids.update(spec.gpu_devices)
+                raise RuntimeError("simulated launch-time capacity drift")
+            return super().reconcile()
+
+    runtime = Runtime(catalog)
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=DriftOnceFleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    request = ModelReplicaPoolRequest(
+        pool_id="launch-time-drift",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        cwd=Path(tmp_path),
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        model_stack=_vllm_stack(),
+        replica_count=1,
+    )
+
+    lease = pool.ensure(request)
+    row = lease.report.placements[0]
+
+    assert row.compute.gpu_ids == ("GPU-b",)
+    assert len(scheduler.released) == 1
+    assert any(
+        ("node-a", "GPU-a") in excluded
+        for excluded in scheduler.excluded_gpu_history
+    )
+
+    lease.close()
+    pool.close_all()
+
+def test_stopped_durable_realization_replans_when_old_gpu_lost_capacity(tmp_path) -> None:
+    class StoppableRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.stopped: set[str] = set()
+            self.starts: list[str] = []
+
+        def status(self, deployment_id):
+            current = super().status(deployment_id)
+            if deployment_id not in self.stopped:
+                return current
+            return replace(
+                current,
+                runtime_state=ModelRuntimeState.STOPPED,
+                pid=None,
+                detail="stopped-for-adoption",
+            )
+
+        def start(self, generation):
+            self.starts.append(generation.deployment_id)
+            self.stopped.discard(generation.deployment_id)
+            return super().start(generation)
+
+    catalog = Catalog()
+    runtime = StoppableRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+
+    def build_pool():
+        return LocalModelReplicaPoolRuntime(
+            deployment_catalog=catalog,
+            deployment_runtime=runtime,
+            fleet=Fleet(catalog),
+            compute_scheduler=scheduler,
+            endpoint_allocations=endpoints,
+            compute_lease_guards=ComputeGuards(),
+            endpoint_lease_guards=EndpointGuards(),
+        )
+
+    request = ModelReplicaPoolRequest(
+        pool_id="warm-capacity-drift",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        cwd=Path(tmp_path) / "runtime-workdir",
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        model_stack=_vllm_stack(),
+        replica_count=1,
+    )
+
+    first_pool = build_pool()
+    first = first_pool.ensure(request)
+    first_row = first.report.placements[0]
+    assert first_row.compute.gpu_ids == ("GPU-a",)
+    first.close()
+    first_pool.detach_all()
+
+    # Simulate a stopped durable service whose fresh fencing has cleared the
+    # previous compute binding, while external work consumed its old GPU.
+    runtime.stopped.add(first_row.deployment_id)
+    scheduler.rows[first_row.compute.allocation_id] = replace(
+        scheduler.rows[first_row.compute.allocation_id],
+        binding_proof_digest=None,
+        binding_binder_identity_digest=None,
+        binding_evidence_ref=None,
+        bound_at_epoch_s=None,
+    )
+    scheduler.invalid_unbound_gpu_ids.add("GPU-a")
+
+    second_pool = build_pool()
+    second = second_pool.ensure(request)
+    second_row = second.report.placements[0]
+
+    assert second_row.deployment_id != first_row.deployment_id
+    assert second_row.compute.gpu_ids == ("GPU-b",)
+    assert first_row.deployment_id in runtime.removed
+    assert runtime.starts == []
+    assert first_row.compute.allocation_id in scheduler.released
+    assert first_row.endpoint.allocation_id in endpoints.released
+
+    second.close()
+    second_pool.close_all()
+
+def test_auto_model_replica_pool_materializes_typed_vllm_stack_launch_semantics(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=Scheduler(),
+        endpoint_allocations=Endpoints(),
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    stack = replace(
+        _vllm_stack(engine_args=("--max-num-seqs", "64")),
+        reasoning_parser="qwen3",
+        tool_call_parser="hermes",
+        kv_cache_dtype="fp8",
+        attention_backend="FLASH_ATTN",
+        scheduler_policy="priority",
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="qwen-typed-launch",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+            replica_count=1,
+        )
+    )
+
+    spec = lease.report.placements[0].deployment
+    argv = spec.argv
+    assert "--enable-reasoning" in argv
+    assert argv[argv.index("--reasoning-parser") + 1] == "qwen3"
+    assert "--enable-auto-tool-choice" in argv
+    assert argv[argv.index("--tool-call-parser") + 1] == "hermes"
+    assert argv[argv.index("--kv-cache-dtype") + 1] == "fp8"
+    assert argv[argv.index("--scheduling-policy") + 1] == "priority"
+    assert ("VLLM_ATTENTION_BACKEND", "FLASH_ATTN") in spec.environment
+    lease.close()
+
+
+def test_model_replica_pool_adopts_same_durable_realization_across_runtime_instances(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    first_compute_guards = ComputeGuards()
+    first_endpoint_guards = EndpointGuards()
+
+    def build_pool(compute_guards, endpoint_guards):
+        return LocalModelReplicaPoolRuntime(
+            deployment_catalog=catalog,
+            deployment_runtime=runtime,
+            fleet=Fleet(catalog),
+            compute_scheduler=scheduler,
+            endpoint_allocations=endpoints,
+            compute_lease_guards=compute_guards,
+            endpoint_lease_guards=endpoint_guards,
+        )
+
+    common = dict(
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        cwd=Path(tmp_path) / "runtime-workdir",
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        model_stack=_vllm_stack(),
+        replica_count=1,
+    )
+    first_request = ModelReplicaPoolRequest(
+        pool_id="paper-a",
+        tags=("paper:a", "role:planner"),
+        **common,
+    )
+    second_request = ModelReplicaPoolRequest(
+        pool_id="paper-b",
+        tags=("paper:b", "role:executor"),
+        **common,
+    )
+    assert first_request.runtime_identity_digest == second_request.runtime_identity_digest
+
+    first_pool = build_pool(first_compute_guards, first_endpoint_guards)
+    first_consumer = first_pool.ensure(first_request)
+    first_row = first_consumer.report.placements[0]
+    first_deployment_ids = tuple(catalog.rows)
+    first_compute_ids = tuple(scheduler.rows)
+    first_endpoint_ids = tuple(endpoints.rows)
+    assert scheduler.next == 1
+
+    first_consumer.close()
+    first_pool.detach_all()
+    assert runtime.removed == []
+    assert tuple(catalog.rows) == first_deployment_ids
+    assert tuple(scheduler.rows) == first_compute_ids
+    assert tuple(endpoints.rows) == first_endpoint_ids
+    assert first_compute_guards.created[0].closed is True
+    assert first_endpoint_guards.created[0].closed is True
+
+    second_compute_guards = ComputeGuards()
+    second_endpoint_guards = EndpointGuards()
+    second_pool = build_pool(second_compute_guards, second_endpoint_guards)
+    second_consumer = second_pool.ensure(second_request)
+    second_row = second_consumer.report.placements[0]
+
+    assert scheduler.next == 1
+    assert second_row.deployment_id == first_row.deployment_id
+    assert second_row.generation == first_row.generation
+    assert second_row.compute.allocation_id == first_row.compute.allocation_id
+    assert second_row.endpoint.allocation_id == first_row.endpoint.allocation_id
+    assert second_row.compute.lease_fencing_token == first_row.compute.lease_fencing_token
+    assert second_row.endpoint.lease_fencing_token == first_row.endpoint.lease_fencing_token
+    assert second_row.compute.binding_proof_digest == first_row.compute.binding_proof_digest
+    assert second_row.endpoint.binding_proof_digest == first_row.endpoint.binding_proof_digest
+    assert second_row.compute.lease_expires_at_epoch_s is None
+    assert second_row.endpoint.lease_expires_at_epoch_s is None
+    assert len(catalog.rows) == 1
+    assert len(scheduler.rows) == 1
+    assert len(endpoints.rows) == 1
+    assert second_compute_guards.created[0].started is True
+    assert second_endpoint_guards.created[0].started is True
+
+    second_consumer.close()
+    second_pool.close_all()
+    assert runtime.removed == [first_row.deployment_id]
+
+
+def test_replica_pool_does_not_relocate_non_capacity_model_failure(tmp_path) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+
+    class FailingFleet(Fleet):
+        def reconcile(self):
+            return tuple(
+                ModelDeploymentStatus(
+                    spec.deployment_id,
+                    spec.service_id,
+                    spec.desired_state,
+                    ModelRuntimeState.ERROR,
+                    None,
+                    "synthetic-model-configuration-error",
+                )
+                for spec in self.catalog.rows.values()
+            )
+
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=FailingFleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    with pytest.raises(RuntimeError, match="automatic model replica failed"):
+        pool.ensure(
+            ModelReplicaPoolRequest(
+                pool_id="not-capacity-drift",
+                scope=PLATFORM_SCOPE,
+                model_id="qwen3-8b",
+                engine="vllm",
+                model_stack=_vllm_stack(),
+                cwd=Path(tmp_path),
+                compute=ComputeRequirement(
+                    cpu_cores=2,
+                    memory_bytes=1024,
+                    gpu_count=1,
+                    minimum_gpu_memory_bytes=40 * 1024**3,
+                ),
+                replica_count=1,
+            )
+        )
+
+    assert scheduler.next == 1
+    assert len(scheduler.released) == 1
+    assert len(runtime.removed) == 1
+    assert len(endpoints.released) == 1
+
+
+def test_pressure_reclaim_retires_oldest_expired_warm_realization(tmp_path) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+
+    def build_pool():
+        return _pressure_pool(
+            tmp_path,
+            catalog=catalog,
+            runtime=runtime,
+            scheduler=scheduler,
+            endpoints=endpoints,
+        )
+
+    request = ModelReplicaPoolRequest(
+        pool_id="stale-warm",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        model_stack=_vllm_stack(),
+        cwd=Path(tmp_path) / "runtime-workdir",
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        replica_count=1,
+    )
+    producer = build_pool()
+    consumer = producer.ensure(request)
+    row = consumer.report.placements[0]
+    consumer.close()
+    producer.detach_all()
+
+    scheduler.rows[row.compute.allocation_id] = replace(
+        scheduler.rows[row.compute.allocation_id],
+        lease_expires_at_epoch_s=1.0,
+    )
+    endpoints.rows[row.endpoint.allocation_id] = replace(
+        endpoints.rows[row.endpoint.allocation_id],
+        lease_expires_at_epoch_s=1.0,
+    )
+
+    reclaimer = build_pool()
+    reclaimed = reclaimer.reclaim_one_stale_warm_realization()
+
+    assert reclaimed == request.runtime_identity_digest
+    assert row.deployment_id in runtime.removed
+    assert row.compute.allocation_id not in scheduler.rows
+    assert endpoints.rows[row.endpoint.allocation_id].state is EndpointAllocationState.RELEASED
+    assert reclaimer.reclaim_one_stale_warm_realization() is None
+
+
+def test_pressure_reclaim_never_retires_nonexpired_warm_realization(tmp_path) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+
+    def build_pool():
+        return _pressure_pool(
+            tmp_path,
+            catalog=catalog,
+            runtime=runtime,
+            scheduler=scheduler,
+            endpoints=endpoints,
+        )
+
+    request = ModelReplicaPoolRequest(
+        pool_id="still-owned-warm",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        model_stack=_vllm_stack(),
+        cwd=Path(tmp_path) / "runtime-workdir",
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        replica_count=1,
+    )
+    producer = build_pool()
+    consumer = producer.ensure(request)
+    row = consumer.report.placements[0]
+    consumer.close()
+    producer.detach_all()
+
+    reclaimer = build_pool()
+    assert reclaimer.reclaim_one_stale_warm_realization() is None
+    assert row.deployment_id in catalog.rows
+    assert row.compute.allocation_id in scheduler.rows
+    assert endpoints.rows[row.endpoint.allocation_id].state is EndpointAllocationState.BOUND
+    assert runtime.removed == []

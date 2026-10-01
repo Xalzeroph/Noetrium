@@ -37,8 +37,6 @@ class LeaseClockReading:
                 or any(ch not in "0123456789abcdef" for ch in value)
             ):
                 raise ValueError(f"lease clock {name} must be lowercase sha256")
-        if type(self.elapsed_seconds) not in (int, float):
-            raise TypeError("lease clock elapsed_seconds must be int or float")
         if (
             not math.isfinite(float(self.elapsed_seconds))
             or self.elapsed_seconds < 0
@@ -46,12 +44,9 @@ class LeaseClockReading:
             raise ValueError(
                 "lease clock elapsed_seconds must be finite and non-negative"
             )
-        if (
-            not math.isfinite(float(self.wall_epoch_seconds))
-            or self.wall_epoch_seconds <= 0
-        ):
+        if not math.isfinite(float(self.wall_epoch_seconds)):
             raise ValueError(
-                "lease clock wall_epoch_seconds must be finite and positive"
+                "lease clock wall_epoch_seconds must be finite"
             )
 
 
@@ -79,16 +74,22 @@ def _read_text(path: Path) -> str | None:
 
 def _linux_reading() -> LeaseClockReading:
     explicit_host = os.environ.get("NOETRIUM_HOST_IDENTITY", "").strip()
-    host_parts: list[str] = []
     if explicit_host:
-        host_parts.append("explicit:" + explicit_host)
-    for label, path in (
-        ("dmi", Path("/sys/class/dmi/id/product_uuid")),
-        ("machine", Path("/etc/machine-id")),
-    ):
-        value = _read_text(path)
-        if value:
-            host_parts.append(f"{label}:{value}")
+        # An explicit physical-host identity is authoritative.  Do not mix it
+        # with ambient container-visible hardware facts: visibility of DMI can
+        # change with container privilege and would otherwise change the lease
+        # authority for the same physical host.
+        host_parts = ["explicit:" + explicit_host]
+    else:
+        # /etc/machine-id is the canonical Linux host identity when available.
+        # It is stable across privilege levels and can be projected read-only
+        # into a Docker control-plane container. DMI is a fallback only.
+        machine_id = _read_text(Path("/etc/machine-id"))
+        if machine_id:
+            host_parts = ["machine:" + machine_id]
+        else:
+            dmi_id = _read_text(Path("/sys/class/dmi/id/product_uuid"))
+            host_parts = [] if dmi_id is None else ["dmi:" + dmi_id]
     if not host_parts:
         raise LeaseClockUnavailable(
             "Linux lease clock requires a stable host identity"
@@ -211,22 +212,10 @@ class ManualLeaseClock(LeaseClockPort):
         host_seed: str = "host",
         boot_seed: str = "boot-1",
     ) -> None:
-        if type(host_seed) is not str or type(boot_seed) is not str:
-            raise TypeError("manual lease clock seeds must be str")
-        if not host_seed.strip() or not boot_seed.strip():
-            raise ValueError("manual lease clock seeds must be non-empty")
-        if type(elapsed_seconds) not in (int, float) or type(wall_epoch_seconds) not in (int, float):
-            raise TypeError("manual lease clock times must be int or float")
-        elapsed = float(elapsed_seconds)
-        wall = float(wall_epoch_seconds)
-        if not math.isfinite(elapsed) or elapsed < 0:
-            raise ValueError("manual lease elapsed time must be finite and non-negative")
-        if not math.isfinite(wall) or wall <= 0:
-            raise ValueError("manual lease wall time must be finite and positive")
         self._host_seed = host_seed
         self._boot_seed = boot_seed
-        self._elapsed = elapsed
-        self._wall = wall
+        self._elapsed = float(elapsed_seconds)
+        self._wall = float(wall_epoch_seconds)
 
     def read(self) -> LeaseClockReading:
         return LeaseClockReading(
@@ -242,32 +231,16 @@ class ManualLeaseClock(LeaseClockPort):
         *,
         wall_seconds: float | None = None,
     ) -> None:
-        if type(seconds) not in (int, float):
-            raise TypeError("manual lease advance seconds must be int or float")
         seconds = float(seconds)
-        if not math.isfinite(seconds) or seconds < 0:
-            raise ValueError("manual lease elapsed advance must be finite and non-negative")
-        if wall_seconds is not None and type(wall_seconds) not in (int, float):
-            raise TypeError("manual lease wall advance must be int or float")
-        wall_delta = seconds if wall_seconds is None else float(wall_seconds)
-        if not math.isfinite(wall_delta):
-            raise ValueError("manual lease wall advance must be finite")
-        next_wall = self._wall + wall_delta
-        if not math.isfinite(next_wall) or next_wall <= 0:
-            raise ValueError("manual lease wall time must remain finite and positive")
+        if seconds < 0:
+            raise ValueError("manual lease elapsed time cannot move backwards")
         self._elapsed += seconds
-        self._wall = next_wall
+        self._wall += (
+            seconds if wall_seconds is None else float(wall_seconds)
+        )
 
     def jump_wall(self, seconds: float) -> None:
-        if type(seconds) not in (int, float):
-            raise TypeError("manual lease wall shift must be int or float")
-        delta = float(seconds)
-        if not math.isfinite(delta):
-            raise ValueError("manual lease wall shift must be finite")
-        next_wall = self._wall + delta
-        if not math.isfinite(next_wall) or next_wall <= 0:
-            raise ValueError("manual lease wall time must remain finite and positive")
-        self._wall = next_wall
+        self._wall += float(seconds)
 
     def reboot(
         self,
@@ -275,23 +248,14 @@ class ManualLeaseClock(LeaseClockPort):
         boot_seed: str,
         elapsed_seconds: float = 0.0,
     ) -> None:
-        if type(boot_seed) is not str:
-            raise TypeError("manual lease reboot boot_seed must be str")
         if not boot_seed.strip() or boot_seed == self._boot_seed:
             raise ValueError(
                 "manual lease reboot requires a new boot identity"
             )
-        if type(elapsed_seconds) not in (int, float):
-            raise TypeError("manual lease reboot elapsed_seconds must be int or float")
-        elapsed = float(elapsed_seconds)
-        if not math.isfinite(elapsed) or elapsed < 0:
-            raise ValueError("manual lease reboot elapsed time must be finite and non-negative")
         self._boot_seed = boot_seed
-        self._elapsed = elapsed
+        self._elapsed = float(elapsed_seconds)
 
     def move_host(self, *, host_seed: str) -> None:
-        if type(host_seed) is not str:
-            raise TypeError("manual lease host move host_seed must be str")
         if not host_seed.strip() or host_seed == self._host_seed:
             raise ValueError(
                 "manual lease host move requires a new host identity"

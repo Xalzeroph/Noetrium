@@ -50,16 +50,14 @@ class AgentModeDisposition(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class AgentGoal:
-    """Bounded autonomous objective; it carries no environment semantics."""
+    """Autonomous objective; platform execution adds no hidden default budget."""
 
     goal_id: str
     objective: str
     context: Mapping[str, JsonValue] = field(default_factory=dict)
-    max_steps: int = 32
-    max_seconds: float = 300.0
-    max_replans: int = 32
-    no_progress_limit: int = 4
-    same_action_limit: int = 3
+    max_steps: int | None = None
+    max_seconds: float | None = None
+    max_replans: int | None = None
 
     def __post_init__(self) -> None:
         if not self.goal_id.strip() or not self.objective.strip():
@@ -69,18 +67,21 @@ class AgentGoal:
         object.__setattr__(
             self, "context", freeze_json(self.context)
         )
-        if any(
-            isinstance(value, bool) or not isinstance(value, int) or value <= 0
-            for value in (self.max_steps, self.max_replans, self.no_progress_limit, self.same_action_limit)
-        ):
-            raise ValueError("agent goal integer limits must be positive")
-        if (
+        for name in ("max_steps", "max_replans"):
+            value = getattr(self, name)
+            if value is not None and (
+                isinstance(value, bool)
+                or not isinstance(value, int)
+                or value <= 0
+            ):
+                raise ValueError(f"agent goal {name} must be positive or None")
+        if self.max_seconds is not None and (
             isinstance(self.max_seconds, bool)
             or not isinstance(self.max_seconds, (int, float))
             or not math.isfinite(float(self.max_seconds))
             or self.max_seconds <= 0
         ):
-            raise ValueError("agent goal max_seconds must be finite and positive")
+            raise ValueError("agent goal max_seconds must be finite and positive or None")
 
     @property
     def digest(self) -> str:
@@ -92,8 +93,6 @@ class AgentGoal:
                 "max_steps": self.max_steps,
                 "max_seconds": self.max_seconds,
                 "max_replans": self.max_replans,
-                "no_progress_limit": self.no_progress_limit,
-                "same_action_limit": self.same_action_limit,
             }
         )
 

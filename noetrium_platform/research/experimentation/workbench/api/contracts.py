@@ -838,7 +838,38 @@ class ResearchStatisticsPort(Protocol):
     def compare_many(
         self, table: DataTable, value_column: str, group_column: str, *, baseline: Any,
         candidates: tuple[Any, ...], missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+        correction: MultipleComparisonMethod = MultipleComparisonMethod.HOLM,
+        alpha: float = 0.05,
     ) -> tuple[GroupComparison, ...]: ...
+
+    def adjust_p_values(
+        self, p_values: tuple[float, ...], *,
+        method: MultipleComparisonMethod = MultipleComparisonMethod.HOLM,
+        alpha: float = 0.05,
+    ) -> MultipleComparisonResult: ...
+
+    def mean_inference(
+        self, table: DataTable, value_column: str, *,
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> InferenceResult: ...
+
+    def bootstrap_mean(
+        self, table: DataTable, value_column: str, *,
+        replicates: int = 2000, seed: int = 0,
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> InferenceResult: ...
+
+    def paired_compare(
+        self, table: DataTable, value_column: str, group_column: str, *,
+        pair_column: str, baseline: Any, candidate: Any,
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> PairedComparison: ...
+
+    def permutation_compare(
+        self, table: DataTable, value_column: str, group_column: str, *,
+        baseline: Any, candidate: Any, replicates: int = 2000, seed: int = 0,
+        missing: MissingValuePolicy = MissingValuePolicy.REJECT,
+    ) -> InferenceResult: ...
 
 
 class ResearchFigureFactoryPort(Protocol):

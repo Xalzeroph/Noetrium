@@ -6,7 +6,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudge
 from noetrium_platform.foundation.kernel.concurrency.api.ports import CpuWorkerPoolProviderPort
 from noetrium_platform.foundation.kernel.concurrency.providers import (
     AsyncIoExecutor,
-    BoundedProcessExecutor,
+    LazyBoundedProcessExecutor,
     BoundedThreadExecutor,
     HeapTimerScheduler,
     SharedSerialExecutionLaneFactory,
@@ -37,8 +37,8 @@ def build_cpu_worker_pool_provider(
     budget: ConcurrencyBudget,
     *,
     initializer: Callable[[], None] | None = None,
-) -> BoundedProcessExecutor:
-    return BoundedProcessExecutor(
+) -> LazyBoundedProcessExecutor:
+    return LazyBoundedProcessExecutor(
         max_workers=budget.max_cpu_workers,
         max_in_flight=int(budget.max_cpu_in_flight),
         initializer=initializer,

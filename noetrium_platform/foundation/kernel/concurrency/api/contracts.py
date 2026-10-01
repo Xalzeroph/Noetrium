@@ -70,6 +70,18 @@ def _default_cpu_worker_count() -> int:
     return affinity
 
 
+def _default_blocking_io_worker_count() -> int:
+    """Match blocking-I/O dispatch capacity to process-visible host parallelism.
+
+    Research blocking lanes mostly coordinate external runtimes, child Machines,
+    filesystem/network calls, and synchronous experiment adapters. Reusing the
+    same affinity/cgroup authority as CPU workers removes the fixed eight-worker
+    ceiling while remaining automatically bounded by the process allocation.
+    """
+
+    return _default_cpu_worker_count()
+
+
 class TaskCancelled(RuntimeError):
     """Raised by a cooperative task after its owning scope is cancelled."""
 
@@ -90,8 +102,12 @@ class SerialMailboxRejected(RuntimeError):
 class ConcurrencyBudget:
     """Mechanical provider capacities owned by platform/concurrency only."""
 
-    max_blocking_io_workers: int = 8
-    max_serial_workers: int = 8
+    max_blocking_io_workers: int = field(
+        default_factory=_default_blocking_io_worker_count
+    )
+    max_serial_workers: int = field(
+        default_factory=_default_blocking_io_worker_count
+    )
     max_cpu_workers: int = field(default_factory=_default_cpu_worker_count)
     max_blocking_io_in_flight: int | None = None
     max_async_io_in_flight: int = 64
@@ -197,6 +213,7 @@ class HeartbeatSpec:
     interval_seconds: float
     initial_delay_seconds: float | None = None
     lane_capacity: int | None = None
+    failure_scope: TaskFailureScope = TaskFailureScope.GROUP
 
     def __post_init__(self) -> None:
         if not self.heartbeat_id.strip():

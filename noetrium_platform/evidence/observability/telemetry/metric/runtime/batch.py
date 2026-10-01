@@ -3,6 +3,7 @@ from __future__ import annotations
 from threading import RLock
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.evidence.observability.api import ContextMetricObservation
 from noetrium_platform.evidence.observability.api.emission import operational_observation_enabled
 
 from ..api.rows import PendingMetric
@@ -22,16 +23,45 @@ class TelemetryBatchRecorder:
         self._closed = False
         self._session: PendingMetricWriteSessionPort | None = store.writer_session()
 
-    def observe(self, context: ExecutionContext, name: str, value: float, **dimensions: str) -> None:
-        if not operational_observation_enabled():
+    def observe_many(
+        self,
+        context: ExecutionContext,
+        observations: tuple[ContextMetricObservation, ...],
+    ) -> None:
+        if not operational_observation_enabled() or not observations:
             return
-        row = self.store.prepare(context, name, value, **dimensions)
+        if type(observations) is not tuple or any(
+            not isinstance(row, ContextMetricObservation)
+            for row in observations
+        ):
+            raise TypeError("telemetry recorder observe_many requires ContextMetricObservation tuple")
+        rows = tuple(
+            self.store.prepare(
+                context,
+                row.name,
+                row.value,
+                **dict(row.dimensions),
+            )
+            for row in observations
+        )
         with self._lock:
             if self._closed:
                 raise RuntimeError("telemetry recorder is closed")
-            self._pending.append(row)
+            self._pending.extend(rows)
             if len(self._pending) >= self.batch_size:
                 self._flush_locked()
+
+    def observe(self, context: ExecutionContext, name: str, value: float, **dimensions: str) -> None:
+        self.observe_many(
+            context,
+            (
+                ContextMetricObservation(
+                    name,
+                    value,
+                    tuple(sorted(dimensions.items())),
+                ),
+            ),
+        )
 
     def _flush_locked(self) -> tuple[int, ...]:
         batch = tuple(self._pending)

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_s3",
-  "package_digest": "a9e23854020f6565987e56bee1d971a2e2f273d660eeff54e92169f2c4337e76",
-  "definition_digest": "571e956debc7d55aba3299a6eef84c393f939187368bbb799bd269b9ce0ee48d",
+  "package_digest": "8798e6a31bd3c56e4e3ae16cee5a3a0c855cd8d5695ee800a50421d771e175cb",
+  "definition_digest": "7f567e784be8c5cbd4e85afd9096cc0f5920ea85e181195bc4324fa2a2daff10",
   "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -78,13 +78,13 @@
       "kind": "method_program",
       "path": "research/reproductions/agent_s3/program.py",
       "declaration_digest": "76103720ee9c746c9ebf883195e79a167e2188d77ca1002262d8e62fb8d3976c",
-      "content_sha256": "c371ccb63d319af50974540ea108599c8821f43823eb5bf9b805c50e71d44fa1"
+      "content_sha256": "d151214acdab4c2ab98e09527b98230fca726d3ccd71040f5b26b736ed3d4021"
     },
     {
       "kind": "study",
       "path": "research/reproductions/agent_s3/study.py",
       "declaration_digest": "93bb02007cf71676806203dedf31364771f495a133a17ea6925d7b996e24aad3",
-      "content_sha256": "eec3f8b0aa4f030127bd364fd26318995a56c77e722caf769858725cbebcd3db"
+      "content_sha256": "7cb9182bc93885dee5127158bc146bc16868a4d8ee55f14518394a2b5e41dd51"
     },
     {
       "kind": "support",
@@ -101,15 +101,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_agent_s3_v1.py",
-      "content_sha256": "67e7541c35758d77d55c68c8da206ce79b1c02f9d12f7018e420eca119fe9486"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agent_s3",
-    "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
+    "program_digest": "49601a836d2c2591303272c66ff435cbc19ba6e5e7288f3a49b6895d57e1eed9",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

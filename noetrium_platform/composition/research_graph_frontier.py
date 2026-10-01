@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNode,
@@ -113,12 +113,12 @@ class ResearchGraphDependencyFrontier:
         self._ready = ready
         self._terminal = terminal
 
-    def ready_node_ids(self, pending_node_ids: set[str]) -> tuple[str, ...]:
+    def ready_node_ids(self, pending_node_ids: Collection[str]) -> tuple[str, ...]:
         return tuple(sorted(self._ready.intersection(pending_node_ids)))
 
     def blocked_nodes(
         self,
-        pending_node_ids: set[str],
+        pending_node_ids: Collection[str],
     ) -> tuple[tuple[str, tuple[str, ...]], ...]:
         return tuple(
             (node_id, tuple(sorted(self._blocked_by[node_id])))

@@ -53,11 +53,6 @@ def _add_lifecycle_command(
         help="downstream project root; defaults to current directory",
     )
     parser.add_argument(
-        "--config",
-        type=Path,
-        help="platform-owned external provider binding configuration",
-    )
-    parser.add_argument(
         "--program",
         help="optional program id for node-scoped control",
     )
@@ -149,6 +144,17 @@ def build_research_parser() -> argparse.ArgumentParser:
         _add_lifecycle_command(subparsers, action, help_text[action])
     subparsers.add_parser("diagnose", help="forensic/read-side operator tools")
     subparsers.add_parser("manage", help="platform management and deployment tools")
+    retire = subparsers.add_parser(
+        "retire",
+        help="terminally retire the host Runtime Fabric after a research campaign",
+    )
+    retire.add_argument(
+        "--project",
+        dest="project_root",
+        type=Path,
+        default=Path("."),
+        help="downstream project root; defaults to current directory",
+    )
     _add_project_commands(subparsers)
     return parser
 
@@ -181,15 +187,42 @@ def _run_project_lifecycle(
     args: argparse.Namespace,
     project_research_os_loader: ProjectResearchOSLoader,
 ) -> int:
+    revision_intent = (
+        "working"
+        if args.action in {ResearchControlAction.RUN, ResearchControlAction.MIGRATE}
+        else "active"
+    )
     loaded = project_research_os_loader(
         args.project_root,
-        config_path=args.config,
+        revision_intent=revision_intent,
     )
     try:
         target = _execution_target(args, loaded)
         operation = getattr(loaded.research_os, args.action.value)
         receipt = operation(target, _load_payload(args))
         _emit({"ok": True, "command": args.command, "result": receipt})
+        return 0
+    finally:
+        loaded.close()
+
+
+def _run_project_retirement(
+    args: argparse.Namespace,
+    project_research_os_loader: ProjectResearchOSLoader,
+) -> int:
+    loaded = project_research_os_loader(args.project_root)
+    try:
+        loaded.retire_runtime_fabric()
+        _emit(
+            {
+                "ok": True,
+                "command": "retire",
+                "result": {
+                    "project": str(args.project_root),
+                    "runtime_fabric": "retired",
+                },
+            }
+        )
         return 0
     finally:
         loaded.close()
@@ -246,6 +279,11 @@ def run_research_cli(
     try:
         if args.command == "project":
             return _run_project(args, project_experience)
+        if args.command == "retire":
+            return _run_project_retirement(
+                args,
+                project_research_os_loader,
+            )
         return _run_project_lifecycle(args, project_research_os_loader)
     except _EXPECTED_ERRORS as exc:
         descriptor = describe_exception(exc)

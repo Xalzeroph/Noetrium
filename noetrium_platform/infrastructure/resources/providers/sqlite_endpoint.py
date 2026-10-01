@@ -10,6 +10,7 @@ from pathlib import Path
 from noetrium_platform.infrastructure.resources.allocation.api import (
     AtomicEndpointReservationPort,
     EndpointAllocation,
+    EndpointAllocationConflict,
     EndpointAllocationState,
     EndpointBindingProof,
     EndpointProtocol,
@@ -30,18 +31,16 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
+from noetrium_platform.infrastructure.resources.sqlite_resource import (
     acquire_resource_lease,
+    authoritative_lease_now,
     decode_resource_lease,
     ensure_resource_owner,
+    ensure_resource_schema,
+    expire_lease,
     reconcile_expired_resource_leases,
     release_resource_lease,
     renew_resource_lease,
-)
-from noetrium_platform.infrastructure.resources.providers.sqlite_resource import (
-    authoritative_lease_now,
-    ensure_resource_schema,
-    expire_lease,
 )
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
@@ -390,14 +389,14 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 if current is None:
                     raise KeyError(proof.allocation_id)
                 if current.state is EndpointAllocationState.RELEASED:
-                    raise RuntimeError(f"endpoint allocation is released: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint allocation is released: {proof.allocation_id}")
                 self._require_lease_authority(conn, current, now_epoch_s)
                 if current.endpoint != proof.endpoint:
-                    raise RuntimeError(
+                    raise EndpointAllocationConflict(
                         f"endpoint binding proof endpoint mismatch: {proof.allocation_id}"
                     )
                 if current.lease_fencing_token != proof.lease_fencing_token:
-                    raise RuntimeError(
+                    raise EndpointAllocationConflict(
                         f"endpoint binding proof fencing lost: {proof.allocation_id}"
                     )
                 proof_digest = proof.digest()
@@ -409,7 +408,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     ):
 
                         return current
-                    raise RuntimeError(
+                    raise EndpointAllocationConflict(
                         f"endpoint allocation already has a different binding proof: {proof.allocation_id}"
                     )
                 cursor = conn.execute(
@@ -429,7 +428,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     ),
                 )
                 if cursor.rowcount != 1:
-                    raise RuntimeError(
+                    raise EndpointAllocationConflict(
                         f"endpoint binding transition lost authority: {proof.allocation_id}"
                     )
 
@@ -460,16 +459,16 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 if current is None:
                     raise KeyError(proof.allocation_id)
                 if current.state is not EndpointAllocationState.BOUND:
-                    raise RuntimeError(f"endpoint allocation is not bound: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint allocation is not bound: {proof.allocation_id}")
                 self._require_lease_authority(conn, current, now_epoch_s)
                 if current.endpoint != proof.endpoint:
-                    raise RuntimeError(f"endpoint binding proof endpoint mismatch: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint binding proof endpoint mismatch: {proof.allocation_id}")
                 if current.lease_fencing_token != proof.lease_fencing_token:
-                    raise RuntimeError(f"endpoint binding proof fencing lost: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint binding proof fencing lost: {proof.allocation_id}")
                 if current.binding_proof_digest != expected_previous_binding_proof_digest:
-                    raise RuntimeError(f"endpoint binding replacement lost prior generation: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint binding replacement lost prior generation: {proof.allocation_id}")
                 if current.binding_binder_identity_digest == proof.binder_identity_digest:
-                    raise RuntimeError(f"endpoint binding replacement must use a new binder generation: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint binding replacement must use a new binder generation: {proof.allocation_id}")
                 proof_digest = proof.digest()
                 cursor = conn.execute(
                     "UPDATE endpoint_allocations SET binding_proof_digest=?, binding_binder_identity_digest=?, "
@@ -479,7 +478,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                      proof.allocation_id, proof.lease_fencing_token, expected_previous_binding_proof_digest),
                 )
                 if cursor.rowcount != 1:
-                    raise RuntimeError(f"endpoint binding replacement lost authority: {proof.allocation_id}")
+                    raise EndpointAllocationConflict(f"endpoint binding replacement lost authority: {proof.allocation_id}")
 
                 return replace(current, binding_proof_digest=proof_digest,
                     binding_binder_identity_digest=proof.binder_identity_digest,
@@ -487,6 +486,97 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             except BaseException:
 
                 raise
+
+    def reacquire(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        ttl_seconds: float,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint reacquisition requires EndpointAllocation")
+        if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
+            raise ValueError("endpoint reacquisition ttl_seconds must be finite and > 0")
+        with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
+            current = self._reconcile_one(conn, allocation.allocation_id, now_epoch_s)
+            if current is None:
+                raise KeyError(allocation.allocation_id)
+            if (
+                current.endpoint != allocation.endpoint
+                or current.lease_id != allocation.lease_id
+                or current.holder_scope != allocation.holder_scope
+                or current.purpose != allocation.purpose
+                or current.request_digest != allocation.request_digest
+            ):
+                raise ResourceLeaseConflict(
+                    f"endpoint reacquisition identity drift: {allocation.allocation_id}"
+                )
+            if current.state not in {
+                EndpointAllocationState.RESERVED,
+                EndpointAllocationState.BOUND,
+            }:
+                raise EndpointAllocationConflict(
+                    f"endpoint reacquisition requires live generation: {allocation.allocation_id}"
+                )
+            if (
+                current.binding_binder_identity_digest
+                != allocation.binding_binder_identity_digest
+            ):
+                raise ResourceLeaseConflict(
+                    "endpoint reacquisition lost caller binding generation: "
+                    f"{allocation.allocation_id}"
+                )
+            expire_lease(conn, current.lease_id, now_epoch_s)
+            granted = acquire_resource_lease(
+                conn,
+                ResourceLease(
+                    lease_id=current.lease_id,
+                    resource=current.endpoint.resource,
+                    holder_scope=current.holder_scope,
+                    purpose=current.purpose,
+                ),
+                ttl_seconds=ttl_seconds,
+                now_epoch_s=now_epoch_s,
+            )
+            granted = renew_resource_lease(
+                conn,
+                granted.lease_id,
+                fencing_token=granted.fencing_token,
+                ttl_seconds=ttl_seconds,
+                now_epoch_s=now_epoch_s,
+            )
+            changed = granted.fencing_token != current.lease_fencing_token
+            updated = replace(
+                current,
+                state=(
+                    EndpointAllocationState.RESERVED
+                    if changed or current.state is EndpointAllocationState.RESERVED
+                    else EndpointAllocationState.BOUND
+                ),
+                lease_holder_generation=granted.holder_generation,
+                lease_fencing_token=granted.fencing_token,
+                lease_expires_at_epoch_s=granted.expires_at_epoch_s,
+                binding_proof_digest=None if changed else current.binding_proof_digest,
+                binding_binder_identity_digest=None if changed else current.binding_binder_identity_digest,
+                binding_evidence_ref=None if changed else current.binding_evidence_ref,
+                bound_at_epoch_s=None if changed else current.bound_at_epoch_s,
+            )
+            conn.execute(
+                "UPDATE endpoint_allocations SET state=?,lease_holder_generation=?,"
+                "lease_fencing_token=?,lease_expires_at_epoch_s=?,binding_proof_digest=?,"
+                "binding_binder_identity_digest=?,binding_evidence_ref=?,bound_at_epoch_s=? "
+                "WHERE allocation_id=?",
+                (
+                    updated.state.value, updated.lease_holder_generation,
+                    updated.lease_fencing_token, updated.lease_expires_at_epoch_s,
+                    updated.binding_proof_digest, updated.binding_binder_identity_digest,
+                    updated.binding_evidence_ref, updated.bound_at_epoch_s,
+                    updated.allocation_id,
+                ),
+            )
+            return updated
 
     def renew(
         self,
@@ -510,7 +600,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 raise KeyError(allocation.allocation_id)
             self._require_generation(current, allocation)
             if not current.state.is_live:
-                raise RuntimeError(
+                raise EndpointAllocationConflict(
                     f"endpoint allocation is not active: {allocation.allocation_id}"
                 )
             renewed_lease = renew_resource_lease(
@@ -536,7 +626,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         self,
         allocations: tuple[EndpointAllocation, ...],
         *,
-        ttl_seconds: float,
+        ttl_seconds: float | None,
         now: float | None = None,
     ) -> tuple[EndpointAllocation, ...]:
         if not allocations:
@@ -546,11 +636,14 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint allocation ids must be unique")
-        if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
-            raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
+        if ttl_seconds is not None and (
+            not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0
+        ):
+            raise ValueError(
+                "endpoint lease ttl_seconds must be finite and > 0 or None"
+            )
         with self._transaction() as conn:
             now_epoch_s = self._authority_now(conn, now)
-            expires_at = now_epoch_s + ttl_seconds
             current_rows: list[EndpointAllocation] = []
             for expected in allocations:
                 current = self._reconcile_one(
@@ -562,7 +655,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     raise KeyError(expected.allocation_id)
                 self._require_generation(current, expected)
                 if not current.state.is_live:
-                    raise RuntimeError(
+                    raise EndpointAllocationConflict(
                         f"endpoint allocation is not active: {expected.allocation_id}"
                     )
                 current_rows.append(current)
@@ -576,23 +669,28 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 )
                 for row, expected in zip(current_rows, allocations, strict=True)
             ]
-            if any(row.expires_at_epoch_s != expires_at for row in renewed_leases):
-                raise RuntimeError("endpoint lease renewal produced inconsistent expiry")
             conn.executemany(
                 "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? "
                 "WHERE allocation_id=? AND lease_fencing_token=?",
                 [
                     (
-                        expires_at,
+                        lease.expires_at_epoch_s,
                         expected.allocation_id,
                         expected.lease_fencing_token,
                     )
-                    for expected in allocations
+                    for lease, expected in zip(
+                        renewed_leases, allocations, strict=True
+                    )
                 ],
             )
             return tuple(
-                replace(row, lease_expires_at_epoch_s=expires_at)
-                for row in current_rows
+                replace(
+                    row,
+                    lease_expires_at_epoch_s=lease.expires_at_epoch_s,
+                )
+                for row, lease in zip(
+                    current_rows, renewed_leases, strict=True
+                )
             )
 
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:

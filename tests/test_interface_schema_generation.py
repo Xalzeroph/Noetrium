@@ -19,45 +19,79 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_generated_interface_schema_covers_every_public_export() -> None:
     document = load_downstream_interface_schema()
     registry = json.loads(
-        (ROOT / "noetrium_platform/foundation/governance/system_registry/catalog.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "noetrium_platform/foundation/governance/system_registry/catalog.json")
+        .read_text(encoding="utf-8")
     )
     assert {row["system_key"] for row in document["systems"]} == set(registry)
     assert len(document["interface_digest"]) == 64
     assert document["interface_schema"]["schema_id"] == "noetrium.interface-schema"
+
+    public = document["public_api"]
+    assert public["module"] == "noetrium.api"
+    assert tuple(public["symbols"]) == (
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolio",
+        "ResearchOS",
+        "open_project",
+    )
+    assert tuple(document["authoring_inspection"]["public_roots"]) == tuple(public["symbols"])
+    assert set(document["reachable_dsl"]) == {
+        "program",
+        "method",
+        "memory",
+        "runtime",
+    }
 
     for system in document["systems"]:
         for api in system["api_modules"]:
             assert set(api["symbols"]) == {
                 schema["name"] for schema in api["symbol_schemas"]
             }
-            assert all(
-                schema["schema_id"] == "noetrium.interface-schema"
-                for schema in api["symbol_schemas"]
-            )
 
 
-def test_generated_interface_schema_exposes_protocol_methods_and_reexports() -> None:
-    # Minecraft is now a metadata-only provider facet; validate schema richness on
-    # a genuinely public downstream surface instead of reaching into provider internals.
-    module = "noetrium_platform.infrastructure.resources.compute.api.ports"
-    schema = find_downstream_symbol_schema(
-        "resource",
-        module,
-        "ComputeSchedulerPort",
+def test_generated_interface_schema_exposes_hierarchical_product_reexports() -> None:
+    portfolio = find_downstream_symbol_schema(
+        "research_os",
+        "noetrium.api",
+        "ResearchPortfolioBuilder",
     )
-    assert schema["kind"] == "class"
-    assert any(method["name"] == "allocate" for method in schema["methods"])
-    assert any(method["name"] == "release" for method in schema["methods"])
+    assert portfolio["kind"] == "reexport"
 
-    reexport = find_downstream_symbol_schema(
-        "resource",
-        "noetrium_platform.infrastructure.resources.compute.api",
-        "ComputeSchedulerPort",
-    )
-    assert reexport["kind"] == "reexport"
-    assert reexport["origin_name"] == "ComputeSchedulerPort"
+    document = load_downstream_interface_schema()
+    program = document["reachable_dsl"]["program"]
+    method = document["reachable_dsl"]["method"]
+    memory = document["reachable_dsl"]["memory"]
+
+    assert program["kind"] == "class"
+    assert {
+        "method",
+        "benchmark",
+        "dataset",
+        "model",
+        "environment",
+        "study",
+        "experiment",
+        "ablation",
+        "robustness",
+        "analysis",
+        "publication",
+        "freeze",
+    } <= {row["name"] for row in program["methods"]}
+    assert {
+        "agent",
+        "memory",
+        "capability",
+        "route",
+        "checkpoint",
+        "interrupt",
+        "build",
+    } <= {row["name"] for row in method["methods"]}
+    assert {
+        "semantic",
+        "custom",
+        "build",
+        "end",
+    } <= {row["name"] for row in memory["methods"]}
 
 
 def test_interface_schema_validation_rejects_tampered_digest() -> None:

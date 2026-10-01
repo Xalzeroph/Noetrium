@@ -74,35 +74,19 @@ def test_opaque_runtime_evidence_reference_is_rejected() -> None:
             max_heartbeat_age_seconds=30.0,
             now=now,
         )
-def test_stale_receipt_cannot_be_published(tmp_path: Path) -> None:
+def test_elapsed_receipt_can_be_published_when_generation_is_unchanged(tmp_path: Path) -> None:
     publication = _publication()
-    deployment = publication.deployments[0]
-    certificate = deployment.certificate
-    now = time.time()
-    heartbeat = ServiceHeartbeat(
-        deployment.deployment_id,
-        deployment.stack.digest(),
-        101,
-        "start-a",
-        "a" * 64,
-        True,
-        certificate.digest(),
-        now - 120.0,
+    receipt = publication.runtime_qualification_receipts[0]
+    published = publish_qualified_model_deployment_closure(
+        tmp_path / "closure.json",
+        publication,
+        runtime_qualification_store_factory=DirectoryRuntimeQualificationEvidenceStore,
+        runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
+        now=receipt.valid_until + 3600.0,
     )
-    receipt = build_runtime_qualification_receipt(
-        deployment, heartbeat, required_roles=("planner",),
-        evidence_refs=(_heartbeat_ref(heartbeat),), max_heartbeat_age_seconds=60.0, now=now - 119.0,
-    )
-    stale = replace(publication, runtime_qualification_receipts=(receipt,))
-    with pytest.raises(QualifiedModelClosurePublicationError, match="stale"):
-        publish_qualified_model_deployment_closure(
-            tmp_path / "closure.json",
-            stale,
-            runtime_qualification_store_factory=DirectoryRuntimeQualificationEvidenceStore,
-            runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
-            now=now,
-        )
-def test_stale_receipt_cannot_be_bound_after_publication(tmp_path: Path) -> None:
+    assert published.closure_digest
+
+def test_elapsed_receipt_remains_bindable_after_publication(tmp_path: Path) -> None:
     publication = _publication()
     path = tmp_path / "closure.json"
     publish_qualified_model_deployment_closure(
@@ -121,5 +105,6 @@ def test_stale_receipt_cannot_be_bound_after_publication(tmp_path: Path) -> None
         closure,
         clock=lambda: receipt.valid_until + 1.0,
     )
-    with pytest.raises(ValueError, match="stale"):
-        binding.binding_for(role="planner", prompt_generation="prompt-v1")
+    resolved = binding.binding_for(role="planner", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1", prompt_generation="prompt-v1")
+    assert resolved.role == "planner"
+    assert resolved.deployment_id == publication.deployments[0].deployment_id

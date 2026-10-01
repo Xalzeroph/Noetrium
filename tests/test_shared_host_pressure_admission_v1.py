@@ -23,7 +23,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
     ExecutionPriority,
 )
@@ -70,7 +69,7 @@ def _status(
 def _gate(
     observer: _MutableHostObserver,
     *,
-    mode: AdmissionMode = AdmissionMode.BLOCK,
+    queue_wait_timeout_seconds: float | None = None,
     priority: ExecutionPriority = ExecutionPriority.NORMAL,
 ) -> ResourceCompetitionAdmissionGate:
     admission = build_execution_admission(
@@ -92,14 +91,17 @@ def _gate(
     gate.register_group(
         "g",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(priority=priority, mode=mode),
+        intent=AdmissionIntent(
+            priority=priority,
+            queue_wait_timeout_seconds=queue_wait_timeout_seconds,
+        ),
     )
     return gate
 
 
 def test_cpu_load_does_not_force_yield() -> None:
     observer = _MutableHostObserver(_status(load=80.0))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
     lease = gate.acquire(
         "g",
@@ -130,7 +132,7 @@ def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
     gate.register_group(
         "aggressive",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
 
     cpu = gate.acquire(
@@ -151,7 +153,7 @@ def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
 
 def test_hard_memory_headroom_still_blocks_expansion() -> None:
     observer = _MutableHostObserver(_status(memory_bytes=128 * 1024**2))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
     with pytest.raises(AdmissionRejected, match="memory-headroom"):
         gate.acquire(
@@ -219,7 +221,7 @@ def test_hard_pressure_revalidates_after_delegate_queue_before_return() -> None:
     gate.register_group(
         "race",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.BLOCK),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=None),
     )
 
     first = gate.acquire(
@@ -277,7 +279,7 @@ def test_hard_pressure_revalidates_after_delegate_queue_before_return() -> None:
 
 def test_io_pressure_gates_io_without_wasting_idle_cpu() -> None:
     observer = _MutableHostObserver(_status(load=1.0, io_pressure=75.0))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
     cpu = gate.acquire(
         "g",
@@ -299,7 +301,7 @@ def test_io_pressure_gates_io_without_wasting_idle_cpu() -> None:
 def test_competition_decision_classifies_hard_safety_separately_from_soft_contention() -> None:
     hard = _gate(
         _MutableHostObserver(_status(memory_bytes=128 * 1024**2)),
-        mode=AdmissionMode.REJECT,
+        queue_wait_timeout_seconds=0.0,
     )
     hard_decision = hard.decision("g", ExecutionLaneKind.CPU)
     assert not hard_decision.admitted
@@ -308,7 +310,7 @@ def test_competition_decision_classifies_hard_safety_separately_from_soft_conten
 
     soft = _gate(
         _MutableHostObserver(_status(cpu_pressure=99.0)),
-        mode=AdmissionMode.REJECT,
+        queue_wait_timeout_seconds=0.0,
     )
     soft_decision = soft.decision("g", ExecutionLaneKind.CPU)
     assert not soft_decision.admitted
@@ -335,7 +337,7 @@ def test_default_competition_decision_admits_soft_contention() -> None:
     gate.register_group(
         "aggressive",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
     decision = gate.decision("aggressive", ExecutionLaneKind.CPU)
     assert decision.admitted
@@ -345,7 +347,7 @@ def test_default_competition_decision_admits_soft_contention() -> None:
 
 def test_permit_batch_is_checked_against_declared_physical_memory_demand() -> None:
     observer = _MutableHostObserver(_status(memory_bytes=2 * 1024**3))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
     gate.set_group_demand(
         "g",
         ResourceCompetitionDemand(
@@ -375,12 +377,12 @@ def test_permit_batch_is_checked_against_declared_physical_memory_demand() -> No
 
 def test_live_permits_reserve_declared_memory_across_competing_groups() -> None:
     observer = _MutableHostObserver(_status(memory_bytes=3 * 1024**3))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
     for group_id in ("left", "right", "third"):
         gate.register_group(
             group_id,
             identity=AdmissionIdentity(),
-            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
         )
         gate.set_group_demand(
             group_id,
@@ -501,7 +503,7 @@ def test_failed_delegate_release_keeps_resource_reservation_fenced() -> None:
         gate.register_group(
             group_id,
             identity=AdmissionIdentity(),
-            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
         )
         gate.set_group_demand(
             group_id,
@@ -547,15 +549,16 @@ def test_live_io_permits_reserve_fd_demand_across_competing_groups() -> None:
     observer = _MutableHostObserver(
         _status(
             available_pids=256,
+            # 64 FD safety reserve + one 32-FD workload fits; two do not.
             available_fds=112,
         )
     )
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
     for group_id in ("io-a", "io-b"):
         gate.register_group(
             group_id,
             identity=AdmissionIdentity(),
-            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
         )
         gate.set_group_demand(
             group_id,
@@ -594,7 +597,7 @@ def test_declared_pid_and_fd_demand_scale_with_atomic_batch_size() -> None:
             available_fds=80,
         )
     )
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
     gate.set_group_demand(
         "g",
         ResourceCompetitionDemand(
@@ -672,7 +675,7 @@ def test_declared_demand_fails_closed_when_required_runtime_fact_is_unknown() ->
     gate.register_group(
         "unknown-demand",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
     gate.set_group_demand(
         "unknown-demand",
@@ -705,7 +708,7 @@ def test_declared_demand_fails_closed_when_required_runtime_fact_is_unknown() ->
 
 def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
     observer = _MutableHostObserver(_status(available_pids=8))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
     with pytest.raises(AdmissionRejected, match="pid-headroom"):
         gate.acquire(
@@ -716,25 +719,18 @@ def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
         )
 
 
-def test_fd_headroom_gates_io_but_not_cpu_only_work() -> None:
+def test_fd_headroom_is_a_global_hard_safety_fence() -> None:
     observer = _MutableHostObserver(_status(available_fds=8))
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
-    cpu = gate.acquire(
-        "g",
-        ExecutionLaneKind.CPU,
-        deadline=None,
-        cancellation=None,
-    )
-    cpu.release()
-
-    with pytest.raises(AdmissionRejected, match="fd-headroom"):
-        gate.acquire(
-            "g",
-            ExecutionLaneKind.ASYNC_IO,
-            deadline=None,
-            cancellation=None,
-        )
+    for lane in (ExecutionLaneKind.CPU, ExecutionLaneKind.ASYNC_IO):
+        with pytest.raises(AdmissionRejected, match="fd-headroom"):
+            gate.acquire(
+                "g",
+                lane,
+                deadline=None,
+                cancellation=None,
+            )
 
 
 @pytest.mark.parametrize(
@@ -772,7 +768,7 @@ def test_resource_specific_unknown_pressure_fails_closed(
     lane: ExecutionLaneKind,
     reason: str,
 ) -> None:
-    gate = _gate(_MutableHostObserver(status), mode=AdmissionMode.REJECT)
+    gate = _gate(_MutableHostObserver(status), queue_wait_timeout_seconds=0.0)
     with pytest.raises(AdmissionRejected, match=reason):
         gate.acquire(
             "g",
@@ -784,7 +780,7 @@ def test_resource_specific_unknown_pressure_fails_closed(
 
 def test_runtime_observation_failure_is_fail_closed_for_workload() -> None:
     observer = _MutableHostObserver(None)
-    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
     with pytest.raises(AdmissionRejected, match="host-runtime-unavailable"):
         gate.acquire(
@@ -808,8 +804,65 @@ def test_critical_control_bypasses_shared_host_pressure_gate() -> None:
     )
     gate = _gate(
         observer,
-        mode=AdmissionMode.REJECT,
+        queue_wait_timeout_seconds=0.0,
         priority=ExecutionPriority.CRITICAL,
+    )
+
+    lease = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_critical_workload_with_incremental_memory_obeys_hard_headroom() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            memory_bytes=1536 * 1024**2,
+            memory_pressure=100.0,
+        )
+    )
+    gate = _gate(
+        observer,
+        queue_wait_timeout_seconds=0.0,
+        priority=ExecutionPriority.CRITICAL,
+    )
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=1024**3,
+        ),
+    )
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_critical_workload_bypasses_soft_pressure_after_hard_capacity_passes() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            memory_bytes=8 * 1024**3,
+            cpu_pressure=100.0,
+            memory_pressure=100.0,
+        )
+    )
+    gate = _gate(
+        observer,
+        queue_wait_timeout_seconds=0.0,
+        priority=ExecutionPriority.CRITICAL,
+    )
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=64 * 1024**2,
+        ),
     )
 
     lease = gate.acquire(

@@ -3,88 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import sqlite3
-from threading import RLock
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState, ComputeInventoryConflict
+from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeGPU, ComputeHost
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
-class InMemoryComputeInventory:
-    """Thread-safe observation/catalog projection for compute resources.
-
-    This class is intentionally non-durable. It is suitable for a projection or
-    test authority; durable fleet identity belongs in a persistent provider.
-    """
-
-    def __init__(self) -> None:
-        self._hosts: dict[str, ComputeHost] = {}
-        self._clusters: dict[str, ComputeCluster] = {}
-        self._lock = RLock()
-
-    def register_host(self, host: ComputeHost) -> None:
-        with self._lock:
-            current = self._hosts.get(host.host_id)
-            if current is not None and current != host:
-                raise ValueError(f"host identity already registered: {host.host_id}")
-            self._hosts[host.host_id] = host
-
-    def replace_host(self, expected: ComputeHost, replacement: ComputeHost) -> ComputeHost:
-        if type(expected) is not ComputeHost or type(replacement) is not ComputeHost:
-            raise TypeError("compute host replacement requires typed hosts")
-        if expected.host_id != replacement.host_id or expected.scope != replacement.scope:
-            raise ValueError("compute host replacement cannot change host identity or scope")
-        with self._lock:
-            current = self._hosts.get(expected.host_id)
-            if current is None:
-                raise KeyError(expected.host_id)
-            if current != expected:
-                raise ComputeInventoryConflict(
-                    f"stale compute host inventory generation: {expected.host_id}"
-                )
-            self._hosts[expected.host_id] = replacement
-            return replacement
-
-    def host(self, host_id: str) -> ComputeHost:
-        with self._lock:
-            try:
-                return self._hosts[host_id]
-            except KeyError as exc:
-                raise KeyError(host_id) from exc
-
-    def list_hosts(self, *, scope: ScopeIdentity | None = None) -> tuple[ComputeHost, ...]:
-        with self._lock:
-            return tuple(
-                sorted(
-                    (host for host in self._hosts.values() if scope is None or host.scope == scope),
-                    key=lambda host: host.host_id,
-                )
-            )
-
-    def register_cluster(self, cluster: ComputeCluster) -> None:
-        with self._lock:
-            missing = [host_id for host_id in cluster.host_ids if host_id not in self._hosts]
-            if missing:
-                raise KeyError(missing[0])
-            current = self._clusters.get(cluster.cluster_id)
-            if current is not None and current != cluster:
-                raise ValueError(f"cluster identity already registered: {cluster.cluster_id}")
-            self._clusters[cluster.cluster_id] = cluster
-
-    def cluster(self, cluster_id: str) -> ComputeCluster:
-        with self._lock:
-            try:
-                return self._clusters[cluster_id]
-            except KeyError as exc:
-                raise KeyError(cluster_id) from exc
-
-
-__all__ = ["InMemoryComputeInventory"]
-
-class SQLiteComputeInventory:
+class ComputeInventory:
     """Restart-safe compute host/cluster catalog with atomic identity writes."""
 
     SCHEMA_VERSION = 1
@@ -107,7 +35,7 @@ class SQLiteComputeInventory:
                 "SELECT value FROM compute_meta WHERE key='schema_version'"
             ).fetchone()
             if row is None or int(row[0]) != self.SCHEMA_VERSION:
-                raise RuntimeError("unsupported SQLiteComputeInventory schema")
+                raise RuntimeError("unsupported ComputeInventory schema")
 
     def _connection(self):
         return durable_sqlite_connection(
@@ -132,14 +60,11 @@ class SQLiteComputeInventory:
             "memory_bytes": host.memory_bytes,
             "gpus": [
                 {"gpu_id": gpu.gpu_id, "memory_bytes": gpu.memory_bytes,
-                 "model": gpu.model, "labels": list(gpu.labels), "health": gpu.health.value, "reserved_memory_bytes": gpu.reserved_memory_bytes}
+                 "model": gpu.model, "labels": list(gpu.labels)}
                 for gpu in host.gpus
             ],
             "labels": list(host.labels),
             "enabled": host.enabled,
-            "scheduling_state": host.scheduling_state.value,
-            "reserved_cpu_cores": host.reserved_cpu_cores,
-            "reserved_memory_bytes": host.reserved_memory_bytes,
         }, sort_keys=True, separators=(",", ":"))
 
     @classmethod
@@ -149,8 +74,6 @@ class SQLiteComputeInventory:
             ComputeGPU(
                 row["gpu_id"], int(row["memory_bytes"]), row["model"],
                 tuple(tuple(item) for item in row["labels"]),
-                ComputeDeviceHealth(row.get("health", ComputeDeviceHealth.HEALTHY.value)),
-                int(row.get("reserved_memory_bytes", 0)),
             )
             for row in value["gpus"]
         )
@@ -158,9 +81,6 @@ class SQLiteComputeInventory:
             value["host_id"], cls._decode_scope(value["scope"]),
             int(value["cpu_cores"]), int(value["memory_bytes"]), gpus,
             tuple(tuple(item) for item in value["labels"]), bool(value["enabled"]),
-            ComputeHostSchedulingState(value.get("scheduling_state", ComputeHostSchedulingState.ACTIVE.value)),
-            int(value.get("reserved_cpu_cores", 0)),
-            int(value.get("reserved_memory_bytes", 0)),
         )
 
     @classmethod
@@ -192,38 +112,41 @@ class SQLiteComputeInventory:
 
     def register_host(self, host: ComputeHost) -> None:
         payload = self._host_payload(host)
-        self._put("compute_hosts", host.host_id, payload)
-        if self.host(host.host_id) != host:
-            raise ValueError(f"host identity already registered: {host.host_id}")
-
-    def replace_host(self, expected: ComputeHost, replacement: ComputeHost) -> ComputeHost:
-        if type(expected) is not ComputeHost or type(replacement) is not ComputeHost:
-            raise TypeError("compute host replacement requires typed hosts")
-        if expected.host_id != replacement.host_id or expected.scope != replacement.scope:
-            raise ValueError("compute host replacement cannot change host identity or scope")
-        expected_payload = self._host_payload(expected)
-        replacement_payload = self._host_payload(replacement)
+        gpu_ids = frozenset(gpu.gpu_id for gpu in host.gpus)
         with self._connection() as conn:
             with immediate_sqlite_transaction(
                 conn,
                 timeout_seconds=self.timeout_seconds,
-                label="compute inventory host replacement",
+                label="compute host registration",
             ):
-                updated = conn.execute(
-                    "UPDATE compute_hosts SET payload=? WHERE host_id=? AND payload=?",
-                    (replacement_payload, expected.host_id, expected_payload),
-                )
-                if updated.rowcount != 1:
-                    current = conn.execute(
-                        "SELECT payload FROM compute_hosts WHERE host_id=?",
-                        (expected.host_id,),
-                    ).fetchone()
-                    if current is None:
-                        raise KeyError(expected.host_id)
-                    raise ComputeInventoryConflict(
-                        f"stale compute host inventory generation: {expected.host_id}"
+                rows = conn.execute(
+                    "SELECT host_id,payload FROM compute_hosts ORDER BY host_id"
+                ).fetchall()
+                for existing_id, existing_payload in rows:
+                    existing_id = str(existing_id)
+                    if existing_id == host.host_id:
+                        continue
+                    existing = self._decode_host(str(existing_payload))
+                    overlap = gpu_ids.intersection(
+                        gpu.gpu_id for gpu in existing.gpus
                     )
-        return replacement
+                    if overlap:
+                        raise ValueError(
+                            "GPU identity registered by multiple compute hosts: "
+                            + ",".join(sorted(overlap))
+                        )
+                conn.execute(
+                    "INSERT OR IGNORE INTO compute_hosts(host_id,payload) VALUES(?,?)",
+                    (host.host_id, payload),
+                )
+                row = conn.execute(
+                    "SELECT payload FROM compute_hosts WHERE host_id=?",
+                    (host.host_id,),
+                ).fetchone()
+                if row is None or self._decode_host(str(row[0])) != host:
+                    raise ValueError(
+                        f"host identity already registered: {host.host_id}"
+                    )
 
     def host(self, host_id: str) -> ComputeHost:
         with self._connection() as conn:
@@ -268,4 +191,4 @@ class SQLiteComputeInventory:
         return self._decode_cluster(str(row[0]))
 
 
-__all__ = ["InMemoryComputeInventory", "SQLiteComputeInventory"]
+__all__ = ["ComputeInventory"]

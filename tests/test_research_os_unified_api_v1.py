@@ -1,15 +1,37 @@
 from __future__ import annotations
 
 import noetrium.api as api
-from noetrium_platform.product.research_os import bind_research_os
+import pytest
+from noetrium_platform.product.research_os import (
+    ResearchBranch,
+    ResearchControlAction,
+    ResearchControlReceipt,
+    ResearchExecutionTarget,
+    ResearchGraphRevision,
+    ResearchNodeRef,
+    ResearchRevisionDiff,
+    ResearchTag,
+    bind_research_os,
+)
 
 
-def _sem_method_v1(payload=None):
-    return payload
+def _sem_step(call):
+    return call.transition(value=call.input_value, next_node="finish")
 
 
-def _sem_method_v2(payload=None):
-    return {"version": 2, "payload": payload}
+def _sem_return(call):
+    return call.transition(value=call.previous_value)
+
+
+def _configure_sem_v1(method):
+    method.flow.compute("step", "sem.step", _sem_step, ("finish",))
+    method.flow.finish("finish", "sem.return", _sem_return)
+
+
+def _configure_sem_v2(method):
+    method.contract.configure({"version": 2})
+    method.flow.compute("step", "sem.step.v2", _sem_step, ("finish",))
+    method.flow.finish("finish", "sem.return", _sem_return)
 
 
 def _minecraft_memory_benchmark():
@@ -26,7 +48,7 @@ class _Port:
         self.branches = {}
 
     def commit(self, portfolio, *, parents, message):
-        return api.ResearchGraphRevision(
+        return ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             tuple(parent.revision_digest for parent in parents),
@@ -34,7 +56,7 @@ class _Port:
         )
 
     def diff(self, left, right):
-        return api.ResearchRevisionDiff(
+        return ResearchRevisionDiff(
             left.portfolio_id,
             left.revision_digest,
             right.revision_digest,
@@ -47,7 +69,7 @@ class _Port:
         if current is None:
             if expected is not None:
                 raise ValueError("branch does not exist")
-            result = api.ResearchBranch(
+            result = ResearchBranch(
                 revision.portfolio_id,
                 name,
                 revision.revision_digest,
@@ -56,24 +78,26 @@ class _Port:
         else:
             if expected is None or current.revision_digest != expected.revision_digest:
                 raise ValueError("branch expected revision mismatch")
-            result = api.ResearchBranch(
+            result = ResearchBranch(
                 revision.portfolio_id,
                 name,
                 revision.revision_digest,
-                current.generation + (current.revision_digest != revision.revision_digest),
+                current.generation + (
+                    current.revision_digest != revision.revision_digest
+                ),
             )
         self.branches[key] = result
         return result
 
     def tag(self, name, revision):
-        return api.ResearchTag(
+        return ResearchTag(
             revision.portfolio_id,
             name,
             revision.revision_digest,
         )
 
     def merge(self, portfolio, left, right, *, message):
-        return api.ResearchGraphRevision(
+        return ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (left.revision_digest, right.revision_digest),
@@ -82,7 +106,7 @@ class _Port:
 
     def control(self, request):
         self.controls.append(request)
-        return api.ResearchControlReceipt(
+        return ResearchControlReceipt(
             request.action,
             request.target,
             "accepted",
@@ -91,243 +115,177 @@ class _Port:
         )
 
 
-def _program() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("sem")
-    builder.method("sem-method", implementation=_sem_method_v1)
-    builder.benchmark(
+def _portfolio(configurer=_configure_sem_v1):
+    portfolio = api.ResearchPortfolioBuilder("fixture")
+    program = portfolio.programs.create("sem")
+    program.methods.define(
+        "sem-method",
+        configurer,
+        entrypoint="step",
+    )
+    program.data.benchmark(
         "minecraft-memory",
         implementation=_minecraft_memory_benchmark,
     )
-    builder.metric("task-success", implementation=_task_success_metric)
-    builder.experiment(
+    program.data.metric(
+        "task-success",
+        implementation=_task_success_metric,
+    )
+    program.experiments.define(
         "main",
         definitions=("sem-method", "minecraft-memory"),
-        outputs=(
-            api.ResearchOutputSpec(
-                "trajectories",
-                api.ResearchValueKind.ARTIFACT,
-            ),
-        ),
+        outputs=(("trajectories", "artifact"),),
     )
-    builder.evaluation(
+    program.experiments.evaluate(
         "evaluate",
         definitions=("task-success",),
-        outputs=(
-            api.ResearchOutputSpec(
-                "scores",
-                api.ResearchValueKind.METRIC,
-            ),
-        ),
+        outputs=(("scores", "metric"),),
+        after=("main",),
     )
-    builder.depends(
-        "evaluate",
-        "main",
-        bindings=(
-            api.ResearchInputBinding(
-                "trajectories",
-                "trajectories",
-                api.ResearchValueKind.ARTIFACT,
-            ),
-        ),
-    )
-    builder.analysis(
+    program.experiments.analyze(
         "analysis",
-        depends_on=("evaluate",),
-        outputs=(
-            api.ResearchOutputSpec(
-                "claim-evidence",
-                api.ResearchValueKind.EVIDENCE,
-            ),
-        ),
+        after=("evaluate",),
+        outputs=(("claim-evidence", "evidence"),),
     )
-    return builder.freeze()
+    return portfolio.freeze()
 
 
-def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
-    expected = {
-        "ResearchOS",
+def test_noetrium_api_exposes_only_four_roots() -> None:
+    assert api.__all__ == (
+        "ResearchPortfolioBuilder",
         "ResearchPortfolio",
-        "ResearchProgram",
+        "ResearchOS",
+        "open_project",
+    )
+    for lower in (
         "ResearchProgramBuilder",
-        "ResearchGraphRevision",
-        "ResearchDependency",
+        "ResearchMethodBuilder",
+        "ResearchInputBinding",
+        "ResearchOutputSpec",
         "ResearchNode",
         "ResearchDefinition",
-        "ResearchImplementation",
-        "ResearchControlAction",
+        "WorkloadTrialProvider",
         "ResearchExecutionTarget",
-        "ResearchPortfolioBuilder",
-        "ResearchPortfolioDependency",
-        "ResearchNodeRef",
+    ):
+        assert not hasattr(api, lower)
+
+
+def test_four_root_builder_reaches_only_systemized_program_facade() -> None:
+    portfolio = api.ResearchPortfolioBuilder("surface")
+    assert {
+        name for name in dir(portfolio)
+        if not name.startswith("_")
+    } == {"programs", "handoffs", "freeze"}
+
+    program = portfolio.programs.create("paper")
+    assert {
+        name for name in dir(program)
+        if not name.startswith("_")
+    } == {
+        "methods",
+        "experiments",
+        "data",
+        "requirements",
+        "reports",
+        "extensions",
     }
-    assert expected <= set(api.__all__)
-
-    retired = {
-        "MethodProgram",
-        "MethodProgramBuilder",
-        "CapabilityRequest",
-        "EnvironmentProviderPort",
-        "ProjectModelBinding",
-        "StudyExecutionPlan",
-        "ResearchCampaignPlan",
-        "bind_research_campaign",
-        "bind_research_execution_pool",
-        "ExperimentRuntime",
-        "DecisionCycleRuntimePort",
-        "RunRuntimePort",
-        "ExperimentComponentBindingPort",
-        "ExperimentTrialCycleExecutorPort",
-    }
-    assert retired.isdisjoint(api.__all__)
-    for name in retired:
-        assert not hasattr(api, name)
+    assert not hasattr(program.extensions, "node")
 
 
-    assert not hasattr(api, "ResearchOSPort")
-
-
-def test_research_implementation_identity_is_derived_without_manual_hashes() -> None:
-    implementation = api.ResearchImplementation.from_callable(
+def test_frozen_portfolio_exposes_only_immutable_program_and_handoff_views() -> None:
+    frozen = _portfolio()
+    assert frozen.portfolio_id == "fixture"
+    assert len(frozen.portfolio_digest) == 64
+    view = frozen.programs[0]
+    assert view.program_id == "sem"
+    assert {
+        "minecraft-memory",
         "sem-method",
-        _sem_method_v1,
+        "task-success",
+    }.issubset(set(view.definition_ids))
+    assert view.stage_ids == ("analysis", "evaluate", "main")
+    assert len(view.program_digest) == 64
+    assert not hasattr(view, "nodes")
+    assert not hasattr(view, "definitions")
+    assert not hasattr(frozen, "dependencies")
+    assert frozen.handoffs == ()
+
+
+def test_program_digest_changes_when_method_semantics_change() -> None:
+    first = _portfolio(_configure_sem_v1).programs[0]
+    second_builder = api.ResearchPortfolioBuilder("fixture-v2")
+    second = second_builder.programs.create("sem")
+    second.methods.define(
+        "sem-method",
+        _configure_sem_v2,
+        entrypoint="step",
     )
-    assert implementation.module == __name__
-    assert implementation.qualname == "_sem_method_v1"
-    assert len(implementation.source_digest) == 64
-    assert len(implementation.implementation_digest) == 64
-
-    program = _program()
-    definition = next(
-        row for row in program.definitions
-        if row.definition_id == "sem-method"
-    )
-    assert definition.implementation == implementation
+    second.experiments.define("main", definitions=("sem-method",))
+    second_view = second_builder.freeze().programs[0]
+    assert first.program_digest != second_view.program_digest
 
 
-def test_research_program_builder_freezes_whole_paper_semantics() -> None:
-    program = _program()
-    assert program.program_id == "sem"
-    assert tuple(node.node_id for node in program.nodes) == (
-        "analysis",
-        "evaluate",
-        "main",
-    )
-    assert len(program.dependencies) == 2
-    by_edge = {
-        (edge.upstream_node_id, edge.downstream_node_id): edge
-        for edge in program.dependencies
-    }
-    bound = by_edge[("main", "evaluate")]
-    assert bound.bindings[0].input_name == "trajectories"
-    assert bound.bindings[0].output_name == "trajectories"
-    assert by_edge[("evaluate", "analysis")].bindings == ()
-
-
-def test_research_program_digest_changes_when_scientific_semantics_change() -> None:
-    first = _program()
-    builder = api.ResearchProgramBuilder("sem")
-    builder.method("sem-method", implementation=_sem_method_v2)
-    builder.experiment(
-        "main",
-        definitions=("sem-method",),
-    )
-    second = builder.freeze()
-    assert first.program_digest != second.program_digest
-
-
-def test_portfolio_builder_connects_multiple_papers_as_one_typed_graph() -> None:
-    search_builder = api.ResearchProgramBuilder("paper-a")
-    search_builder.selection(
+def test_portfolio_handoff_connects_multiple_papers_without_graph_types() -> None:
+    portfolio = api.ResearchPortfolioBuilder("portfolio")
+    search = portfolio.programs.create("paper-a")
+    search.experiments.select(
         "select",
-        outputs=(
-            api.ResearchOutputSpec(
-                "best-candidate",
-                api.ResearchValueKind.SELECTION,
-            ),
-        ),
+        outputs=(("best-candidate", "selection"),),
     )
-    search = search_builder.freeze()
-
-    confirm_builder = api.ResearchProgramBuilder("paper-b")
-    confirm_builder.node(
-        "confirm",
-        kind=api.ResearchNodeKind.EXPERIMENT,
+    confirm = portfolio.programs.create("paper-b")
+    confirm.experiments.define("confirm")
+    portfolio.handoffs.bind(
+        upstream=("paper-a", "select"),
+        downstream=("paper-b", "confirm"),
+        inputs={
+            "candidate": ("best-candidate", "selection"),
+        },
     )
-    confirm = confirm_builder.freeze()
+    frozen = portfolio.freeze()
 
-    portfolio = (
-        api.ResearchPortfolioBuilder("portfolio")
-        .program(search)
-        .program(confirm)
-        .depends(
-            upstream_program_id="paper-a",
-            upstream_node_id="select",
-            downstream_program_id="paper-b",
-            downstream_node_id="confirm",
-            bindings=(
-                api.ResearchInputBinding(
-                    "candidate",
-                    "best-candidate",
-                    api.ResearchValueKind.SELECTION,
-                ),
-            ),
-        )
-        .freeze()
-    )
-
-    assert tuple(program.program_id for program in portfolio.programs) == (
+    assert tuple(program.program_id for program in frozen.programs) == (
         "paper-a",
         "paper-b",
     )
-    assert len(portfolio.dependencies) == 1
-    dependency = portfolio.dependencies[0]
-    assert dependency.upstream == api.ResearchNodeRef("paper-a", "select")
-    assert dependency.downstream == api.ResearchNodeRef("paper-b", "confirm")
-    assert dependency.bindings[0].input_name == "candidate"
-
-
-def test_portfolio_rejects_cross_program_dependency_cycle() -> None:
-    first_builder = api.ResearchProgramBuilder("paper-a")
-    first_builder.node("a", kind=api.ResearchNodeKind.ANALYSIS)
-    first = first_builder.freeze()
-
-    second_builder = api.ResearchProgramBuilder("paper-b")
-    second_builder.node("b", kind=api.ResearchNodeKind.ANALYSIS)
-    second = second_builder.freeze()
-
-    builder = api.ResearchPortfolioBuilder("cyclic")
-    builder.program(first).program(second)
-    builder.depends(
-        upstream_program_id="paper-a",
-        upstream_node_id="a",
-        downstream_program_id="paper-b",
-        downstream_node_id="b",
-    )
-    builder.depends(
-        upstream_program_id="paper-b",
-        upstream_node_id="b",
-        downstream_program_id="paper-a",
-        downstream_node_id="a",
+    assert len(frozen.handoffs) == 1
+    handoff = frozen.handoffs[0]
+    assert handoff.upstream == ("paper-a", "select")
+    assert handoff.downstream == ("paper-b", "confirm")
+    assert handoff.inputs == (
+        ("candidate", "best-candidate", "selection"),
     )
 
-    try:
-        builder.freeze()
-    except ValueError as exc:
-        assert "dependency cycle" in str(exc)
-    else:
-        raise AssertionError("cross-program dependency cycle was accepted")
+
+def test_portfolio_rejects_cross_program_handoff_cycle() -> None:
+    portfolio = api.ResearchPortfolioBuilder("cyclic")
+    first = portfolio.programs.create("paper-a")
+    first.experiments.analyze("a")
+    second = portfolio.programs.create("paper-b")
+    second.experiments.analyze("b")
+    portfolio.handoffs.bind(
+        upstream=("paper-a", "a"),
+        downstream=("paper-b", "b"),
+    )
+    portfolio.handoffs.bind(
+        upstream=("paper-b", "b"),
+        downstream=("paper-a", "a"),
+    )
+    with pytest.raises(ValueError, match="dependency cycle"):
+        portfolio.freeze()
 
 
-def test_research_os_unifies_revision_and_live_control() -> None:
+def test_internal_research_os_still_unifies_revision_and_live_control() -> None:
     port = _Port()
     research_os = bind_research_os(port)
-    assert isinstance(research_os, api.ResearchOS)
-    portfolio = api.ResearchPortfolio("main", (_program(),))
 
-    revision = research_os.commit(portfolio, message="initial SEM graph")
+    builder = api.ResearchPortfolioBuilder("main")
+    program = builder.programs.create("sem")
+    program.experiments.define("main")
+    portfolio = builder.freeze()
+
+    revision = research_os.commit(portfolio, message="initial graph")
     branch = research_os.branch("sem-main", revision)
     tag = research_os.tag("sem-confirmatory-v1", revision)
-
     next_revision = research_os.commit(
         portfolio,
         parents=(revision,),
@@ -346,7 +304,7 @@ def test_research_os_unifies_revision_and_live_control() -> None:
         message="resolved merge",
     )
 
-    target = api.ResearchExecutionTarget("sem.confirmatory", next_revision)
+    target = ResearchExecutionTarget("sem.confirmatory", next_revision)
     node_target = target.for_node("sem", "main")
     paused = research_os.pause(node_target)
     resumed = research_os.resume(target)
@@ -362,67 +320,88 @@ def test_research_os_unifies_revision_and_live_control() -> None:
         revision.revision_digest,
         next_revision.revision_digest,
     )
-    assert target.portfolio_id == "main"
-    assert target.research_revision_digest == next_revision.revision_digest
-    assert node_target.node == api.ResearchNodeRef("sem", "main")
-    assert node_target.target_digest != target.target_digest
-    assert paused.target == node_target
-    assert resumed.target == target
-    assert paused.action is api.ResearchControlAction.PAUSE
-    assert resumed.action is api.ResearchControlAction.RESUME
-    assert tuple(row.action for row in port.controls) == (
-        api.ResearchControlAction.PAUSE,
-        api.ResearchControlAction.RESUME,
-    )
+    assert node_target.node == ResearchNodeRef("sem", "main")
+    assert paused.action is ResearchControlAction.PAUSE
+    assert resumed.action is ResearchControlAction.RESUME
 
 
-def test_builder_supports_platform_resolved_scientific_requirements() -> None:
-    builder = api.ResearchProgramBuilder("declarative")
-    builder.model(
-        "planner-model",
-        config={"role": "planner", "minimum_context": 8192},
+def test_platform_resolved_requirements_are_systemized_and_runtime_owned() -> None:
+    portfolio = api.ResearchPortfolioBuilder("requirements")
+    program = portfolio.programs.create("paper")
+
+    program.requirements.model(
+        "planner",
+        config={"required_model": "Qwen3-8B", "structured_output": True},
     )
-    builder.environment(
-        "minecraft",
-        config={"family": "minecraft", "capabilities": ["act", "observe"]},
+    program.requirements.environment(
+        "world",
+        config={
+            "category_id": "minecraft",
+            "minecraft_version": "1.21.1",
+        },
     )
-    builder.dataset(
+    program.data.dataset(
         "tasks",
         config={"benchmark": "memory-suite", "split": "test"},
     )
-    builder.protocol(
-        "confirmatory",
-        config={"repetitions": 3, "freeze": True},
-    )
-    builder.resource_policy(
-        "resources",
-        config={"accelerator": "gpu", "placement": "adaptive"},
-    )
-    builder.study(
+    program.experiments.define(
         "main",
-        definitions=(
-            "planner-model",
-            "minecraft",
-            "tasks",
-            "confirmatory",
-            "resources",
-        ),
+        definitions=("planner", "world", "tasks"),
     )
-    program = builder.freeze()
 
-    by_id = {row.definition_id: row for row in program.definitions}
-    assert all(
-        by_id[name].platform_resolved
-        for name in (
-            "planner-model",
-            "minecraft",
-            "tasks",
-            "confirmatory",
-            "resources",
+    frozen = portfolio.freeze()
+    assert frozen.programs[0].definition_ids == (
+        "planner",
+        "tasks",
+        "world",
+    )
+
+    bad_model = api.ResearchPortfolioBuilder("bad-model")
+    model_program = bad_model.programs.create("paper")
+    with pytest.raises(ValueError, match="platform-owned"):
+        model_program.requirements.model(
+            "planner",
+            config={
+                "required_model": "Qwen3-8B",
+                "engine_args": ["--max-num-seqs", "8"],
+            },
         )
+
+    bad_environment = api.ResearchPortfolioBuilder("bad-env")
+    env_program = bad_environment.programs.create("paper")
+    with pytest.raises(ValueError, match="platform-owned"):
+        env_program.requirements.environment(
+            "world",
+            config={
+                "category_id": "minecraft",
+                "server_port": 25565,
+            },
+        )
+
+
+def test_scientific_configuration_remains_downstream_owned() -> None:
+    portfolio = api.ResearchPortfolioBuilder("semantic-config")
+    program = portfolio.programs.create("paper")
+    program.requirements.configuration(
+        "protocol",
+        config={
+            "repetitions": 3,
+            "heldout": True,
+            "environment_session_scope": "task",
+        },
     )
-    assert all(
-        by_id[name].implementation_digest is None
-        for name in by_id
+    program.experiments.define(
+        "main",
+        definitions=("protocol",),
     )
-    assert program.nodes[0].kind is api.ResearchNodeKind.STUDY
+    assert "protocol" in portfolio.freeze().programs[0].definition_ids
+
+
+def test_experiment_surface_rejects_physical_placement_config() -> None:
+    portfolio = api.ResearchPortfolioBuilder("node-boundary")
+    program = portfolio.programs.create("paper")
+    with pytest.raises(ValueError, match="platform-owned"):
+        program.experiments.define(
+            "main",
+            config={"gpu_id": "0"},
+        )

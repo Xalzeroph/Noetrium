@@ -11,7 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
-    ReproductionMethodProgramFactoryBinding,
+    ReproductionMethodConfigurerBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -47,10 +47,11 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/metagpt_software_company/study.py',
         ),
     ),
-    method_program_factory=ReproductionMethodProgramFactoryBinding(
+    method_configurer=ReproductionMethodConfigurerBinding(
         qualname="build_metagpt_software_company_method_program",
         kwargs={"use_code_review": False},
     ),
+    primary_executable="research/reproductions/metagpt_software_company/program.py",
     reported_results=(
         ReportedResult(
             claim_id="metagpt_mbpp_executive_feedback_gain",
@@ -91,7 +92,7 @@ REPRODUCTION = ReproductionDefinition(
         "ablation are not immutable public model artifacts",
     ),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_metagpt_fidelity_v1.py', 'tests/test_scientific_metagpt_method_program_v1.py', 'tests/test_scientific_metagpt_humaneval_study_v1.py', 'tests/test_scientific_humaneval_cut_v1.py'),
+    scientific_tests=('tests/test_scientific_metagpt_fidelity_v1.py', 'tests/test_scientific_humaneval_cut_v1.py'),
 )
 
 __all__ = ["REPRODUCTION"]

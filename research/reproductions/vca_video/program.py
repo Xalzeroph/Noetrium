@@ -1,26 +1,23 @@
 from __future__ import annotations
 
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-)
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+
+
+
 
 from .fidelity import VCA_REFERENCE_FIDELITY
 
@@ -121,9 +118,9 @@ def vca_initial_state(
     }
 
 
-def _prepare_sample(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_sample(request: MethodCall) -> MethodNodeResult:
     selected = _segment(request.state.get("selected_segment"), "selected segment")
-    return MethodNodeResult(
+    return dict(
         value={
             "operation": "uniform_sample_segment",
             "video_ref": _text(request.state.get("video_ref"), "video_ref"),
@@ -137,7 +134,7 @@ def _prepare_sample(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_sample(request: MethodCall) -> MethodNodeResult:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("VCA video decode result must be an object")
     frames = _rows(request.previous_value.get("frames"), "sampled frames")
@@ -179,7 +176,7 @@ def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
         }
         for index in range(len(boundaries) - 1)
     )
-    return MethodNodeResult(
+    return dict(
         value={"frames": tuple(normalized_frames), "segments": segments},
         state_update={
             "current_frames": tuple(normalized_frames),
@@ -192,7 +189,7 @@ def _record_sample(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _reward_view(request: MethodNodeRequest) -> JsonObject:
+def _reward_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "intrinsic_reward",
         "question": _text(request.state.get("question"), "question"),
@@ -213,7 +210,7 @@ def _reward_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_reward(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_reward(request: MethodCall) -> MethodNodeResult:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("VCA reward model result must be an object")
     scored = _rows(request.previous_value.get("segments"), "reward segments")
@@ -258,7 +255,7 @@ def _record_reward(request: MethodNodeRequest) -> MethodNodeResult:
         *tuple(dict(row) for row in _rows(request.state.get("reward_history"), "reward history")),
         *history_rows,
     )
-    return MethodNodeResult(
+    return dict(
         value={"scored_segments": children},
         state_update={
             "candidate_segments": (*prior, *children),
@@ -267,7 +264,7 @@ def _record_reward(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _update_memory(request: MethodNodeRequest) -> MethodNodeResult:
+def _update_memory(request: MethodCall) -> MethodNodeResult:
     frames = _rows(request.state.get("current_frames"), "current frames")
     segments = _rows(request.state.get("current_segments"), "current segments")
     candidates = {
@@ -309,13 +306,13 @@ def _update_memory(request: MethodNodeRequest) -> MethodNodeResult:
         ),
     )[:limit]
     retained.sort(key=lambda row: _integer(row.get("frame_index"), "frame_index"))
-    return MethodNodeResult(
+    return dict(
         value={"memory_size": len(retained)},
         state_update={"memory_frames": tuple(retained)},
     )
 
 
-def _exploration_view(request: MethodNodeRequest) -> JsonObject:
+def _exploration_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "exploration",
         "question": _text(request.state.get("question"), "question"),
@@ -338,14 +335,14 @@ def _exploration_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_decision(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_decision(request: MethodCall) -> MethodNodeResult:
     if not isinstance(request.previous_value, Mapping):
         raise TypeError("VCA exploration result must be an object")
     answer = request.previous_value.get("answer")
     segment_id = request.previous_value.get("segment_id")
     round_index = _integer(request.state.get("round_index"), "round_index") + 1
     if isinstance(answer, str) and answer.strip():
-        return MethodNodeResult(
+        return dict(
             value={"answer": answer.strip(), "round": round_index},
             state_update={"answer": answer.strip(), "round_index": round_index},
             next_node="return",
@@ -362,7 +359,7 @@ def _record_decision(request: MethodNodeRequest) -> MethodNodeResult:
     max_rounds = _integer(request.state.get("max_rounds"), "max_rounds", minimum=1)
     if round_index >= max_rounds:
         raise RuntimeError("VCA reproduction safety round ceiling reached before answer")
-    return MethodNodeResult(
+    return dict(
         value={"segment_id": segment_id, "round": round_index},
         state_update={
             "selected_segment": selected,
@@ -374,9 +371,9 @@ def _record_decision(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     answer = _text(request.state.get("answer"), "answer")
-    return MethodNodeResult(
+    return dict(
         value={
             "answer": answer,
             "exploration_rounds": _integer(request.state.get("round_index"), "round_index"),
@@ -397,7 +394,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_vca_method_program() -> MethodProgram:
+def build_vca_method_program(method, ) -> None:
     configuration: JsonObject = {
         "paper": "ICCV 2025",
         "algorithm": (
@@ -413,17 +410,9 @@ def build_vca_method_program() -> MethodProgram:
         "memory_limit": "benchmark-bound",
         "max_rounds": "reproduction-safety-bound",
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="vca-video-curious-agent",
-            implementation_version="iccv-2025-paper-authoritative",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="vca.iccv2025.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     visits = VCA_EXECUTION_SAFETY_ROUNDS
-    builder = MethodProgramBuilder(identity, entrypoint="prepare_sample")
+    builder = method
     builder.compute(
         "prepare_sample",
         "vca.video.uniform-sample.prepare",
@@ -436,8 +425,8 @@ def build_vca_method_program() -> MethodProgram:
         "vca.video.uniform-sample",
         _VIDEO_SAMPLE_CAPABILITY,
         ("record_sample",),
-        effect_class=EffectClass.PURE,
-        evidence_obligations=("video.sample",),
+        effect='pure',
+        evidence=("video.sample",),
         max_visits=visits,
     )
     builder.compute(
@@ -452,7 +441,7 @@ def build_vca_method_program() -> MethodProgram:
         "vca.intrinsic-reward",
         _REWARD_AGENT_ID,
         ("record_reward",),
-        view_handler=_reward_view,
+        view=_reward_view,
         max_visits=visits,
     )
     builder.compute(
@@ -474,7 +463,7 @@ def build_vca_method_program() -> MethodProgram:
         "vca.tree-explore-or-answer",
         _EXPLORATION_AGENT_ID,
         ("record_decision",),
-        view_handler=_exploration_view,
+        view=_exploration_view,
         max_visits=visits,
     )
     builder.route(
@@ -485,32 +474,43 @@ def build_vca_method_program() -> MethodProgram:
         max_visits=visits,
     )
     builder.return_node("return", "vca.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_VIDEO_SAMPLE_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_VIDEO_SAMPLE_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "video.sample",
             "vca.intrinsic-reward-history",
             "vca.memory-buffer",
             "vca.exploration-trajectory",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "multiple_choice_accuracy",
             "observed_frame_count",
             "exploration_rounds",
         ),
-        artifact_kinds=("vca_exploration_trajectory", "vca_memory_buffer"),
+        artifacts=("vca_exploration_trajectory", "vca_memory_buffer"),
     )
+    return builder
 
 
-VCA_METHOD_PROGRAM = build_vca_method_program()
+METHOD_CONFIGURER = build_vca_method_program
+METHOD_ENTRYPOINT = "prepare_sample"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "VCA_EXECUTION_SAFETY_ROUNDS",
-    "VCA_METHOD_PROGRAM",
-    "build_vca_method_program",
-    "vca_initial_state",
+    'VCA_EXECUTION_SAFETY_ROUNDS',
+    'build_vca_method_program',
+    'vca_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'vca-video', "version": "paper-protocol", "semantic_contract": 'vca-video' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

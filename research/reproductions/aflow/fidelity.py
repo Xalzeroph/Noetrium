@@ -1,8 +1,7 @@
 from __future__ import annotations
+from research.reproductions._support import canonical_digest
 
 from dataclasses import dataclass
-
-from noetrium.api import canonical_digest
 
 
 AFLOW_PAPER_ERA_COMMIT = "072839af7f75948d91d3784154128ab2456831f0"

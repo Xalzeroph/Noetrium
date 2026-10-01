@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "7adde71b5221023bb409130da1403e55240f3ab799ccdc249fa04bf248a743d2",
-  "definition_digest": "1336421e8f467dea1b177f6c4ccda7e283bae802349d03cb8ba35f3d874e75b9",
+  "package_digest": "92e7162de32ca3757cede25bfc137ff641d28d717c46d7e6203329db00e367f9",
+  "definition_digest": "3297eeb5372d74c65d6e4b4fe61b8f801ba514c521c21eea17ce94aabd47a952",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -73,13 +73,13 @@
       "kind": "method_program",
       "path": "research/reproductions/memevolve/program.py",
       "declaration_digest": "72b1338481d40bd99d6d6fc58836f84734532fbbdb4c6347a64c3f5d1c0cbf00",
-      "content_sha256": "595df586431c0c8c3e22b5e4583caab7563b61fb833536f12e7b90b7e99930b1"
+      "content_sha256": "eb9dc4bd39831aa43b7a2f394b994ad67fe5740ea1094e3b47024e55e92e5773"
     },
     {
       "kind": "study",
       "path": "research/reproductions/memevolve/study.py",
       "declaration_digest": "f99efcdf65c4ffd90f215782b5c9c724d3df72f8f3953b1776065234a28dc32e",
-      "content_sha256": "d5c269251b44187ab0f1e924a48007093b60499877ca40d678780657ffab85c5"
+      "content_sha256": "534eee79a0ea6bf1488861d25df085bd92fa5c9ab27570c8f0e7a493289d28b5"
     }
   ],
   "primary_executable": "research/reproductions/memevolve/program.py",
@@ -90,15 +90,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "776012157c13e91becddeeccb7c2cd0d9d1ed771f3a6991173b19959fbc8945d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "memevolve",
-    "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
+    "program_digest": "8d6eb1c7e062e27bc56367058ea1455b8ff93c6f910596103bdc75ebb678a608",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

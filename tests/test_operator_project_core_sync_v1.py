@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 import subprocess
 
@@ -17,6 +18,11 @@ from noetrium_platform.foundation.governance.architecture.repository_boundary.ru
     audit_downstream_project_imports,
 )
 from noetrium_platform.product.operator.api import ProjectCreateRequest
+from noetrium_platform.foundation.portfolio.api import (
+    decode_project_manifest_bytes,
+    encode_project_manifest,
+    project_manifest_identity_facets,
+)
 from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 from noetrium_platform.product.operator.runtime.research_cli import (
     build_research_parser,
@@ -97,11 +103,10 @@ from noetrium import api
 
 
 def build_research() -> api.ResearchPortfolio:
-    a = api.ResearchProgramBuilder("paper-a")
-    a.node("alpha", kind=api.ResearchNodeKind.CUSTOM)
-    b = api.ResearchProgramBuilder("paper-b")
-    b.node("beta", kind=api.ResearchNodeKind.CUSTOM)
-    return api.ResearchPortfolio("paper", (a.freeze(), b.freeze()))
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    portfolio.programs.create("paper-a").extensions.node("alpha")
+    portfolio.programs.create("paper-b").extensions.node("beta")
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -131,6 +136,67 @@ __all__ = ["build_research"]
     assert project_testing.test_project(root, command_runner=_COMMAND_RUNNER).passed
 
 
+def test_project_sync_rebinds_platform_provenance_without_scientific_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    root = tmp_path / "paper"
+    project_scaffold.create_project(
+        ProjectCreateRequest("paper", "0.1.0", root)
+    )
+
+    manifest_path = root / "project.manifest.json"
+    original = decode_project_manifest_bytes(manifest_path.read_bytes())
+    enriched = replace(original, study_ids=("study-a",))
+    manifest_path.write_bytes(encode_project_manifest(enriched))
+    before_facets = project_manifest_identity_facets(enriched)
+
+    rebound_platform = InstalledPlatformIdentity("0.1.0", "b" * 64)
+    monkeypatch.setattr(
+        project_scaffold,
+        "installed_platform_identity",
+        lambda: rebound_platform,
+    )
+    monkeypatch.setattr(
+        project_doctor,
+        "installed_platform_identity",
+        lambda: rebound_platform,
+    )
+
+    receipt = project_scaffold.sync_project(root)
+    assert receipt.regenerated_files == (
+        "project.manifest.json",
+        "src/paper/research.py",
+        "tests/test_generated_project.py",
+    )
+
+    rebound = decode_project_manifest_bytes(manifest_path.read_bytes())
+    assert rebound.project == enriched.project
+    assert rebound.capability_requirements == enriched.capability_requirements
+    assert rebound.provider_bindings == enriched.provider_bindings
+    assert rebound.method_requirements == enriched.method_requirements
+    assert rebound.configuration_refs == enriched.configuration_refs
+    assert rebound.study_ids == ("study-a",)
+    assert rebound.provenance.platform_artifact_sha256 == "b" * 64
+
+    after_facets = project_manifest_identity_facets(rebound)
+    assert before_facets.project_spec_digest == after_facets.project_spec_digest
+    assert before_facets.requirements_digest == after_facets.requirements_digest
+    assert before_facets.provider_bindings_digest == after_facets.provider_bindings_digest
+    assert (
+        before_facets.scaffold_platform_provenance_digest
+        != after_facets.scaffold_platform_provenance_digest
+    )
+
+    report = project_doctor.doctor_project(
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
+    )
+    assert report.ready
+
+
 def test_doctor_rejects_hand_edited_generated_shell(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -149,6 +215,7 @@ def test_doctor_rejects_hand_edited_generated_shell(
     report = project_doctor.doctor_project(
         root,
         boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = {row.check_id: row.disposition.value for row in report.checks}
     assert not report.ready
@@ -194,13 +261,9 @@ def test_user_core_may_delegate_to_arbitrary_project_modules(
 
 
 def make_portfolio() -> api.ResearchPortfolio:
-    first = api.ResearchProgramBuilder("paper-a")
-    first.node("discover", kind=api.ResearchNodeKind.CUSTOM)
-    second = api.ResearchProgramBuilder("paper-b")
-    second.node("verify", kind=api.ResearchNodeKind.CUSTOM)
     portfolio = api.ResearchPortfolioBuilder("modular-paper")
-    portfolio.program(first.freeze())
-    portfolio.program(second.freeze())
+    portfolio.programs.create("paper-a").extensions.node("discover")
+    portfolio.programs.create("paper-b").extensions.node("verify")
     return portfolio.freeze()
 ''',
         encoding="utf-8",
@@ -222,12 +285,16 @@ __all__ = ["build_research"]
     report = project_doctor.doctor_project(
         root,
         boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = {row.check_id: row.disposition.value for row in report.checks}
     assert report.ready
     assert checks["public_import_boundary"] == "pass"
     assert checks["standard_bindings"] == "pass"
-    assert project_testing.test_project(root).passed
+    assert project_testing.test_project(
+        root,
+        command_runner=_COMMAND_RUNNER,
+    ).passed
 
 
 
@@ -249,21 +316,21 @@ def test_generated_shell_is_independent_of_scientific_topology(
 
 
 def build_research() -> api.ResearchPortfolio:
-    programs = []
+    portfolio = api.ResearchPortfolioBuilder("topology-independent")
     for program_id, node_ids in (
         ("paper-a", ("a0", "a1", "a2")),
         ("paper-b", ("b0", "b1")),
         ("paper-c", ("c0",)),
     ):
-        builder = api.ResearchProgramBuilder(program_id)
+        builder = portfolio.programs.create(program_id)
         previous = None
         for node_id in node_ids:
-            builder.node(node_id, kind=api.ResearchNodeKind.CUSTOM)
-            if previous is not None:
-                builder.depends(node_id, previous)
+            builder.extensions.node(
+                node_id,
+                depends_on=(() if previous is None else (previous,)),
+            )
             previous = node_id
-        programs.append(builder.freeze())
-    return api.ResearchPortfolio("topology-independent", tuple(programs))
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -274,4 +341,7 @@ __all__ = ["build_research"]
     project_scaffold.sync_project(root)
 
     assert shell_path.read_bytes() == original_shell
-    assert project_testing.test_project(root).passed
+    assert project_testing.test_project(
+        root,
+        command_runner=_COMMAND_RUNNER,
+    ).passed

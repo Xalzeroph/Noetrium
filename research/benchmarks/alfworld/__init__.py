@@ -7,6 +7,7 @@ from .authority import (
     ALFWORLD_RELEASE_AUTHORITY_DIGEST,
     ALFWORLD_RELEASE_COMMIT,
     ALFWORLD_RELEASE_PROVIDER,
+    ALFWORLD_RELEASE_PROVIDER_SOURCE_SHA256,
     ALFWORLD_RELEASE_REPOSITORY,
     ALFWORLD_RELEASE_VERSION,
     ALFWORLD_TEXTWORLD_BRANCH,
@@ -15,8 +16,11 @@ from .authority import (
     ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST,
 )
 from .materializer import (
+    ALFWORLD_REPOSITORY_DATA_ROOT_INPUT,
+    ALFWORLD_REPOSITORY_PROVIDER_ORDER_INPUT,
     AlfworldMaterialization,
     materialize_alfworld_paper_eval,
+    materialize_repository_benchmark_authority,
     register_alfworld_materialization,
 )
 from .cut import (
@@ -48,6 +52,7 @@ __all__ = [
     "ALFWORLD_RELEASE_AUTHORITY_DIGEST",
     "ALFWORLD_RELEASE_COMMIT",
     "ALFWORLD_RELEASE_PROVIDER",
+    "ALFWORLD_RELEASE_PROVIDER_SOURCE_SHA256",
     "ALFWORLD_RELEASE_REPOSITORY",
     "ALFWORLD_RELEASE_VERSION",
     "ALFWORLD_TEXTWORLD_BRANCH",
@@ -56,9 +61,12 @@ __all__ = [
     "ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST",
     "AlfworldMaterialization",
     "materialize_alfworld_paper_eval",
+    "materialize_repository_benchmark_authority",
     "register_alfworld_materialization",
     "ALFWORLD_BENCHMARK_ID",
     "ALFWORLD_PAPER_EVAL_DATASET_PATH",
+    "ALFWORLD_REPOSITORY_DATA_ROOT_INPUT",
+    "ALFWORLD_REPOSITORY_PROVIDER_ORDER_INPUT",
     "ALFWORLD_PAPER_EVAL_EXPECTED_TASK_COUNT",
     "ALFWORLD_PAPER_EVAL_REVISION",
     "ALFWORLD_PAPER_EVAL_SELECTION_POLICY_DIGEST",

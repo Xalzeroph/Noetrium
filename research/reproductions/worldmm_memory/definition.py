@@ -77,10 +77,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/worldmm_memory/fidelity.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/worldmm_memory/memory.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/worldmm_memory/program.py",
         ),
@@ -142,10 +138,7 @@ REPRODUCTION = ReproductionDefinition(
         "and response models used by the evaluated configuration.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_worldmm_memory_v1.py",
-        "tests/test_scientific_worldmm_egolifeqa_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

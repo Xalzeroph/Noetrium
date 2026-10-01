@@ -1,26 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import LIVE_SWE_AGENT_FIDELITY
 
@@ -86,7 +82,7 @@ def live_swe_agent_initial_state(
     }
 
 
-def _worker_view(request: MethodNodeRequest) -> JsonObject:
+def _worker_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "live_worker",
         "task_instruction": request.state.get("task_instruction"),
@@ -105,7 +101,7 @@ def _worker_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _prepare_worker_action(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_worker_action(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("Live-SWE-agent worker result must be a mapping")
@@ -128,7 +124,7 @@ def _prepare_worker_action(request: MethodNodeRequest) -> MethodNodeResult:
         next_node = "software_command"
 
     history = _history(request.state.get("history", ()))
-    return MethodNodeResult(
+    return dict(
         value={
             "create_tool": create_tool,
             "command": command,
@@ -153,7 +149,7 @@ def _prepare_worker_action(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _tool_reflection_view(request: MethodNodeRequest) -> JsonObject:
+def _tool_reflection_view(request: MethodCall) -> JsonObject:
     return {
         "phase": "trajectory_reflection_before_tool_creation",
         "task_instruction": request.state.get("task_instruction"),
@@ -170,14 +166,14 @@ def _tool_reflection_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _prepare_tool_creation(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_tool_creation(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, Mapping):
         command_value = value.get("command", value.get("bash"))
     else:
         command_value = value
     command = _text(command_value, "tool creation command")
-    return MethodNodeResult(
+    return dict(
         value={
             "command": command,
             "new_subshell": LIVE_SWE_AGENT_FIDELITY.environment_changes_are_new_subshell_per_action,
@@ -188,8 +184,8 @@ def _prepare_tool_creation(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _prepare_command(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _prepare_command(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "command": _text(request.state.get("pending_command"), "pending_command"),
             "new_subshell": LIVE_SWE_AGENT_FIDELITY.environment_changes_are_new_subshell_per_action,
@@ -216,7 +212,7 @@ def _environment_result(value: JsonValue) -> tuple[str, bool, JsonValue]:
     return text, done, artifact
 
 
-def _record_tool_creation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_tool_creation(request: MethodCall) -> MethodNodeResult:
     observation, _done, artifact = _environment_result(request.previous_value)
     history = _history(request.state.get("history", ()))
     count = _count(request.state, "tool_creation_count") + 1
@@ -228,7 +224,7 @@ def _record_tool_creation(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if artifact is not None:
         row["artifact_reference"] = artifact
-    return MethodNodeResult(
+    return dict(
         value={"tool_created": True, "observation": observation},
         state_update={
             "history": (*history, row),
@@ -243,7 +239,7 @@ def _record_tool_creation(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_command(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_command(request: MethodCall) -> MethodNodeResult:
     observation, done, artifact = _environment_result(request.previous_value)
     command = _text(request.state.get("pending_command"), "pending_command")
     history = _history(request.state.get("history", ()))
@@ -265,7 +261,7 @@ def _record_command(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if artifact is not None:
         update["submission_artifact"] = artifact
-    return MethodNodeResult(
+    return dict(
         value={
             "turn": turn,
             "submitted": submitted,
@@ -282,12 +278,12 @@ def _record_command(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _route_terminal(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_terminal(request: MethodCall) -> MethodNodeResult:
     turn = _count(request.state, "turn")
     submitted = request.state.get("submitted") is True
     done = request.state.get("environment_done") is True
     host_limit = turn >= _HOST_MAX_TURNS
-    return MethodNodeResult(
+    return dict(
         value={
             "terminal": submitted or done or host_limit,
             "submitted": submitted,
@@ -299,7 +295,7 @@ def _route_terminal(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     result: dict[str, JsonValue] = {
         "submitted": request.state.get("submitted") is True,
         "environment_done": request.state.get("environment_done") is True,
@@ -312,10 +308,10 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     }
     if "submission_artifact" in request.state:
         result["submission_artifact"] = request.state["submission_artifact"]
-    return MethodNodeResult(value=result)
+    return dict(value=result)
 
 
-def build_live_swe_agent_method_program() -> MethodProgram:
+def build_live_swe_agent_method_program(method, ) -> None:
     f = LIVE_SWE_AGENT_FIDELITY
     configuration: JsonObject = {
         "release_tag": f.release_tag,
@@ -341,22 +337,14 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "host_max_turns": _HOST_MAX_TURNS,
         "host_max_tool_creations": _HOST_MAX_TOOL_CREATIONS,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="live-swe-agent",
-            implementation_version=f.release_tag,
-            abi_version="noetrium.method-machine.v1",
-            schema_version="live-swe-agent.v1.0.0.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="worker")
+
+    builder = method
     builder.agent(
         "worker",
         "live-swe-agent.worker",
         _AGENT_ID,
         ("prepare_worker_action",),
-        view_handler=_worker_view,
+        view=_worker_view,
         max_visits=_HOST_MAX_TURNS + _HOST_MAX_TOOL_CREATIONS,
     )
     builder.route(
@@ -371,7 +359,7 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "live-swe-agent.tool.reflect",
         _TOOL_REFLECTION_AGENT_ID,
         ("prepare_tool_creation",),
-        view_handler=_tool_reflection_view,
+        view=_tool_reflection_view,
         max_visits=_HOST_MAX_TOOL_CREATIONS,
     )
     builder.compute(
@@ -386,9 +374,9 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "live-swe-agent.tool.create",
         _SOFTWARE_COMMAND_CAPABILITY,
         ("record_tool_creation",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=_HOST_MAX_TOOL_CREATIONS,
-        evidence_obligations=("live-swe-agent.tool-creation-effect",),
+        evidence=("live-swe-agent.tool-creation-effect",),
     )
     builder.route(
         "record_tool_creation",
@@ -409,9 +397,9 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "live-swe-agent.command.execute",
         _SOFTWARE_COMMAND_CAPABILITY,
         ("record_command",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=_HOST_MAX_TURNS,
-        evidence_obligations=("software.command.effect",),
+        evidence=("software.command.effect",),
     )
     builder.compute(
         "record_command",
@@ -428,36 +416,47 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         max_visits=_HOST_MAX_TURNS,
     )
     builder.return_node("return", "live-swe-agent.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_SOFTWARE_COMMAND_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_SOFTWARE_COMMAND_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "live-swe-agent.trajectory",
             "live-swe-agent.tool-reflection",
             "live-swe-agent.tool-creation-effect",
             "software.command.effect",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "task_resolved",
             "turn_count",
             "command_count",
             "tool_creation_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "live_swe_agent_trajectory",
             "live_swe_agent_generated_tool",
             "prediction.patch",
         ),
     )
+    return builder
 
 
-LIVE_SWE_AGENT_METHOD_PROGRAM = build_live_swe_agent_method_program()
+METHOD_CONFIGURER = build_live_swe_agent_method_program
+METHOD_ENTRYPOINT = "worker"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "LIVE_SWE_AGENT_METHOD_PROGRAM",
-    "build_live_swe_agent_method_program",
-    "live_swe_agent_initial_state",
+    'build_live_swe_agent_method_program',
+    'live_swe_agent_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'live-swe-agent', "version": "paper-protocol", "semantic_contract": 'live-swe-agent' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))
