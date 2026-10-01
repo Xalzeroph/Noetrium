@@ -626,7 +626,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         self,
         allocations: tuple[EndpointAllocation, ...],
         *,
-        ttl_seconds: float,
+        ttl_seconds: float | None,
         now: float | None = None,
     ) -> tuple[EndpointAllocation, ...]:
         if not allocations:
@@ -636,11 +636,14 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint allocation ids must be unique")
-        if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
-            raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
+        if ttl_seconds is not None and (
+            not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0
+        ):
+            raise ValueError(
+                "endpoint lease ttl_seconds must be finite and > 0 or None"
+            )
         with self._transaction() as conn:
             now_epoch_s = self._authority_now(conn, now)
-            expires_at = now_epoch_s + ttl_seconds
             current_rows: list[EndpointAllocation] = []
             for expected in allocations:
                 current = self._reconcile_one(
@@ -666,23 +669,28 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 )
                 for row, expected in zip(current_rows, allocations, strict=True)
             ]
-            if any(row.expires_at_epoch_s != expires_at for row in renewed_leases):
-                raise ResourceLeaseConflict("endpoint lease renewal produced inconsistent expiry")
             conn.executemany(
                 "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? "
                 "WHERE allocation_id=? AND lease_fencing_token=?",
                 [
                     (
-                        expires_at,
+                        lease.expires_at_epoch_s,
                         expected.allocation_id,
                         expected.lease_fencing_token,
                     )
-                    for expected in allocations
+                    for lease, expected in zip(
+                        renewed_leases, allocations, strict=True
+                    )
                 ],
             )
             return tuple(
-                replace(row, lease_expires_at_epoch_s=expires_at)
-                for row in current_rows
+                replace(
+                    row,
+                    lease_expires_at_epoch_s=lease.expires_at_epoch_s,
+                )
+                for row, lease in zip(
+                    current_rows, renewed_leases, strict=True
+                )
             )
 
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:

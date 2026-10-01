@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from threading import Condition, RLock
 from typing import Callable
@@ -788,6 +788,40 @@ class LocalModelReplicaPoolRuntime:
         with self._lifecycle_lock:
             return len(self._pending_cleanups)
 
+    def _retain_running_placements(
+        self,
+        placements: tuple[ModelReplicaPlacement, ...],
+    ) -> tuple[ModelReplicaPlacement, ...]:
+        if not placements:
+            raise ValueError(
+                "model realization retention requires running placements"
+            )
+        retained_compute = self._compute_scheduler.retain_many(
+            tuple(row.compute for row in placements)
+        )
+        try:
+            retained_endpoints = self._endpoint_allocations.retain_many(
+                tuple(row.endpoint for row in placements)
+            )
+        except BaseException:
+            # The caller owns canonical physical cleanup. Compute retention is
+            # intentionally left authoritative until that teardown converges.
+            raise
+        compute_by_id = {
+            row.allocation_id: row for row in retained_compute
+        }
+        endpoint_by_id = {
+            row.allocation_id: row for row in retained_endpoints
+        }
+        return tuple(
+            replace(
+                row,
+                compute=compute_by_id[row.compute.allocation_id],
+                endpoint=endpoint_by_id[row.endpoint.allocation_id],
+            )
+            for row in placements
+        )
+
     def _retry_pending_cleanups_locked(self) -> None:
         errors: list[BaseException] = []
         for cleanup_id, cleanup in tuple(self._pending_cleanups.items()):
@@ -1513,11 +1547,14 @@ class LocalModelReplicaPoolRuntime:
                         status,
                     )
                 )
+            retained_placements = self._retain_running_placements(
+                tuple(placements)
+            )
             owner = _ModelReplicaPoolOwner(
                 ModelReplicaPoolReport(
                     canonical_digest(request),
                     placement_generation_id,
-                    tuple(placements),
+                    retained_placements,
                 ),
                 deployment_runtime=self._deployment_runtime,
                 compute_scheduler=self._compute_scheduler,
@@ -1792,10 +1829,13 @@ class LocalModelReplicaPoolRuntime:
                         )
                     )
 
+                retained_placements = self._retain_running_placements(
+                    tuple(placements)
+                )
                 report = ModelReplicaPoolReport(
                     request_digest,
                     placement_generation_id,
-                    tuple(placements),
+                    retained_placements,
                 )
                 owner = _ModelReplicaPoolOwner(
                     report,

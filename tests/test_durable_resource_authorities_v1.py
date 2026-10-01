@@ -127,6 +127,50 @@ class DurableResourceAuthoritiesTests(TestCase):
             with self.assertRaises(ResourceLeaseConflict):
                 restored_owners.acquire(ResourceLease("lease-2", resource, workspace, "competing allocation"))
 
+    def test_durable_lease_retention_survives_time_and_finite_heartbeat(self) -> None:
+        with TemporaryDirectory() as directory:
+            database = Path(directory) / "retained.sqlite"
+            clock = ManualLeaseClock(
+                elapsed_seconds=1.0,
+                wall_epoch_seconds=100.0,
+            )
+            registry = ResourceLeaseRegistry(database, clock=clock)
+            resource = ResourceIdentity(ResourceKind.COMPUTE, "retained-compute")
+            registry.register_owner(
+                ResourceOwner(
+                    resource,
+                    PLATFORM_SCOPE,
+                    ResourceOwnership.PLATFORM_MANAGED,
+                )
+            )
+            granted = registry.acquire(
+                ResourceLease(
+                    "retained-lease",
+                    resource,
+                    PLATFORM_SCOPE,
+                    "warm-model-realization",
+                ),
+                ttl_seconds=10.0,
+            )
+            retained = registry.renew(
+                granted.lease_id,
+                fencing_token=granted.fencing_token,
+                ttl_seconds=None,
+            )
+            self.assertIsNone(retained.expires_at_epoch_s)
+            self.assertEqual(retained.fencing_token, granted.fencing_token)
+
+            clock.advance(1000.0)
+            self.assertEqual(registry.get(granted.lease_id), retained)
+
+            heartbeat = registry.renew(
+                retained.lease_id,
+                fencing_token=retained.fencing_token,
+                ttl_seconds=30.0,
+            )
+            self.assertIsNone(heartbeat.expires_at_epoch_s)
+            self.assertEqual(heartbeat.fencing_token, retained.fencing_token)
+
     def test_endpoint_allocation_survives_rebuild_and_release_is_idempotent(self) -> None:
         with TemporaryDirectory() as directory:
             database = Path(directory) / "platform.sqlite"

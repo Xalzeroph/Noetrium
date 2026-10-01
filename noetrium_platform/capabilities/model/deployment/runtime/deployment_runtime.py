@@ -253,6 +253,9 @@ class ModelDeploymentRuntime:
                 ModelDesiredState.RUNNING,
             )
 
+            if applied is None:
+                self._stop_cleared_orphans_unlocked(spec)
+
             if applied is not None:
                 self._materializer.validate_materialization_inputs(spec)
                 same_materialization = (

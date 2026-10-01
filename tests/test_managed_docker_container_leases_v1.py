@@ -286,6 +286,33 @@ def test_managed_docker_confirmed_warm_generation_survives_expiry_and_recovery()
     assert resources.active_for(retention_resource) == ()
 
 
+def test_managed_docker_missing_warm_generation_retires_retention_after_control_expiry() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = TestResourceLeaseRegistry(clock=clock)
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority, "missing-warm-worker")
+    observed = runtime.start(handle)
+    authority.confirm_running(handle)
+    retention_resource = ResourceIdentity(
+        ResourceKind.RUNTIME_FABRIC,
+        "container:missing-warm-worker",
+    )
+    assert len(resources.active_for(retention_resource)) == 1
+
+    clock.advance(1.0)
+    assert resources.get(handle.lease.lease_id).state is LeaseState.EXPIRED
+    runtime.rows.pop(observed.container_id)
+
+    report = authority.reconcile()
+
+    assert report.removed_container_ids == ()
+    assert resources.active_for(retention_resource) == ()
+
+
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,

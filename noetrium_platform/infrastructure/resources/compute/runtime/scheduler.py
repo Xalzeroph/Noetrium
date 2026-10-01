@@ -1468,6 +1468,75 @@ class ComputeScheduler:
                     label="compute scheduler",
                 )
                 raise
+    def retain_many(
+        self,
+        allocations: tuple[ComputeAllocation, ...],
+        *,
+        now: float | None = None,
+    ) -> tuple[ComputeAllocation, ...]:
+        if (
+            not allocations
+            or any(type(row) is not ComputeAllocation for row in allocations)
+        ):
+            raise ValueError(
+                "compute retention requires typed allocation generations"
+            )
+        allocation_ids = tuple(row.allocation_id for row in allocations)
+        if len(set(allocation_ids)) != len(allocation_ids):
+            raise ValueError("compute retention requires unique allocation ids")
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn, timeout_seconds=self.timeout_seconds
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, now)
+                self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
+                current: list[ComputeAllocation] = []
+                for expected in allocations:
+                    row = self._active_row(
+                        conn,
+                        expected.allocation_id,
+                        now_epoch_s,
+                    )
+                    if row is None:
+                        raise KeyError(expected.allocation_id)
+                    _require_compute_generation(row, expected)
+                    current.append(row)
+                retained: list[ComputeAllocation] = []
+                for row, expected in zip(
+                    current, allocations, strict=True
+                ):
+                    lease = renew_resource_lease(
+                        conn,
+                        f"compute:{row.allocation_id}",
+                        fencing_token=expected.lease_fencing_token,
+                        ttl_seconds=None,
+                        now_epoch_s=now_epoch_s,
+                    )
+                    retained.append(
+                        replace(
+                            row,
+                            lease_fencing_token=lease.fencing_token,
+                            lease_expires_at_epoch_s=lease.expires_at_epoch_s,
+                        )
+                    )
+                conn.commit()
+                return tuple(retained)
+            except ComputePhysicalConvergencePending:
+                raise
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute retention",
+                )
+                raise
+
     def reconcile_expired(
         self,
         *,

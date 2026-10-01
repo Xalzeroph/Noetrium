@@ -855,11 +855,20 @@ class DockerContainerLeaseAuthority:
             resource_kind=ResourceKind.CONTAINER,
         )
         retained_allocations = self._retained_allocations(now=now_epoch_s)
+        observed_managed = tuple(self.runtime.list_managed())
+        physical_allocations = frozenset(
+            allocation_id
+            for observed in observed_managed
+            if (
+                (allocation_id := observed.labels.get(LABEL_ALLOCATION))
+                is not None
+            )
+        )
         removed: list[str] = []
         released: list[str] = []
         quarantined: list[str] = []
 
-        for observed in self.runtime.list_managed():
+        for observed in observed_managed:
             labels = observed.labels
             allocation_id = labels.get(LABEL_ALLOCATION)
             lease_id = labels.get(LABEL_LEASE)
@@ -978,6 +987,30 @@ class DockerContainerLeaseAuthority:
                         and parked.lease.fencing_token == lease.fencing_token
                     ):
                         self._parked_handles.pop(lease.lease_id, None)
+
+        # Durable warm retention is justified only by either an extant
+        # physical generation or an active short-lived control lease. Once both
+        # are absent/terminal, retaining the allocation is pure logical leakage.
+        for allocation_id in sorted(
+            retained_allocations - physical_allocations
+        ):
+            control_lease_id = self._lease_id(allocation_id)
+            try:
+                control_lease = self.leases.get(
+                    control_lease_id,
+                    now=now_epoch_s,
+                )
+            except KeyError:
+                control_lease = None
+            if (
+                control_lease is not None
+                and control_lease.state is LeaseState.ACTIVE
+            ):
+                continue
+            self._release_retention(
+                allocation_id,
+                now=now_epoch_s,
+            )
 
         # A confirmed current-generation container that disappears entirely
         # cannot be discovered by list_managed(). Its durable lease must not

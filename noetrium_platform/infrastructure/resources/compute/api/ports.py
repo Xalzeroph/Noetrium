@@ -61,6 +61,9 @@ class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
     def renew_many(
         self, allocations: tuple[ComputeAllocation, ...], *, ttl_seconds: float, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...
+    def retain_many(
+        self, allocations: tuple[ComputeAllocation, ...], *, now: float | None = None
+    ) -> tuple[ComputeAllocation, ...]: ...
     def confirm_bound(
         self,
         proof: ComputeBindingProof,

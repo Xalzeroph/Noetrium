@@ -437,13 +437,15 @@ def renew_resource_lease(
     lease_id: str,
     *,
     fencing_token: int,
-    ttl_seconds: float,
+    ttl_seconds: float | None,
     now_epoch_s: float,
 ) -> ResourceLease:
     if not math.isfinite(float(now_epoch_s)):
         raise ValueError("lease observation time must be finite")
-    if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
-        raise ValueError("lease ttl_seconds must be finite and > 0")
+    if ttl_seconds is not None and (
+        not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0
+    ):
+        raise ValueError("lease ttl_seconds must be finite and > 0 or None")
     expire_lease(conn, lease_id, now_epoch_s)
     row = conn.execute(
         "SELECT * FROM resource_leases WHERE lease_id=?",
@@ -456,7 +458,14 @@ def renew_resource_lease(
         raise ResourceLeaseExpired(lease_id)
     if current.state is not LeaseState.ACTIVE or current.fencing_token != fencing_token:
         raise ResourceLeaseConflict(f"stale lease fencing token: {lease_id}")
-    expires_at = now_epoch_s + float(ttl_seconds)
+    expires_at = (
+        None
+        if current.expires_at_epoch_s is None or ttl_seconds is None
+        else max(
+            float(current.expires_at_epoch_s),
+            now_epoch_s + float(ttl_seconds),
+        )
+    )
     cursor = conn.execute(
         "UPDATE resource_leases SET expires_at_epoch_s=? "
         "WHERE lease_id=? AND state='active' AND fencing_token=?",

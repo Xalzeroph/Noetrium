@@ -136,7 +136,7 @@ class ResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         lease_id: str,
         *,
         fencing_token: int,
-        ttl_seconds: float,
+        ttl_seconds: float | None,
         now: float | None = None,
     ) -> ResourceLease:
         with self._connection() as conn:
@@ -158,7 +158,7 @@ class ResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         self,
         leases: tuple[ResourceLease, ...],
         *,
-        ttl_seconds: float,
+        ttl_seconds: float | None,
         now: float | None = None,
     ) -> tuple[ResourceLease, ...]:
         if type(leases) is not tuple:

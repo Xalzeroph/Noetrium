@@ -369,6 +369,24 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
         return self._reservations.renew_many(allocations, ttl_seconds=ttl)
 
+    def retain_many(
+        self,
+        allocations: tuple[EndpointAllocation, ...],
+        *,
+        now: float | None = None,
+    ) -> tuple[EndpointAllocation, ...]:
+        if not allocations:
+            return ()
+        if any(type(row) is not EndpointAllocation for row in allocations):
+            raise TypeError(
+                "endpoint retention requires typed allocation generations"
+            )
+        return self._reservations.renew_many(
+            allocations,
+            ttl_seconds=None,
+            now=now,
+        )
+
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
         """Release one exact live binder generation after upper teardown.
 

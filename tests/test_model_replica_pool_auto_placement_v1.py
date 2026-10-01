@@ -286,6 +286,16 @@ class Scheduler:
         current = self.rows[allocation.allocation_id]
         return current
 
+    def retain_many(self, allocations, *, now=None):
+        del now
+        retained = tuple(
+            replace(row, lease_expires_at_epoch_s=None)
+            for row in allocations
+        )
+        for row in retained:
+            self.rows[row.allocation_id] = row
+        return retained
+
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
         self.rows.pop(allocation.allocation_id, None)
@@ -381,6 +391,16 @@ class Endpoints:
             EndpointAllocationState.RESERVED, EndpointAllocationState.BOUND
         }
         return current
+
+    def retain_many(self, allocations, *, now=None):
+        del now
+        retained = tuple(
+            replace(row, lease_expires_at_epoch_s=None)
+            for row in allocations
+        )
+        for row in retained:
+            self.rows[row.allocation_id] = row
+        return retained
 
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
@@ -616,6 +636,14 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
         for row in lease.report.placements
     )
     assert all(row.compute.is_bound for row in lease.report.placements)
+    assert all(
+        row.compute.lease_expires_at_epoch_s is None
+        for row in lease.report.placements
+    )
+    assert all(
+        row.endpoint.lease_expires_at_epoch_s is None
+        for row in lease.report.placements
+    )
     assert all(
         row.compute.binding_binder_identity_digest
         == row.generation.applied_runtime_digest
@@ -1930,6 +1958,12 @@ def test_model_replica_pool_adopts_same_durable_realization_across_runtime_insta
     assert second_row.generation == first_row.generation
     assert second_row.compute.allocation_id == first_row.compute.allocation_id
     assert second_row.endpoint.allocation_id == first_row.endpoint.allocation_id
+    assert second_row.compute.lease_fencing_token == first_row.compute.lease_fencing_token
+    assert second_row.endpoint.lease_fencing_token == first_row.endpoint.lease_fencing_token
+    assert second_row.compute.binding_proof_digest == first_row.compute.binding_proof_digest
+    assert second_row.endpoint.binding_proof_digest == first_row.endpoint.binding_proof_digest
+    assert second_row.compute.lease_expires_at_epoch_s is None
+    assert second_row.endpoint.lease_expires_at_epoch_s is None
     assert len(catalog.rows) == 1
     assert len(scheduler.rows) == 1
     assert len(endpoints.rows) == 1
