@@ -1,0 +1,1 @@
+"""artifact.catalog subsystem boundary."""

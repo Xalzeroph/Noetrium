@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "screenspot_v2",
+  "benchmark": {
+    "benchmark_id": "screenspot-v2",
+    "title": "ScreenSpot-v2",
+    "source_uri": "https://github.com/njucckevin/ScreenSpot",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

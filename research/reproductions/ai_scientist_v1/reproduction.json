@@ -1,0 +1,106 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ai_scientist_v1",
+  "package_digest": "8a01ca88b07ee3e64effe4c3a1683346cea6ddb7d38f660afa02dececca5d6d6",
+  "definition_digest": "89be70f5b6a892c59e1cc64bc28bd32b4de963c4dacf166fbd59bdc35a858e01",
+  "source_registry_digest": "4f04e304fdf0f7aedcfdf19d7636fa73700ef8e2d8c9b33dee86c3db415f697e",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "ai-scientist",
+    "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+    "paper_uri": "https://arxiv.org/abs/2408.06292",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "6946845c25ff943bdfa449bef2fcdcd8cb65872288c18bb67af2a8660a25f0e4"
+  },
+  "catalog": {
+    "domains": [
+      "scientific-research",
+      "self-improvement"
+    ],
+    "families": [
+      "code_execution",
+      "experimentation",
+      "paper_writing",
+      "review",
+      "scientific_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/software",
+      "experimentation/study",
+      "experimentation/workbench",
+      "model/request",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "idea generation and novelty policy",
+      "template-bound experiment editing loop",
+      "writeup and review policy"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "experiment identity and metrics",
+      "isolated project execution",
+      "parallel resource scheduling",
+      "recovery and evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/SakanaAI/AI-Scientist"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "53a7ca9a2251b960cdf47df73c80815541894f7e1f002892aad9672c2ead9061"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/SakanaAI/AI-Scientist",
+      "commit": "0eccd134221c5ebec3fe0d2d6e8f67bfdbb69978",
+      "artifacts": [],
+      "lane_digest": "da888bc2a554eb4fdfff2054f115f7ac1421f58a3305a15b34bea25c740a9b7a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ai_scientist_v1/fidelity.py",
+      "declaration_digest": "656d5c4d2ca0c0b3e0a4ec85448ee86d74a51797e632d82e25f8bd38beda2ba0",
+      "content_sha256": "294b139e54513e8e6904a60d0c6e0a55f81fef4b7917aedef71bf57ed2608969"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ai_scientist_family_v1.py",
+      "content_sha256": "35113267b75a45d15734e401f0164cc3c71716b6ee730ac62e3770a12d43e117"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "not_executable",
+    "program_id": null,
+    "program_digest": null,
+    "benchmark_authority": {
+      "state": "not_applicable",
+      "selection_digests": [],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "not_applicable",
+    "execution_authority_state": "not_applicable",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

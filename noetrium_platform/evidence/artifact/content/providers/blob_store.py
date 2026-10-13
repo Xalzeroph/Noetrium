@@ -1,0 +1,820 @@
+from __future__ import annotations
+
+from collections import OrderedDict
+from contextlib import ExitStack, contextmanager
+from dataclasses import dataclass
+from hashlib import sha256
+from pathlib import Path
+from threading import RLock
+from typing import Iterator
+
+from noetrium_platform.evidence.artifact.content.api import (
+    ArtifactBlobFencePort,
+    ArtifactBlobGcAssessment,
+    ArtifactBlobGeneration,
+    ArtifactBlobLifecyclePort,
+    ArtifactBlobLifecycleState,
+    ArtifactBlobRef,
+    ArtifactBlobStoreError,
+    ArtifactBlobStorePort,
+)
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    require_sha256,
+)
+from noetrium_platform.foundation.kernel.kernel import (
+    InterprocessFileLock,
+    atomic_replace_bytes_many,
+    durable_publish_immutable_bytes_many,
+    durable_unlink,
+    fsync_directory,
+    ChecksummedDocumentError,
+    decode_checksummed_document,
+    encode_checksummed_document,
+    atomic_replace_bytes,
+)
+
+
+_LIFECYCLE_SCHEMA = "artifact.blob-generation.v1"
+_LIFECYCLE_FIELDS = {
+    "content_sha256",
+    "generation",
+    "state",
+    "size_bytes",
+    "gc_proof_digest",
+}
+
+
+@dataclass(frozen=True, slots=True)
+class _BlobLifecycleRecord:
+    content_sha256: str
+    generation: int
+    state: ArtifactBlobLifecycleState
+    size_bytes: int
+    gc_proof_digest: str | None = None
+
+    def __post_init__(self) -> None:
+        require_sha256(self.content_sha256, "artifact blob lifecycle digest")
+        if (
+            isinstance(self.generation, bool)
+            or not isinstance(self.generation, int)
+            or self.generation <= 0
+        ):
+            raise ValueError("artifact blob lifecycle generation must be positive")
+        if type(self.state) is not ArtifactBlobLifecycleState:
+            raise TypeError("artifact blob lifecycle state must be typed")
+        if (
+            isinstance(self.size_bytes, bool)
+            or not isinstance(self.size_bytes, int)
+            or self.size_bytes < 0
+        ):
+            raise ValueError("artifact blob lifecycle size must be non-negative")
+        if self.gc_proof_digest is not None:
+            require_sha256(
+                self.gc_proof_digest,
+                "artifact blob lifecycle gc_proof_digest",
+            )
+        if (
+            self.state is ArtifactBlobLifecycleState.ACTIVE
+            and self.gc_proof_digest is not None
+        ):
+            raise ValueError("active blob lifecycle cannot retain a GC proof")
+        if (
+            self.state is not ArtifactBlobLifecycleState.ACTIVE
+            and self.gc_proof_digest is None
+        ):
+            raise ValueError("retiring/purged blob lifecycle requires GC proof")
+
+    def generation_view(self) -> ArtifactBlobGeneration:
+        return ArtifactBlobGeneration(
+            self.content_sha256,
+            self.generation,
+            self.state,
+            self.gc_proof_digest,
+        )
+
+    def document(self) -> dict[str, object]:
+        return {
+            "content_sha256": self.content_sha256,
+            "generation": self.generation,
+            "state": self.state.value,
+            "size_bytes": self.size_bytes,
+            "gc_proof_digest": self.gc_proof_digest,
+        }
+
+
+@dataclass(slots=True)
+class _DirectoryArtifactBlobFence(ArtifactBlobFencePort):
+    _store: "DirectoryArtifactBlobStore"
+    ref: ArtifactBlobRef
+    generation: ArtifactBlobGeneration
+
+    def read(self) -> bytes:
+        if self.generation.state is not ArtifactBlobLifecycleState.ACTIVE:
+            raise ArtifactBlobStoreError(
+                "artifact blob generation is not active"
+            )
+        return self._store._read_ref_payload_unlocked(self.ref)
+
+    def assess_gc(
+        self,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        return self._store._assess_gc_under_lock(
+            self.ref,
+            closures=closures,
+        )
+
+    def purge(
+        self,
+        *,
+        gc: ArtifactBlobGcAssessment,
+    ) -> ArtifactBlobGeneration:
+        result = self._store._purge_under_lock(
+            self.ref,
+            gc=gc,
+        )
+        self.generation = result
+        return result
+
+
+class DirectoryArtifactBlobStore(
+    ArtifactBlobStorePort,
+    ArtifactBlobLifecyclePort,
+):
+    durability = "crash_durable"
+
+    _LOCK_SHARDS = 256
+    _VERIFY_CHUNK_BYTES = 1024 * 1024
+    _VERIFIED_CACHE_ENTRIES_PER_SHARD = 64
+
+    def __init__(self, root: str | Path) -> None:
+        self.root = Path(root)
+        self.root.mkdir(parents=True, exist_ok=True)
+        self._lock_root = self.root / ".locks"
+        self._staging_root = self.root / ".staging"
+        self._lifecycle_root = self.root / ".lifecycle"
+        self._lock_root.mkdir(parents=True, exist_ok=True)
+        self._staging_root.mkdir(parents=True, exist_ok=True)
+        self._lifecycle_root.mkdir(parents=True, exist_ok=True)
+        self._local_locks = tuple(
+            RLock() for _ in range(self._LOCK_SHARDS)
+        )
+        # Content paths are immutable. Cache only OS file identities that have
+        # already passed full SHA-256 verification; any inode/size/mtime/ctime
+        # change invalidates the entry and falls back to authoritative re-hash.
+        self._verified_identities = tuple(
+            OrderedDict() for _ in range(self._LOCK_SHARDS)
+        )
+
+    @staticmethod
+    def _digest(payload: bytes) -> str:
+        return sha256(payload).hexdigest()
+
+    def _path(self, digest: str) -> Path:
+        return self.root / digest[:2] / f"{digest}.blob"
+
+    def _lifecycle_path(self, digest: str) -> Path:
+        return self._lifecycle_root / f"{digest}.json"
+
+    @staticmethod
+    def _shard_index(digest: str) -> int:
+        return int(digest[:2], 16)
+
+    def _lock_path(self, digest: str) -> Path:
+        return self._lock_root / f"{digest[:2]}.lock"
+
+    @staticmethod
+    def _file_identity(path: Path) -> tuple[int, int, int, int, int] | None:
+        try:
+            stat = path.stat()
+        except FileNotFoundError:
+            return None
+        except OSError as exc:
+            raise ArtifactBlobStoreError(
+                "artifact blob identity cannot be inspected"
+            ) from exc
+        return (
+            int(stat.st_size),
+            int(stat.st_mtime_ns),
+            int(stat.st_ctime_ns),
+            int(stat.st_dev),
+            int(stat.st_ino),
+        )
+
+    def _verified_cache(self, digest: str) -> OrderedDict[str, tuple[int, int, int, int, int]]:
+        return self._verified_identities[self._shard_index(digest)]
+
+    def _forget_verified(self, digest: str) -> None:
+        self._verified_cache(digest).pop(digest, None)
+
+    def _remember_verified(self, path: Path, digest: str) -> None:
+        identity = self._file_identity(path)
+        if identity is None:
+            raise ArtifactBlobStoreError(
+                "verified artifact blob disappeared before identity capture"
+            )
+        cache = self._verified_cache(digest)
+        cache[digest] = identity
+        cache.move_to_end(digest)
+        while len(cache) > self._VERIFIED_CACHE_ENTRIES_PER_SHARD:
+            cache.popitem(last=False)
+
+    def _cached_verified_identity_matches(self, path: Path, digest: str) -> bool:
+        cache = self._verified_cache(digest)
+        expected = cache.get(digest)
+        if expected is None:
+            return False
+        current = self._file_identity(path)
+        if current != expected:
+            cache.pop(digest, None)
+            return False
+        cache.move_to_end(digest)
+        return True
+
+    def _verify_existing(
+        self,
+        path: Path,
+        payload: bytes,
+        digest: str,
+    ) -> None:
+        if self._cached_verified_identity_matches(path, digest):
+            return
+        hasher = sha256()
+        offset = 0
+        identical = True
+        before = self._file_identity(path)
+        if before is None:
+            raise ArtifactBlobStoreError("existing artifact blob is missing")
+        try:
+            with path.open("rb") as handle:
+                while True:
+                    chunk = handle.read(self._VERIFY_CHUNK_BYTES)
+                    if not chunk:
+                        break
+                    hasher.update(chunk)
+                    end = offset + len(chunk)
+                    if payload[offset:end] != chunk:
+                        identical = False
+                    offset = end
+        except OSError as exc:
+            raise ArtifactBlobStoreError(
+                "existing artifact blob cannot be read"
+            ) from exc
+        after = self._file_identity(path)
+        if after != before:
+            self._forget_verified(digest)
+            raise ArtifactBlobStoreError(
+                "existing artifact blob changed during integrity verification"
+            )
+        if offset != len(payload) or hasher.hexdigest() != digest:
+            self._forget_verified(digest)
+            raise ArtifactBlobStoreError(
+                "existing artifact blob failed integrity verification"
+            )
+        if not identical:
+            self._forget_verified(digest)
+            raise ArtifactBlobStoreError(
+                "artifact blob digest collision"
+            )
+        self._remember_verified(path, digest)
+
+    def _read_ref_payload_unlocked(self, ref: ArtifactBlobRef) -> bytes:
+        path = self._path(ref.content_sha256)
+        trusted_identity = self._cached_verified_identity_matches(
+            path, ref.content_sha256
+        )
+        try:
+            payload = path.read_bytes()
+        except OSError as exc:
+            self._forget_verified(ref.content_sha256)
+            raise ArtifactBlobStoreError("artifact blob is missing") from exc
+        if len(payload) != ref.size_bytes:
+            self._forget_verified(ref.content_sha256)
+            raise ArtifactBlobStoreError("artifact blob integrity mismatch")
+        if trusted_identity and self._cached_verified_identity_matches(
+            path, ref.content_sha256
+        ):
+            return payload
+        if self._digest(payload) != ref.content_sha256:
+            self._forget_verified(ref.content_sha256)
+            raise ArtifactBlobStoreError("artifact blob integrity mismatch")
+        self._remember_verified(path, ref.content_sha256)
+        return payload
+
+    def _cleanup_staging(self, path: Path) -> None:
+        for candidate in tuple(
+            sorted(self._staging_root.glob(f"{path.name}.immutable.*"))
+        ):
+            durable_unlink(candidate)
+
+    def _read_lifecycle_unlocked(
+        self,
+        digest: str,
+    ) -> _BlobLifecycleRecord | None:
+        path = self._lifecycle_path(digest)
+        if not path.exists():
+            return None
+        try:
+            payload = decode_checksummed_document(
+                path.read_bytes(),
+                expected_schema=_LIFECYCLE_SCHEMA,
+            ).payload
+            if set(payload) != _LIFECYCLE_FIELDS:
+                raise ValueError("artifact blob lifecycle fields drifted")
+            record = _BlobLifecycleRecord(
+                content_sha256=str(payload["content_sha256"]),
+                generation=payload["generation"],
+                state=ArtifactBlobLifecycleState(str(payload["state"])),
+                size_bytes=payload["size_bytes"],
+                gc_proof_digest=payload["gc_proof_digest"],
+            )
+            if record.content_sha256 != digest:
+                raise ValueError("artifact blob lifecycle identity drifted")
+            if path.name != f"{digest}.json":
+                raise ValueError("artifact blob lifecycle filename drifted")
+            return record
+        except (
+            ChecksummedDocumentError,
+            KeyError,
+            OSError,
+            TypeError,
+            ValueError,
+        ) as exc:
+            raise ArtifactBlobStoreError(
+                "artifact blob lifecycle metadata is corrupt"
+            ) from exc
+
+    def _write_lifecycle_unlocked(
+        self,
+        record: _BlobLifecycleRecord,
+    ) -> None:
+        atomic_replace_bytes(
+            self._lifecycle_path(record.content_sha256),
+            encode_checksummed_document(
+                _LIFECYCLE_SCHEMA,
+                record.document(),
+            ),
+        )
+
+    def _active_record_for_publish_unlocked(
+        self,
+        ref: ArtifactBlobRef,
+    ) -> _BlobLifecycleRecord:
+        current = self._read_lifecycle_unlocked(ref.content_sha256)
+        path = self._path(ref.content_sha256)
+        if current is None:
+            # Generation 1 ACTIVE is the immutable blob store's implicit
+            # default state. Persist lifecycle metadata only when leaving the
+            # default state (RETIRING/PURGED) or when a later generation is
+            # republished after a tombstone.
+            return _BlobLifecycleRecord(
+                ref.content_sha256,
+                1,
+                ArtifactBlobLifecycleState.ACTIVE,
+                ref.size_bytes,
+            )
+        if current.size_bytes != ref.size_bytes:
+            raise ArtifactBlobStoreError(
+                "artifact blob lifecycle size conflicts with content identity"
+            )
+        if current.state is ArtifactBlobLifecycleState.ACTIVE:
+            return current
+        if current.state is ArtifactBlobLifecycleState.RETIRING:
+            raise ArtifactBlobStoreError(
+                "artifact blob retirement requires recovery before republish"
+            )
+        if path.exists():
+            raise ArtifactBlobStoreError(
+                "purged artifact blob has unexpected physical residue"
+            )
+        active = _BlobLifecycleRecord(
+            ref.content_sha256,
+            current.generation + 1,
+            ArtifactBlobLifecycleState.ACTIVE,
+            ref.size_bytes,
+        )
+        self._write_lifecycle_unlocked(active)
+        return active
+
+    def _generation_under_lock(
+        self,
+        ref: ArtifactBlobRef,
+    ) -> ArtifactBlobGeneration:
+        current = self._read_lifecycle_unlocked(ref.content_sha256)
+        path = self._path(ref.content_sha256)
+        if current is None:
+            self._read_ref_payload_unlocked(ref)
+            return _BlobLifecycleRecord(
+                ref.content_sha256,
+                1,
+                ArtifactBlobLifecycleState.ACTIVE,
+                ref.size_bytes,
+            ).generation_view()
+        if current.size_bytes != ref.size_bytes:
+            raise ArtifactBlobStoreError(
+                "artifact blob ref size does not match physical generation"
+            )
+        if current.state is ArtifactBlobLifecycleState.ACTIVE:
+            self._read_ref_payload_unlocked(ref)
+        elif current.state is ArtifactBlobLifecycleState.RETIRING:
+            if path.exists():
+                self._read_ref_payload_unlocked(ref)
+        else:
+            if path.exists():
+                raise ArtifactBlobStoreError(
+                    "purged artifact blob has unexpected physical residue"
+                )
+        return current.generation_view()
+
+    @contextmanager
+    def publish_fenced(
+        self,
+        payload: bytes,
+        *,
+        media_type: str,
+    ) -> Iterator[ArtifactBlobRef]:
+        ref = self.put_many(((payload, media_type),))[0]
+        with self.fence(ref):
+            yield ref
+
+    @contextmanager
+    def fence(
+        self,
+        ref: ArtifactBlobRef,
+    ) -> Iterator[ArtifactBlobFencePort]:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                generation = self._generation_under_lock(ref)
+                yield _DirectoryArtifactBlobFence(self, ref, generation)
+
+    def put_many(
+        self,
+        items: tuple[tuple[bytes, str], ...],
+    ) -> tuple[ArtifactBlobRef, ...]:
+        if type(items) is not tuple:
+            raise TypeError("artifact blob put_many requires tuple")
+        if not items:
+            return ()
+
+        refs: list[ArtifactBlobRef] = []
+        payload_by_digest: dict[str, bytes] = {}
+        ref_by_digest: dict[str, ArtifactBlobRef] = {}
+        for item in items:
+            if type(item) is not tuple or len(item) != 2:
+                raise TypeError(
+                    "artifact blob put_many item must be (payload, media_type)"
+                )
+            payload, media_type = item
+            if type(payload) is not bytes:
+                raise TypeError("artifact blob payload must be bytes")
+            if type(media_type) is not str or not media_type.strip():
+                raise ValueError("artifact blob media_type must be non-empty")
+            digest = self._digest(payload)
+            ref = ArtifactBlobRef(digest, len(payload), media_type)
+            previous = payload_by_digest.get(digest)
+            if previous is not None and previous != payload:
+                raise ArtifactBlobStoreError("artifact blob digest collision")
+            payload_by_digest[digest] = payload
+            ref_by_digest.setdefault(digest, ref)
+            refs.append(ref)
+
+        digests = tuple(sorted(payload_by_digest))
+        shards = tuple(sorted({self._shard_index(digest) for digest in digests}))
+        lifecycle_updates: list[tuple[Path, bytes]] = []
+        missing_blobs: list[tuple[Path, bytes]] = []
+
+        with ExitStack() as stack:
+            for shard in shards:
+                stack.enter_context(self._local_locks[shard])
+            for shard in shards:
+                stack.enter_context(
+                    InterprocessFileLock(
+                        self._lock_root / f"{shard:02x}.lock"
+                    )
+                )
+
+            for digest in digests:
+                payload = payload_by_digest[digest]
+                ref = ref_by_digest[digest]
+                path = self._path(digest)
+                current = self._read_lifecycle_unlocked(digest)
+
+                if current is None:
+                    # The durable immutable blob itself is sufficient evidence
+                    # for generation-1 ACTIVE. Avoid a second metadata
+                    # publication on the hot path.
+                    pass
+                else:
+                    if current.size_bytes != ref.size_bytes:
+                        raise ArtifactBlobStoreError(
+                            "artifact blob lifecycle size conflicts with content identity"
+                        )
+                    if current.state is ArtifactBlobLifecycleState.RETIRING:
+                        raise ArtifactBlobStoreError(
+                            "artifact blob retirement requires recovery before republish"
+                        )
+                    if current.state is ArtifactBlobLifecycleState.PURGED:
+                        if path.exists():
+                            raise ArtifactBlobStoreError(
+                                "purged artifact blob has unexpected physical residue"
+                            )
+                        lifecycle = _BlobLifecycleRecord(
+                            digest,
+                            current.generation + 1,
+                            ArtifactBlobLifecycleState.ACTIVE,
+                            ref.size_bytes,
+                        )
+                        lifecycle_updates.append(
+                            (
+                                self._lifecycle_path(digest),
+                                encode_checksummed_document(
+                                    _LIFECYCLE_SCHEMA,
+                                    lifecycle.document(),
+                                ),
+                            )
+                        )
+
+                if not path.exists():
+                    self._cleanup_staging(path)
+                    if not path.exists():
+                        missing_blobs.append((path, payload))
+
+            published_digests: set[str] = set()
+            publication_raced = False
+            if missing_blobs:
+                try:
+                    durable_publish_immutable_bytes_many(
+                        tuple(missing_blobs),
+                        staging_dir=self._staging_root,
+                    )
+                    published_digests.update(
+                        path.stem
+                        for path, _payload in missing_blobs
+                    )
+                except FileExistsError:
+                    # A non-cooperating external immutable publisher may win the
+                    # no-replace race. Verification below remains authoritative
+                    # for every raced target because the batched publisher may
+                    # have linked a prefix before the collision.
+                    publication_raced = True
+
+            for digest in digests:
+                # Successful publication already proves these exact bytes were
+                # flushed, linked with no-replace semantics, and parent-fsynced.
+                # Re-reading them immediately only doubles hot-path I/O. Existing
+                # blobs and any raced publication are still fully verified.
+                if not publication_raced and digest in published_digests:
+                    self._remember_verified(self._path(digest), digest)
+                    continue
+                self._verify_existing(
+                    self._path(digest),
+                    payload_by_digest[digest],
+                    digest,
+                )
+
+            if lifecycle_updates:
+                atomic_replace_bytes_many(tuple(lifecycle_updates))
+
+        return tuple(refs)
+
+    def put(self, payload: bytes, *, media_type: str) -> ArtifactBlobRef:
+        return self.put_many(((payload, media_type),))[0]
+
+    def resolve(
+        self,
+        content_sha256: str,
+        *,
+        media_type: str,
+    ) -> ArtifactBlobRef:
+        require_sha256(
+            content_sha256,
+            "artifact blob resolver content_sha256",
+        )
+        if type(media_type) is not str or not media_type.strip():
+            raise ValueError(
+                "artifact blob resolver media_type must be non-empty"
+            )
+        digest = content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                lifecycle = self._read_lifecycle_unlocked(digest)
+                if lifecycle is not None and (
+                    lifecycle.state is not ArtifactBlobLifecycleState.ACTIVE
+                ):
+                    raise ArtifactBlobStoreError(
+                        "artifact blob generation is not active"
+                    )
+                path = self._path(digest)
+                try:
+                    size_bytes = path.stat().st_size
+                except OSError as exc:
+                    raise ArtifactBlobStoreError(
+                        "artifact blob is missing"
+                    ) from exc
+                ref = ArtifactBlobRef(
+                    digest,
+                    size_bytes,
+                    media_type,
+                )
+                self._read_ref_payload_unlocked(ref)
+                if lifecycle is not None and lifecycle.size_bytes != size_bytes:
+                    raise ArtifactBlobStoreError(
+                        "artifact blob lifecycle size drifted"
+                    )
+                return ref
+
+    def get(self, ref: ArtifactBlobRef) -> bytes:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                lifecycle = self._read_lifecycle_unlocked(digest)
+                if lifecycle is not None and (
+                    lifecycle.state is not ArtifactBlobLifecycleState.ACTIVE
+                ):
+                    raise ArtifactBlobStoreError(
+                        "artifact blob generation is not active"
+                    )
+                payload = self._read_ref_payload_unlocked(ref)
+                if lifecycle is not None and lifecycle.size_bytes != ref.size_bytes:
+                    raise ArtifactBlobStoreError(
+                        "artifact blob lifecycle size drifted"
+                    )
+                return payload
+
+    def verify(self, ref: ArtifactBlobRef) -> bool:
+        try:
+            self.get(ref)
+        except ArtifactBlobStoreError:
+            return False
+        return True
+
+    def generation(
+        self,
+        ref: ArtifactBlobRef,
+    ) -> ArtifactBlobGeneration:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                return self._generation_under_lock(ref)
+
+    def _assess_gc_under_lock(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        generation = self._generation_under_lock(ref)
+        return ArtifactBlobGcAssessment(
+            content_sha256=ref.content_sha256,
+            size_bytes=ref.size_bytes,
+            generation=generation.generation,
+            closures=closures,
+        )
+
+    @staticmethod
+    def _require_gc(
+        ref: ArtifactBlobRef,
+        gc: ArtifactBlobGcAssessment,
+    ) -> ArtifactBlobGcAssessment:
+        if type(gc) is not ArtifactBlobGcAssessment:
+            raise RuntimeError(
+                "artifact blob physical GC requires a typed GC assessment"
+            )
+        if (
+            gc.content_sha256 != ref.content_sha256
+            or gc.size_bytes != ref.size_bytes
+        ):
+            raise RuntimeError(
+                "artifact blob GC assessment does not bind the exact content identity"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "artifact blob physical GC requires complete execution, evidence, "
+                "and recovery closure with zero retained references"
+            )
+        return gc
+
+    def _purge_under_lock(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        gc: ArtifactBlobGcAssessment,
+    ) -> ArtifactBlobGeneration:
+        gc = self._require_gc(ref, gc)
+        expected_generation = gc.generation
+        gc_proof_digest = gc.proof_digest
+        if (
+            isinstance(expected_generation, bool)
+            or not isinstance(expected_generation, int)
+            or expected_generation <= 0
+        ):
+            raise ValueError(
+                "artifact blob purge expected_generation must be positive"
+            )
+        require_sha256(
+            gc_proof_digest,
+            "artifact blob purge gc_proof_digest",
+        )
+        current = self._read_lifecycle_unlocked(ref.content_sha256)
+        if current is None:
+            self._read_ref_payload_unlocked(ref)
+            current = _BlobLifecycleRecord(
+                ref.content_sha256,
+                1,
+                ArtifactBlobLifecycleState.ACTIVE,
+                ref.size_bytes,
+            )
+        if current.size_bytes != ref.size_bytes:
+            raise ArtifactBlobStoreError(
+                "artifact blob purge ref size drifted"
+            )
+        if current.generation != expected_generation:
+            raise ArtifactBlobStoreError(
+                "stale artifact blob generation cannot purge replacement"
+            )
+
+        path = self._path(ref.content_sha256)
+        if current.state is ArtifactBlobLifecycleState.ACTIVE:
+            self._read_ref_payload_unlocked(ref)
+            current = _BlobLifecycleRecord(
+                current.content_sha256,
+                current.generation,
+                ArtifactBlobLifecycleState.RETIRING,
+                current.size_bytes,
+                gc_proof_digest,
+            )
+            self._write_lifecycle_unlocked(current)
+        elif current.gc_proof_digest != gc_proof_digest:
+            raise ArtifactBlobStoreError(
+                "artifact blob GC proof changed across retirement retry"
+            )
+
+        if current.state is ArtifactBlobLifecycleState.PURGED:
+            self._forget_verified(ref.content_sha256)
+            if path.exists():
+                raise ArtifactBlobStoreError(
+                    "purged artifact blob has unexpected physical residue"
+                )
+            return current.generation_view()
+
+        self._cleanup_staging(path)
+        if path.exists():
+            self._read_ref_payload_unlocked(ref)
+            self._forget_verified(ref.content_sha256)
+            durable_unlink(path)
+        current = _BlobLifecycleRecord(
+            current.content_sha256,
+            current.generation,
+            ArtifactBlobLifecycleState.PURGED,
+            current.size_bytes,
+            gc_proof_digest,
+        )
+        self._write_lifecycle_unlocked(current)
+        return current.generation_view()
+
+    def assess_gc(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                return self._assess_gc_under_lock(
+                    ref,
+                    closures=closures,
+                )
+
+    def purge(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        gc: ArtifactBlobGcAssessment,
+    ) -> ArtifactBlobGeneration:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                return self._purge_under_lock(ref, gc=gc)
+
+
+__all__ = ["DirectoryArtifactBlobStore"]

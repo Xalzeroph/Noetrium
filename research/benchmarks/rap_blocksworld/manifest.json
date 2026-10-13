@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "rap_blocksworld",
+  "benchmark": {
+    "benchmark_id": "blocksworld",
+    "title": "Blocksworld",
+    "source_uri": "https://github.com/Ber666/RAP",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

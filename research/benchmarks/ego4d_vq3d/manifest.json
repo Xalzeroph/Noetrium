@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "ego4d_vq3d",
+  "benchmark": {
+    "benchmark_id": "ego4d-vq3d",
+    "title": "Ego4D VQ3D",
+    "source_uri": "https://github.com/facebookresearch/Ego4d",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

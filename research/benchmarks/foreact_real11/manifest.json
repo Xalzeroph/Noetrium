@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "foreact_real11",
+  "benchmark": {
+    "benchmark_id": "foreact-real11",
+    "title": "ForeAct Real-World 11-Task Benchmark",
+    "source_uri": "https://github.com/mit-han-lab/foreact",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}

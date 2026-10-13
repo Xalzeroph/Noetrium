@@ -1,0 +1,11 @@
+{
+  "architecture_digest": "2adc6518601aaac6754b674f1ffd41c4163e39471f8d69fb80ad1fb1f43d2b4d",
+  "limits": {
+    "authorities": 30,
+    "contract_declarations": 186,
+    "import_edges": 5835,
+    "subsystems": 14,
+    "top_level_systems": 16
+  },
+  "schema_version": "noetrium.architecture-budget.v1"
+}

@@ -1,0 +1,1 @@
+"""model.asset subsystem boundary."""

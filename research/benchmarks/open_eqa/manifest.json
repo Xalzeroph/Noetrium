@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "open_eqa",
+  "benchmark": {
+    "benchmark_id": "open-eqa",
+    "title": "OpenEQA",
+    "source_uri": "https://github.com/facebookresearch/open-eqa",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "video"
+    ]
+  }
+}

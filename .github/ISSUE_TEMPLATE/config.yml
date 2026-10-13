@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and design discussions
+    url: https://github.com/Xalzeroph/noetrium/discussions
+    about: Ask usage questions, discuss architecture, or explore ideas before scoping implementation work.
+  - name: Security policy
+    url: https://github.com/Xalzeroph/noetrium/security/policy
+    about: Use the private security reporting path for vulnerabilities; do not disclose them in public issues.

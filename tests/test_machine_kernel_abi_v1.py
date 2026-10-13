@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from noetrium_platform.foundation.kernel.kernel import (
+    DirectoryMachineJournal,
+    InMemoryMachineJournal,
+    MachineCommand,
+    MachineCommit,
+    MachineConflict,
+    MachineIntegrityError,
+    MachineStateDelta,
+    TransitionProposal,
+)
+
+
+_STATE_DIGEST_BY_COMMIT_ID: dict[str, str] = {}
+
+def make_commit(
+    *,
+    machine_id: str = "machine-1",
+    command_id: str = "command-1",
+    base_revision: int = 0,
+    state: dict[str, object] | None = None,
+    previous_commit_id: str | None = None,
+) -> MachineCommit:
+    command = MachineCommand(
+        command_id=command_id,
+        machine_id=machine_id,
+        expected_revision=base_revision,
+        kind="step",
+        payload={"input": command_id},
+        scope=(f"run:{machine_id}",),
+    )
+    proposal = TransitionProposal(
+        machine_id=machine_id,
+        command_id=command.command_id,
+        base_revision=base_revision,
+        state_delta=MachineStateDelta.set(("revision",), int((state or {"revision": base_revision + 1})["revision"])),
+    )
+    commit = MachineCommit(
+        machine_id=machine_id,
+        command_id=command.command_id,
+        base_revision=base_revision,
+        revision=base_revision + 1,
+        proposal_digest=proposal.proposal_digest,
+        command_digest=command.payload_digest,
+        unit_digest="f" * 64,
+        execution_lock_digest="e" * 64,
+        before_state_digest=("0" * 64 if previous_commit_id is None else _STATE_DIGEST_BY_COMMIT_ID[previous_commit_id]),
+        input_digest=command.payload_digest,
+        state_delta_ref=proposal.state_delta_digest,
+        state_delta=proposal.state_delta,
+        state=state or {"revision": base_revision + 1},
+        previous_commit_id=previous_commit_id,
+    )
+    _STATE_DIGEST_BY_COMMIT_ID[commit.commit_id] = commit.state_digest
+    return commit
+
+
+def test_in_memory_journal_is_monotonic_and_idempotent() -> None:
+    journal = InMemoryMachineJournal()
+    first = make_commit()
+    assert journal.append(first) == first
+    assert journal.append(first) == first
+    with pytest.raises(MachineConflict):
+        journal.append(make_commit(command_id="other", base_revision=0))
+
+
+def test_in_memory_journal_accepts_next_revision() -> None:
+    journal = InMemoryMachineJournal()
+    first = journal.append(make_commit())
+    second = make_commit(
+        command_id="command-2",
+        base_revision=first.revision,
+        state={"revision": 2},
+        previous_commit_id=first.commit_id,
+    )
+    assert journal.append(second).revision == 2
+    assert [item.revision for item in journal.commits("machine-1")] == [1, 2]
+
+
+def test_directory_journal_survives_new_instance(tmp_path: Path) -> None:
+    first = make_commit()
+    journal = DirectoryMachineJournal(tmp_path)
+    assert journal.append(first) == first
+    restored = DirectoryMachineJournal(tmp_path)
+    assert restored.latest("machine-1") == first
+    assert restored.get(first.commit_id) == first
+
+
+def test_directory_journal_get_revalidates_cached_file_identity(
+    tmp_path: Path,
+) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    first = journal.append(make_commit())
+    assert journal.get(first.commit_id) == first
+
+    path = next((tmp_path / "machines").glob("*.journal"))
+    replacement = path.with_suffix(".replacement")
+    replacement.write_bytes(path.read_bytes())
+    replacement.replace(path)
+
+    with pytest.raises(
+        MachineIntegrityError,
+        match="journal file identity was replaced",
+    ):
+        journal.get(first.commit_id)
+
+
+def test_directory_journal_rejects_non_canonical_record(tmp_path: Path) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    first = make_commit()
+    journal.append(first)
+    path = next((tmp_path / "machines").glob("*.journal"))
+    path.write_bytes(path.read_bytes().replace(b'"machine_id"', b' "machine_id"', 1))
+    with pytest.raises(MachineIntegrityError):
+        DirectoryMachineJournal(tmp_path).latest("machine-1")

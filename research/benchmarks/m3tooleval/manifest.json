@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "m3tooleval",
+  "benchmark": {
+    "benchmark_id": "m3tooleval",
+    "title": "M3ToolEval vendored AgentSquare cut",
+    "source_uri": "https://github.com/tsinghua-fib-lab/AgentSquare",
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

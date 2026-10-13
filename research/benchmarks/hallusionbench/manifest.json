@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "hallusionbench",
+  "benchmark": {
+    "benchmark_id": "hallusionbench",
+    "title": "HallusionBench",
+    "source_uri": "https://github.com/tianyi-lab/HallusionBench",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

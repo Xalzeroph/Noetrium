@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "state_control_benchmark",
+  "benchmark": {
+    "benchmark_id": "state-control-benchmark",
+    "title": "StaR State-Control Benchmark",
+    "source_uri": "https://github.com/ZrW00/StaR",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

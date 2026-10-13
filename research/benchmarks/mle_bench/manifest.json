@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mle_bench",
+  "benchmark": {
+    "benchmark_id": "mle-bench",
+    "title": "MLE-Bench",
+    "source_uri": "https://github.com/openai/mle-bench",
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text",
+      "code",
+      "structured"
+    ]
+  }
+}

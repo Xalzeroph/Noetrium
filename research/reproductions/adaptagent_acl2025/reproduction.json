@@ -1,0 +1,178 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "adaptagent_acl2025",
+  "package_digest": "477999b6afa3e68f9e6d7052d514a5a9aff87e8a87bd43db6957f6ca78ba74fe",
+  "definition_digest": "b2b4a1376b985e16c01ef793ccdaadecb3bd55b2bd4269ebba7747bea08bddce",
+  "source_registry_digest": "5ce8de162bd942fa959fe2e67653ee2caecf99ea67555ea0ebbf63f57c11c503",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "adaptagent",
+    "title": "AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations",
+    "paper_uri": "https://aclanthology.org/2025.acl-long.1008/",
+    "year": 2025,
+    "paper_revision": "ACL 2025 proceedings",
+    "identity_digest": "127cdcbbf2fa57244300ccdc1eaf393f24740eb7e0470cdd0fd19f166b69afc5"
+  },
+  "catalog": {
+    "domains": [
+      "acl",
+      "agent",
+      "recent"
+    ],
+    "families": [
+      "adaptagent",
+      "agentic_workflow"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mind2web",
+      "visualwebarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "few-shot website adaptation",
+      "in-context and meta-adaptation variants",
+      "multimodal demonstration conditioning",
+      "two-demonstration adaptation regime"
+    ],
+    "platform_owned": [
+      "NoetriumGraph and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2025.acl-long.1008/"
+    ],
+    "catalog_digest": "af7e3dfb441273b98b8ca9517930383e0ac1ef3265dd82f56136d7c75a367e43"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2025",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2025,
+      "publication_id": "adaptagent-acl-2025",
+      "publication_uri": "https://aclanthology.org/2025.acl-long.1008/",
+      "revision": "ACL 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "c281a4bf9f4e16ba226487b29d9c72acc53986ef7415fa83befc7752f6f88e33"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/adaptagent_acl2025/benchmark.py",
+      "declaration_digest": "e5462d9f6730855189461236300472bcbf3f3668bff762b5b8f8149817405033",
+      "content_sha256": "d10c8a24c2f7601d9a47be805cecf782f8735ebdd76f53b9880d3d97e29bb9c2"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/adaptagent_acl2025/fidelity.py",
+      "declaration_digest": "655810f4b47f71f8cbae125764a0f5f8b81f515e60f2e1ce55a0ac076fdb2a52",
+      "content_sha256": "65a09f27c6d07a6422c7a763de0b0ad400f49b7bded3b952dd722777000a7ec7"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/adaptagent_acl2025/program.py",
+      "declaration_digest": "74f1b7c5ba27b1f49a138e2df59e4b30c56359515544851c2e1b8ea722f42146",
+      "content_sha256": "9430fa3b84d818a0550b83f125fda522cb99b026b18d89824e460a14c33d610a"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/adaptagent_acl2025/study.py",
+      "declaration_digest": "909cdb145b609a9e986281bab4b9e3bf84b23bfa89598d5a23c5da4c6d388db1",
+      "content_sha256": "7fa33c7fc92699061e2b9b79ba8561b122ed06d6795fcfd5091df7322b9383a8"
+    }
+  ],
+  "primary_executable": "research/reproductions/adaptagent_acl2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "adaptagent_absolute_gain_min",
+      "metric_id": "task_success_gain_points",
+      "value": 3.36,
+      "qualifiers": {
+        "scope": "Mind2Web-and-VisualWebArena",
+        "bound": "minimum",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "e45e80c4323735b5efcb63e2b4a619df88f7b82aa591da6327d4f6148f2bf514"
+    },
+    {
+      "claim_id": "adaptagent_absolute_gain_max",
+      "metric_id": "task_success_gain_points",
+      "value": 7.21,
+      "qualifiers": {
+        "scope": "Mind2Web-and-VisualWebArena",
+        "bound": "maximum",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "92ae6d841cf669f5c3e5c2e9f1f08d676e848f41c5a2c83f99d70c2eb1fc56ec"
+    },
+    {
+      "claim_id": "adaptagent_relative_gain_max",
+      "metric_id": "relative_task_success_gain_percent",
+      "value": 65.75,
+      "qualifiers": {
+        "scope": "Mind2Web-and-VisualWebArena",
+        "bound": "maximum",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "912e0c353cc96a0310081564ec2d3c9542e8a7f5b55903e9058366efb6448332"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "unadapted_multimodal_web_agents",
+      "description": "Corresponding unadapted multimodal web agents",
+      "qualifiers": {
+        "source": "ACL-2025 evaluation"
+      },
+      "baseline_digest": "fb26690155f7e36be0f2b4e9f539f4134823dac22db9e367fbcdb18ec3caf9fd"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched runs require the exact human demonstration selections and paper-era checkpoint/model identities.",
+    "VisualWebArena environment services must be frozen under immutable runtime identity."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "adaptagent_acl2025",
+    "program_digest": "7c9892fef1581fb8925dce196140948018dc5d583f25b096d1091485fcba105d",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_adaptagent_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

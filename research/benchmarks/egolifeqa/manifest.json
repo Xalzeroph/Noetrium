@@ -1,0 +1,15 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "egolifeqa",
+  "benchmark": {
+    "benchmark_id": "egolifeqa",
+    "title": "EgoLifeQA",
+    "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video",
+      "audio"
+    ]
+  }
+}

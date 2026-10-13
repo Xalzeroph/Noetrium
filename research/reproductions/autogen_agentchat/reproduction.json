@@ -1,0 +1,126 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "autogen_agentchat",
+  "package_digest": "fb88c1e89cd4cbb257e662496fe97563ab296fcc29c550b3cd4d27f378fbd2a2",
+  "definition_digest": "4bc66922995a931849a181a3433be2c33691160589c4c7375c468767991e42bb",
+  "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "autogen",
+    "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+    "paper_uri": "https://www.microsoft.com/en-us/research/publication/autogen-enabling-next-gen-llm-applications-via-multi-agent-conversation-framework/",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "fe5078ac2f211b7c14c6014cf2970a454f7458cc8c0f913e52a9607c4c65aeb9"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "runtime-systems"
+    ],
+    "families": [
+      "code_execution",
+      "human_agent_interaction",
+      "multi_agent",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "multiagentbench"
+    ],
+    "platform_pressure": [
+      "environment/software",
+      "execution",
+      "execution/workflow",
+      "observability/telemetry",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "conversable-agent reply policy",
+      "group-chat and user-proxy conversation semantics",
+      "speaker selection policy"
+    ],
+    "platform_owned": [
+      "controlled code execution",
+      "effect evidence",
+      "human interruption",
+      "message routing",
+      "participant lifecycle",
+      "recovery"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/autogen"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "077f1421f75dd7a789538cc24bf619dfb4203de02824d44c982f68bdeee87e31"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/microsoft/autogen",
+      "commit": "904b293aa47c0e87e27e127254ce4f17a391048c",
+      "artifacts": [],
+      "lane_digest": "8a8811d76a2dd98c3ad1e094d5f10b559ee0ca5af886f24f0f8d64948ad86398"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/autogen_agentchat/fidelity.py",
+      "declaration_digest": "95866e839adb5152d1ea406caca9020695726f38d77e9d95cd3ee9268c17c01e",
+      "content_sha256": "0c976ed958c0ee81da6bc4b0adc3976da37c0b8580b94711d9159985fef296eb"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/autogen_agentchat/program.py",
+      "declaration_digest": "6c8b245d6b438f4dff0c064781a7b0a27489323b57dbf57ed8253893d1540c6e",
+      "content_sha256": "95841dcf003ceabb0fa5261648cfed039c4e3b4fb8ea7cf1e10b3ae922c85d12"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/autogen_agentchat/study.py",
+      "declaration_digest": "7d9162ef66f519761e34d82bfe41d290a261cda8ac0624b3c31d6256afcc9916",
+      "content_sha256": "c4b2681fc66be51c0e9442f3861f0a83e9fc010eee8bc67fd4b00ef9be714614"
+    }
+  ],
+  "primary_executable": "research/reproductions/autogen_agentchat/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution requires an exact paper-era model/prompt binding and an immutable deployment-qualified MultiAgentBench task/environment cut"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_autogen_agentchat_fidelity_v1.py",
+      "content_sha256": "c74a0f653144473a970395a56b5854a9a85a5d83da858da77c2815aa667158d7"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "autogen_agentchat",
+    "program_digest": "762998e909d1ed52e6971c59592d13ebd834d56e918e13086db23dbc716c6dbc",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'multiagentbench' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_autogen_multiagentbench_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

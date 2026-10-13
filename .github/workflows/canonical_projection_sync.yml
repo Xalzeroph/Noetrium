@@ -1,0 +1,50 @@
+name: canonical-projection-check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "noetrium_platform/**"
+      - "noetrium/**"
+      - "components/**"
+      - "orchestration/**"
+      - "research/**"
+      - "scripts/update_generated_docs.py"
+      - "scripts/generate_authority_disposition_matrix.py"
+      - "scripts/generate_downstream_contracts.py"
+      - "scripts/generate_interface_schemas.py"
+      - "scripts/sync_architecture_maps.py"
+      - "scripts/sync_platform_architecture_map.py"
+      - "sdk/**"
+      - "examples/**"
+      - "pyproject.toml"
+      - ".github/workflows/canonical_projection_sync.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canonical-projection-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install platform
+        run: python -m pip install -e .
+      - name: Verify canonical projections are current
+        run: |
+          python scripts/update_generated_docs.py --check
+          python scripts/sync_architecture_maps.py --check
+          python scripts/sync_platform_architecture_map.py --check

@@ -1,0 +1,158 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agent_q_surrogate",
+  "package_digest": "e779c168a96ae3e8f71e1de8b18af5e7d5ff9cb1628b3d141280c279709d6a96",
+  "definition_digest": "179f3a1b90d49b0d3d6dcef163cf5a8607df1f70f2c6439c576e90cfe1165adb",
+  "source_registry_digest": "8bdcaf30e155f5233d8316f881d65c740a1d1e5122830c07c1a8978485beadb5",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "agent-q",
+    "title": "Agent Q: Advanced Reasoning and Learning for Autonomous AI Agents",
+    "paper_uri": "https://arxiv.org/abs/2408.07199",
+    "year": 2024,
+    "paper_revision": "arXiv:2408.07199",
+    "identity_digest": "a27a5998d9169d22217e8a780c9ee19ca94f38a332102e7e4795e49f82718edc"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reflection-self-correction",
+      "training",
+      "web-agents"
+    ],
+    "families": [
+      "preference_learning",
+      "self_critique",
+      "tree_search",
+      "web_agent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "webshop",
+      "webvoyager"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/web",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "actor-critic action ranking",
+      "guided MCTS semantics",
+      "search-derived preference-pair generation",
+      "terminal self-judging"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment execution evidence",
+      "named model-role binding",
+      "source-lane provenance",
+      "study and artifact lineage"
+    ],
+    "reference_repositories": [
+      "https://github.com/sentient-engineering/agent-q"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "d69348ca8be7dda299fb7290c4a4c93e64d122b2a8b4309cc9491fb72a011e7a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "sentient_oss_surrogate",
+      "kind": "surrogate",
+      "repository": "https://github.com/sentient-engineering/agent-q",
+      "commit": "6050777f833f43c36421398cb2f524ea9709c839",
+      "artifacts": [
+        "README.md",
+        "agentq/core/mcts/browser_mcts.py",
+        "agentq/core/mcts/core/base.py",
+        "agentq/core/mcts/core/mcts.py",
+        "agentq/core/orchestrator/orchestrator.py",
+        "dpo_pairs.jsonl",
+        "test/tasks/webvoyager_test.json"
+      ],
+      "lane_digest": "01162f31ec852626318616f475bbb4a2bd1f52d51723fff4e2639dc6470c9b8b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/agent_q_surrogate/fidelity.py",
+      "declaration_digest": "9db99db3f9ff6468f29e59133030e9c4c0f67d4dd171a61b0a3ce37f39b51784",
+      "content_sha256": "13ed4b5481f66fc5afce8e39eeee596948809293281dba5a37de79c0a2b08917"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/agent_q_surrogate/program.py",
+      "declaration_digest": "8775f5648e7cf212c29699e9be8c3fdcd2e2d631c6427214ae0d48b01e709ef3",
+      "content_sha256": "03155c9718264284f00ce6b0ccae80896703a8ac2b4d66ca7767d31cec5713ad"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agent_q_surrogate/study.py",
+      "declaration_digest": "76c02b2c601d914d74d7a324b1547b768cc9924636c13307b08ea02bca686872",
+      "content_sha256": "6e9ce71a2282e026ee62f8d7058a23dd511efb85fc2b3af3d4e9ddc02d51fcee"
+    }
+  ],
+  "primary_executable": "research/reproductions/agent_q_surrogate/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "surrogate implementation instead of author-official Agent Q source",
+      "delta_digest": "71337d130bfef22f517973b25294c483f210584a8a0bb85c3b22036c99474bf5"
+    },
+    {
+      "kind": "substitution",
+      "description": "surrogate WebVoyager mechanism-conformance benchmark instead of the paper WebShop evaluation",
+      "delta_digest": "4627531b983e8a4bafc1be07635fc8e17baf8ddbb6a5204b16305252ff6d0245"
+    },
+    {
+      "kind": "unresolved",
+      "description": "paper WebShop execution remains a separate reproduction lane pending exact benchmark/source binding",
+      "delta_digest": "52528f5bbce92f3fc197d9bd914d060f6fbd0b08027111ea78ff559b130d358c"
+    },
+    {
+      "kind": "unresolved",
+      "description": "surrogate actor and critic concrete model revisions remain unresolved",
+      "delta_digest": "6bb32526981ce6dcb24da834765cf9f9e19e5c9e68dbcc68bafc271efb812c16"
+    }
+  ],
+  "blockers": [
+    "author-official Agent Q executable source remains unresolved",
+    "paper WebShop benchmark source revision and exact 11000/1087 split cut are not yet source-bound in Noetrium",
+    "surrogate actor and critic immutable model revisions are not frozen",
+    "live WebVoyager websites and manual task semantics can drift over time"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "agent_q_surrogate",
+    "program_digest": "f6b54f0d80fc42262ce2ff454fa310b403d89825985f4f2127b3e8afd4a71e02",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'webshop' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "embodied_videoagent_iccv2025",
+  "package_digest": "886a1fca74269370d43cb29165516e288d4ba960b4d5e249b1b0142d70b8b710",
+  "definition_digest": "bdd00eb6dfb2c90360a687d79d03ad090f8fd46928ecea4307417158450c73fc",
+  "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "embodied-videoagent",
+    "title": "Embodied VideoAgent: Persistent Memory from Egocentric Videos and Embodied Sensors Enables Dynamic Scene Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 proceedings",
+    "identity_digest": "47d976eb58775fdb510c711b18d8979b0d55cc38be6cceb5b10bd07f2e5ef98b"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "iccv",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "embodied_videoagent"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "ego4d-vq3d",
+      "envqa",
+      "open-eqa"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "VLM-triggered dynamic object-state update",
+      "depth-and-pose object association",
+      "embodied memory retrieval for reasoning and planning",
+      "persistent object-centric 3D memory"
+    ],
+    "platform_owned": [
+      "NoetriumGraph and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "e28ce05051c8e4cc2c19a9d9084f3342bec931c9515c0ee75505b7b665472a6f"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "embodied-videoagent-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "153e07b8aaadec338591a2d0acf22ce463ecb335faf40d0ee4ab06de3556ced1"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/embodied_videoagent_iccv2025/benchmark.py",
+      "declaration_digest": "f24ab51862e1464192f496b048e997e85b011ac470a6e30d365a3f843d250bc3",
+      "content_sha256": "27aaa33ccb1369ba4ff76d8c9ae94a80e5f232749ae8ec267c45c94b4e60935e"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/embodied_videoagent_iccv2025/fidelity.py",
+      "declaration_digest": "08bfaff7f6614593ad3cab57db6cc4405bd930db9d5b966119c5b29aa9a182af",
+      "content_sha256": "3a1a27498f662ba39faaa8fef9773b760c37f52f968056f4afcf7220385c3d71"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/embodied_videoagent_iccv2025/program.py",
+      "declaration_digest": "8a2090f198b1e58e39bd83bf1b1d358058e6fdb1eab3d868174d7dc3e2179392",
+      "content_sha256": "9d40907bb55ba7343cd9a186bde231d3f76f1f33b55c1009453a3b98aa858063"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/embodied_videoagent_iccv2025/study.py",
+      "declaration_digest": "605bf49d8f58d632164f80e937b9e9b9c549da90058bbd26ec716263af4e75ae",
+      "content_sha256": "fdfbc1cb9d8e216eb82cc0cef6961bb5f0e65293ee78387a77429e00f79e3073"
+    }
+  ],
+  "primary_executable": "research/reproductions/embodied_videoagent_iccv2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "embodied_videoagent_vq3d_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 6.5,
+      "qualifiers": {
+        "benchmark": "ego4d-vq3d",
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "29b55bea44f73c33ca25605b436dee106b4b769e88aab6301b47ec1ad5973395"
+    },
+    {
+      "claim_id": "embodied_videoagent_openeqa_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 2.6,
+      "qualifiers": {
+        "benchmark": "open-eqa",
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "4bae24e894dc5b7c30c741456ab8ff2bdeaad3b5c6c2f73ef4cb78c8cd91e4c0"
+    },
+    {
+      "claim_id": "embodied_videoagent_envqa_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 15.3,
+      "qualifiers": {
+        "benchmark": "envqa",
+        "source": "ICCV-2025 abstract"
+      },
+      "claim_digest": "a8f91af5f1a146530178e6dd71cad6cdfc5a5aaeac72559d22cf07ce8e04674d"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "end_to_end_vlm_video_agents",
+      "description": "End-to-end VLM and video-agent counterparts used by the ICCV paper",
+      "qualifiers": {
+        "source": "ICCV-2025 evaluation"
+      },
+      "baseline_digest": "eaaf2c76a8ddf5c9f549c4c78f1f3474227b7cd15d6e4082b97dcaeacb0d8049"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "OpenEQA, EnvQA and Ego4D-VQ3D are not yet canonical benchmark authorities in Noetrium.",
+    "Matched execution additionally requires scene sensor streams, Habitat runtime identity and exact VLM checkpoints."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "embodied_videoagent_iccv2025",
+    "program_digest": "c4792e670864cd74bf7ff25e8d41d1fc5d91569acd7586761f29289fadf9ce58",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'ego4d-vq3d' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_embodied_videoagent_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

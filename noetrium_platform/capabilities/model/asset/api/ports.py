@@ -1,0 +1,83 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import ContextManager, Protocol
+
+from noetrium_platform.substrate.api import NoetriumUnit
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
+from .contracts import (
+    ManagedModelAsset, ModelAcquisitionReceipt, ModelAssetGcAssessment, ModelAssetMode,
+    ModelAssetStats, ModelAssetUsage,
+    ModelConfigSummary, ModelAcquisitionRequest, ModelStoragePoolStatus,
+)
+
+
+class ModelAssetStoragePort(Protocol):
+    def pools(self) -> tuple[ModelStoragePoolStatus, ...]: ...
+    def target(self, model_id: str, *, pool_id: str = "default") -> Path: ...
+    def materialize(self, model_id: str, source: Path, mode: ModelAssetMode, *, pool_id: str = "default") -> Path: ...
+    def remove(self, asset: ManagedModelAsset) -> bool: ...
+
+
+class ModelSourceBackend(Protocol):
+    backend_id: str
+    def acquire(self, model_id: str, spec: ModelAcquisitionRequest) -> ModelAcquisitionReceipt: ...
+
+
+class ModelAssetReferencePort(Protocol):
+    """Cross-subsystem query used by the asset authority without importing deployment contracts."""
+
+    def references(self, model_id: str) -> tuple[str, ...]: ...
+    def active_references(self, model_id: str) -> tuple[str, ...]: ...
+
+
+class ModelAssetDeploymentAdmissionPort(Protocol):
+    """Cross-process fence for deployment admission against asset retirement."""
+
+    def deployment_admission(
+        self,
+        model_id: str,
+    ) -> ContextManager[ManagedModelAsset]: ...
+
+
+class ModelAssetLookupPort(Protocol):
+    def model(self, model_id: str) -> ManagedModelAsset: ...
+
+
+class ModelAssetUsagePort(Protocol):
+    def usage(self, model_id: str) -> ModelAssetUsage: ...
+
+
+class ModelAssetManagementPort(ModelAssetLookupPort, Protocol):
+    def fetch_model(self, model_id: str, scope: NoetriumUnit, spec: ModelAcquisitionRequest, *, family: str = "", notes: str = "", tags: tuple[str, ...] = ()) -> ManagedModelAsset: ...
+    def register_model(self, model_id: str, scope: NoetriumUnit, source: Path, *, mode: str = "reference", family: str = "", notes: str = "", tags: tuple[str, ...] = (), storage_pool: str = "default") -> ManagedModelAsset: ...
+    def storage_pools(self) -> tuple[ModelStoragePoolStatus, ...]: ...
+    def models(self, *, tags: tuple[str, ...] = (), family: str | None = None) -> tuple[ManagedModelAsset, ...]: ...
+    def source_backends(self) -> tuple[str, ...]: ...
+    def model_stats(self, model_id: str) -> ModelAssetStats: ...
+    def model_config(self, model_id: str) -> ModelConfigSummary | None: ...
+    def model_usage(self, model_id: str) -> ModelAssetUsage: ...
+    def assess_model_gc(
+        self,
+        model_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ModelAssetGcAssessment: ...
+    def unregister_model(
+        self,
+        model_id: str,
+        *,
+        delete_managed_files: bool = False,
+        gc: ModelAssetGcAssessment | None = None,
+    ) -> bool: ...
+
+
+__all__ = [
+    "ModelAssetDeploymentAdmissionPort",
+    "ModelAssetLookupPort",
+    "ModelAssetManagementPort",
+    "ModelAssetReferencePort",
+    "ModelAssetStoragePort",
+    "ModelAssetUsagePort",
+    "ModelSourceBackend",
+]

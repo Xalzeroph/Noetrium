@@ -1,0 +1,169 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "star_toggle_cvpr2026",
+  "package_digest": "8b05afd4d126ae48e08d092511281b8de740e79e83dae1e5ce4081ff87dd5d2a",
+  "definition_digest": "ae6a20462d11709dc0b2b6d72f69c391ed0dffc08bf543077d7f7886ff13c55d",
+  "source_registry_digest": "63d3e4151cddb2066935521fd183b7ecd8928aa95081977a09344e76bbae9f56",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "star_toggle_cvpr2026",
+    "title": "See, Think, Act: Teaching Multimodal Agents to Effectively Interact with GUI by Identifying Toggles",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_See_Think_Act_Teaching_Multimodal_Agents_to_Effectively_Interact_with_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "479cebec31f79fa2d2623c99f3551c2211c3020c444e8e8060f17f0865b52c0c"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "grounding",
+      "gui-agent",
+      "multimodal",
+      "state-reasoning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "state-control-benchmark"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Compare current and desired states and decide whether interaction is required.",
+      "Execute the toggle action only when a state transition is required.",
+      "Infer the desired toggle state from the user instruction.",
+      "Perceive the current binary toggle state from the GUI.",
+      "Verify the post-action state and retain evidence."
+    ],
+    "platform_owned": [
+      "NoetriumGraph execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/ZrW00/StaR"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_See_Think_Act_Teaching_Multimodal_Agents_to_Effectively_Interact_with_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "e5104a3f0219453a91cda90755bcaa6f573c181238fe7d8dcf16b559abd8507f"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Wu_See_Think_Act_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_See_Think_Act_Teaching_Multimodal_Agents_to_Effectively_Interact_with_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "037d99b6a9d2cc50d6206cbf8c92beb1e65242dc0cc84ef7224510b03751578f"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/ZrW00/StaR",
+      "commit": "3af0acd5c393c5eaa5253f411d7c22fba35b6f67",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "12c1e492fadeecd623fc78b94db9b5a86145b229e666f3d457e3c5ba91862991"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/star_toggle_cvpr2026/benchmark.py",
+      "declaration_digest": "6c91d829618e4a2fcd8bd21ef7c4257e0584a18f2b8fabb8f3f45feb8c629df4",
+      "content_sha256": "1f5dfff70405a79487201803490aa8051974b04f869129698e6f7155b64e1063"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/star_toggle_cvpr2026/program.py",
+      "declaration_digest": "3f2dc3c7e8f79940214070af95fa016ef55aba4469cebbeefea4c25a8f4964df",
+      "content_sha256": "8c46e30f1b508babad1f9418b9d052ed485e2bfcc55680de24199aee67e594b6"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/star_toggle_cvpr2026/study.py",
+      "declaration_digest": "d07d700a32ba72d60dd89270c47ac67ddc0cef8be1b5675dda92468ad0909f4a",
+      "content_sha256": "626a0b6e3f116f1d573df8e3c3727dafc00aeb4cc3527a8d41b23ca7c7b6cb4e"
+    }
+  ],
+  "primary_executable": "research/reproductions/star_toggle_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "star_toggle_gain",
+      "metric_id": "toggle_execution_accuracy_gain",
+      "value": 30,
+      "qualifiers": {
+        "unit": "percentage_points_or_more",
+        "source": "CVPR 2026 final paper abstract",
+        "lower_bound": true
+      },
+      "claim_digest": "a6aabe18df244fbb07c8ea85116753882396952b41a5a551328e0848283f5e2e"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "same four multimodal agents without StaR",
+      "qualifiers": {},
+      "baseline_digest": "79c1a49c58c3360d69ba2cbd207e8c15f610f0be3b73b08625c0f6e4b71c0c68"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "final-paper GUI-agent baselines",
+      "qualifiers": {},
+      "baseline_digest": "923b811024e0f5a0c12dd6a1f213a0489e3625d104d3e494815cfb00f3a5bf25"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the released State Control Benchmark plus exact four agent/model revisions.",
+    "Dynamic GUI claims require live environment receipts and post-action state verification."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "star_toggle_cvpr2026",
+    "program_digest": "5d19c72ed98354833eefcc8da24bbcc862d3ae7885ed46c83af3047bc1030c7a",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'state-control-benchmark' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_ablation_matrix",
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+from prompt_os_test_support import make_prompt_registry
+from pathlib import Path
+import tempfile
+import unittest
+from unittest import mock
+
+from noetrium_platform.capabilities.model.request.prompt.runtime import (
+    PromptRegistry,
+    PromptPublicationError,
+    default_block_policies,
+    default_output_schemas,
+    default_prompt_specs,
+)
+import noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging as staging_module
+
+from noetrium_platform.capabilities.model.request.prompt.api.unit_semantics import (
+    prompt_id,
+    prompt_role,
+    prompt_version,
+    prompt_model_family,
+    prompt_output_schema_id,
+    prompt_sections,
+    prompt_temperature,
+    prompt_top_p,
+    prompt_max_output_tokens,
+    prompt_unit,
+)
+
+def _with_version(spec, version: str):
+    return prompt_unit(
+        prompt_id(spec),
+        prompt_role(spec),
+        version,
+        prompt_model_family(spec),
+        prompt_output_schema_id(spec),
+        prompt_sections(spec),
+        prompt_temperature(spec),
+        prompt_top_p(spec),
+        prompt_max_output_tokens(spec),
+    )
+
+
+
+class PromptGenerationRecoveryV73Tests(unittest.TestCase):
+    def _args(self):
+        return default_prompt_specs(), default_block_policies(), default_output_schemas()
+
+    def test_crash_after_staged_file_before_directory_publish_resumes_exactly(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            reg = make_prompt_registry(root)
+            specs, policies, schemas = self._args()
+
+            original = staging_module.durable_replace_directory
+            with mock.patch.object(
+                staging_module,
+                "durable_replace_directory",
+                side_effect=OSError("power loss before directory rename"),
+            ):
+                with self.assertRaises(OSError):
+                    reg.stage("g1", specs, policies, schemas)
+
+            tmp = root / "generations" / "g1.tmp" / "generation.json"
+            self.assertTrue(tmp.is_file())
+            self.assertFalse((root / "generations" / "g1").exists())
+
+            with mock.patch.object(staging_module, "durable_replace_directory", wraps=original) as publish:
+                manifest = reg.stage("g1", specs, policies, schemas)
+                self.assertEqual(publish.call_count, 1)
+
+            self.assertTrue((root / "generations" / "g1" / "generation.json").is_file())
+            self.assertFalse((root / "generations" / "g1.tmp").exists())
+            loaded, _ = reg.generation_store.load("g1")
+            self.assertEqual(loaded, manifest)
+
+    def test_retry_after_success_is_idempotent_only_for_exact_payload(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            reg = make_prompt_registry(root)
+            specs, policies, schemas = self._args()
+            first = reg.stage("g1", specs, policies, schemas)
+            second = reg.stage("g1", specs, policies, schemas)
+            self.assertEqual(first, second)
+
+            changed = list(specs)
+            changed[0] = _with_version(changed[0], prompt_version(changed[0]) + ".changed")
+            with self.assertRaises(PromptPublicationError):
+                reg.stage("g1", tuple(changed), policies, schemas)
+
+    def test_staged_payload_mismatch_fails_closed_without_deleting_evidence(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            reg = make_prompt_registry(root)
+            specs, policies, schemas = self._args()
+
+            with mock.patch.object(
+                staging_module,
+                "durable_replace_directory",
+                side_effect=OSError("cut"),
+            ):
+                with self.assertRaises(OSError):
+                    reg.stage("g1", specs, policies, schemas)
+
+            staged = root / "generations" / "g1.tmp" / "generation.json"
+            before = staged.read_bytes()
+            changed = list(specs)
+            changed[0] = _with_version(changed[0], prompt_version(changed[0]) + ".changed")
+            with self.assertRaises(PromptPublicationError):
+                reg.stage("g1", tuple(changed), policies, schemas)
+            self.assertEqual(staged.read_bytes(), before)
+            self.assertFalse((root / "generations" / "g1").exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

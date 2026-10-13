@@ -1,0 +1,37 @@
+name: research-workspace-maintenance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install package and research tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+      - name: Reject private/downstream design traces from platform implementation
+        run: python scripts/project_design_trace_gate.py
+      - name: Run research workspace maintenance checks
+        run: |
+          python scripts/sync_benchmark_manifests.py --check
+          python scripts/sync_reproductions.py --check
+          python scripts/sync_research_pressure.py --check --enforce
+          python scripts/sync_publication_priority.py --check --enforce
+          python scripts/sync_research_program.py --check
+          python scripts/sync_lineage_status.py --check
+          python research/tools/test_selection.py check

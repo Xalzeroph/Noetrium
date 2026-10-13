@@ -1,0 +1,467 @@
+from __future__ import annotations
+
+from resource_test_support import make_execution_pool
+
+import time
+from threading import Event
+
+from dataclasses import replace
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+
+from tests._concurrency_support import make_task_group
+
+from noetrium_platform.capabilities.environment.minecraft.api import MinecraftRconEndpoint, MinecraftServerSpec
+from noetrium_platform.capabilities.environment.minecraft.composition import (
+    MinecraftServerServiceError,
+    MinecraftServerServiceFactory,
+    MinecraftServerServiceFactoryConfig,
+    MinecraftServerReadinessProbe,
+    MinecraftTcpReadinessProbe,
+    build_server_service_contract,
+)
+from noetrium_platform.capabilities.environment.minecraft.providers.server_files import MinecraftServerPreparationError
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ConcurrencyBudget,
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskFailureScope,
+)
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+
+
+
+class _NoOpServiceRuntimeFactory:
+    def open(self, contract, *, environment, readiness, preflight=None):
+        del contract, environment, readiness, preflight
+        return SimpleNamespace()
+
+
+
+def _spec(root: Path) -> MinecraftServerSpec:
+    jar = root / "server.jar"
+    jar.write_bytes(b"frozen-minecraft-server-artifact")
+    return MinecraftServerSpec(
+        jar_path=str(jar),
+        workdir=str(root / "world"),
+        java_executable="/usr/bin/java",
+        host="127.0.0.1",
+        port=25566,
+        level_name="branch-world",
+    )
+
+
+def _config(root: Path, *, accept_eula: bool) -> MinecraftServerServiceFactoryConfig:
+    return MinecraftServerServiceFactoryConfig(
+        environment=MaterializedServiceEnvironment.from_mapping(
+            {"JAVA_HOME": "/usr"},
+            "env:evidence",
+        ),
+        runtime_factory=_NoOpServiceRuntimeFactory(),
+        accept_eula=accept_eula,
+    )
+
+
+def test_server_factory_prepares_files_and_builds_exact_service_contract_without_starting(tmp_path: Path) -> None:
+    spec = _spec(tmp_path)
+    controller = MinecraftServerServiceFactory(_config(tmp_path, accept_eula=True)).create(
+        spec,
+        environment_generation="e" * 64,
+    )
+
+    expected_digest, _expected_size = sha256_file(Path(spec.jar_path))
+    assert controller.contract.artifact_digest == expected_digest
+    assert len(controller.contract.generation) == 64
+    assert (Path(spec.workdir) / "eula.txt").read_text(encoding="utf-8") == "eula=true\n"
+    properties = (Path(spec.workdir) / "server.properties").read_text(encoding="utf-8")
+    assert "gamemode=survival" in properties
+    assert "force-gamemode=true" in properties
+
+
+def test_server_command_uses_explicit_recursive_libraries_for_non_fat_vanilla_server(tmp_path: Path) -> None:
+    libraries = tmp_path / "libraries" / "example"
+    libraries.mkdir(parents=True)
+    dependency = libraries / "dependency.jar"
+    dependency.write_bytes(b"dependency")
+    spec = _spec(tmp_path)
+    spec = replace(spec, libraries_dir=str(tmp_path / "libraries"))
+
+    command = spec.command()
+
+    assert command[3] == "-cp"
+    assert str(Path(spec.jar_path)) in command[4]
+    assert str(dependency) in command[4]
+    assert command[5:7] == ("net.minecraft.server.Main", "nogui")
+
+
+def test_server_factory_requires_explicit_eula_policy(tmp_path: Path) -> None:
+    spec = _spec(tmp_path)
+    with pytest.raises(MinecraftServerPreparationError, match="EULA_ACCEPTANCE_REQUIRED"):
+        MinecraftServerServiceFactory(_config(tmp_path, accept_eula=False)).create(
+            spec,
+            environment_generation="e" * 64,
+        )
+
+
+def test_server_factory_sanitizes_rcon_secret_provider_failure(tmp_path: Path) -> None:
+    spec = replace(_spec(tmp_path), rcon_endpoint=MinecraftRconEndpoint(port=25575))
+    config = replace(
+        _config(tmp_path, accept_eula=True),
+        rcon_password_provider=lambda: (_ for _ in ()).throw(RuntimeError("secret-value")),
+    )
+    with pytest.raises(MinecraftServerServiceError) as caught:
+        MinecraftServerServiceFactory(config).create(spec, environment_generation="e" * 64)
+    assert "secret-value" not in str(caught.value)
+    assert "secret is unavailable" in str(caught.value)
+
+
+def test_server_readiness_requires_rcon_after_tcp_and_retries_connection_refused(tmp_path: Path) -> None:
+    class Tcp:
+        def wait_ready(self, process, contract, backend):
+            del process, contract, backend
+            return "tcp-ready"
+
+    class Rcon:
+        def __init__(self) -> None:
+            self.attempts = 0
+
+        def execute(self, command, *, timeout_s):
+            assert command == "list"
+            assert timeout_s > 0
+            self.attempts += 1
+            if self.attempts == 1:
+                raise ConnectionRefusedError("RCON listener is still starting")
+            return SimpleNamespace(evidence_ref="rcon-ready")
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec,
+        environment_digest="a" * 64,
+        artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64,
+        readiness_timeout_s=2,
+    )
+    probe = MinecraftServerReadinessProbe(
+        tcp=Tcp(),  # type: ignore[arg-type]
+        rcon=Rcon(),  # type: ignore[arg-type]
+        poll_interval_s=0.001,
+    )
+
+    evidence = probe.wait_ready(SimpleNamespace(pid=1, start_identity="start"), contract, Backend())
+
+    assert evidence.startswith("minecraft-server-ready:")
+    assert probe.rcon.attempts == 2  # type: ignore[attr-defined]
+
+
+def test_tcp_readiness_reuses_outer_blocking_io_lane_without_nested_task(monkeypatch, tmp_path: Path) -> None:
+    class Connection:
+        def __init__(self) -> None:
+            self.closed = False
+
+        def close(self) -> None:
+            self.closed = True
+
+    connection = Connection()
+    calls: list[tuple[tuple[str, int], float]] = []
+
+    def create_connection(address: tuple[str, int], timeout: float):
+        calls.append((address, timeout))
+        return connection
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        create_connection,
+    )
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    delegate = make_task_group("minecraft-tcp-readiness")
+
+    class RecordingGroup:
+        def __init__(self):
+            self.specs = []
+
+        def submit(self, spec, fn, /, *args, **kwargs):
+            self.specs.append(spec)
+            return delegate.submit(spec, fn, *args, **kwargs)
+
+    group = RecordingGroup()
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec,
+        environment_digest="a" * 64,
+        artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64,
+        readiness_timeout_s=1,
+    )
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host,
+        port=spec.port,
+        poll_interval_s=0.001,
+    )
+
+    # One outer, explicit BLOCKING_IO task owns the entire TCP readiness
+    # phase; its implementation must never reenter the same TaskGroup.
+    evidence = group.submit(
+        ExecutionSpec(
+            task_id="minecraft-tcp-ready:outer",
+            lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            failure_scope=TaskFailureScope.CALLER,
+        ),
+        lambda context: probe.wait_ready(
+            SimpleNamespace(pid=7, start_identity="start"),
+            contract,
+            Backend(),
+        ),
+    ).result(timeout=2)
+
+    assert evidence.startswith("minecraft-tcp-ready:")
+    assert calls and calls[0][0] == (spec.host, spec.port)
+    assert connection.closed is True
+    assert len(group.specs) == 1
+    assert group.specs[0].lane_kind is ExecutionLaneKind.BLOCKING_IO
+
+
+def test_tcp_readiness_control_domain_survives_saturated_capability_io(monkeypatch, tmp_path: Path) -> None:
+    capability_budget = ConcurrencyBudget(
+        max_blocking_io_workers=1,
+        max_serial_workers=1,
+        max_cpu_workers=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=1,
+        default_queue_capacity=8,
+    )
+    capability_admission = AdmissionBudget(
+        max_total_in_flight=1,
+        max_in_flight_per_group=1,
+        max_in_flight_per_tenant=1,
+        max_in_flight_per_resource=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=1,
+        max_serial_in_flight=1,
+        max_waiting=8,
+    )
+    pool = make_execution_pool(
+        capability_io_concurrency_budget=capability_budget,
+        capability_io_admission_budget=capability_admission,
+    )
+    capability = pool.open_capability_io_group("saturated-capability")
+    lifecycle = pool.open_control_group("minecraft-lifecycle-isolation")
+    entered = Event()
+    release = Event()
+
+    def occupy(_context):
+        entered.set()
+        assert release.wait(2.0)
+
+    holder = capability.submit(
+        ExecutionSpec(
+            task_id="capability-holder",
+            lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            failure_scope=TaskFailureScope.CALLER,
+        ),
+        occupy,
+    )
+    assert entered.wait(1.0)
+
+    class Connection:
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        lambda address, timeout: Connection(),
+    )
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec,
+        environment_digest="a" * 64,
+        artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64,
+        readiness_timeout_s=1,
+    )
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host,
+        port=spec.port,
+        poll_interval_s=0.001,
+    )
+    try:
+        readiness = lifecycle.submit(
+            ExecutionSpec(
+                task_id="minecraft-ready:independent-lifecycle",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                failure_scope=TaskFailureScope.CALLER,
+            ),
+            lambda context: probe.wait_ready(
+                SimpleNamespace(pid=7, start_identity="start"),
+                contract,
+                Backend(),
+            ),
+        )
+        evidence = readiness.result(timeout=2)
+        assert evidence.startswith("minecraft-tcp-ready:")
+        assert not holder.done()
+    finally:
+        release.set()
+        holder.result(timeout=2.0)
+        pool.close_capability_io_group(capability)
+        pool.close_control_group(lifecycle)
+        pool.close()
+
+
+def test_tcp_readiness_keeps_process_liveness_outside_probe_worker(monkeypatch, tmp_path: Path) -> None:
+    class Connection:
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        lambda address, timeout: Connection(),
+    )
+
+    class Backend:
+        calls = 0
+
+        def alive(self, process):
+            del process
+            self.calls += 1
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=1,
+    )
+    backend = Backend()
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        poll_interval_s=0.001,
+    )
+    assert probe.wait_ready(
+        SimpleNamespace(pid=9, start_identity="start"), contract, backend
+    ).startswith("minecraft-tcp-ready:")
+    assert backend.calls == 2
+
+
+def test_tcp_readiness_contract_timeout_is_enforced(monkeypatch, tmp_path: Path) -> None:
+    def unavailable(address: tuple[str, int], timeout: float):
+        del address, timeout
+        raise OSError("not ready")
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        unavailable,
+    )
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=0.05,
+    )
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        poll_interval_s=0.005,
+    )
+    started = time.monotonic()
+    with pytest.raises(Exception):
+        probe.wait_ready(SimpleNamespace(pid=10, start_identity="start"), contract, Backend())
+    assert time.monotonic() - started < 1.0
+
+
+def test_tcp_readiness_identity_is_unique_across_independent_probe_instances(tmp_path: Path, monkeypatch) -> None:
+    class Connection:
+        def close(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.socket.create_connection",
+        lambda address, timeout: Connection(),
+    )
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec,
+        environment_digest="a" * 64,
+        artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64,
+        readiness_timeout_s=1,
+    )
+    first = MinecraftTcpReadinessProbe(host=spec.host, port=25566, poll_interval_s=0.001)
+    second = MinecraftTcpReadinessProbe(host=spec.host, port=25567, poll_interval_s=0.001)
+
+    first_evidence = first.wait_ready(SimpleNamespace(pid=7, start_identity="first"), contract, Backend())
+    second_evidence = second.wait_ready(SimpleNamespace(pid=8, start_identity="second"), contract, Backend())
+
+    assert first_evidence.startswith("minecraft-tcp-ready:")
+    assert second_evidence.startswith("minecraft-tcp-ready:")
+    assert first_evidence != second_evidence
+
+
+def test_rcon_readiness_contract_timeout_is_enforced(tmp_path: Path) -> None:
+    class Tcp:
+        def wait_ready(self, process, contract, backend):
+            del process, contract, backend
+            return "tcp-ready"
+
+    class Rcon:
+        def execute(self, command, *, timeout_s):
+            del command, timeout_s
+            raise ConnectionRefusedError("RCON listener never became ready")
+
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec,
+        environment_digest="a" * 64,
+        artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64,
+        readiness_timeout_s=0.05,
+    )
+    probe = MinecraftServerReadinessProbe(
+        tcp=Tcp(),  # type: ignore[arg-type]
+        rcon=Rcon(),  # type: ignore[arg-type]
+        poll_interval_s=0.005,
+    )
+    started = time.monotonic()
+    with pytest.raises(Exception):
+        probe.wait_ready(
+            SimpleNamespace(pid=11, start_identity="start"),
+            contract,
+            Backend(),
+        )
+    assert time.monotonic() - started < 1.0

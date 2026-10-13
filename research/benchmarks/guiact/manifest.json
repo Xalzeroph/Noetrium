@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "guiact",
+  "benchmark": {
+    "benchmark_id": "guiact",
+    "title": "GUIAct",
+    "source_uri": "https://github.com/xc-li/GUIAct",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

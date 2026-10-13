@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mathvision",
+  "benchmark": {
+    "benchmark_id": "mathvision",
+    "title": "MathVision",
+    "source_uri": "https://mathllm.github.io/mathvision/",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

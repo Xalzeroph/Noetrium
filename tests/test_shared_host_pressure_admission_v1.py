@@ -1,0 +1,1124 @@
+from __future__ import annotations
+
+from noetrium_platform.composition.concurrency import build_scheduling_authority
+
+from threading import Event, Thread
+import time
+
+import pytest
+
+from resource_test_support import make_resource_competition_reservations
+
+from noetrium_platform.composition.shared_host_pressure import (
+    ResourceCompetitionAdmissionGate,
+    ResourceCompetitionClass,
+    ResourceCompetitionDemand,
+    ResourceCompetitionPolicy,
+    ResourceCompetitionReservations,
+)
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    Deadline,
+    ExecutionLaneKind,
+)
+from noetrium_platform.infrastructure.resources.compute.api import (
+    HostRuntimeSnapshot,
+    HostRuntimeStatus,
+)
+from noetrium_platform.research.execution.policy.api import (
+    AdmissionBudget,
+    AdmissionIdentity,
+    AdmissionIntent,
+    AdmissionRejected,
+    ExecutionPriority,
+)
+from noetrium_platform.research.execution.policy.composition import (
+    build_execution_admission,
+)
+
+
+
+
+_ACTIVE_RESERVATIONS = None
+
+
+@pytest.fixture(autouse=True)
+def _authority_reservation_scope(tmp_path):
+    global _ACTIVE_RESERVATIONS
+    authority, owner_lease, reservations = make_resource_competition_reservations(
+        tmp_path / "resource-authority",
+        ttl_seconds=30.0,
+    )
+    _ACTIVE_RESERVATIONS = reservations
+    try:
+        yield
+    finally:
+        _ACTIVE_RESERVATIONS = None
+        reservations.close()
+        authority.release_lease(owner_lease)
+        authority.close()
+
+class _MutableHostObserver:
+    def __init__(self, status: HostRuntimeStatus | None) -> None:
+        self.status = status
+
+    def snapshot(self) -> HostRuntimeSnapshot:
+        if self.status is None:
+            return HostRuntimeSnapshot(False, detail="simulated-unavailable")
+        return HostRuntimeSnapshot(True, (self.status,))
+
+
+def _status(
+    *,
+    load: float = 1.0,
+    memory_bytes: int = 8 * 1024**3,
+    cpu_pressure: float | None = 0.0,
+    memory_pressure: float | None = 0.0,
+    io_pressure: float | None = 0.0,
+    available_pids: int | None = 256,
+    available_fds: int | None = 1024,
+) -> HostRuntimeStatus:
+    return HostRuntimeStatus(
+        "shared-node",
+        True,
+        effective_cpu_cores=8.0,
+        cpu_load_1m=load,
+        available_memory_bytes=memory_bytes,
+        cpu_pressure_some_avg10_percent=cpu_pressure,
+        memory_pressure_some_avg10_percent=memory_pressure,
+        io_pressure_some_avg10_percent=io_pressure,
+        available_pids=available_pids,
+        available_fds=available_fds,
+    )
+
+
+def _gate(
+    observer: _MutableHostObserver,
+    *,
+    queue_wait_timeout_seconds: float | None = None,
+    priority: ExecutionPriority = ExecutionPriority.NORMAL,
+) -> ResourceCompetitionAdmissionGate:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    assert _ACTIVE_RESERVATIONS is not None
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=16,
+            min_available_fds=64,
+            max_cpu_pressure_some_avg10_percent=90.0,
+            max_memory_pressure_some_avg10_percent=5.0,
+            max_io_pressure_some_avg10_percent=40.0,
+            poll_interval_seconds=0.01,
+        ),
+    )
+    gate.register_group(
+        "g",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(
+            priority=priority,
+            queue_wait_timeout_seconds=queue_wait_timeout_seconds,
+        ),
+    )
+    return gate
+
+
+def test_cpu_load_does_not_force_yield() -> None:
+    observer = _MutableHostObserver(_status(load=80.0))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    lease = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        _MutableHostObserver(
+            _status(
+                load=80.0,
+                cpu_pressure=100.0,
+                memory_pressure=100.0,
+                io_pressure=100.0,
+            )
+        ),
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(),
+    )
+    gate.register_group(
+        "aggressive",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+    )
+
+    cpu = gate.acquire(
+        "aggressive",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    cpu.release()
+    io = gate.acquire(
+        "aggressive",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    io.release()
+
+
+def test_hard_memory_headroom_still_blocks_expansion() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=128 * 1024**2))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_pressure_clearance_resumes_blocked_work_without_external_mutation() -> None:
+    observer = _MutableHostObserver(_status(memory_pressure=50.0))
+    gate = _gate(observer)
+    admitted = Event()
+    errors: list[BaseException] = []
+
+    def acquire() -> None:
+        try:
+            lease = gate.acquire(
+                "g",
+                ExecutionLaneKind.CPU,
+                deadline=Deadline.after(1.0),
+                cancellation=None,
+            )
+            admitted.set()
+            lease.release()
+        except BaseException as exc:
+            errors.append(exc)
+
+    thread = Thread(target=acquire)
+    thread.start()
+    time.sleep(0.05)
+    assert not admitted.is_set()
+
+    observer.status = _status(memory_pressure=0.0)
+    thread.join(timeout=1.0)
+    assert not thread.is_alive()
+    assert errors == []
+    assert admitted.is_set()
+
+
+def test_hard_pressure_revalidates_after_delegate_queue_before_return() -> None:
+    observer = _MutableHostObserver(_status())
+    admission = build_execution_admission(
+        budget=AdmissionBudget(
+            max_total_in_flight=1,
+            max_waiting=4,
+        ),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+            poll_interval_seconds=0.005,
+        ),
+    )
+    gate.register_group(
+        "race",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=None),
+    )
+
+    first = gate.acquire(
+        "race",
+        ExecutionLaneKind.CPU,
+        deadline=Deadline.after(2.0),
+        cancellation=None,
+    )
+    returned = Event()
+    errors: list[BaseException] = []
+
+    def queued_acquire() -> None:
+        try:
+            lease = gate.acquire(
+                "race",
+                ExecutionLaneKind.CPU,
+                deadline=Deadline.after(2.0),
+                cancellation=None,
+            )
+            returned.set()
+            lease.release()
+        except BaseException as exc:
+            errors.append(exc)
+
+    thread = Thread(target=queued_acquire)
+    thread.start()
+
+    queued_deadline = time.monotonic() + 1.0
+    while gate.snapshot().waiting != 1 and time.monotonic() < queued_deadline:
+        time.sleep(0.005)
+    assert gate.snapshot().waiting == 1
+
+    # Pressure appears only after the second request has already passed the
+    # outer gate and is queued inside hierarchical admission.
+    observer.status = _status(memory_bytes=128 * 1024**2)
+    first.release()
+
+    provisional_deadline = time.monotonic() + 1.0
+    while (
+        gate.snapshot().in_flight != 0
+        and time.monotonic() < provisional_deadline
+    ):
+        time.sleep(0.005)
+
+    assert not returned.is_set()
+    assert gate.snapshot().in_flight == 0
+
+    observer.status = _status()
+    thread.join(timeout=2.0)
+    assert not thread.is_alive()
+    assert errors == []
+    assert returned.is_set()
+    assert gate.snapshot().in_flight == 0
+
+
+def test_io_pressure_gates_io_without_wasting_idle_cpu() -> None:
+    observer = _MutableHostObserver(_status(load=1.0, io_pressure=75.0))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    cpu = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    cpu.release()
+
+    with pytest.raises(AdmissionRejected, match="io-pressure"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_competition_decision_classifies_hard_safety_separately_from_soft_contention() -> None:
+    hard = _gate(
+        _MutableHostObserver(_status(memory_bytes=128 * 1024**2)),
+        queue_wait_timeout_seconds=0.0,
+    )
+    hard_decision = hard.decision("g", ExecutionLaneKind.CPU)
+    assert not hard_decision.admitted
+    assert hard_decision.reason == "memory-headroom"
+    assert hard_decision.competition_class is ResourceCompetitionClass.HARD_SAFETY
+
+    soft = _gate(
+        _MutableHostObserver(_status(cpu_pressure=99.0)),
+        queue_wait_timeout_seconds=0.0,
+    )
+    soft_decision = soft.decision("g", ExecutionLaneKind.CPU)
+    assert not soft_decision.admitted
+    assert soft_decision.reason == "cpu-pressure"
+    assert soft_decision.competition_class is ResourceCompetitionClass.SOFT_CONTENTION
+
+
+def test_default_competition_decision_admits_soft_contention() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        _MutableHostObserver(
+            _status(
+                cpu_pressure=100.0,
+                memory_pressure=100.0,
+                io_pressure=100.0,
+            )
+        ),
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(),
+    )
+    gate.register_group(
+        "aggressive",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+    )
+    decision = gate.decision("aggressive", ExecutionLaneKind.CPU)
+    assert decision.admitted
+    assert decision.reason is None
+    assert decision.competition_class is None
+
+
+def test_permit_batch_is_checked_against_declared_physical_memory_demand() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=2 * 1024**3))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=512 * 1024**2,
+        ),
+    )
+
+    leases = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.CPU,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in leases:
+        lease.release()
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.CPU,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_live_permits_reserve_declared_cpu_across_competing_groups() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            load=0.0,
+            memory_bytes=8 * 1024**3,
+        )
+    )
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+    for group_id in ("left", "right", "third"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                cpu_cores_per_permit=3,
+            ),
+        )
+
+    left = gate.acquire(
+        "left",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    right = gate.acquire(
+        "right",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+
+    # The host observer intentionally remains unchanged, modelling the launch
+    # window before the new JVM/process load appears in the 1-minute load fact.
+    with pytest.raises(AdmissionRejected, match="cpu-headroom"):
+        gate.acquire(
+            "third",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+    left.release()
+    third = gate.acquire(
+        "third",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    third.release()
+    right.release()
+
+
+def test_live_permits_reserve_declared_memory_across_competing_groups() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=3 * 1024**3))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+    for group_id in ("left", "right", "third"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                memory_bytes_per_permit=1024**3,
+            ),
+        )
+
+    left = gate.acquire(
+        "left",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    right = gate.acquire(
+        "right",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+
+    # The host observer intentionally remains unchanged, modelling the launch
+    # window before newly submitted work is visible in /proc/cgroup facts.
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "third",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    left.release()
+    third = gate.acquire(
+        "third",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    third.release()
+    right.release()
+
+
+def test_failed_delegate_release_keeps_resource_reservation_fenced() -> None:
+    class FailOnceLease:
+        def __init__(self, delegate):
+            self.delegate = delegate
+            self.failed = False
+
+        def release(self) -> None:
+            if not self.failed:
+                self.failed = True
+                raise RuntimeError("simulated delegate release failure")
+            self.delegate.release()
+
+    class FailFirstReleaseAdmission:
+        def __init__(self, delegate):
+            self.delegate = delegate
+            self.wrapped = False
+
+        def register_group(self, group_id, *, identity, intent=AdmissionIntent()):
+            self.delegate.register_group(
+                group_id,
+                identity=identity,
+                intent=intent,
+            )
+
+        def unregister_group(self, group_id):
+            self.delegate.unregister_group(group_id)
+
+        def try_acquire_many(
+            self,
+            group_id,
+            lane_kind,
+            *,
+            permit_count,
+            deadline,
+            cancellation,
+        ):
+            leases = self.delegate.try_acquire_many(
+                group_id,
+                lane_kind,
+                permit_count=permit_count,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            if leases is None:
+                return None
+            if self.wrapped:
+                return leases
+            self.wrapped = True
+            assert len(leases) == 1
+            return (FailOnceLease(leases[0]),)
+
+        def acquire_many(
+            self,
+            group_id,
+            lane_kind,
+            *,
+            permit_count,
+            deadline,
+            cancellation,
+        ):
+            leases = self.delegate.acquire_many(
+                group_id,
+                lane_kind,
+                permit_count=permit_count,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            if self.wrapped:
+                return leases
+            self.wrapped = True
+            assert len(leases) == 1
+            return (FailOnceLease(leases[0]),)
+
+        def snapshot(self):
+            return self.delegate.snapshot()
+
+        def close(self):
+            self.delegate.close()
+
+    base = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        FailFirstReleaseAdmission(base),
+        _MutableHostObserver(
+            _status(memory_bytes=2 * 1024**3)
+        ),
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+        ),
+    )
+    for group_id in ("first", "second"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                memory_bytes_per_permit=1024**3,
+            ),
+        )
+
+    first = gate.acquire(
+        "first",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="simulated delegate release failure",
+    ):
+        first.release()
+
+    # The underlying permit and its logical physical-capacity reservation are
+    # both still owned after a failed release. A competing group must not
+    # reuse that memory window.
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "second",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    first.release()
+    second = gate.acquire(
+        "second",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    second.release()
+
+
+def test_live_io_permits_reserve_fd_demand_across_competing_groups() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=256,
+            # 64 FD safety reserve + one 32-FD workload fits; two do not.
+            available_fds=112,
+        )
+    )
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+    for group_id in ("io-a", "io-b"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                fds_per_permit=32,
+            ),
+        )
+
+    first = gate.acquire(
+        "io-a",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    with pytest.raises(AdmissionRejected, match="fd-headroom"):
+        gate.acquire(
+            "io-b",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+    first.release()
+    second = gate.acquire(
+        "io-b",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    second.release()
+
+
+def test_declared_pid_and_fd_demand_scale_with_atomic_batch_size() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=20,
+            available_fds=80,
+        )
+    )
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            pids_per_permit=2,
+            fds_per_permit=8,
+        ),
+    )
+
+    # PID reserve is global to every lane: 16 + (2 * 2) == 20.
+    leases = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.CPU,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in leases:
+        lease.release()
+    with pytest.raises(AdmissionRejected, match="pid-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.CPU,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
+
+    observer.status = _status(
+        available_pids=256,
+        available_fds=80,
+    )
+    io = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.ASYNC_IO,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in io:
+        lease.release()
+    with pytest.raises(AdmissionRejected, match="fd-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.ASYNC_IO,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_declared_demand_fails_closed_when_required_runtime_fact_is_unknown() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=None,
+            available_fds=None,
+        )
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=0,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+        ),
+    )
+    gate.register_group(
+        "unknown-demand",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
+    )
+    gate.set_group_demand(
+        "unknown-demand",
+        ResourceCompetitionDemand(
+            pids_per_permit=1,
+            fds_per_permit=1,
+        ),
+    )
+
+    with pytest.raises(AdmissionRejected, match="pid-runtime-unavailable"):
+        gate.acquire(
+            "unknown-demand",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    observer.status = _status(
+        available_pids=256,
+        available_fds=None,
+    )
+    with pytest.raises(AdmissionRejected, match="fd-runtime-unavailable"):
+        gate.acquire(
+            "unknown-demand",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
+    observer = _MutableHostObserver(_status(available_pids=8))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    with pytest.raises(AdmissionRejected, match="pid-headroom"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_fd_headroom_is_a_global_hard_safety_fence() -> None:
+    observer = _MutableHostObserver(_status(available_fds=8))
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    for lane in (ExecutionLaneKind.CPU, ExecutionLaneKind.ASYNC_IO):
+        with pytest.raises(AdmissionRejected, match="fd-headroom"):
+            gate.acquire(
+                "g",
+                lane,
+                deadline=None,
+                cancellation=None,
+            )
+
+
+@pytest.mark.parametrize(
+    ("status", "lane", "reason"),
+    (
+        (
+            _status(available_pids=None),
+            ExecutionLaneKind.CPU,
+            "pid-runtime-unavailable",
+        ),
+        (
+            _status(memory_pressure=None),
+            ExecutionLaneKind.CPU,
+            "memory-pressure-runtime-unavailable",
+        ),
+        (
+            _status(cpu_pressure=None),
+            ExecutionLaneKind.CPU,
+            "cpu-pressure-runtime-unavailable",
+        ),
+        (
+            _status(available_fds=None),
+            ExecutionLaneKind.ASYNC_IO,
+            "fd-runtime-unavailable",
+        ),
+        (
+            _status(io_pressure=None),
+            ExecutionLaneKind.BLOCKING_IO,
+            "io-pressure-runtime-unavailable",
+        ),
+    ),
+)
+def test_resource_specific_unknown_pressure_fails_closed(
+    status: HostRuntimeStatus,
+    lane: ExecutionLaneKind,
+    reason: str,
+) -> None:
+    gate = _gate(_MutableHostObserver(status), queue_wait_timeout_seconds=0.0)
+    with pytest.raises(AdmissionRejected, match=reason):
+        gate.acquire(
+            "g",
+            lane,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_runtime_observation_failure_is_fail_closed_for_workload() -> None:
+    observer = _MutableHostObserver(None)
+    gate = _gate(observer, queue_wait_timeout_seconds=0.0)
+
+    with pytest.raises(AdmissionRejected, match="host-runtime-unavailable"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_critical_control_bypasses_shared_host_pressure_gate() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            load=100.0,
+            memory_bytes=0,
+            cpu_pressure=100.0,
+            memory_pressure=100.0,
+            io_pressure=100.0,
+            available_pids=0,
+        )
+    )
+    gate = _gate(
+        observer,
+        queue_wait_timeout_seconds=0.0,
+        priority=ExecutionPriority.CRITICAL,
+    )
+
+    lease = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_critical_workload_with_incremental_memory_obeys_hard_headroom() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            memory_bytes=1536 * 1024**2,
+            memory_pressure=100.0,
+        )
+    )
+    gate = _gate(
+        observer,
+        queue_wait_timeout_seconds=0.0,
+        priority=ExecutionPriority.CRITICAL,
+    )
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=1024**3,
+        ),
+    )
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_critical_workload_bypasses_soft_pressure_after_hard_capacity_passes() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            memory_bytes=8 * 1024**3,
+            cpu_pressure=100.0,
+            memory_pressure=100.0,
+        )
+    )
+    gate = _gate(
+        observer,
+        queue_wait_timeout_seconds=0.0,
+        priority=ExecutionPriority.CRITICAL,
+    )
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=64 * 1024**2,
+        ),
+    )
+
+    lease = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_blocked_pressure_respects_deadline() -> None:
+    observer = _MutableHostObserver(_status(memory_pressure=50.0))
+    gate = _gate(observer)
+
+    with pytest.raises(TimeoutError, match="resource competition admission deadline expired"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.CPU,
+            deadline=Deadline.after(0.03),
+            cancellation=None,
+        )
+
+class _ForbiddenReservationContext:
+    def __enter__(self):
+        raise AssertionError("zero-demand admission touched reservation lock")
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+
+class _ForbiddenReservations(ResourceCompetitionReservations):
+    def __init__(self):
+        pass
+
+    @property
+    def lock(self):
+        return _ForbiddenReservationContext()
+
+    def reserved_demand(self):
+        raise AssertionError("zero-demand admission read reservation aggregate")
+
+    def reserved_storage_for(self, capacity_id):
+        raise AssertionError(
+            "zero-demand admission read storage reservation aggregate: "
+            + str(capacity_id)
+        )
+
+    def reserve(self, demand, *, permit_count, storage):
+        raise AssertionError("zero-demand admission published reservation")
+
+    def release(self, token):
+        raise AssertionError("zero-demand admission released reservation")
+
+
+def test_zero_demand_async_io_never_touches_cross_process_reservation_ledger(
+    tmp_path,
+) -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        _MutableHostObserver(_status()),
+        reservations=_ForbiddenReservations(),
+    )
+    gate.register_group(
+        "zero-demand-model-io",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(),
+    )
+
+    lease = gate.acquire(
+        "zero-demand-model-io",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=Deadline.after(1.0),
+        cancellation=None,
+    )
+    lease.release()
+
+def test_physical_pressure_waiters_enter_unified_fair_queue_before_clearance() -> None:
+    observer = _MutableHostObserver(_status(memory_pressure=0.0))
+    admission = build_execution_admission(
+        budget=AdmissionBudget(
+            max_total_in_flight=1,
+            max_waiting=8,
+        ),
+        scheduling_authority=build_scheduling_authority(),
+    )
+    assert _ACTIVE_RESERVATIONS is not None
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        reservations=_ACTIVE_RESERVATIONS,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=0,
+            min_available_pids=0,
+            min_available_fds=0,
+            max_memory_pressure_some_avg10_percent=5.0,
+            poll_interval_seconds=0.01,
+        ),
+    )
+    for group_id in ("holder", "a", "b"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(
+                tenant_id="paper",
+                resource_id="experiment-" + group_id,
+            ),
+            intent=AdmissionIntent(),
+        )
+
+    holder = gate.acquire(
+        "holder",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=Deadline.after(2.0),
+        cancellation=None,
+    )
+    observer.status = _status(memory_pressure=50.0)
+
+    admitted: list[str] = []
+    errors: list[BaseException] = []
+
+    def acquire(group_id: str) -> None:
+        try:
+            lease = gate.acquire(
+                group_id,
+                ExecutionLaneKind.BLOCKING_IO,
+                deadline=Deadline.after(2.0),
+                cancellation=None,
+            )
+            admitted.append(group_id)
+            lease.release()
+        except BaseException as exc:
+            errors.append(exc)
+
+    threads = tuple(Thread(target=acquire, args=(group_id,)) for group_id in ("a", "b"))
+    for thread in threads:
+        thread.start()
+
+    wait_deadline = time.monotonic() + 1.0
+    while gate.snapshot().waiting != 2 and time.monotonic() < wait_deadline:
+        time.sleep(0.001)
+    assert gate.snapshot().waiting == 2
+
+    observer.status = _status(memory_pressure=0.0)
+    holder.release()
+    for thread in threads:
+        thread.join(timeout=2.0)
+        assert not thread.is_alive()
+    assert errors == []
+    assert sorted(admitted) == ["a", "b"]

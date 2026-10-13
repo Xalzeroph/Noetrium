@@ -1,0 +1,771 @@
+"""Programmable Memory Machine semantics.
+
+The platform owns the Machine ABI and durable authoritative records. Memory algorithms are
+ordinary Program rules/handlers: downstream research may replace write,
+retrieval, trust, consolidation or retention semantics without adding a new
+runner or changing the kernel.
+"""
+from __future__ import annotations
+
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
+import heapq
+from functools import lru_cache
+import re
+
+from noetrium_platform.foundation.kernel.structure import structure_unit
+from noetrium_platform.foundation.kernel.kernel import (
+    JsonObject,
+    JsonValue,
+    MachineJournalPort,
+    MachineSnapshotStorePort,
+    canonical_digest,
+    freeze_json,
+    thaw_json,
+)
+from .domains import MemoryConcern
+from noetrium_platform.foundation.kernel.kernel.unit_host import BoundExecutableUnit
+from noetrium_platform.foundation.kernel.kernel.universal import (
+    UnitOperationRegistry,
+    UnitStepContext,
+    UnitTransition,
+    NoetriumUnit,
+)
+from .rule_program import (
+    program_rule,
+    program_rule_set,
+    UnhandledEventPolicy,
+    build_rule_handlers,
+    compile_rule_program,
+)
+
+
+MEMORY_PRESET_TRAIT = "machine.memory.preset"
+
+
+def memory_preset_unit(
+    *,
+    max_records: int = 2048,
+    recall_limit: int = 12,
+    generation_bonus: int = 2,
+    token_overlap_weight: int = 5,
+) -> NoetriumUnit:
+    values = {
+        "max_records": max_records,
+        "recall_limit": recall_limit,
+        "generation_bonus": generation_bonus,
+        "token_overlap_weight": token_overlap_weight,
+    }
+    for name, value in values.items():
+        if type(value) is not int or value < 0:
+            raise ValueError(
+                f"memory preset {name} must be a non-negative integer"
+            )
+    return structure_unit(
+        "memory-preset",
+        traits=(MEMORY_PRESET_TRAIT,),
+        parameters=values,
+    )
+
+
+def require_memory_preset(value: NoetriumUnit) -> NoetriumUnit:
+    if type(value) is not NoetriumUnit or not value.has_trait(MEMORY_PRESET_TRAIT):
+        raise TypeError("memory preset must be machine.memory.preset NoetriumUnit")
+    return value
+
+
+DEFAULT_MEMORY_PRESET = memory_preset_unit()
+
+
+@dataclass(frozen=True, slots=True)
+class MemoryRecord:
+    record_id: str
+    kind: str
+    content: str
+    generation: str
+    state_digest: str
+    tags: tuple[str, ...] = ()
+    verified: bool = False
+    ordinal: int = 0
+    artifact_refs: tuple[str, ...] = ()
+    metadata: JsonObject = field(default_factory=dict)
+    record_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("record_id", self.record_id),
+            ("kind", self.kind),
+            ("content", self.content),
+            ("generation", self.generation),
+            ("state_digest", self.state_digest),
+        ):
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"memory record {name} is required")
+        if type(self.tags) is not tuple or any(
+            type(value) is not str or not value.strip() for value in self.tags
+        ):
+            raise TypeError("memory record tags must be a tuple of non-empty strings")
+        if len(self.tags) != len(set(self.tags)):
+            raise ValueError("memory record tags must be unique")
+        if type(self.verified) is not bool:
+            raise TypeError("memory record verified must be boolean")
+        if type(self.ordinal) is not int or self.ordinal < 0:
+            raise ValueError("memory record ordinal must be non-negative")
+        if type(self.artifact_refs) is not tuple or any(
+            type(value) is not str or not value.strip() for value in self.artifact_refs
+        ):
+            raise TypeError("memory record artifact_refs must be non-empty text")
+        if not isinstance(self.metadata, Mapping):
+            raise TypeError("memory record metadata must be an object")
+        object.__setattr__(self, "metadata", freeze_json(self.metadata))
+        object.__setattr__(self, "record_digest", canonical_digest(self.as_payload(include_digest=False)))
+
+    def as_payload(self, *, include_digest: bool = True) -> JsonObject:
+        payload: JsonObject = {
+            "record_id": self.record_id,
+            "kind": self.kind,
+            "content": self.content,
+            "generation": self.generation,
+            "state_digest": self.state_digest,
+            "tags": self.tags,
+            "verified": self.verified,
+            "ordinal": self.ordinal,
+            "artifact_refs": self.artifact_refs,
+            "metadata": self.metadata,
+        }
+        if include_digest:
+            payload["record_digest"] = self.record_digest
+        return payload
+
+    @classmethod
+    def from_payload(cls, value: object) -> "MemoryRecord":
+        if not isinstance(value, Mapping):
+            raise TypeError("memory record payload must be an object")
+        decoded = thaw_json(value)
+        if not isinstance(decoded, dict):
+            raise TypeError("memory record payload must decode to an object")
+        tags = decoded.get("tags", ())
+        refs = decoded.get("artifact_refs", ())
+        metadata = decoded.get("metadata", {})
+        if not isinstance(tags, (tuple, list)):
+            raise TypeError("memory record tags must be a sequence")
+        if not isinstance(refs, (tuple, list)):
+            raise TypeError("memory record artifact_refs must be a sequence")
+        if not isinstance(metadata, dict):
+            raise TypeError("memory record metadata must be an object")
+        return cls(
+            record_id=decoded.get("record_id"),
+            kind=decoded.get("kind"),
+            content=decoded.get("content"),
+            generation=decoded.get("generation"),
+            state_digest=decoded.get("state_digest"),
+            tags=tuple(tags),
+            verified=decoded.get("verified", False),
+            ordinal=decoded.get("ordinal", 0),
+            artifact_refs=tuple(refs),
+            metadata=metadata,
+        )
+
+
+def memory_rule_set() -> NoetriumUnit:
+    return program_rule_set(
+        (
+            program_rule(
+                "write",
+                "memory.write",
+                "memory.default.write",
+                priority=100,
+                semantic=MemoryConcern.WRITE.value,
+            ),
+            program_rule(
+                "update",
+                "memory.update",
+                "memory.default.update",
+                priority=100,
+                semantic=MemoryConcern.UPDATE.value,
+            ),
+            program_rule(
+                "retrieve",
+                "memory.retrieve",
+                "memory.default.retrieve",
+                priority=100,
+                semantic=MemoryConcern.RETRIEVAL.value,
+            ),
+            program_rule(
+                "verify",
+                "memory.verify",
+                "memory.default.verify",
+                priority=100,
+                semantic=MemoryConcern.TRUST.value,
+            ),
+            program_rule(
+                "forget",
+                "memory.forget",
+                "memory.default.forget",
+                priority=100,
+                semantic=MemoryConcern.RETENTION.value,
+            ),
+            program_rule(
+                "compact",
+                "memory.compact",
+                "memory.default.compact",
+                priority=100,
+                semantic=MemoryConcern.CONSOLIDATION.value,
+            ),
+        ),
+        unhandled=UnhandledEventPolicy.ERROR,
+    )
+
+
+def compile_memory_program(
+    *,
+    program_id: str = "memory.default",
+    version: str = "1",
+    rules: NoetriumUnit | None = None,
+) -> NoetriumUnit:
+    selected = memory_rule_set() if rules is None else rules
+    return compile_rule_program(
+        program_id=program_id,
+        domain="memory",
+        version=version,
+        state_schema="memory.program.state.v1",
+        rules=selected,
+    )
+
+
+def memory_initial_data(
+    spec: NoetriumUnit = DEFAULT_MEMORY_PRESET,
+) -> JsonObject:
+    spec = require_memory_preset(spec)
+    return {
+        "preset_digest": spec.unit_digest,
+        "max_records": int(spec.parameters["max_records"]),
+        "recall_limit": int(spec.parameters["recall_limit"]),
+        "generation_bonus": int(spec.parameters["generation_bonus"]),
+        "token_overlap_weight": int(spec.parameters["token_overlap_weight"]),
+        "sequence_counter": 0,
+        "records": (),
+    }
+
+
+def _payload(request: UnitStepContext) -> dict[str, object]:
+    if not isinstance(request.payload, Mapping):
+        raise TypeError("memory event payload must be an object")
+    value = thaw_json(request.payload)
+    if not isinstance(value, dict):
+        raise TypeError("memory event payload must decode to an object")
+    return value
+
+
+def _data(request: UnitStepContext) -> dict[str, object]:
+    value = thaw_json(request.data)
+    if not isinstance(value, dict):
+        raise TypeError("memory program data must be an object")
+    return value
+
+
+def _records(data: dict[str, object]) -> list[MemoryRecord]:
+    rows = data.get("records", ())
+    if not isinstance(rows, (tuple, list)):
+        raise TypeError("memory records must be a sequence")
+    return [MemoryRecord.from_payload(row) for row in rows]
+
+
+def _retrieval_data(request: UnitStepContext) -> Mapping[str, JsonValue]:
+    """Read immutable machine state without deep-thawing every memory record."""
+
+    value = request.data
+    if not isinstance(value, Mapping):
+        raise TypeError("memory program data must be an object")
+    return value
+
+
+def _retrieval_record_view(
+    value: object,
+) -> tuple[
+    Mapping[str, JsonValue],
+    str,
+    str,
+    str,
+    str,
+    tuple[str, ...],
+    bool,
+    int,
+    tuple[str, ...],
+    Mapping[str, JsonValue],
+]:
+    """Validate one record for retrieval without reconstructing/digesting it."""
+
+    if not isinstance(value, Mapping):
+        raise TypeError("memory record payload must be an object")
+
+    required_text: list[str] = []
+    for name in ("record_id", "kind", "content", "generation", "state_digest"):
+        item = value.get(name)
+        if type(item) is not str or not item.strip():
+            raise ValueError(f"memory record {name} is required")
+        required_text.append(item)
+    record_id, kind, content, generation, _state_digest = required_text
+
+    raw_tags = value.get("tags", ())
+    if not isinstance(raw_tags, (tuple, list)):
+        raise TypeError("memory record tags must be a sequence")
+    tags = tuple(raw_tags)
+    if any(type(item) is not str or not item.strip() for item in tags):
+        raise TypeError("memory record tags must be a tuple of non-empty strings")
+    if len(tags) != len(set(tags)):
+        raise ValueError("memory record tags must be unique")
+
+    verified = value.get("verified", False)
+    if type(verified) is not bool:
+        raise TypeError("memory record verified must be boolean")
+
+    ordinal = value.get("ordinal", 0)
+    if type(ordinal) is not int or ordinal < 0:
+        raise ValueError("memory record ordinal must be non-negative")
+
+    raw_refs = value.get("artifact_refs", ())
+    if not isinstance(raw_refs, (tuple, list)):
+        raise TypeError("memory record artifact_refs must be a sequence")
+    artifact_refs = tuple(raw_refs)
+    if any(type(item) is not str or not item.strip() for item in artifact_refs):
+        raise TypeError("memory record artifact_refs must be non-empty text")
+
+    metadata = value.get("metadata", {})
+    if not isinstance(metadata, Mapping):
+        raise TypeError("memory record metadata must be an object")
+
+    return (
+        value,
+        record_id,
+        kind,
+        content,
+        generation,
+        tags,
+        verified,
+        ordinal,
+        artifact_refs,
+        metadata,
+    )
+
+
+def _tokens(value: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9_:-]+", value.lower())
+        if len(token) > 1
+    }
+
+
+@lru_cache(maxsize=8192)
+def _record_tokens_cached(
+    record_digest: str,
+    content: str,
+    tags: tuple[str, ...],
+) -> frozenset[str]:
+    # record_digest participates in the cache identity so an immutable MemoryRecord
+    # update naturally invalidates the old tokenization without touching scientific
+    # state. content/tags keep collision safety and make this cache semantics-pure.
+    del record_digest
+    return frozenset(_tokens(content + " " + " ".join(tags)))
+
+
+def default_memory_operations() -> UnitOperationRegistry:
+    """Reference preset only; downstream papers may bind different operations."""
+
+    operations = UnitOperationRegistry()
+
+    def write(request: UnitStepContext) -> UnitTransition:
+        data = _data(request)
+        payload = _payload(request)
+        record_value = payload.get("record")
+        if not isinstance(record_value, Mapping):
+            raise TypeError("memory.write requires record object")
+        candidate = MemoryRecord.from_payload(record_value)
+        sequence = data.get("sequence_counter", 0)
+        if type(sequence) is not int or sequence < 0:
+            raise ValueError("memory sequence_counter is invalid")
+        ordinal = candidate.ordinal if candidate.ordinal > 0 else sequence + 1
+        record = MemoryRecord(
+            candidate.record_id,
+            candidate.kind,
+            candidate.content,
+            candidate.generation,
+            candidate.state_digest,
+            candidate.tags,
+            candidate.verified,
+            ordinal,
+            candidate.artifact_refs,
+            candidate.metadata,
+        )
+        rows = [row for row in _records(data) if row.record_id != record.record_id]
+        rows.append(record)
+        max_records = data.get("max_records")
+        if type(max_records) is not int or max_records < 0:
+            raise ValueError("memory max_records is invalid")
+        if max_records == 0:
+            evicted = rows
+            rows = []
+        else:
+            evicted = rows[:-max_records] if len(rows) > max_records else []
+            rows = rows[-max_records:]
+        next_sequence = max(sequence + 1, record.ordinal)
+        return UnitTransition.goto(value={'record_id': record.record_id, 'record_digest': record.record_digest, 'evicted_record_ids': tuple((row.record_id for row in evicted))}, state_delta={'sequence_counter': next_sequence, 'records': tuple((row.as_payload() for row in rows))}, events=({'type': 'memory_record_written', 'record_id': record.record_id, 'record_digest': record.record_digest, 'verified': record.verified, 'evicted_record_ids': tuple((row.record_id for row in evicted))},), artifact_refs=record.artifact_refs)
+
+    def update(request: UnitStepContext) -> UnitTransition:
+        data = _data(request)
+        payload = _payload(request)
+        record_id = payload.get("record_id")
+        if type(record_id) is not str or not record_id.strip():
+            raise ValueError("memory.update requires record_id")
+        patch = payload.get("patch")
+        if not isinstance(patch, Mapping):
+            raise TypeError("memory.update patch must be an object")
+        allowed = {
+            "kind",
+            "content",
+            "generation",
+            "state_digest",
+            "tags",
+            "verified",
+            "artifact_refs",
+            "metadata",
+        }
+        unknown = set(patch) - allowed
+        if unknown:
+            raise ValueError(
+                "memory.update patch contains unsupported fields: "
+                + ",".join(sorted(str(value) for value in unknown))
+            )
+
+        rows = _records(data)
+        updated: list[MemoryRecord] = []
+        before_digest = None
+        after_record = None
+        for row in rows:
+            if row.record_id != record_id:
+                updated.append(row)
+                continue
+            before_digest = row.record_digest
+            values = {
+                "kind": row.kind,
+                "content": row.content,
+                "generation": row.generation,
+                "state_digest": row.state_digest,
+                "tags": row.tags,
+                "verified": row.verified,
+                "artifact_refs": row.artifact_refs,
+                "metadata": row.metadata,
+            }
+            values.update(dict(patch))
+            tags = values["tags"]
+            refs = values["artifact_refs"]
+            metadata = values["metadata"]
+            if not isinstance(tags, (tuple, list)):
+                raise TypeError("memory.update tags must be a sequence")
+            if not isinstance(refs, (tuple, list)):
+                raise TypeError("memory.update artifact_refs must be a sequence")
+            if not isinstance(metadata, Mapping):
+                raise TypeError("memory.update metadata must be an object")
+            after_record = MemoryRecord(
+                record_id=row.record_id,
+                kind=values["kind"],
+                content=values["content"],
+                generation=values["generation"],
+                state_digest=values["state_digest"],
+                tags=tuple(tags),
+                verified=values["verified"],
+                ordinal=row.ordinal,
+                artifact_refs=tuple(refs),
+                metadata=dict(metadata),
+            )
+            updated.append(after_record)
+        if after_record is None or before_digest is None:
+            raise KeyError(record_id)
+        return UnitTransition.goto(value={'record_id': record_id, 'before_record_digest': before_digest, 'record_digest': after_record.record_digest}, state_delta={'records': tuple((row.as_payload() for row in updated))}, events=({'type': 'memory_record_updated', 'record_id': record_id, 'before_record_digest': before_digest, 'record_digest': after_record.record_digest},), artifact_refs=after_record.artifact_refs)
+
+    def retrieve(request: UnitStepContext) -> UnitTransition:
+        data = _retrieval_data(request)
+        payload = _payload(request)
+        query_text = payload.get("query_text", "")
+        if type(query_text) is not str:
+            raise TypeError("memory query_text must be text")
+        generation = payload.get("generation")
+        if generation is not None and (type(generation) is not str or not generation.strip()):
+            raise ValueError("memory generation filter must be non-empty text")
+        tags = payload.get("tags", ())
+        if not isinstance(tags, (tuple, list)) or any(
+            type(value) is not str or not value.strip() for value in tags
+        ):
+            raise TypeError("memory query tags must be a text sequence")
+        require_verified = payload.get("require_verified", False)
+        if type(require_verified) is not bool:
+            raise TypeError("memory require_verified must be boolean")
+        kinds = payload.get("kinds", ())
+        if isinstance(kinds, str) or not isinstance(kinds, (tuple, list)):
+            raise TypeError("memory retrieval kinds must be a text sequence")
+        if any(type(value) is not str or not value.strip() for value in kinds):
+            raise ValueError("memory retrieval kinds must be non-empty text")
+        metadata_filter = payload.get("metadata_filter", {})
+        if not isinstance(metadata_filter, Mapping):
+            raise TypeError("memory retrieval metadata_filter must be an object")
+        excluded = payload.get("exclude_record_ids", ())
+        if isinstance(excluded, str) or not isinstance(excluded, (tuple, list)):
+            raise TypeError(
+                "memory retrieval exclude_record_ids must be a text sequence"
+            )
+        if any(type(value) is not str or not value.strip() for value in excluded):
+            raise ValueError(
+                "memory retrieval exclude_record_ids must be non-empty text"
+            )
+        include_records = payload.get("include_records", False)
+        if type(include_records) is not bool:
+            raise TypeError("memory retrieval include_records must be boolean")
+        min_score = payload.get("min_score")
+        if min_score is not None and type(min_score) is not int:
+            raise TypeError("memory retrieval min_score must be integer or None")
+        limit = payload.get("limit", data.get("recall_limit"))
+        if type(limit) is not int or limit < 0:
+            raise ValueError("memory retrieval limit must be non-negative")
+        overlap_weight = data.get("token_overlap_weight", 5)
+        generation_bonus = data.get("generation_bonus", 2)
+        if type(overlap_weight) is not int or type(generation_bonus) is not int:
+            raise TypeError("memory scoring weights must be integers")
+
+        query = _tokens(query_text + " " + " ".join(tags))
+        kind_filter = set(kinds)
+        excluded_ids = set(excluded)
+        metadata_filter_dict = dict(metadata_filter)
+
+        raw_records = data.get("records", ())
+        if not isinstance(raw_records, (tuple, list)):
+            raise TypeError("memory records must be a sequence")
+
+        def scored_records():
+            for index, raw_record in enumerate(raw_records):
+                (
+                    source,
+                    record_id,
+                    kind,
+                    content,
+                    record_generation,
+                    record_tags,
+                    verified,
+                    ordinal,
+                    _artifact_refs,
+                    metadata,
+                ) = _retrieval_record_view(raw_record)
+                if require_verified and not verified:
+                    continue
+                if kind_filter and kind not in kind_filter:
+                    continue
+                if record_id in excluded_ids:
+                    continue
+                if any(
+                    metadata.get(key) != value
+                    for key, value in metadata_filter_dict.items()
+                ):
+                    continue
+                cached_digest = source.get("record_digest")
+                cache_identity = (
+                    cached_digest
+                    if type(cached_digest) is str
+                    else ""
+                )
+                overlap = len(
+                    query
+                    & _record_tokens_cached(
+                        cache_identity,
+                        content,
+                        record_tags,
+                    )
+                )
+                score = overlap * overlap_weight
+                if (
+                    generation is not None
+                    and record_generation == generation
+                ):
+                    score += generation_bonus
+                score += min(ordinal, 100) // 10
+                if (score > 0 or not query) and (
+                    min_score is None or score >= min_score
+                ):
+                    yield score, index, record_id, source
+
+        rank_key = lambda item: (-item[0], -item[1], item[2])
+        selected = (
+            []
+            if limit == 0
+            else heapq.nsmallest(limit, scored_records(), key=rank_key)
+        )
+        rows = tuple(MemoryRecord.from_payload(item[3]) for item in selected)
+        query_id = "memory-query:" + canonical_digest({
+            "query_text": query_text,
+            "generation": generation,
+            "tags": tuple(tags),
+            "require_verified": require_verified,
+            "kinds": tuple(kinds),
+            "metadata_filter": metadata_filter_dict,
+            "exclude_record_ids": tuple(excluded),
+            "include_records": include_records,
+            "min_score": min_score,
+            "limit": limit,
+            "record_digests": tuple(row.record_digest for row in rows),
+        })
+        context_text = "\n".join(f"[{row.kind}] {row.content}" for row in rows)
+        artifact_refs = tuple(
+            dict.fromkeys(ref for row in rows for ref in row.artifact_refs)
+        )
+        return UnitTransition.goto(value={'query_id': query_id, 'context_text': context_text, 'record_ids': tuple((row.record_id for row in rows)), 'record_digests': tuple((row.record_digest for row in rows)), 'scores': tuple((item[0] for item in selected)), 'records': tuple((row.as_payload() for row in rows)) if include_records else (), 'artifact_refs': artifact_refs}, events=({'type': 'memory_retrieved', 'query_id': query_id, 'record_ids': tuple((row.record_id for row in rows))},), artifact_refs=artifact_refs)
+
+    def verify(request: UnitStepContext) -> UnitTransition:
+        data = _data(request)
+        payload = _payload(request)
+        record_id = payload.get("record_id")
+        verified = payload.get("verified")
+        if type(record_id) is not str or not record_id.strip():
+            raise ValueError("memory.verify requires record_id")
+        if type(verified) is not bool:
+            raise TypeError("memory.verify verified must be boolean")
+        rows = _records(data)
+        found = False
+        updated: list[MemoryRecord] = []
+        for row in rows:
+            if row.record_id != record_id:
+                updated.append(row)
+                continue
+            found = True
+            updated.append(MemoryRecord(
+                row.record_id,
+                row.kind,
+                row.content,
+                row.generation,
+                row.state_digest,
+                row.tags,
+                verified,
+                row.ordinal,
+                row.artifact_refs,
+                row.metadata,
+            ))
+        if not found:
+            raise KeyError(record_id)
+        return UnitTransition.goto(value={'record_id': record_id, 'verified': verified}, state_delta={'records': tuple((row.as_payload() for row in updated))}, events=({'type': 'memory_record_verification_changed', 'record_id': record_id, 'verified': verified},))
+
+    def forget(request: UnitStepContext) -> UnitTransition:
+        data = _data(request)
+        payload = _payload(request)
+        record_ids = payload.get("record_ids")
+        if isinstance(record_ids, str) or not isinstance(record_ids, (tuple, list)):
+            raise TypeError("memory.forget record_ids must be a sequence")
+        ids = tuple(record_ids)
+        if any(type(value) is not str or not value.strip() for value in ids):
+            raise ValueError("memory.forget record_ids must be non-empty text")
+        if len(ids) != len(set(ids)):
+            raise ValueError("memory.forget record_ids must be unique")
+        remove = set(ids)
+        rows = _records(data)
+        retained = [row for row in rows if row.record_id not in remove]
+        forgotten = tuple(row.record_id for row in rows if row.record_id in remove)
+        return UnitTransition.goto(value={'forgotten_record_ids': forgotten}, state_delta={'records': tuple((row.as_payload() for row in retained))}, events=({'type': 'memory_records_forgotten', 'record_ids': forgotten},))
+
+    def compact(request: UnitStepContext) -> UnitTransition:
+        data = _data(request)
+        payload = _payload(request)
+        keep = payload.get("keep", data.get("max_records"))
+        if type(keep) is not int or keep < 0:
+            raise ValueError("memory.compact keep must be non-negative")
+        rows = _records(data)
+        removed = rows[:-keep] if keep and len(rows) > keep else ([] if keep else rows)
+        retained = rows[-keep:] if keep else []
+        return UnitTransition.goto(value={'removed_record_ids': tuple((row.record_id for row in removed))}, state_delta={'records': tuple((row.as_payload() for row in retained))}, events=({'type': 'memory_compacted', 'removed_record_ids': tuple((row.record_id for row in removed)), 'retained_count': len(retained)},))
+
+    operations.register(
+        "memory.default.write",
+        write,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.write",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.update",
+        update,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.update",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.retrieve",
+        retrieve,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.retrieve",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.verify",
+        verify,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.verify",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.forget",
+        forget,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.forget",
+            "implementation_revision": 1,
+        }),
+    )
+    operations.register(
+        "memory.default.compact",
+        compact,
+        implementation_digest=canonical_digest({
+            "operation": "memory.default.compact",
+            "implementation_revision": 1,
+        }),
+    )
+    return operations
+
+
+def default_memory_handlers() -> UnitOperationRegistry:
+    return build_rule_handlers(memory_rule_set(), default_memory_operations())
+
+
+def default_memory_host(
+    *,
+    journal: MachineJournalPort,
+    snapshot_store: MachineSnapshotStorePort | None = None,
+    preset: NoetriumUnit = DEFAULT_MEMORY_PRESET,
+) -> BoundExecutableUnit:
+    """Default MemoryProgram host over one immutable preset Unit."""
+    preset = require_memory_preset(preset)
+    program = compile_memory_program()
+    return BoundExecutableUnit(
+        host_id="memory.default",
+        unit=program,
+        journal=journal,
+        snapshot_store=snapshot_store,
+        base_handlers=default_memory_handlers(),
+        dependency_identity={
+            "rule_set_digest": memory_rule_set().rule_set_digest,
+            "preset_digest": preset.unit_digest,
+        },
+    )
+
+
+__all__ = [
+    "MemoryRecord",
+    "MEMORY_PRESET_TRAIT",
+    "DEFAULT_MEMORY_PRESET",
+    "memory_preset_unit",
+    "require_memory_preset",
+    "compile_memory_program",
+    "default_memory_handlers",
+    "default_memory_host",
+    "default_memory_operations",
+    "memory_initial_data",
+    "memory_rule_set",
+]

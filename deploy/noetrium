@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
+if [ -n "${NOETRIUM_PYTHON:-}" ]; then
+  exec "$NOETRIUM_PYTHON" -m noetrium_platform.composition.operator.wiring.entrypoint "$@"
+elif [ -x "$ROOT/.venv/bin/python" ]; then
+  exec "$ROOT/.venv/bin/python" -m noetrium_platform.composition.operator.wiring.entrypoint "$@"
+else
+  exec python3 -m noetrium_platform.composition.operator.wiring.entrypoint "$@"
+fi

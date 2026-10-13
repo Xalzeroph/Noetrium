@@ -1,0 +1,60 @@
+{
+  "schema": "agent-noetrium.readme-glossary.v1",
+  "terms": {
+    "authority": {
+      "zh-CN": "authority / 权威来源",
+      "zh-TW": "authority / 權威來源",
+      "ja": "authority",
+      "ko": "authority",
+      "note": "A source empowered to decide a fact; do not translate as access permission."
+    },
+    "binding": {
+      "zh-CN": "绑定",
+      "zh-TW": "綁定",
+      "ja": "binding",
+      "ko": "binding",
+      "note": "Composition-time association between a requirement and an exact provider identity."
+    },
+    "fail-closed": {
+      "zh-CN": "fail-closed",
+      "zh-TW": "fail-closed",
+      "ja": "fail-closed",
+      "ko": "fail-closed",
+      "note": "Keep the technical token when ambiguity would change safety semantics."
+    },
+    "evidence": {
+      "zh-CN": "证据",
+      "zh-TW": "證據",
+      "ja": "evidence / 証拠",
+      "ko": "evidence / 증거"
+    },
+    "provider": {
+      "zh-CN": "Provider",
+      "zh-TW": "Provider",
+      "ja": "Provider",
+      "ko": "Provider",
+      "note": "Keep as a technical role when referring to a platform provider contract."
+    },
+    "projection": {
+      "zh-CN": "投影",
+      "zh-TW": "投影",
+      "ja": "projection",
+      "ko": "projection",
+      "note": "A derived/read representation that must not silently become authority."
+    },
+    "reconciliation": {
+      "zh-CN": "reconciliation / 对账确认",
+      "zh-TW": "reconciliation / 對帳確認",
+      "ja": "reconciliation",
+      "ko": "reconciliation",
+      "note": "Evidence-driven resolution of an uncertain external effect."
+    },
+    "identity": {
+      "zh-CN": "identity / 身份标识",
+      "zh-TW": "identity / 身分標識",
+      "ja": "identity",
+      "ko": "identity",
+      "note": "Use the platform identity meaning, not personal identity."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "robotwin2",
+  "benchmark": {
+    "benchmark_id": "robotwin2",
+    "title": "RoboTwin 2.0",
+    "source_uri": "https://github.com/robotwin-Platform/RoboTwin",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}

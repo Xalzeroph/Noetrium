@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "noetrium"
+version = "1.0.0"
+description = "Reproducible Research Infrastructure for AI Agents"
+readme = "README.md"
+keywords = ["ai-agents", "agent-research", "research-infrastructure", "reproducibility", "experiment-management", "multi-agent-systems", "agent-evaluation", "ai-infrastructure", "evidence", "scientific-computing"]
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
+requires-python = ">=3.12"
+dependencies = ["canonaut==1.0.0", "httpx[http2]>=0.28,<0.29", "huggingface_hub>=0.34,<2", "jsonschema>=4.23,<5"]
+
+[project.urls]
+Homepage = "https://github.com/Xalzeroph/Noetrium"
+Repository = "https://github.com/Xalzeroph/Noetrium"
+Documentation = "https://github.com/Xalzeroph/Noetrium/tree/main/docs"
+Examples = "https://github.com/Xalzeroph/Noetrium/tree/main/examples"
+Discussions = "https://github.com/Xalzeroph/Noetrium/discussions"
+Security = "https://github.com/Xalzeroph/Noetrium/security/policy"
+Contributing = "https://github.com/Xalzeroph/Noetrium/blob/main/CONTRIBUTING.md"
+Citation = "https://github.com/Xalzeroph/Noetrium/blob/main/CITATION.cff"
+Issues = "https://github.com/Xalzeroph/Noetrium/issues"
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+release = ["build>=1.2,<2", "twine>=5,<7"]
+
+[project.scripts]
+noetrium = "noetrium_platform.composition.operator.wiring.entrypoint:main"
+
+[tool.setuptools.packages.find]
+include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
+
+[tool.setuptools.package-data]
+"noetrium_platform.foundation.governance.system_registry" = ["catalog.json", "components.json", "hierarchy.json"]
+"noetrium.contracts" = ["downstream_capability_catalog.json", "interface_schema.json"]
+"noetrium" = ["__init__.pyi", "py.typed"]
+"noetrium_platform.capabilities.environment.minecraft.providers" = ["assets/mineflayer_bridge/*.js", "assets/mineflayer_bridge/package.json", "assets/mineflayer_bridge/package-lock.json"]
+"noetrium_platform.capabilities.model.asset.catalog" = ["default_sources.json"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "tests"]
+testpaths = ["tests"]

@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "realworldqa",
+  "benchmark": {
+    "benchmark_id": "realworldqa",
+    "title": "RealWorldQA",
+    "source_uri": "https://huggingface.co/datasets/xai-org/RealworldQA",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

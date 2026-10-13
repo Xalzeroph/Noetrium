@@ -1,0 +1,47 @@
+{
+  "schema": "noetrium.peer-reviewed-discovery-sources.v1",
+  "updated_at": "2026-09-18",
+  "source_policy": "Scan formal proceedings/journal indexes first. arXiv is used only to locate artifacts after a qualifying publication is verified.",
+  "sources": [
+    {"venue": "NeurIPS", "priority_class": "P1_FLAGSHIP", "index": "https://proceedings.neurips.cc/"},
+    {"venue": "ICML", "priority_class": "P1_FLAGSHIP", "index": "https://proceedings.mlr.press/"},
+    {"venue": "ICLR", "priority_class": "P1_FLAGSHIP", "index": "https://proceedings.iclr.cc/"},
+    {"venue": "ACL", "priority_class": "P1_FLAGSHIP", "index": "https://aclanthology.org/venues/acl/"},
+    {"venue": "EMNLP", "priority_class": "P1_FLAGSHIP", "index": "https://aclanthology.org/venues/emnlp/"},
+    {"venue": "CVPR", "priority_class": "P1_FLAGSHIP", "index": "https://openaccess.thecvf.com/CVPR.html"},
+    {"venue": "AAAI", "priority_class": "P1_FLAGSHIP", "index": "https://ojs.aaai.org/index.php/AAAI"},
+    {"venue": "NAACL", "priority_class": "P1_FIELD_LEADING", "index": "https://aclanthology.org/venues/naacl/"},
+    {"venue": "TMLR", "priority_class": "P1_FIELD_LEADING", "index": "https://openreview.net/group?id=TMLR"},
+    {"venue": "UIST", "priority_class": "P1_FIELD_LEADING", "index": "https://dl.acm.org/conference/uist/proceedings"},
+    {"venue": "FSE", "priority_class": "P1_FIELD_LEADING", "index": "https://conf.researchr.org/series/fse"},
+    {"venue": "CoRL", "priority_class": "P1_FIELD_LEADING", "index": "https://proceedings.mlr.press/"},
+    {"venue": "COLM", "priority_class": "P2_HIGH_QUALITY", "index": "https://colmweb.org/"}
+  ],
+  "search_topics": [
+    "language agents",
+    "LLM agents",
+    "reasoning and acting",
+    "agent search and planning",
+    "reflection and self-correction",
+    "agent memory",
+    "tool use and API agents",
+    "web agents",
+    "software engineering agents",
+    "GUI and computer-use agents",
+    "embodied agents",
+    "multi-agent systems",
+    "automated agent design",
+    "scientific and research agents",
+    "agent learning and process reward"
+  ],
+  "admission_steps": [
+    "Verify formal peer-reviewed venue/version.",
+    "Audit backward and forward citations to place the paper in the existing phylogeny.",
+    "Reject near-duplicates that add no transferable mechanism or materially different experimental regime.",
+    "Register publication and lineage node.",
+    "Create native downstream reproduction package.",
+    "Create/freeze benchmark adapter only where an external benchmark cut is required.",
+    "Implement MethodProgram, Study/Experiment, measurements, baselines, ablations/statistics and evidence.",
+    "Promote to hard pressure only after closure is machine-checked."
+  ]
+}

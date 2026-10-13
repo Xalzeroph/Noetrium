@@ -1,0 +1,129 @@
+name: platform-assurance
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality / py3.12
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install package and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+      - name: Compile platform source
+        run: python -m compileall -q noetrium_platform noetrium components orchestration
+      - name: Smoke-test installed public surface
+        run: |
+          python - <<'PYCODE'
+          import noetrium
+          import noetrium_platform
+          assert tuple(noetrium.__all__) == ("NoetriumUnit", "run")
+          assert callable(noetrium.run)
+          unit = noetrium.NoetriumUnit.make_structure("ci-smoke", traits=("research.portfolio",))
+          assert unit.unit_id == "ci-smoke"
+          assert noetrium_platform is not None
+          PYCODE
+      - name: Verify current Machine persistence smoke
+        run: |
+          python -m pytest -q \
+            tests/test_machine_journal_parallel_durability_v1.py \
+            tests/test_machine_journal_recovery_anchor_v1.py \
+            tests/test_machine_snapshot_v1.py
+
+  governance:
+    name: governance / contracts / architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install package and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+      - name: Verify platform / research-workspace isolation
+        run: noetrium dev boundary audit . --skip-release-manifest
+      - name: Verify public contracts
+        run: python scripts/public_contract_audit.py
+      - name: Verify canonical workflow policy
+        run: python scripts/canonical_workflow_policy_gate.py
+      - name: Verify generated projections
+        run: |
+          python scripts/update_generated_docs.py --check
+          python scripts/sync_architecture_maps.py --check
+          python scripts/sync_platform_architecture_map.py --check
+      - name: Verify architecture authority
+        run: noetrium dev architecture gate
+      - name: Verify README localization
+        run: python scripts/check_readme_i18n.py
+      - name: Run no-degradation audit
+        run: python scripts/no_degradation_audit.py
+
+  assurance:
+    name: qualified Linux release
+    needs: [quality, governance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install release tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[release]"
+      - name: Prepare exact Linux release source cut
+        run: noetrium dev release prepare --output "$RUNNER_TEMP/platform-release" --json
+      - name: Build qualified Linux Docker release
+        run: noetrium dev release build --output "$RUNNER_TEMP/platform-release" --json
+      - name: Re-verify qualified Linux Docker release
+        run: noetrium dev release verify --output "$RUNNER_TEMP/platform-release" --json
+      - name: Validate deployment entrypoint syntax
+        run: sh -n deploy/noetrium deploy/noetrium-backend.sh deploy/build-environments.sh
+      - name: Validate environment profile authority
+        env:
+          NOETRIUM_BUILD_WORK_ROOT: ${{ runner.temp }}/noetrium-environment-images
+        run: sh deploy/build-environments.sh validate
+      - name: Upload qualified release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: noetrium-release-${{ github.sha }}
+          if-no-files-found: error
+          path: ${{ runner.temp }}/platform-release/**

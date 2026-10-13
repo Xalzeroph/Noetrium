@@ -1,0 +1,180 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "webagent_r1_emnlp2025",
+  "package_digest": "c85da321d5610def04e490185addffa420ebe9ac648389718f052cfc6f8e13df",
+  "definition_digest": "1c0900ea458de605d79dd5472124cd147513faf8dfb08c58cddf20fdbf6eecd8",
+  "source_registry_digest": "812fdc270db400cca7ccc3e29b724254c6f9efde819ff211c6f44a76a574f9e6",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "webagent-r1",
+    "title": "WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning",
+    "paper_uri": "https://aclanthology.org/2025.emnlp-main.401/",
+    "year": 2025,
+    "paper_revision": "EMNLP 2025 proceedings",
+    "identity_digest": "e556a098df5e94265a44e2f33ac07de77e4a452b1fd523029ed2955d9caea766"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "emnlp",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "webagent_r1"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "webarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "behavior-cloning warm-up",
+      "end-to-end multi-turn web-agent reinforcement learning",
+      "interaction-count test-time scaling",
+      "thinking-based web prompting"
+    ],
+    "platform_owned": [
+      "NoetriumGraph and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [
+      "https://github.com/weizhepei/WebAgent-R1"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2025.emnlp-main.401/"
+    ],
+    "catalog_digest": "c484841b842d83b03c5245981d6dd2e41f7cc5e14481eeba98e0d0810d485425"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "emnlp_2025",
+      "kind": "paper_provenance",
+      "venue": "EMNLP",
+      "year": 2025,
+      "publication_id": "webagent-r1-emnlp-2025",
+      "publication_uri": "https://aclanthology.org/2025.emnlp-main.401/",
+      "revision": "EMNLP 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "d0d8b233b4c0babd068dea18f3bb97800c8a6bc4e4d15e67b8eade6070cee0db"
+    },
+    {
+      "lane_id": "official_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/weizhepei/WebAgent-R1",
+      "commit": "354f5c18d4931941165ca3399b5a64e816b3295f",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "5569596e3352d787ea13a50e82394a58bcb0937b21cd12d5e7cebb056a28162f"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/webagent_r1_emnlp2025/benchmark.py",
+      "declaration_digest": "720084a3ae76079ba9d76622fb9494daeb87e3d4721e83d7f91938558157e363",
+      "content_sha256": "498f586df49ff4bd3aee3d9b73dd8445304593bab5ee33ab46c70b226c2ee747"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/webagent_r1_emnlp2025/fidelity.py",
+      "declaration_digest": "5755a5b6da1dbdc6c99116a547d9c9899481c395f0f4b8bc5527f9f0e5fd5e7d",
+      "content_sha256": "5525213acba9a5c2a03e4b5ed5534fd83441cc4bde53b2ac6d0c3355291dce5c"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/webagent_r1_emnlp2025/program.py",
+      "declaration_digest": "800b1ea1704f7c3f142c8355148e364636c67a55a737e2a5363dfe5312b83da9",
+      "content_sha256": "0bb91cc77fbb092f6e9d9dbd97890a70fbdc2b32522812126dd3be47b37153c4"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/webagent_r1_emnlp2025/study.py",
+      "declaration_digest": "6650fa9256f1d61994dfa3c76b44b431b491e587fe2bc01b50d743c267a5633f",
+      "content_sha256": "cf5b0b8fb6315c8d21f9eee3af1ec9bc5ec0068ef5c830cd2959e697ebb6e583"
+    }
+  ],
+  "primary_executable": "research/reproductions/webagent_r1_emnlp2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "webagent_r1_qwen3b",
+      "metric_id": "task_success_rate_percent",
+      "value": 33.9,
+      "qualifiers": {
+        "benchmark": "webarena-lite",
+        "base_percent": 6.1,
+        "model": "qwen-2.5-3b",
+        "source": "EMNLP-2025 abstract"
+      },
+      "claim_digest": "4eb7a81ffc0fb9ed041dcb1b665489232aa112235498e342b3b3b2a28fba0f55"
+    },
+    {
+      "claim_id": "webagent_r1_llama8b",
+      "metric_id": "task_success_rate_percent",
+      "value": 44.8,
+      "qualifiers": {
+        "benchmark": "webarena-lite",
+        "base_percent": 8.5,
+        "model": "llama-3.1-8b",
+        "source": "EMNLP-2025 abstract"
+      },
+      "claim_digest": "46fb6cf7b3893d7faa56697d6c48c5830bba3acf4752fc0c66987f65f28cb7cc"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "base_web_policies",
+      "description": "Base Qwen-2.5-3B and Llama-3.1-8B web policies before WebAgent-R1 training",
+      "qualifiers": {
+        "source": "EMNLP-2025 evaluation"
+      },
+      "baseline_digest": "fcf39d897477a1ed6ea58fa184dac21cd0e55cd96af1e0ff07d54975c38cc313"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "The exact WebArena-Lite subset must be frozen as a named split over canonical WebArena.",
+    "Matched training requires behavior-cloning data, RL reward/configuration and exact model checkpoints."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "webagent_r1_emnlp2025",
+    "program_digest": "52704ef3fbf1d1681bf436000256656936479dbe8162280d21632f384fa8bd14",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'webarena' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_webagent_r1_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

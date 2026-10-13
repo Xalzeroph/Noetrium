@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "sg3d",
+  "benchmark": {
+    "benchmark_id": "sg3d",
+    "title": "SG3D",
+    "source_uri": "https://github.com/MrZihan/D3D-VLP",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

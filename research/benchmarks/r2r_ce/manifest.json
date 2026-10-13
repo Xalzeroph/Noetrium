@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "r2r_ce",
+  "benchmark": {
+    "benchmark_id": "r2r-ce",
+    "title": "R2R-CE",
+    "source_uri": "https://github.com/facebookresearch/habitat-lab",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

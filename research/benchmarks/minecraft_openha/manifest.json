@@ -1,0 +1,18 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "minecraft_openha",
+  "benchmark": {
+    "benchmark_id": "minecraft-openha",
+    "title": "OpenHA Minecraft",
+    "source_uri": "https://github.com/CraftJarvis/OpenHA",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "game_state"
+    ]
+  }
+}

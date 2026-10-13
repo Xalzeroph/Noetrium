@@ -1,0 +1,15 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "srdd",
+  "benchmark": {
+    "benchmark_id": "srdd",
+    "title": "Software Requirement Description Dataset",
+    "source_uri": "https://github.com/OpenBMB/ChatDev",
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text"
+    ]
+  }
+}

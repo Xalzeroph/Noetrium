@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "aitw",
+  "benchmark": {
+    "benchmark_id": "aitw",
+    "title": "Android in the Wild",
+    "source_uri": "https://github.com/google-research/google-research/tree/master/android_in_the_wild",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

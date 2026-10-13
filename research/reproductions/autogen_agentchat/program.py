@@ -1,0 +1,398 @@
+from __future__ import annotations
+
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
+from .fidelity import AUTOGEN_AGENTCHAT_FIDELITY
+
+_MANAGER_AGENT_ID = "autogen.group-manager"
+
+
+def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
+    if not isinstance(value, str) or (not allow_empty and not value.strip()):
+        raise ValueError(f"AutoGen {field} must be text")
+    return value
+
+
+def _agent_ids(value: object) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes, bytearray)) or not isinstance(value, Sequence):
+        raise ValueError("AutoGen GroupChat requires a participant sequence")
+    participants = tuple(value)
+    if len(participants) < 2:
+        raise ValueError("AutoGen GroupChat requires at least two participant ids")
+    if any(type(row) is not str or not row.strip() for row in participants):
+        raise ValueError("AutoGen participant ids must be canonical non-empty text")
+    if len(participants) != len(set(participants)):
+        raise ValueError("AutoGen participant ids must be unique")
+    if _MANAGER_AGENT_ID in participants:
+        raise ValueError("AutoGen participant id collides with group manager")
+    return participants
+
+
+def _transcript(value: object) -> tuple[JsonObject, ...]:
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
+        raise TypeError("AutoGen transcript must be a sequence")
+    rows: list[JsonObject] = []
+    for row in value:
+        if not isinstance(row, Mapping):
+            raise TypeError("AutoGen transcript rows must be mappings")
+        speaker = _text(row.get("speaker"), "transcript speaker")
+        content = _text(row.get("content"), "transcript content", allow_empty=True)
+        recipients = row.get("recipients", ())
+        if type(recipients) is not tuple or any(
+            type(item) is not str or not item.strip() for item in recipients
+        ):
+            raise TypeError("AutoGen transcript recipients must be text tuple")
+        round_index = row.get("round")
+        if type(round_index) is not int or round_index <= 0:
+            raise ValueError("AutoGen transcript round must be positive")
+        rows.append(
+            freeze_json(
+                {
+                    "speaker": speaker,
+                    "content": content,
+                    "recipients": recipients,
+                    "round": round_index,
+                }
+            )
+        )
+    return tuple(rows)
+
+
+def autogen_groupchat_initial_state(
+    *,
+    participant_ids: tuple[str, ...],
+    task_instruction: str,
+) -> JsonObject:
+    participants = _agent_ids(participant_ids)
+    return {
+        "participants": participants,
+        "task_instruction": _text(task_instruction, "task instruction"),
+        "transcript": (),
+        "round": 0,
+        "last_speaker": "",
+        "current_speaker": "",
+        "speaker_fallback_count": 0,
+        "interrupt_count": 0,
+        "terminated": False,
+        "last_message": "",
+    }
+
+
+def _manager_view(request: MethodCall) -> JsonObject:
+    return {
+        "task_instruction": _text(
+            request.state.get("task_instruction"),
+            "task instruction",
+        ),
+        "participants": _agent_ids(request.state.get("participants")),
+        "transcript": _transcript(request.state.get("transcript", ())),
+        "round": request.state.get("round", 0),
+        "last_speaker": _text(
+            request.state.get("last_speaker", ""),
+            "last speaker",
+            allow_empty=True,
+        ),
+    }
+
+
+def _participant_view(request: MethodCall) -> JsonObject:
+    speaker = _text(request.state.get("current_speaker"), "current speaker")
+    return {
+        "participant_id": speaker,
+        "task_instruction": _text(
+            request.state.get("task_instruction"),
+            "task instruction",
+        ),
+        "transcript": _transcript(request.state.get("transcript", ())),
+        "round": request.state.get("round", 0),
+    }
+
+
+def _current_speaker_target(request: MethodCall) -> str:
+    return _text(request.state.get("current_speaker"), "current speaker")
+
+
+def _proposal(value: JsonValue) -> str | None:
+    if not isinstance(value, Mapping):
+        return None
+    speaker = value.get("speaker")
+    return speaker if isinstance(speaker, str) and speaker.strip() else None
+
+
+def _fallback_speaker(
+    participants: tuple[str, ...],
+    last_speaker: str,
+) -> str:
+    if last_speaker not in participants:
+        return participants[0]
+    index = participants.index(last_speaker)
+    return participants[(index + 1) % len(participants)]
+
+
+def _participant_output(value: JsonValue) -> tuple[str, bool, bool]:
+    if isinstance(value, str):
+        return value, False, False
+    if not isinstance(value, Mapping):
+        raise TypeError("AutoGen participant result must be text or mapping")
+    content = _text(value.get("content"), "participant content", allow_empty=True)
+    terminate = value.get("terminate") is True
+    admin_interrupt = value.get("admin_interrupt") is True
+    return content, terminate, admin_interrupt
+
+
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    transcript = _transcript(request.state.get("transcript", ()))
+    round_count = request.state.get("round", 0)
+    if type(round_count) is not int or round_count < 0:
+        raise ValueError("AutoGen round must be non-negative")
+    return dict(
+        value={
+            "terminated": request.state.get("terminated") is True,
+            "round_count": round_count,
+            "message_count": len(transcript),
+            "speaker_fallback_count": request.state.get(
+                "speaker_fallback_count",
+                0,
+            ),
+            "interrupt_count": request.state.get("interrupt_count", 0),
+            "last_speaker": request.state.get("last_speaker", ""),
+            "transcript": transcript,
+        }
+    )
+
+
+_AUTOGEN_NODE_CONFIG_KEY = "autogen.groupchat"
+
+
+def _groupchat_node_config(request: MethodCall) -> tuple[tuple[str, ...], int]:
+    raw = request.configuration.get(_AUTOGEN_NODE_CONFIG_KEY)
+    if not isinstance(raw, Mapping):
+        raise RuntimeError("AutoGen node configuration is missing")
+    participants = _agent_ids(raw.get("participants"))
+    max_round = raw.get("max_round")
+    if type(max_round) is not int or max_round < 1:
+        raise RuntimeError("AutoGen max_round node configuration is invalid")
+    return participants, max_round
+
+
+def _validate_topology(request: MethodCall) -> MethodNodeResult:
+    participants, _ = _groupchat_node_config(request)
+    state_participants = _agent_ids(request.state.get("participants"))
+    if state_participants != participants:
+        raise ValueError(
+            "AutoGen initial participant topology does not match program closure"
+        )
+    return dict(value={"participants": participants})
+
+
+def _resolve_speaker(request: MethodCall) -> MethodNodeResult:
+    participants, _ = _groupchat_node_config(request)
+    state_participants = _agent_ids(request.state.get("participants"))
+    if state_participants != participants:
+        raise ValueError("AutoGen participant topology drift")
+    proposed = _proposal(request.previous_value)
+    last = _text(
+        request.state.get("last_speaker", ""),
+        "last speaker",
+        allow_empty=True,
+    )
+    fallback = proposed not in participants
+    selected = _fallback_speaker(participants, last) if fallback else proposed
+    assert selected is not None
+    fallback_count = request.state.get("speaker_fallback_count", 0)
+    if type(fallback_count) is not int or fallback_count < 0:
+        raise ValueError("AutoGen speaker_fallback_count must be non-negative")
+    return dict(
+        value={"speaker": selected, "fallback": fallback},
+        state_update={
+            "current_speaker": selected,
+            "speaker_fallback_count": fallback_count + (1 if fallback else 0),
+        },
+    )
+
+
+def _record_message(request: MethodCall) -> MethodNodeResult:
+    participants, max_round = _groupchat_node_config(request)
+    speaker = _text(request.state.get("current_speaker"), "current speaker")
+    if speaker not in participants:
+        raise ValueError("AutoGen current speaker escaped participant closure")
+    content, terminate, admin_interrupt = _participant_output(request.previous_value)
+    transcript = _transcript(request.state.get("transcript", ()))
+    current_round = request.state.get("round", 0)
+    if type(current_round) is not int or current_round < 0:
+        raise ValueError("AutoGen round must be non-negative")
+    next_round = current_round + 1
+    recipients = tuple(row for row in participants if row != speaker)
+    row: JsonObject = {
+        "speaker": speaker,
+        "content": content,
+        "recipients": recipients,
+        "round": next_round,
+    }
+    terminal = terminate or next_round >= max_round
+    interrupts = request.state.get("interrupt_count", 0)
+    if type(interrupts) is not int or interrupts < 0:
+        raise ValueError("AutoGen interrupt_count must be non-negative")
+    next_node = (
+        "return"
+        if terminal
+        else "admin_interrupt"
+        if admin_interrupt
+        else "manager"
+    )
+    return dict(
+        value={
+            "speaker": speaker,
+            "recipients": recipients,
+            "round": next_round,
+            "terminate": terminate,
+            "admin_interrupt": admin_interrupt,
+        },
+        state_update={
+            "transcript": (*transcript, row),
+            "round": next_round,
+            "last_speaker": speaker,
+            "current_speaker": "",
+            "last_message": content,
+            "terminated": terminate,
+            "interrupt_count": interrupts + (1 if admin_interrupt else 0),
+        },
+        next_node=next_node,
+        checkpoint=True,
+        checkpoint_value={
+            "round": next_round,
+            "last_speaker": speaker,
+            "message_count": len(transcript) + 1,
+        },
+    )
+
+
+def build_autogen_groupchat_method_program(method,
+    participant_ids: tuple[str, ...],
+) -> None:
+    participants = _agent_ids(participant_ids)
+    fidelity = AUTOGEN_AGENTCHAT_FIDELITY
+
+
+
+
+    configuration: JsonObject = {
+        "source_commit": fidelity.audited_commit,
+        "participant_ids": participants,
+        "groupchat_default_max_round": fidelity.groupchat_default_max_round,
+        "broadcast_excludes_speaker": fidelity.groupchat_broadcast_excludes_speaker,
+        "speaker_selected_from_conversation": fidelity.next_speaker_selected_from_conversation,
+        "speaker_fallback_round_robin": (
+            fidelity.invalid_or_failed_speaker_selection_falls_back_round_robin
+        ),
+        "admin_can_take_over_on_interrupt": fidelity.admin_can_take_over_on_interrupt,
+        "user_proxy_default_human_input_mode": fidelity.user_proxy_default_human_input_mode,
+    }
+
+    max_round = fidelity.groupchat_default_max_round
+    node_configuration: JsonObject = {
+        _AUTOGEN_NODE_CONFIG_KEY: {
+            "participants": participants,
+            "max_round": max_round,
+        }
+    }
+    builder = method
+    builder.flow.compute(
+        "validate_topology",
+        "autogen.groupchat.topology.validate",
+        _validate_topology,
+        ("manager",),
+        configuration=node_configuration,
+    )
+    builder.flow.agent(
+        "manager",
+        "autogen.groupchat.select-speaker",
+        _MANAGER_AGENT_ID,
+        ("resolve_speaker",),
+        view=_manager_view,
+        max_visits=max_round,
+    )
+    builder.flow.compute(
+        "resolve_speaker",
+        "autogen.groupchat.resolve-speaker",
+        _resolve_speaker,
+        ("participant",),
+        max_visits=max_round,
+        configuration=node_configuration,
+    )
+    builder.flow.dynamic_agent(
+        "participant",
+        "autogen.groupchat.participant-turn",
+        participants,
+        _current_speaker_target,
+        ("record_message",),
+        view=_participant_view,
+        max_visits=max_round,
+    )
+    builder.flow.compute(
+        "record_message",
+        "autogen.groupchat.record-message",
+        _record_message,
+        ("manager", "admin_interrupt", "return"),
+        max_visits=max_round,
+        configuration=node_configuration,
+    )
+    builder.flow.interrupt(
+        "admin_interrupt",
+        ("manager",),
+        max_visits=max_round,
+    )
+    builder.flow.finish("return", "autogen.groupchat.result", _return_result)
+    builder.contract.configure(configuration)
+    builder.contract.policy(
+        execution='checkpointable',
+        evidence=(
+            "autogen.groupchat.transcript",
+            "autogen.groupchat.delivery",
+            "autogen.groupchat.interrupt",
+        ),
+        metrics=(
+            "task_success",
+            "round_count",
+            "message_count",
+            "speaker_fallback_count",
+            "interrupt_count",
+        ),
+        artifacts=("groupchat_transcript",),
+    )
+    return builder
+
+
+METHOD_CONFIGURER = build_autogen_groupchat_method_program
+METHOD_ENTRYPOINT = "validate_topology"
+METHOD_CONFIGURER_ARGS = (("agent1", "agent2", "user_proxy"),)
+METHOD_CONFIGURER_KWARGS = {}
+
+
+__all__ = [
+    'autogen_groupchat_initial_state',
+    'build_autogen_groupchat_method_program',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
+]
+
+METHOD_SPEC = {"method_id": 'autogen', "version": "paper-protocol", "semantic_contract": 'autogen' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

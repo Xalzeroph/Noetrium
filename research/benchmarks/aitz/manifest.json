@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "aitz",
+  "benchmark": {
+    "benchmark_id": "aitz",
+    "title": "Android-In-The-Zoo",
+    "source_uri": "https://github.com/IMNearth/Android-In-The-Zoo",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

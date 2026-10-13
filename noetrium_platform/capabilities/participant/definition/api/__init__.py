@@ -1,0 +1,14 @@
+"""Participant implementation-definition contracts."""
+
+from noetrium_platform.capabilities.participant.core.api import (
+    ParticipantConfigurationArtifact,
+)
+from .contracts import ParticipantImplementationFactory, RegisteredParticipantImplementation
+from .ports import ParticipantImplementationCatalogPort
+
+__all__ = [
+    "ParticipantConfigurationArtifact",
+    "ParticipantImplementationCatalogPort",
+    "ParticipantImplementationFactory",
+    "RegisteredParticipantImplementation",
+]

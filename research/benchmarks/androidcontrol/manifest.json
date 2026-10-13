@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "androidcontrol",
+  "benchmark": {
+    "benchmark_id": "androidcontrol",
+    "title": "AndroidControl",
+    "source_uri": "https://github.com/google-research/google-research/tree/master/android_control",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

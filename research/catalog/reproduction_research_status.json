@@ -1,0 +1,2706 @@
+{
+  "schema": "noetrium.reproduction-research-status.v4",
+  "authority": "generated_from_typed_reproduction_definitions",
+  "package_count": 100,
+  "state_counts": {
+    "benchmark_authority_required": 85,
+    "execution_authority_required": 10,
+    "not_executable": 5
+  },
+  "requirement_kind_counts": {
+    "capability_closure": 2,
+    "capability_id": 1
+  },
+  "packages": [
+    {
+      "package": "adacm2_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "adacm2_memory",
+      "program_digest": "3a162430dcbdb04f888f44288a23e9d86e7dd0715b4536fa038ab89a4ac723d4",
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'lvu' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "adaptagent_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "adaptagent_acl2025",
+      "program_digest": "7c9892fef1581fb8925dce196140948018dc5d583f25b096d1091485fcba105d",
+      "benchmark_ids": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_adaptagent_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "adas_meta_agent_search",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "adas_meta_agent_search",
+      "program_digest": "225a163585a2efd9a2f9e69f49da7506fbef77c7c8c56e5590f5a806b4089853",
+      "benchmark_ids": [
+        "mgsm"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mgsm' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "aflow",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "aflow",
+      "program_digest": "2c7759c2a9cee288fb53d2eb56c2297ac90f986e58bfc5d0f0f4828deb9496ad",
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'humaneval' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "agemem_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "agemem_acl2026",
+      "program_digest": "bd79e79a7ee91433c90df3318869ee2930b925b436503e8115addf5cdbd2f2f6",
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "babyai",
+        "hotpotqa",
+        "scienceworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "agent_q_surrogate",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "agent_q_surrogate",
+      "program_digest": "f6b54f0d80fc42262ce2ff454fa310b403d89825985f4f2127b3e8afd4a71e02",
+      "benchmark_ids": [
+        "webshop",
+        "webvoyager"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'webshop' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "agent_s3",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "agent_s3",
+      "program_digest": "1da49afc55fa5632fc03de63bffd1ace015509ddc05e74dc16a6638a76e80546",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_agent_s3_osworld_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "agentless_swebench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "agentless_swebench",
+      "program_digest": "75298e37e2129ebbd3319e736d251b9a143deaddfa61fb5d8d56612d667b1c69",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_agentless_swebench_lite_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "agentsquare",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "agentsquare",
+      "program_digest": "032f280ac6e526beef298301701ca585c48971fceda4b41d603f48bf765bc74a",
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "m3tooleval",
+        "scienceworld",
+        "travelplanner",
+        "webshop"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority matching revision='agentsquare@8f5b3fe5d8a32f9b59d20370823bef2a2c86928c:agentboard-pddl' splits=('released_eval_60',)"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ai_scientist_v1",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "benchmark_authority": {
+        "state": "not_applicable",
+        "selection_digests": [],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "not_applicable",
+      "execution_authority_state": "not_applicable",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ai_scientist_v2",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "benchmark_authority": {
+        "state": "not_applicable",
+        "selection_digests": [],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "not_applicable",
+      "execution_authority_state": "not_applicable",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "astranav_memory_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "astranav_memory_cvpr2026",
+      "program_digest": "d59cd30c3b310d5ce15e0401ff575b5b70ad4cb4c07bb159a05bcf24aa8ca282",
+      "benchmark_ids": [
+        "goat-bench",
+        "hm3d-ovon"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'goat-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "autogen_agentchat",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "autogen_agentchat",
+      "program_digest": "762998e909d1ed52e6971c59592d13ebd834d56e918e13086db23dbc716c6dbc",
+      "benchmark_ids": [
+        "multiagentbench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'multiagentbench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_autogen_multiagentbench_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "camel_role_playing",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "camel_role_playing",
+      "program_digest": "4276fde740c614c142015ab02beeb79fb8b7f5cdc1a42160d77027d77eee5c5d",
+      "benchmark_ids": [
+        "camel-ai-society"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'camel-ai-society' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "cer_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "cer_acl2025",
+      "program_digest": "933fd9d9d6d40e69fc2768095ea758ea5ef2bf38fa2b2b905fea9244be78702b",
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'visualwebarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_contextual_experience_replay_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ces_gui_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ces_gui_cvpr2026",
+      "program_digest": "73f43c8c84016eba20bf51a8b4e40712d65854a359b9a282d23f34e92e7a3307",
+      "benchmark_ids": [
+        "aitz",
+        "amex",
+        "gui-odyssey"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'aitz' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "chain_of_thought_gsm8k",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "chain_of_thought_gsm8k",
+      "program_digest": "d0e12c763b093fd6ac1245457982bf63f09ddf97b79c05285b950c45ff78d44a",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "chatdev_v1",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "chatdev_v1",
+      "program_digest": "4edb3f22c2f4bd6543b8bed52b0eb1223cbfbcad095623d04b8bd9697a9dc79d",
+      "benchmark_ids": [
+        "srdd"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'srdd' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "code_as_policies",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "code_as_policies",
+      "program_digest": "77a535b10115cd107a14e8c375b29ffc5b5536701d7a95357cc201348e2b6307",
+      "benchmark_ids": [
+        "robocodegen-37"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "2b7cbc9fb977c7d1c11c2b888f882696b04e284f4100259eceeb262b7d5ca4a8"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "cogagent",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "cogagent",
+      "program_digest": "97959764d77fa1c8c85359fd2601d81b2b4fa7b82cb543aa6409e997cb58b7d1",
+      "benchmark_ids": [
+        "mind2web"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_cogagent_mind2web_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "crossha_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "crossha_cvpr2026",
+      "program_digest": "b51d43aaa00807559cf9cbc01322857224ec1d114a35a85306d1a2e22e1b2663",
+      "benchmark_ids": [
+        "minecraft-openha"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'minecraft-openha' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "d3d_vlp_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "d3d_vlp_cvpr2026",
+      "program_digest": "f57a06c555ca7103e859b0d64321bab948b5944da8a6a5570e9ed761b434d909",
+      "benchmark_ids": [
+        "hm3d-ovon",
+        "navrag-ce",
+        "r2r-ce",
+        "reverie-ce",
+        "sg3d"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'hm3d-ovon' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "dars_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "dars_acl2025",
+      "program_digest": "6b45e1f1afbbccd0c90308834696e0d363bc41a70b53c42972856b864bbe0883",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_dars_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "dejavu_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "dejavu_cvpr2026",
+      "program_digest": "327ba47647edf2068eaed1faa95975ce4e8dcea1dd1db857fd245b414cd03a7b",
+      "benchmark_ids": [
+        "libero"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'libero' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "deps_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "deps_minecraft",
+      "program_digest": "037cab67f496e6efa9b3aef2bd6e0c983c41de348022748238ece8cc24cdc452",
+      "benchmark_ids": [
+        "deps-minecraft-70"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "04cd71905203d63a814a0e5bba4c90bc27dad64a42a31a0fea25f8b1824b8fac"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "drvideo",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "drvideo",
+      "program_digest": "91e441064acaf6eb22d78c468b1496a301cafa680a211edc1b7d4e2944344a06",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "eaglet_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "eaglet_acl2026",
+      "program_digest": "5b88317285f0ce6352b1b775e9de49f380b363accd465a6cb426f94c856b2633",
+      "benchmark_ids": [
+        "alfworld",
+        "scienceworld",
+        "webshop"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "echotrail_gui_cvprf2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "echotrail_gui_cvprf2026",
+      "program_digest": "5704fcd1399b71262658af4617bbcede94153046ed3ce106f9c39493e7ac017e",
+      "benchmark_ids": [
+        "androidlab",
+        "androidworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'androidlab' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ego2web_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ego2web_cvpr2026",
+      "program_digest": "0d560c0d1b059ef01de231ffc9a50de23b0acd6a8b3f9340dacd184215e67632",
+      "benchmark_ids": [
+        "ego2web"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'ego2web' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "embodied_videoagent_iccv2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "embodied_videoagent_iccv2025",
+      "program_digest": "c4792e670864cd74bf7ff25e8d41d1fc5d91569acd7586761f29289fadf9ce58",
+      "benchmark_ids": [
+        "ego4d-vq3d",
+        "envqa",
+        "open-eqa"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'ego4d-vq3d' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_embodied_videoagent_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "exact_vwa",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "exact_vwa",
+      "program_digest": "773dc9a271b197c8d4d0e9e1a86fb69db3a864170f3eb147cdfaef6871330327",
+      "benchmark_ids": [
+        "osworld",
+        "visualwebarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "flash_vstream_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "flash_vstream_memory",
+      "program_digest": "7b1580089a2b969929bd145d7eaed69f51e64e0efb33194a4ec9c3a3ca194885",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "flow_modularized_agentic_workflow",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "flow_modularized_agentic_workflow",
+      "program_digest": "5b57ba983d052ce85901d38a4374be8bcfa9a56dc7758df2aa0d107d0eb9cc7e",
+      "benchmark_ids": [
+        "flow-practical-tasks"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "d56ab5f4739ca8fdc68f19202cf1d2d8456529312fb6f8fe5e618574ac7781b5"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "foreact_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "foreact_cvpr2026",
+      "program_digest": "3cd97aafa8b7feede88d5befe7833915f028a25b55b627889baee95b9c21a8c6",
+      "benchmark_ids": [
+        "foreact-real11"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'foreact-real11' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "gats",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "gats",
+      "program_digest": "45a9a1d673974abda9032f425c641be9bb6bf2596ac13f81c402b4afc250453c",
+      "benchmark_ids": [
+        "gats-synthetic"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'gats-synthetic' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "generative_agents_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "generative_agents_memory",
+      "program_digest": "351c06cb1851e8aed660dece1cee6a5794e1538865cf5fb622f3d7077ec7cdd2",
+      "benchmark_ids": [
+        "generative-agents-smallville"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "58b95086a4c0ea1faec84f6b15511a642a73a6c18a9729b9c6b7b25292cc72cd"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "gorilla_apibench",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "benchmark_authority": {
+        "state": "not_applicable",
+        "selection_digests": [],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "not_applicable",
+      "execution_authority_state": "not_applicable",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "hats_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "hats_cvpr2026",
+      "program_digest": "fb934895e4f6667c1e231cac3498a5b61cff7b3dd41746d52ec78aff90fd6ad1",
+      "benchmark_ids": [
+        "androidworld",
+        "webarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "hugginggpt",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "hugginggpt",
+      "program_digest": "16827fb0b130ff5f0ad55d6508553fd1a7e524904830279cf4fd962e53dc0dd6",
+      "benchmark_ids": [
+        "hugginggpt-paper-tasks"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'hugginggpt-paper-tasks' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_hugginggpt_study"
+        ]
+      },
+      "reproduction_closure_state": "required",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": [
+        {
+          "parameter": "expert_capability_ids",
+          "kind": "capability_closure",
+          "consumers": [
+            "method:build_hugginggpt_method_program",
+            "study:build_hugginggpt_study"
+          ],
+          "requirement_digest": "a505952e039246b74a86ac49b3a34a186eddc66fbe22bc9acc9318334760839c"
+        }
+      ]
+    },
+    {
+      "package": "implement_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "implement_acl2026",
+      "program_digest": "db9a1467f9808559ce1204d8cca86b4e2eab8cff4ba372d8bc137d3c24677d31",
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ishift_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ishift_cvpr2026",
+      "program_digest": "c74c7de7ec48bc6ad9ae85bbacea81e4978dd572e054ec00db76537a0c4c0287",
+      "benchmark_ids": [
+        "aitw",
+        "androidcontrol",
+        "gui-odyssey",
+        "guiact"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'aitw' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "jarvis1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "jarvis1_minecraft",
+      "program_digest": "0b60f4e501b6fc37bb19355d70b77ec2b99a9f8cfedada41297b35fcf5a3ab94",
+      "benchmark_ids": [
+        "jarvis1-offline-185"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "2adadb657d4512e6bcb03db049b5ccec4a9974c49236faffcf32c454a6b63023"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "lats_webshop",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "lats_webshop",
+      "program_digest": "5bc1f8694cbe1c4ec01531770afab9a1b636e694add382e8928064c876f6b36c",
+      "benchmark_ids": [
+        "webshop"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'webshop' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "lits_math500",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "lits_math500",
+      "program_digest": "c54a30da820b8f1cbc5bf8e8aad469410f337d77b6c4fd57c0401e32b408ab84",
+      "benchmark_ids": [
+        "math500"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'math500' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "live_swe_agent",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "live_swe_agent",
+      "program_digest": "12f4796df9f8d06a397365969dd595f9fc19d779ca0363f475d7a7c06413c0ae",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_live_swe_agent_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "lmee_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "lmee_cvpr2026",
+      "program_digest": "5b1fff7be13624aacc1edc147d7317981fccf06c1a71544750fbf8f4761e417c",
+      "benchmark_ids": [
+        "lmee-bench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'lmee-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "lvagent_iccv2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "lvagent_iccv2025",
+      "program_digest": "3ee1e0281709f31c904aa6f673195c0f17bb44a1004df7a99b4b7319dba4fe06",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_lvagent_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ma_lmm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ma_lmm_memory",
+      "program_digest": "38141c243cf0d91e596694f479ea4fda88086c8c6cd679b3e70a86a7eb409ce0",
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'lvu' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "mars_automated_ai_research",
+      "lifecycle": "artifact_only",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [
+        "mle-bench"
+      ],
+      "benchmark_authority": {
+        "state": "not_applicable",
+        "selection_digests": [],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "not_applicable",
+      "execution_authority_state": "not_applicable",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "mem_gallery_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "mem_gallery_acl2026",
+      "program_digest": "3bc64bd64284a39f49fb13a38d073fb4a9101a8a97ce50eb59d2a01514cce338",
+      "benchmark_ids": [
+        "mem-gallery"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mem-gallery' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "memevolve",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "memevolve",
+      "program_digest": "01d39fbafbc3f7458641015981cc744d1d69df33f01a630b700fafab178bd4b4",
+      "benchmark_ids": [
+        "evomembench",
+        "memoryarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'evomembench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_memevolve_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "memgpt_classic",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "memgpt_classic",
+      "program_digest": "a0a46d00252bcdfb5f75e457f364a0f6a985e2836b51c0e6ae6775f08fca7226",
+      "benchmark_ids": [
+        "memoryarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'memoryarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_memgpt_memoryarena_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "metagpt_software_company",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "metagpt_software_company",
+      "program_digest": "7852759fb79873b512084c282c72686574eecdd8ed3ead6d151142b5e55269b8",
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'humaneval' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "minedojo",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "minedojo",
+      "program_digest": "c3b3435e278e70211606fd0ab800e1a4c3ba38e559884ebe1d5bedbd478df27a",
+      "benchmark_ids": [
+        "minedojo"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'minedojo' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "mm_mem_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "mm_mem_acl2026",
+      "program_digest": "cf287cd874532b5b5221e881099401211addbbf69e2063bfdd68df5173931748",
+      "benchmark_ids": [
+        "hd-epic",
+        "mlvu",
+        "video-mme",
+        "vstream-qa"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'hd-epic' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "mmbench_gui_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "mmbench_gui_cvpr2026",
+      "program_digest": "18cefaf43348a034f8123137383c72b3be8280e746556d02b196978e1dfa5e09",
+      "benchmark_ids": [
+        "mmbench-gui"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mmbench-gui' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "motus_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "motus_cvpr2026",
+      "program_digest": "0451b004ddae5da9187baa6751b309184388c1d926e6433c5c2bb8fcc649b0b0",
+      "benchmark_ids": [
+        "motus-realworld",
+        "robotwin2"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'motus-realworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "moviechat_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "moviechat_memory",
+      "program_digest": "93dc9c51700283b0835e321d3512604bc7df429d708ab8c34045a1166f8bdf3c",
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "multiagent_debate",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "multiagent_debate",
+      "program_digest": "f8ed6da755ce1ca12f40f86ca29dc8123245fb2b9e42ace4fb51da970e4954d5",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "openwebvoyager_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "openwebvoyager_acl2025",
+      "program_digest": "3365e586226cf72291df6da3528bc2e30833e047c1b885643f873945f55986c2",
+      "benchmark_ids": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_openwebvoyager_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "optimus1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "optimus1_minecraft",
+      "program_digest": "a7d4fa24e0a9889535a8c89fe669a883b53ca483d1ee3a519f148932831b954a",
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "3bf3ff054f2e70ee0d7185321cd9880fcbe4764325f4858da3206f8255d97c3a"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "optimus2_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "optimus2_minecraft",
+      "program_digest": "56cc6bc51c8a3fa855375d4d0f9fb810eb0091312200db0a294c3fe25d32f268",
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "0e33d954e1914ca7834b0f282deb60c3b12cdfb4b7ea5753f7584472b19f39db"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "optimusvla_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "optimusvla_cvpr2026",
+      "program_digest": "01d25f88e3582cae3095e35c954258f13af8c415ccafc7a7046922e2c341b235",
+      "benchmark_ids": [
+        "calvin",
+        "libero",
+        "robotwin2-hard"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'calvin' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "orbit_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "orbit_acl2026",
+      "program_digest": "44637d96cd46f6bacf2440cb50da981721827255d3dc69aee7aeb2a0bae8a03f",
+      "benchmark_ids": [
+        "embodiedbench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'embodiedbench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "os_symphony_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "os_symphony_acl2026",
+      "program_digest": "1c914042979a8e468d782894bef20e337ca534524ffe60f5c873cedd74a9895d",
+      "benchmark_ids": [
+        "macosarena",
+        "osworld-verified",
+        "windowsagentarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'macosarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "pi05_openpi",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "benchmark_authority": {
+        "state": "not_applicable",
+        "selection_digests": [],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "not_applicable",
+      "execution_authority_state": "not_applicable",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "providellm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "providellm_memory",
+      "program_digest": "60da703203e02f82143cc208196aaeec3b265f43bae74d4c872efd3b2fe09199",
+      "benchmark_ids": [
+        "ego4d-goalstep"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'ego4d-goalstep' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "qlass_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "qlass_alfworld",
+      "program_digest": "57dfd396347241727bd83a33a0de3436fe3a6e403a9d813b834abca99d13611c",
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='qlass@df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9:alfworld-dev' splits=('eval_in_distribution',)"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "r2d2_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "r2d2_acl2025",
+      "program_digest": "882be8966727acfdd8454122a498c2d03669ff33e19d340714e413936928bc62",
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'webarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_r2d2_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "rap_reasoning",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "rap_reasoning",
+      "program_digest": "c2ed75cf749984b0ade0a08f7d467bcf290e0014926e2ab7f14a530d018f0191",
+      "benchmark_ids": [
+        "blocksworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'blocksworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "react_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "react_alfworld",
+      "program_digest": "fc4c061aca51b4023a4f13a00cd52f363f7530bb7dce10fec3644bbadc34fa6a",
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "refact_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "refact_cvpr2026",
+      "program_digest": "48403572d115bdd902813b52e12f77f651165e5d21295deb674b52ae68d1902e",
+      "benchmark_ids": [
+        "groundedvqa"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'groundedvqa' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "reflexion_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "reflexion_alfworld",
+      "program_digest": "42a1e37b767faac6f72c6a29585af6e1794ac5d6bde9738faa0d33b31f737866",
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "rewind_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "rewind_memory",
+      "program_digest": "2ffad1f10758b38d022b3f35c71eff72b15fda4670decd979293c27ea319856b",
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "roboagent_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "roboagent_cvpr2026",
+      "program_digest": "cfc5b1a154092a990b0ce3d4a3b99d7ea40b3c6b0c204f2b2974e2a295336f94",
+      "benchmark_ids": [
+        "alfworld",
+        "embodiedbench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "saycan",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "saycan",
+      "program_digest": "05d31af00d83ed6224db1e545a3072bb3ddfd0f56c0033177d97a2de301863fb",
+      "benchmark_ids": [
+        "saycan-101"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'saycan-101' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "seeclick",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "seeclick",
+      "program_digest": "04e8273e12adffbadcc8cfad9e5bb1b2db22e39f68026771bd8734772c117145",
+      "benchmark_ids": [
+        "screenspot"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'screenspot' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_seeclick_screenspot_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "self_consistency_gsm8k",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "self_consistency_gsm8k",
+      "program_digest": "61472c2cf217552b6ee9eea2e2f70963fb46ba0912dd983a6689827b72656d90",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "self_refine",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "self_refine",
+      "program_digest": "c482201ceeeaf253e6259c03f605d01609096a770ae0e0e6a3bec6cba525ee2f",
+      "benchmark_ids": [
+        "commongen"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'commongen' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_self_refine_commongen_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "star_toggle_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "star_toggle_cvpr2026",
+      "program_digest": "5d19c72ed98354833eefcc8da24bbcc862d3ae7885ed46c83af3047bc1030c7a",
+      "benchmark_ids": [
+        "state-control-benchmark"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'state-control-benchmark' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "steve1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "steve1_minecraft",
+      "program_digest": "dc83fb87495f6c204baa0b2e6c82cbe650b47c8d7855aed7c93cde5ebbbc9f2c",
+      "benchmark_ids": [
+        "steve1-paper-prompts"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "7e4df8993df788bc9889a5f015694b07dc62420f837095a34859268707097089"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "storm_wiki",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "storm_wiki",
+      "program_digest": "f05bdbb106bb2758a4f3f59553569b4f79356099e5464c85b03cabff7b36efdf",
+      "benchmark_ids": [
+        "freshwiki"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'freshwiki' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_storm_freshwiki_study"
+        ]
+      },
+      "reproduction_closure_state": "required",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": [
+        {
+          "parameter": "search_capability_id",
+          "kind": "capability_id",
+          "consumers": [
+            "study:build_storm_freshwiki_study"
+          ],
+          "requirement_digest": "52286be5265c197296585c48aea97c63de1add0fca06e37c537f1e89f057de48"
+        }
+      ]
+    },
+    {
+      "package": "swe_agent_swebench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "swe_agent_swebench",
+      "program_digest": "59780916c14028187665a508fcec5e07cbbfc57a739c9d742500f999f42e3bf7",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_swe_agent_swebench_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "toolformer",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "toolformer",
+      "program_digest": "2d8d898ed0b00d7a574c4f0ab37239b7a91c3e4c7c7e3531db97bfc870feca77",
+      "benchmark_ids": [
+        "toolformer-eval"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'toolformer-eval' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_toolformer_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "toolllm_toolbench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "toolllm_toolbench",
+      "program_digest": "0d5c59a6ff611ba3a19062077862ef94b134e55042d529534b4b693048d2f4be",
+      "benchmark_ids": [
+        "toolbench"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'toolbench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_toolllm_toolbench_study"
+        ]
+      },
+      "reproduction_closure_state": "required",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": [
+        {
+          "parameter": "capability_ids",
+          "kind": "capability_closure",
+          "consumers": [
+            "method:build_toolllm_toolbench_method_program",
+            "study:build_toolllm_toolbench_study"
+          ],
+          "requirement_digest": "5f78e48bb26e9655f491c4d0132fb6f346c78e42583b99bff7f9be01c5942f60"
+        }
+      ]
+    },
+    {
+      "package": "tree_of_thoughts",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "tree_of_thoughts",
+      "program_digest": "ae39d22d37fe2d23d5b760df7610d112b67d1bf6fbdc1666c25af8c938b9965f",
+      "benchmark_ids": [
+        "game24"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'game24' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "tree_search_language_model_agents",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "tree_search_language_model_agents",
+      "program_digest": "f38c97c9c9ea9285924f86f40ffcf84422cbf7929d7a240f8838deb820ae9a72",
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'visualwebarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ui_agile_cvprf2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ui_agile_cvprf2026",
+      "program_digest": "e7c9b4b7df60a25917e92decd503a9e6a52d4ad15758c87e4d1e61c58aae149a",
+      "benchmark_ids": [
+        "androidcontrol",
+        "screenspot-pro",
+        "screenspot-v2"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'androidcontrol' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "ui_tars_desktop_v001",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "ui_tars_desktop_v001",
+      "program_digest": "94446de58b83cefcd1ed792fa5b36afd073b6b05f4a4039c6bfc7ada969e05d5",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ui_tars_osworld_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "vca_video",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "vca_video",
+      "program_digest": "bd0c8e5f0ad5e57d3e9fedcb516a07dc44bd953b457e379c3ca606400c5124cb",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "videoagent_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "videoagent_memory",
+      "program_digest": "7ceae875ea37a1bff818910f5e5c0b4558de3648c5877fade2ecef889b8800f2",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "videoarm_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "videoarm_cvpr2026",
+      "program_digest": "abc75f9c1741b30b5a932a103c48892ae43a446d62ef38c296acf947b112c135",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_videoarm_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "videollamb_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "videollamb_memory",
+      "program_digest": "8cded3f5d1b7c97c5c3516035251d61d21139314b893510c3c3d97ffe025ba10",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "vilomem_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "vilomem_cvpr2026",
+      "program_digest": "2814f154a10fdfa7ab28cd9eed1a155e7c8414978a2e1f19b013bf5edd6af9fa",
+      "benchmark_ids": [
+        "hallusionbench",
+        "mathvision",
+        "mathvista",
+        "mmmu",
+        "mmstar",
+        "realworldqa"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'hallusionbench' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_ablation_matrix",
+          "study:build_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "vima_embodied",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "vima_embodied",
+      "program_digest": "cc0cd10abcbe025bc3143b486b513f3ecbff9bb1a6df34c7b414eb704aa013de",
+      "benchmark_ids": [
+        "vima-bench"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "0d402d991ae4211d8ab184a7030a1ebc8bcf437f438075875e1e0cd94b11da3f"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "voyager_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_authority_required",
+      "program_id": "voyager_minecraft",
+      "program_digest": "eaeac1466dffd84c785be23029913f10db332f2c0d699890e25eba2a53ab5596",
+      "benchmark_ids": [
+        "voyager-minecraft"
+      ],
+      "benchmark_authority": {
+        "state": "closed",
+        "selection_digests": [
+          "3f7944345f5464da9512671d817ac209d6c3553972e0d5bfd4f741b797986746"
+        ],
+        "blockers": []
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": true,
+      "execution_requirements": []
+    },
+    {
+      "package": "watch_learn_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "watch_learn_cvpr2026",
+      "program_digest": "13d46ae00245f2eecca793c4c9c92e59152bb9040213e9210ded02e967349ce5",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_watch_and_learn_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "webagent_r1_emnlp2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "webagent_r1_emnlp2025",
+      "program_digest": "52704ef3fbf1d1681bf436000256656936479dbe8162280d21632f384fa8bd14",
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'webarena' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": true,
+        "consumers": [
+          "study:build_webagent_r1_study"
+        ]
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "webvoyager",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "webvoyager",
+      "program_digest": "3b4d4ad7ddef0244460e1b9a29ffff7ffde4a1622e20abae8026ae08769da686",
+      "benchmark_ids": [
+        "webvoyager"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'webvoyager' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    },
+    {
+      "package": "worldmm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "benchmark_authority_required",
+      "program_id": "worldmm_memory",
+      "program_digest": "23bfb4d0430b486d388db32c0062f2c3d26fe004f9ac290e92528162293b5831",
+      "benchmark_ids": [
+        "egolifeqa"
+      ],
+      "benchmark_authority": {
+        "state": "required",
+        "selection_digests": [],
+        "blockers": [
+          "ReproductionResearchCompileError:benchmark 'egolifeqa' has no exact repository or materialized authority"
+        ]
+      },
+      "benchmark_split_axis": {
+        "required": false,
+        "consumers": []
+      },
+      "reproduction_closure_state": "closed",
+      "execution_authority_state": "required",
+      "materialization_ready": false,
+      "execution_requirements": []
+    }
+  ],
+  "status_digest": "40e18560b18a479d9cb5a3b31949f1678a18e44696968bc6429f79290f48a05e"
+}

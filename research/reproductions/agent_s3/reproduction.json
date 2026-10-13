@@ -1,0 +1,131 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agent_s3",
+  "package_digest": "54e3bccd479b6bd5b9fcb16bc3eaa5cafb3bc625bac0024e1052afcf686266d9",
+  "definition_digest": "7f567e784be8c5cbd4e85afd9096cc0f5920ea85e181195bc4324fa2a2daff10",
+  "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "agent-s3",
+    "title": "The Unreasonable Effectiveness of Scaling Agents for Computer Use",
+    "paper_uri": "https://arxiv.org/abs/2510.02250",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "eec9e68c9deb0e824f96a82309acfb1dda2776c1d58952ecf79ecad43661ea0a"
+  },
+  "catalog": {
+    "domains": [
+      "context-management",
+      "gui-computer-use",
+      "multimodal",
+      "runtime-systems"
+    ],
+    "families": [
+      "computer_use",
+      "gui",
+      "multimodal",
+      "reflection"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "osworld"
+    ],
+    "platform_pressure": [
+      "environment/gui",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "optional bounded code-agent policy",
+      "single-action grounding policy",
+      "single-worker computer-use policy",
+      "trajectory reflection policy"
+    ],
+    "platform_owned": [
+      "GUI environment execution",
+      "controlled code execution",
+      "evidence and telemetry",
+      "model-view projection",
+      "multimodal transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/simular-ai/Agent-S"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "6ce0fc02e34922987fac40aac4ba01a4828135a25bc37de254438b1079b9064a"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/simular-ai/Agent-S",
+      "commit": "2cb57fb5b5cc4798394fab85691d45b7a12391ba",
+      "artifacts": [],
+      "lane_digest": "ab95cc5d3a554eb20fed6139b12c26d1dd5cb309647d3dc64e9ac4d22ced1924"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/agent_s3/fidelity.py",
+      "declaration_digest": "017a691abe5c04c6f3229511ab9102caa8b48b70d041fa28896f56154579ba3e",
+      "content_sha256": "7cb3fa694c61d4c5dbfd03a02945a28d06417a64fd5f45ba17e7a28dc87a971e"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/agent_s3/program.py",
+      "declaration_digest": "76103720ee9c746c9ebf883195e79a167e2188d77ca1002262d8e62fb8d3976c",
+      "content_sha256": "acc08a6f3acf4ec02894b97f732fae815e25394dd24eba6abfa957ad83616d52"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agent_s3/study.py",
+      "declaration_digest": "93bb02007cf71676806203dedf31364771f495a133a17ea6925d7b996e24aad3",
+      "content_sha256": "7cb9182bc93885dee5127158bc146bc16868a4d8ee55f14518394a2b5e41dd51"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/agent_s3/context.py",
+      "declaration_digest": "d3824d6ead68ae369d09897f4e263ffdc5c54ab44803a5aba0768cf56ae681c0",
+      "content_sha256": "eba30886c792231bc51f6ed2e163a55116dfca360b14c5bec339bdfa09692025"
+    }
+  ],
+  "primary_executable": "research/reproductions/agent_s3/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "agent_s3",
+    "program_digest": "1da49afc55fa5632fc03de63bffd1ace015509ddc05e74dc16a6638a76e80546",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_agent_s3_osworld_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mmstar",
+  "benchmark": {
+    "benchmark_id": "mmstar",
+    "title": "MMStar",
+    "source_uri": "https://github.com/MMStar-Benchmark/MMStar",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

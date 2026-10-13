@@ -1,0 +1,235 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "flow_modularized_agentic_workflow",
+  "package_digest": "017e1d40fbbba2c7e9d79ffb8abae592819eabccbdbd33bd1d524f1408779784",
+  "definition_digest": "cc8dd2c12e396a104d32ad65a6cfdbdb605e187fcbc1a720cb46b0fe93f77fa7",
+  "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "flow-modularized-agentic-workflow",
+    "title": "Flow: Modularized Agentic Workflow Automation",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+    "year": 2025,
+    "paper_revision": "ICLR 2025 final paper",
+    "identity_digest": "456472ea62264c2b6f5fbb58b171daeeeac2320684a55192732891d2f048fa56"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "planning-search",
+      "runtime-systems"
+    ],
+    "families": [
+      "aov_graph",
+      "dynamic_workflow",
+      "multi_agent",
+      "parallel_scheduling",
+      "workflow_refinement"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "flow-practical-tasks"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution/machine_program",
+      "execution/scheduling",
+      "execution/workflow",
+      "experimentation/study",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "AOV workflow representation",
+      "dependency-complexity and parallelism candidate selection",
+      "dynamic subtask allocation",
+      "history-conditioned workflow refinement",
+      "lazy wait-for-active-tasks refinement strategy",
+      "subtask completion validation"
+    ],
+    "platform_owned": [
+      "NoetriumGraph execution",
+      "checkpoint and replay",
+      "concurrent child-batch mechanics",
+      "evidence and artifact lineage",
+      "experiment compilation",
+      "journal authority",
+      "model invocation",
+      "nested child ResearchMachine execution"
+    ],
+    "reference_repositories": [
+      "https://github.com/tmllab/2025_ICLR_FLOW"
+    ],
+    "reference_publications": [
+      "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html"
+    ],
+    "catalog_digest": "db852ddd6b64a6912c11ade41677a1bdf131b08dd78c5d150fe181be591ea741"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iclr_2025_final",
+      "kind": "paper_provenance",
+      "venue": "ICLR",
+      "year": 2025,
+      "publication_id": "ba84da6921f3040b74ee163aa7451f53",
+      "publication_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "revision": "ICLR 2025 conference publication",
+      "content_sha256": null,
+      "lane_digest": "33313a85c6903aead8810037c273a7e28a6386d02d472711ca5c29f2f7b50af7"
+    },
+    {
+      "lane_id": "later_official_flow_implementation",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/tmllab/2025_ICLR_FLOW",
+      "commit": "1bbfe1e699e6f35d5d422306c9a5bd637da84759",
+      "artifacts": [
+        "autovalidator.py",
+        "flow.py",
+        "main.py",
+        "pythonvalidator.py",
+        "runner.py",
+        "taskexecuter.py",
+        "textvalidator.py",
+        "workflow.py",
+        "workflowManager.py"
+      ],
+      "lane_digest": "90eb1bd61785a9487524116865eaab08310736c2148f5f6e99b31d9ebe01ea58"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/flow_modularized_agentic_workflow/fidelity.py",
+      "declaration_digest": "7a4844512bb7b8e5cc60fa1a13ceebf4bd03d28b8924119efabe8ea9ac93d110",
+      "content_sha256": "c2d625bad3c0a70b0eecc639e34e9e9a5e502d8ab2e5049c95d39c44982a3b6c"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/flow_modularized_agentic_workflow/program.py",
+      "declaration_digest": "b23853deec72c22470ffc8faa73752f14810502848becd42856eae3632e7b79c",
+      "content_sha256": "63849d7ec1f715d59c3e3a0448a9ef7b34af5dde9bdeb079a058d5570917eb6e"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/flow_modularized_agentic_workflow/study.py",
+      "declaration_digest": "9c20d9d1979920e7438767f0a88f7b5ebb36de9c6e4f90aef1f8205d8c19a663",
+      "content_sha256": "0e25b3bfe103cbf79e2bb670013f372fbfc2530d264eed63d4b960399f9f21e6"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/flow_modularized_agentic_workflow/aov.py",
+      "declaration_digest": "495df6a8f4b8ae1fd3dcce506c39e6d0cb618bd197a9bf0604239b371ea2b270",
+      "content_sha256": "ae7867f8ce13d7c7f868c2211d03b30a7334f0f6067ec38dc424b24dbf5700f4"
+    }
+  ],
+  "primary_executable": "research/reproductions/flow_modularized_agentic_workflow/program.py",
+  "reported_results": [
+    {
+      "claim_id": "flow_three_task_average_success",
+      "metric_id": "task_success_rate_percent",
+      "value": 93.0,
+      "qualifiers": {
+        "tasks": "gobang, latex-beamer, website"
+      },
+      "claim_digest": "c8a7a190049ebede518ab58ef975eae4cc500b6a44b84182f87eb55e36d432a8"
+    },
+    {
+      "claim_id": "flow_three_task_average_human_rating",
+      "metric_id": "human_rating_1_to_4",
+      "value": 3.54,
+      "qualifiers": {
+        "human_participants": "50"
+      },
+      "claim_digest": "652472358705a448f912985bcd80f7d23f8a1e882b168530c973364f8a018a27"
+    },
+    {
+      "claim_id": "flow_gobang_success",
+      "metric_id": "task_success_rate_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "gobang-game-development"
+      },
+      "claim_digest": "cbf527e63d294ecc50518e3aabea88402d2707019e9555ad0cc194db43f00208"
+    },
+    {
+      "claim_id": "flow_latex_success",
+      "metric_id": "task_success_rate_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "latex-beamer-writing"
+      },
+      "claim_digest": "01d71e909e7ed594b26f56ca29ab7db85f8e6ad6b87ebb7ec14e7c177ee948fd"
+    },
+    {
+      "claim_id": "flow_website_success",
+      "metric_id": "task_success_rate_percent",
+      "value": 80.0,
+      "qualifiers": {
+        "task": "website-design"
+      },
+      "claim_digest": "4582bad560166c64582e643d13fc38d42f4c92dd672b080e43d6968a49f6fcf0"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "autogen",
+      "description": "AutoGen multi-agent framework baseline used by the ICLR paper",
+      "qualifiers": {},
+      "baseline_digest": "838845cb94ecc200a53237d7557f8547ef230af4e35aca874d04b5461a004420"
+    },
+    {
+      "baseline_id": "camel",
+      "description": "CAMEL multi-agent framework baseline used by the ICLR paper",
+      "qualifiers": {},
+      "baseline_digest": "194f34ab53d63bc5449e988afed1d91cb46413cc061ff177e2841a17f15c10b7"
+    },
+    {
+      "baseline_id": "metagpt",
+      "description": "MetaGPT multi-agent framework baseline used by the ICLR paper",
+      "qualifiers": {},
+      "baseline_digest": "4f07ae9f7c3c692479e9d171c65f3e860761891c46e25290feb48c4b22da0d1d"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The official repository commit used to freeze executable defaults post-dates the conference publication. The ICLR paper is the semantic authority; later code is used only for explicitly identified runner defaults and implementation details.",
+      "delta_digest": "4ef145a68c9c5a85c20cf882c866a6b314627fa5ea662aee9787abb97e864684"
+    }
+  ],
+  "blockers": [
+    "exact historical GPT-4o-mini and GPT-3.5-Turbo service revisions are not immutable public model artifacts",
+    "the paper reports five trials but does not publish an immutable stochastic seed schedule",
+    "matched human-rating evidence requires the paper's 50-rater assignment and scoring protocol",
+    "matched software/document outputs require frozen execution environments and verifier implementations for all three paper tasks",
+    "no matched ICLR three-task execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "execution_authority_required",
+    "program_id": "flow_modularized_agentic_workflow",
+    "program_digest": "5b57ba983d052ce85901d38a4374be8bcfa9a56dc7758df2aa0d107d0eb9cc7e",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "d56ab5f4739ca8fdc68f19202cf1d2d8456529312fb6f8fe5e618574ac7781b5"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

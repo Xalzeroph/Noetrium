@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "androidworld",
+  "benchmark": {
+    "benchmark_id": "androidworld",
+    "title": "AndroidWorld",
+    "source_uri": "https://github.com/google-research/android_world",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

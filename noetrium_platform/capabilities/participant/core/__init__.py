@@ -1,0 +1,1 @@
+"""participant.core subsystem boundary."""

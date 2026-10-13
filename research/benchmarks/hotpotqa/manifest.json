@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "hotpotqa",
+  "benchmark": {
+    "benchmark_id": "hotpotqa",
+    "title": "HotpotQA",
+    "source_uri": "https://hotpotqa.github.io/",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

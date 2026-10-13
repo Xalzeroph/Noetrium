@@ -1,0 +1,3527 @@
+{
+  "benchmark_id": "mineevolve-long-horizon-70",
+  "native_port": {
+    "owner": "research/benchmarks",
+    "runtime": "noetrium.minecraft-task-setup.v2",
+    "schema": "noetrium.minecraft-benchmark-native-port.v1",
+    "source_benchmark_id": "mineevolve-long-horizon-70",
+    "task_success": "noetrium.minecraft-grounded-task-predicate.v1"
+  },
+  "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081:noetrium-native-v1",
+  "source": {
+    "commit": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+    "repository": "https://github.com/xzw-ustc/MC-MineEvolve.git"
+  },
+  "source_digest": "865f94d797fe0cf562b34fe3a2d354d377a140ea13dab9807be9f95d13b7a7e2",
+  "splits": [
+    {
+      "split_id": "all",
+      "task_ids": [
+        "wooden-00",
+        "wooden-01",
+        "wooden-02",
+        "wooden-03",
+        "wooden-04",
+        "wooden-05",
+        "wooden-06",
+        "wooden-07",
+        "wooden-08",
+        "wooden-09",
+        "wooden-10",
+        "stone-00",
+        "stone-01",
+        "stone-02",
+        "stone-03",
+        "stone-04",
+        "stone-05",
+        "stone-06",
+        "stone-07",
+        "stone-08",
+        "stone-09",
+        "iron-00",
+        "iron-01",
+        "iron-02",
+        "iron-03",
+        "iron-04",
+        "iron-05",
+        "iron-06",
+        "iron-07",
+        "iron-08",
+        "iron-09",
+        "iron-10",
+        "iron-11",
+        "iron-12",
+        "iron-13",
+        "iron-14",
+        "iron-15",
+        "gold-00",
+        "gold-01",
+        "gold-02",
+        "gold-03",
+        "gold-04",
+        "gold-05",
+        "gold-06",
+        "diamond-00",
+        "diamond-01",
+        "diamond-02",
+        "diamond-03",
+        "diamond-04",
+        "diamond-05",
+        "diamond-06",
+        "redstone-00",
+        "redstone-01",
+        "redstone-02",
+        "redstone-03",
+        "redstone-04",
+        "redstone-05",
+        "armor-00",
+        "armor-01",
+        "armor-02",
+        "armor-03",
+        "armor-04",
+        "armor-05",
+        "armor-06",
+        "armor-07",
+        "armor-08",
+        "armor-09",
+        "armor-10",
+        "armor-11",
+        "armor-12"
+      ]
+    },
+    {
+      "split_id": "group-wooden",
+      "task_ids": [
+        "wooden-00",
+        "wooden-01",
+        "wooden-02",
+        "wooden-03",
+        "wooden-04",
+        "wooden-05",
+        "wooden-06",
+        "wooden-07",
+        "wooden-08",
+        "wooden-09",
+        "wooden-10"
+      ]
+    },
+    {
+      "split_id": "group-stone",
+      "task_ids": [
+        "stone-00",
+        "stone-01",
+        "stone-02",
+        "stone-03",
+        "stone-04",
+        "stone-05",
+        "stone-06",
+        "stone-07",
+        "stone-08",
+        "stone-09"
+      ]
+    },
+    {
+      "split_id": "group-iron",
+      "task_ids": [
+        "iron-00",
+        "iron-01",
+        "iron-02",
+        "iron-03",
+        "iron-04",
+        "iron-05",
+        "iron-06",
+        "iron-07",
+        "iron-08",
+        "iron-09",
+        "iron-10",
+        "iron-11",
+        "iron-12",
+        "iron-13",
+        "iron-14",
+        "iron-15"
+      ]
+    },
+    {
+      "split_id": "group-gold",
+      "task_ids": [
+        "gold-00",
+        "gold-01",
+        "gold-02",
+        "gold-03",
+        "gold-04",
+        "gold-05",
+        "gold-06"
+      ]
+    },
+    {
+      "split_id": "group-diamond",
+      "task_ids": [
+        "diamond-00",
+        "diamond-01",
+        "diamond-02",
+        "diamond-03",
+        "diamond-04",
+        "diamond-05",
+        "diamond-06"
+      ]
+    },
+    {
+      "split_id": "group-redstone",
+      "task_ids": [
+        "redstone-00",
+        "redstone-01",
+        "redstone-02",
+        "redstone-03",
+        "redstone-04",
+        "redstone-05"
+      ]
+    },
+    {
+      "split_id": "group-armor",
+      "task_ids": [
+        "armor-00",
+        "armor-01",
+        "armor-02",
+        "armor-03",
+        "armor-04",
+        "armor-05",
+        "armor-06",
+        "armor-07",
+        "armor-08",
+        "armor-09",
+        "armor-10",
+        "armor-11",
+        "armor-12"
+      ]
+    },
+    {
+      "split_id": "ablation-balanced-28",
+      "task_ids": [
+        "armor-10",
+        "armor-07",
+        "armor-03",
+        "armor-09",
+        "diamond-00",
+        "diamond-04",
+        "diamond-03",
+        "diamond-01",
+        "gold-01",
+        "gold-02",
+        "gold-04",
+        "gold-06",
+        "iron-04",
+        "iron-01",
+        "iron-00",
+        "iron-05",
+        "redstone-01",
+        "redstone-03",
+        "redstone-02",
+        "redstone-00",
+        "stone-01",
+        "stone-09",
+        "stone-07",
+        "stone-00",
+        "wooden-10",
+        "wooden-07",
+        "wooden-08",
+        "wooden-05"
+      ]
+    }
+  ],
+  "task_graph": {
+    "edges": []
+  },
+  "task_schema_id": "mineevolve.long_horizon.v1",
+  "tasks": [
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-00"
+        },
+        "family": "wooden",
+        "goal": "Craft a wooden pickaxe",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a wooden pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-00"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:29a56923b87361a4c357f75333b062321a994b9c62781f9101f005abe6b32dfd",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-01"
+        },
+        "family": "wooden",
+        "goal": "Craft a wooden axe",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a wooden axe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-01"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:c3e5a89b6ccd5d82262331b6295469eb8d54d16ef944bcf73ab7bcd4fa43b45f",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-02"
+        },
+        "family": "wooden",
+        "goal": "Craft a wooden shovel",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a wooden shovel",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-02"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:b5d7362ea7448087fe50a6c09f79e2f80d24eee6461b78a3d0b53b6bfd5ef813",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-03"
+        },
+        "family": "wooden",
+        "goal": "Craft a wooden hoe",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a wooden hoe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-03"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:ccf88819f93040a01e4f249832855c163c8a420d9c78f9515cc75dfe2f368f1f",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-04"
+        },
+        "family": "wooden",
+        "goal": "Craft a wooden sword",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a wooden sword",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-04"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:356726cd9591b9b0402dee4569e747c70bf3bcf61002872e353ba690b0187b61",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-05"
+        },
+        "family": "wooden",
+        "goal": "Craft a stick",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stick",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-05"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:86d9087fb1c10021fcd0465e26773b6abbd168e943614bb5ca6ebf86e9a56bc1",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-06"
+        },
+        "family": "wooden",
+        "goal": "Craft a crafting table",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a crafting table",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-06"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:92fd55e415e8f93f7b4f94e8e5e74e09e78c130f0b1dc610491c1c492f872ee7",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-06"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-07"
+        },
+        "family": "wooden",
+        "goal": "Craft an oak plank",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an oak plank",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-07"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:140fc6af089003c04ef444df9ff0eff0947192e36b6204c980fcd6a90488cf4a",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-07"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-08"
+        },
+        "family": "wooden",
+        "goal": "Chop an oak log from a tree",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Chop an oak log from a tree",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-08"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:341702daeef0bbe26010f1a6884786e38780a13f37ff306ce7e9327c8a604a3a",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-08"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-09"
+        },
+        "family": "wooden",
+        "goal": "Collect a sapling from a tree",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Collect a sapling from a tree",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-09"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:68ad8cb8ce1407bb2daa32ed428b8103e417abc125f7d4142df1a5ef4fd4374b",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-09"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=forest",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "forest",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "wooden-10"
+        },
+        "family": "wooden",
+        "goal": "Punch a tree to gather wood without tools",
+        "max_seconds": 120.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Punch a tree to gather wood without tools",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "wooden-10"
+      },
+      "family": "wooden",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:c1486f26b3f52ebb0c649dbac11a53e4917557714f45e2880abf03b8c56af630",
+        "MineEvolve/src/mineevolve/conf/benchmark/wooden.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "wooden-10"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-00"
+        },
+        "family": "stone",
+        "goal": "Craft a stone pickaxe",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stone pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-00"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:0846f61fd1c92e89eda5a4d45bd5523566684108b7e472a544c0fc564c868d1b",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-01"
+        },
+        "family": "stone",
+        "goal": "Craft a stone axe",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stone axe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-01"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:88482f356c0372f174938790c05cc5e1170478ae19781ebcab9387abb9e1599a",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-02"
+        },
+        "family": "stone",
+        "goal": "Craft a stone shovel",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stone shovel",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-02"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:bb7b9e62ea3ed378eb428f3fb5044f56edca23b49a565b8d92bf44690a2419bc",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-03"
+        },
+        "family": "stone",
+        "goal": "Craft a stone hoe",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stone hoe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-03"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:9b2b1f30112a35199e34c42d41192ea1966bbedbe67a27c3846a5f27476d3967",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-04"
+        },
+        "family": "stone",
+        "goal": "Craft a stone sword",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a stone sword",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-04"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:a75fb7f51fbffd8cef99189154764a4fd7c8f8125bf44dc4490486823600a961",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-05"
+        },
+        "family": "stone",
+        "goal": "Craft a furnace",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a furnace",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-05"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:113b9f58f581055dca197003a0ee296be9ebb23622c84634d3341ae631e8c4b0",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-06"
+        },
+        "family": "stone",
+        "goal": "Upgrade a wooden pickaxe to a stone pickaxe",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Upgrade a wooden pickaxe to a stone pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-06"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:d157ef257dc8d12547be63838efb45dffd2ab3fae79b9fcee50c8c4075a6ba2f",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-06"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-07"
+        },
+        "family": "stone",
+        "goal": "Mine cobblestone with a wooden pickaxe",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Mine cobblestone with a wooden pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-07"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:190464d7fb56a4814324199413177b680af3ac21faea12cf34d96184045edc03",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-07"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-08"
+        },
+        "family": "stone",
+        "goal": "Mine stone slab material from a stone outcrop",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Mine stone slab material from a stone outcrop",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-08"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:a232decdb5a3b0c380ca2724ef2b9650cc7b771964a83109835d01e9ac447c86",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-08"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "stone-09"
+        },
+        "family": "stone",
+        "goal": "Mine eight cobblestone blocks for a furnace",
+        "max_seconds": 180.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Mine eight cobblestone blocks for a furnace",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "stone-09"
+      },
+      "family": "stone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:c17d846660437666303a20c4fa11b35d282d5173036674b72a19bacb46696a6f",
+        "MineEvolve/src/mineevolve/conf/benchmark/stone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "stone-09"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-00"
+        },
+        "family": "iron",
+        "goal": "Craft an iron pickaxe",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-00"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:e1cec29309f8ead6fe1b9dc2d4d197e3733cae3e68490451fa81578cb999aad8",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-01"
+        },
+        "family": "iron",
+        "goal": "Craft an iron axe",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron axe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-01"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:1e8f1e02c8e94faf366796698640840110ccc870ca4e60970f573f547fa9acaf",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-02"
+        },
+        "family": "iron",
+        "goal": "Craft an iron shovel",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron shovel",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-02"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:8dcef4e7f42c0810230471261ed42374c91148284b50a12e047467d2268eb5ea",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-03"
+        },
+        "family": "iron",
+        "goal": "Craft an iron hoe",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron hoe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-03"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:0326ac38e2cd259d8d2bace33028f6439168c6982dfedbf89049901b02626df4",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-04"
+        },
+        "family": "iron",
+        "goal": "Craft an iron sword",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron sword",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-04"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:2065d7774193c1952d5096c719f20d5fd0e955927f60241850385bdfcd5f3ecf",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-05"
+        },
+        "family": "iron",
+        "goal": "Craft a bucket",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a bucket",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-05"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:f188662a0e73478e525c42b0a19488d4871f1ee9d8f8058c4e83e310fa9b92e7",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-06"
+        },
+        "family": "iron",
+        "goal": "Craft a hopper",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a hopper",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-06"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:50cac7f6a088a5546e719fabdfcee926432576acea4e93c8251582626def14c9",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-06"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-07"
+        },
+        "family": "iron",
+        "goal": "Craft a rail",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a rail",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-07"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:7c10b79e65205449b84df5b73c2975058f0332e6d13428d0fd03584901262096",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-07"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-08"
+        },
+        "family": "iron",
+        "goal": "Craft shears",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft shears",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-08"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:2550404c73c6dc33b5a7f9490686880f7b551d43f5f8cd9fd9d05d812afb8438",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-08"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-09"
+        },
+        "family": "iron",
+        "goal": "Craft a smithing table",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a smithing table",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-09"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:ac90cb12c29eb7c08b1cae74d35aca8bf5f3f0192d55a875cbde0c76e42de53a",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-09"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-10"
+        },
+        "family": "iron",
+        "goal": "Craft an iron nugget",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron nugget",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-10"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:b978bdc1203b4464cd84c043240f19d7088647295f9393cc16d02f863a6b128d",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-10"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-11"
+        },
+        "family": "iron",
+        "goal": "Craft iron bars",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft iron bars",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-11"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:be4b330e7c850ab7517fa3838961af838d4463de2da6a4e6c912a9d3bd1dd9c6",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-11"
+    },
+    {
+      "content": {
+        "context": "task_type=smelt; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-12"
+        },
+        "family": "iron",
+        "goal": "Smelt iron ore into iron ingot",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Smelt iron ore into iron ingot",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-12"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:ebdbfe9b2a699091f45e76629fa6da9151d8dcd305834b7231accf4da19fc4e8",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-12"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-13"
+        },
+        "family": "iron",
+        "goal": "Dig down to mine iron ore",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Dig down to mine iron ore",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-13"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:475bbe19162ec00170237994ec1faa4ea0df366b9d891c5dcab3fcff6018367e",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-13"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-14"
+        },
+        "family": "iron",
+        "goal": "Mine three iron ore blocks",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Mine three iron ore blocks",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-14"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:3c66278ccc4ef3dfbeba4defaa9e9515241c72012b93b82c8c03e3f72d384c9a",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-14"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "iron-15"
+        },
+        "family": "iron",
+        "goal": "Trade with a villager to obtain an iron ingot",
+        "max_seconds": 1200.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Trade with a villager to obtain an iron ingot",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "iron-15"
+      },
+      "family": "iron",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:d07d6172e6cb962a12c7b6eb61f42fcaec5dc028481b836131c95659a18cb7f5",
+        "MineEvolve/src/mineevolve/conf/benchmark/iron.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "iron-15"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-00"
+        },
+        "family": "gold",
+        "goal": "Craft a golden pickaxe",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-00"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:8cb1465361ef0e0a3051fcedbc4aa7a938598ee858cd9eb7a3596d97510e93c1",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-01"
+        },
+        "family": "gold",
+        "goal": "Craft a golden axe",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden axe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-01"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:4df3578011c8a54d49d6cdc03a85652155e46bae36cd5c0fd29375a40f4f6e36",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-02"
+        },
+        "family": "gold",
+        "goal": "Craft a golden sword",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden sword",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-02"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:92ed6da21810baa69e81131531aa66d4044fa826ce3905f6f8220c1cab7ceee8",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-03"
+        },
+        "family": "gold",
+        "goal": "Craft a golden hoe",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden hoe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-03"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:7fd3ef67560004ae1e3bec9b944502e89a2bef77d493a495822a7e09aefdc8d9",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-04"
+        },
+        "family": "gold",
+        "goal": "Craft a golden apple",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden apple",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-04"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:5e6902c00665bc7a6da919c7cead2365fb0c53deaab391e7962c7b4356a79351",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-05"
+        },
+        "family": "gold",
+        "goal": "Craft a golden carrot",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a golden carrot",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-05"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:d52a2461e7c24a4c16b2fdb14f52846ec3d0d033a31df277b132713626e2262d",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-05"
+    },
+    {
+      "content": {
+        "context": "task_type=smelt; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "gold-06"
+        },
+        "family": "gold",
+        "goal": "Smelt gold ore into gold ingot",
+        "max_seconds": 600.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Smelt gold ore into gold ingot",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "gold-06"
+      },
+      "family": "gold",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:e06501b1b7f1ea3d2c29bb0cb43df5d8c29bb58ab811d92383805e7ead59baa1",
+        "MineEvolve/src/mineevolve/conf/benchmark/gold.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "gold-06"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-00"
+        },
+        "family": "diamond",
+        "goal": "Dig down and mine a diamond",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Dig down and mine a diamond",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-00"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:d39938e9972399292bc208323a59f946cc9d90a163e0628db973163ec622f69e",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-01"
+        },
+        "family": "diamond",
+        "goal": "Craft a diamond pickaxe",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a diamond pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-01"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:8e10f45d9e4d83a2b1910b437dea3c833393ae60a7dd509d95747fb92f3f97d5",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-02"
+        },
+        "family": "diamond",
+        "goal": "Craft a diamond axe",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a diamond axe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-02"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:7d3ae8d582396112b9737f443f1577b4935934da4ba3d36349bb1dcae01c4ee8",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-03"
+        },
+        "family": "diamond",
+        "goal": "Craft a diamond shovel",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a diamond shovel",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-03"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:6006c035721b35868abb955c88b2df58664d8ccb8b4aefe5efd8d53ec4029b5b",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-04"
+        },
+        "family": "diamond",
+        "goal": "Craft a diamond hoe",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a diamond hoe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-04"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:60ced2d2386c920deb351df6b45788a584bc5b88521c15de0287044f99f3bcd6",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-05"
+        },
+        "family": "diamond",
+        "goal": "Craft a diamond sword",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a diamond sword",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-05"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:f6ee11af9e331ebfd4194ee5712b3e3b0d004d5306a7d923811d7a41634fdca6",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "diamond-06"
+        },
+        "family": "diamond",
+        "goal": "Craft a jukebox",
+        "max_seconds": 1800.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a jukebox",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "diamond-06"
+      },
+      "family": "diamond",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:3744f37d54c561805c1e874d7edfc26a704a2417636afe966e5221baa73bd2fe",
+        "MineEvolve/src/mineevolve/conf/benchmark/diamond.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "diamond-06"
+    },
+    {
+      "content": {
+        "context": "task_type=mine; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-00"
+        },
+        "family": "redstone",
+        "goal": "Mine redstone ore using an iron pickaxe",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Mine redstone ore using an iron pickaxe",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-00"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:10bfb06a38b090d1cec476cc658a9f4b3f7d817d2e0d2191c242d9b6b061a843",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-01"
+        },
+        "family": "redstone",
+        "goal": "Craft a redstone torch",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a redstone torch",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-01"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:6af6e47600ed1a43b7f64d17dab21415fb3ea65d1498270c31056ffd1c4beb30",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-02"
+        },
+        "family": "redstone",
+        "goal": "Craft a redstone repeater",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a redstone repeater",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-02"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:3cec48c8b040a36088a5d0185ab97e1d062570cb18ea983e0da845c632091f03",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-03"
+        },
+        "family": "redstone",
+        "goal": "Craft a redstone comparator",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a redstone comparator",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-03"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:5b49b72e7d1046c698ea8d22261a69b09157877d9525f1813642c54a4ae31b17",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-04"
+        },
+        "family": "redstone",
+        "goal": "Craft a piston",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a piston",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-04"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:567bc7c1a6d9560dcb2b426c899d6cf0bf4431ec26c968f75d6fa6ff6141b5cb",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "redstone-05"
+        },
+        "family": "redstone",
+        "goal": "Craft a clock",
+        "max_seconds": 900.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a clock",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "redstone-05"
+      },
+      "family": "redstone",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:ed4d94f35e03d8092a6839d67c150549188ba4df3be8efb6eb8980e86705babd",
+        "MineEvolve/src/mineevolve/conf/benchmark/redstone.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "redstone-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-00"
+        },
+        "family": "armor",
+        "goal": "Craft a leather helmet",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a leather helmet",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-00"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:423eddfb7169d790585120ee796265854b956caa981663ba6680ec6b3e4f21d8",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-00"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-01"
+        },
+        "family": "armor",
+        "goal": "Craft a leather chestplate",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a leather chestplate",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-01"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:079bcdc15dc3bf32b1bbcfecaed1c6c541c54342a19454b98bb77f63596dc3f8",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-01"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-02"
+        },
+        "family": "armor",
+        "goal": "Craft leather leggings",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft leather leggings",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-02"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:06d79628d5e817c24930e17248069915310de6e18a6c27bc3eaca74c1ed09e5d",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-02"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-03"
+        },
+        "family": "armor",
+        "goal": "Craft leather boots",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft leather boots",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-03"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:20056310709a298905e5a85a0b5c1002758987ef6899e805d67f86ed7c75480f",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-03"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-04"
+        },
+        "family": "armor",
+        "goal": "Craft an iron helmet",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron helmet",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-04"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:dae322e9d5906067bbe539c99448a5b01bc00c1af3047ba92278b4e9593f1422",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-04"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-05"
+        },
+        "family": "armor",
+        "goal": "Craft an iron chestplate",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft an iron chestplate",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-05"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:72e12b3c2072de28897fc9d23f8a6dfe47dbe504a825c8ee7399d89ea2ad7927",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-05"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-06"
+        },
+        "family": "armor",
+        "goal": "Craft iron leggings",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft iron leggings",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-06"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:6cc38e97655bcdc07ed341dc09dda5d6a3ba8b60e2d4df5004c7fd0e68d3ad02",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-06"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-07"
+        },
+        "family": "armor",
+        "goal": "Craft iron boots",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft iron boots",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-07"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:ff80c076ab6c269a16a4d78ddc8d014e03c0329b5ed26977b484a74bd54c9c13",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-07"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-08"
+        },
+        "family": "armor",
+        "goal": "Craft a shield",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a shield",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-08"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:dc8ce4c6435201552625fb6f634ba6bbbe6b718aae15a310311e681d1a23c75c",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-08"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-09"
+        },
+        "family": "armor",
+        "goal": "Craft a turtle shell helmet",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Craft a turtle shell helmet",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-09"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:9c469ea379c6042498581211efa1dabc273ac68d10c21a91e731f32797cfc03e",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-09"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-10"
+        },
+        "family": "armor",
+        "goal": "Wash a leather chestplate in a cauldron",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Wash a leather chestplate in a cauldron",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-10"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:6f48b47edf7ce69ed5da0fb8f45b475ed503b5017f6bea1fc0030f4a96fc5aa3",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-10"
+    },
+    {
+      "content": {
+        "context": "task_type=craft; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-11"
+        },
+        "family": "armor",
+        "goal": "Repair an iron helmet at a smithing table",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Repair an iron helmet at a smithing table",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-11"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:fb9b709bc4e733719b6fc43a1a6e5ed93d33431841535cc89482b996ec70e2d3",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-11"
+    },
+    {
+      "content": {
+        "context": "task_type=kill; preferred_biome=plains",
+        "environment_setup": {
+          "minecraft": {
+            "allow_mob_spawn": true,
+            "always_night": false,
+            "biome": "plains",
+            "dimension": "overworld",
+            "initial_inventory": [],
+            "initial_mobs": [],
+            "schema": "noetrium.minecraft-task-setup.v2",
+            "start_at_night": false,
+            "weather": null
+          },
+          "pairing_id": "benchmark.mineevolve-long-horizon-70.common-substrate.v1",
+          "world_pairing_key": "armor-12"
+        },
+        "family": "armor",
+        "goal": "Kill a cow to obtain leather",
+        "max_seconds": 1500.0,
+        "official_evaluator": {
+          "semantics": "final inventory item-name token occurs in lowercased goal; wood/log/tree additionally accepts any *_log",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded"
+        },
+        "success": {
+          "goal": "Kill a cow to obtain leather",
+          "kind": "inventory_goal_token_match",
+          "source": "external/official/MineEvolve/src/mineevolve/main.py::_episode_succeeded",
+          "wood_aliases": [
+            "log",
+            "oak_log",
+            "wood"
+          ]
+        },
+        "task_id": "armor-12"
+      },
+      "family": "armor",
+      "lineage_refs": [
+        "https://github.com/xzw-ustc/MC-MineEvolve.git@a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+        "source-content-sha256:3a868c52ee07e737b64b89a7fc22c853e607845b256efc56c8d6364673e57f26",
+        "MineEvolve/src/mineevolve/conf/benchmark/armor.yaml"
+      ],
+      "revision_id": "a0a5f9b36626fd544dfd3c05e5ec27a1c1b48081",
+      "schema_id": "mineevolve.long_horizon.v1",
+      "task_id": "armor-12"
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import os
+from pathlib import Path
+
+
+@dataclass(frozen=True, slots=True)
+class LinuxProcessFacts:
+    start_identity: str
+    executable: str
+    argv: tuple[str, ...]
+    cwd: str
+    environment: dict[str, str]
+    process_group_id: int
+    parent_pid: int
+
+
+class LinuxProcfsReader:
+    """Read-only /proc view. Signal/spawn authority deliberately lives elsewhere."""
+
+    def __init__(self, root: Path = Path("/proc")) -> None:
+        self.root = root
+
+    def _process_directory(self, pid: int) -> Path:
+        """Resolve a process visible through a nested Linux PID namespace.
+
+        Some supervised runtimes see child PIDs in their namespace while the
+        mounted procfs is owned by an outer namespace.  Linux exposes both
+        identities in ``status:NSpid``.  Prefer the direct path and only scan
+        procfs when the direct namespace path is absent; normal hosts therefore
+        retain the cheap and exact path lookup.
+        """
+
+        direct = self.root / str(pid)
+        if direct.is_dir():
+            return direct
+        for candidate in self.root.iterdir():
+            if not candidate.name.isdigit() or not candidate.is_dir():
+                continue
+            try:
+                status = (candidate / "status").read_text(encoding="utf-8")
+            except (FileNotFoundError, PermissionError, OSError):
+                continue
+            for line in status.splitlines():
+                if not line.startswith("NSpid:"):
+                    continue
+                identities = line.split()[1:]
+                if identities and identities[-1] == str(pid):
+                    return candidate
+                break
+        return direct
+
+    def path(self, pid: int, name: str = "") -> Path:
+        return self._process_directory(pid) / name
+
+    def visible_pid(self, pid: int) -> int:
+        """Return the procfs PID corresponding to a namespace-local PID."""
+
+        return int(self._process_directory(pid).name)
+    def process_ids(self) -> tuple[int, ...]:
+        """Enumerate procfs-visible process ids for recovery-only discovery."""
+
+        values: list[int] = []
+        try:
+            entries = tuple(self.root.iterdir())
+        except FileNotFoundError:
+            return ()
+        for candidate in entries:
+            if candidate.name.isdigit() and candidate.is_dir():
+                values.append(int(candidate.name))
+        return tuple(sorted(values))
+
+    def effective_uid(self, visible_pid: int) -> int:
+        """Return the effective UID for one procfs-visible process."""
+
+        process_directory = self._process_directory(visible_pid)
+        status = (process_directory / "status").read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+        for line in status.splitlines():
+            if not line.startswith("Uid:"):
+                continue
+            identities = line.split()[1:]
+            if len(identities) < 2:
+                break
+            return int(identities[1])
+        raise RuntimeError(
+            f"/proc status missing effective UID: {visible_pid}"
+        )
+
+    def control_pid(self, visible_pid: int) -> int:
+        """Resolve the PID understood by the current PID namespace.
+
+        On ordinary hosts this equals the procfs-visible PID. When procfs
+        belongs to an outer namespace, status:NSpid ends with the PID visible
+        to the innermost/current namespace used by the controller.
+        """
+
+        process_directory = self._process_directory(visible_pid)
+        status = (process_directory / "status").read_text(encoding="utf-8")
+        for line in status.splitlines():
+            if not line.startswith("NSpid:"):
+                continue
+            identities = line.split()[1:]
+            if identities:
+                return int(identities[-1])
+            break
+        return int(visible_pid)
+
+    def alive_pid(self, pid: int) -> bool:
+        """Return whether a process generation is still execution-live.
+
+        ``kill(pid, 0)`` proves only that a PID exists. A zombie still has a
+        numeric PID but can no longer execute or own physical work; treating it
+        as live makes crash-recovered supervisors wait forever when they no
+        longer hold the original ``Popen`` wait handle.
+        """
+
+        try:
+            process_directory = self._process_directory(pid)
+            fields = self._stat_fields_from_directory(process_directory)
+        except (FileNotFoundError, ProcessLookupError):
+            return False
+        except PermissionError:
+            # Preserve fail-closed semantics when procfs cannot prove exit.
+            return True
+        except OSError:
+            return True
+        return bool(fields) and fields[0] != "Z"
+
+    @staticmethod
+    def _stat_fields_from_directory(process_directory: Path) -> list[str]:
+        stat = (process_directory / "stat").read_text(encoding="utf-8")
+        close = stat.rfind(")")
+        if close < 0:
+            raise RuntimeError("invalid /proc stat format")
+        fields = stat[close + 2 :].split()
+        if len(fields) <= 19:
+            raise RuntimeError("/proc stat missing required fields")
+        return fields
+
+    def _start_identity_from_directory(self, process_directory: Path) -> str:
+        fields = self._stat_fields_from_directory(process_directory)
+        start_ticks = fields[19]
+        boot_id_path = self.root / "sys/kernel/random/boot_id"
+        boot_id = boot_id_path.read_text(encoding="utf-8").strip() if boot_id_path.exists() else "unknown-boot"
+        return f"linux-proc:{boot_id}:{start_ticks}"
+
+    @staticmethod
+    def _cmdline_from_directory(process_directory: Path) -> tuple[str, ...]:
+        raw = (process_directory / "cmdline").read_bytes()
+        return tuple(part.decode("utf-8", errors="surrogateescape") for part in raw.split(b"\x00") if part)
+
+    @staticmethod
+    def _environment_from_directory(process_directory: Path) -> dict[str, str]:
+        raw = (process_directory / "environ").read_bytes()
+        result: dict[str, str] = {}
+        for item in raw.split(b"\x00"):
+            if not item:
+                continue
+            key, sep, value = item.partition(b"=")
+            if not sep:
+                continue
+            result[key.decode("utf-8", errors="surrogateescape")] = value.decode("utf-8", errors="surrogateescape")
+        return result
+
+    def start_identity(self, pid: int) -> str:
+        return self._start_identity_from_directory(self._process_directory(pid))
+
+    def cmdline(self, pid: int) -> tuple[str, ...]:
+        return self._cmdline_from_directory(self._process_directory(pid))
+
+    def environment(self, pid: int) -> dict[str, str]:
+        return self._environment_from_directory(self._process_directory(pid))
+
+    def facts(self, pid: int, *, control_pid: int | None = None) -> LinuxProcessFacts:
+        process_directory = self._process_directory(pid)
+        return LinuxProcessFacts(
+            start_identity=self._start_identity_from_directory(process_directory),
+            executable=str((process_directory / "exe").resolve()),
+            argv=self._cmdline_from_directory(process_directory),
+            cwd=str((process_directory / "cwd").resolve()),
+            environment=self._environment_from_directory(process_directory),
+            process_group_id=os.getpgid(pid if control_pid is None else control_pid),
+            parent_pid=int(self._stat_fields_from_directory(process_directory)[1]),
+        )
+
+
+__all__ = ["LinuxProcessFacts", "LinuxProcfsReader"]

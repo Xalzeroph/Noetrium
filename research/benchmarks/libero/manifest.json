@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "libero",
+  "benchmark": {
+    "benchmark_id": "libero",
+    "title": "LIBERO",
+    "source_uri": "https://libero-project.github.io/",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}

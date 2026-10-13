@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "hugginggpt_paper_tasks",
+  "benchmark": {
+    "benchmark_id": "hugginggpt-paper-tasks",
+    "title": "HuggingGPT Paper-Era Multimodal Task Cut",
+    "source_uri": "https://github.com/microsoft/JARVIS",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image",
+      "audio",
+      "structured"
+    ]
+  }
+}

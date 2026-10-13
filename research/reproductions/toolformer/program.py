@@ -1,0 +1,371 @@
+from __future__ import annotations
+
+from research.reproductions._support import (
+    JsonObject,
+    JsonValue,
+    MethodCall,
+    canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
+)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
+
+from .fidelity import TOOLFORMER_FIDELITY
+
+_MODEL_AGENT = "toolformer.gpt-j"
+TOOLFORMER_PAPER_CAPABILITY_IDS = (
+    "tool.question-answering",
+    "tool.wikipedia-search",
+    "tool.calculator",
+    "tool.calendar",
+    "tool.machine-translation",
+)
+
+
+def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
+    if type(value) is not str or (not allow_empty and not value.strip()):
+        raise ValueError(f"Toolformer {field} must be text")
+    return value
+
+
+def toolformer_initial_state(*, instruction: str) -> JsonObject:
+    return {
+        "instruction": _text(instruction, "instruction"),
+        "generated_text": "",
+        "tool_trace": (),
+        "pending_capability_id": "",
+        "pending_arguments": {},
+        "tool_call_count": 0,
+        "model_call_count": 0,
+        "final_answer": "",
+    }
+
+
+def _model_view(request: MethodCall) -> JsonObject:
+    return {
+        "instruction": request.state.get("instruction"),
+        "generated_text": request.state.get("generated_text", ""),
+        "tool_trace": request.state.get("tool_trace", ()),
+        "api_top_k": TOOLFORMER_FIDELITY.evaluation_api_top_k,
+        "max_api_calls": TOOLFORMER_FIDELITY.evaluation_max_api_calls_per_input,
+        "api_start_token": TOOLFORMER_FIDELITY.api_call_start_token,
+        "api_end_token": TOOLFORMER_FIDELITY.api_call_end_token,
+        "api_result_arrow": TOOLFORMER_FIDELITY.api_result_arrow,
+    }
+
+
+def _parse_model_output(
+    value: JsonValue,
+) -> tuple[str, JsonObject | None, str | None]:
+    if isinstance(value, str):
+        return value, None, value
+    if not isinstance(value, Mapping):
+        raise TypeError("Toolformer model output must be text or object")
+    text = value.get("text", value.get("generated_text", ""))
+    text = _text(text, "generated text", allow_empty=True)
+    raw_call = value.get("api_call")
+    final = value.get("final_answer")
+    final_text = (
+        None
+        if final is None
+        else _text(final, "final answer", allow_empty=True)
+    )
+    if raw_call is None:
+        return text, None, final_text if final_text is not None else text
+    if not isinstance(raw_call, Mapping):
+        raise TypeError("Toolformer api_call must be an object")
+    capability_id = _text(
+        raw_call.get("capability_id"),
+        "api capability_id",
+    )
+    arguments = raw_call.get("arguments", {})
+    if not isinstance(arguments, Mapping):
+        raise TypeError("Toolformer api call arguments must be an object")
+    return (
+        text,
+        {
+            "capability_id": capability_id,
+            "arguments": dict(arguments),
+        },
+        final_text,
+    )
+
+
+_TOOLFORMER_NODE_CONFIG_KEY = "toolformer.decode"
+
+
+def _toolformer_node_config(
+    request: MethodCall,
+) -> tuple[tuple[str, ...], bool]:
+    raw = request.configuration.get(_TOOLFORMER_NODE_CONFIG_KEY)
+    if not isinstance(raw, Mapping):
+        raise RuntimeError("Toolformer node configuration is missing")
+    values = raw.get("tool_capability_ids")
+    if isinstance(values, (str, bytes, bytearray)) or not isinstance(values, Sequence):
+        raise RuntimeError("Toolformer capability configuration is invalid")
+    capabilities = tuple(values)
+    if any(type(row) is not str or not row.strip() for row in capabilities):
+        raise RuntimeError("Toolformer capability configuration is invalid")
+    tools_enabled = raw.get("tools_enabled")
+    if type(tools_enabled) is not bool:
+        raise RuntimeError("Toolformer tools_enabled configuration is invalid")
+    return capabilities, tools_enabled
+
+
+def _record_model(request: MethodCall) -> MethodNodeResult:
+    allowed_capabilities, tools_enabled = _toolformer_node_config(request)
+    allowed = set(allowed_capabilities)
+    text, api_call, final = _parse_model_output(request.previous_value)
+    count = request.state.get("model_call_count", 0)
+    if type(count) is not int or count < 0:
+        raise ValueError("Toolformer model_call_count must be non-negative")
+    model_calls = count + 1
+
+    if not tools_enabled or api_call is None:
+        answer = text if final is None else final
+        return dict(
+            value={"final_answer": answer},
+            state_update={
+                "generated_text": text,
+                "final_answer": answer,
+                "model_call_count": model_calls,
+                "pending_capability_id": "",
+                "pending_arguments": {},
+            },
+            next_node="return",
+        )
+
+    capability_id = _text(
+        api_call.get("capability_id"),
+        "api capability_id",
+    )
+    if capability_id not in allowed:
+        raise ValueError(
+            "Toolformer generated API call escaped capability closure"
+        )
+    tool_calls = request.state.get("tool_call_count", 0)
+    if type(tool_calls) is not int or tool_calls < 0:
+        raise ValueError("Toolformer tool_call_count must be non-negative")
+    if tool_calls >= TOOLFORMER_FIDELITY.evaluation_max_api_calls_per_input:
+        return dict(
+            value={"final_answer": text},
+            state_update={
+                "generated_text": text,
+                "final_answer": text,
+                "model_call_count": model_calls,
+                "pending_capability_id": "",
+                "pending_arguments": {},
+            },
+            next_node="return",
+        )
+    return dict(
+        value={"api_call": api_call},
+        state_update={
+            "generated_text": text,
+            "model_call_count": model_calls,
+            "pending_capability_id": capability_id,
+            "pending_arguments": api_call.get("arguments", {}),
+        },
+        next_node="prepare_tool",
+    )
+
+
+def _prepare_tool(request: MethodCall) -> MethodNodeResult:
+    capability_id = _text(
+        request.state.get("pending_capability_id"),
+        "pending capability_id",
+    )
+    arguments = request.state.get("pending_arguments", {})
+    if not isinstance(arguments, Mapping):
+        raise TypeError("Toolformer pending_arguments must be an object")
+    return dict(
+        value={
+            "capability_id": capability_id,
+            "arguments": dict(arguments),
+        }
+    )
+
+
+def _tool_target(request: MethodCall) -> str:
+    return _text(
+        request.state.get("pending_capability_id"),
+        "pending capability_id",
+    )
+
+
+def _record_tool(request: MethodCall) -> MethodNodeResult:
+    capability_id = _tool_target(request)
+    trace = request.state.get("tool_trace", ())
+    if isinstance(trace, (str, bytes, bytearray)) or not isinstance(trace, Sequence):
+        raise TypeError("Toolformer tool_trace must be a sequence")
+    count = request.state.get("tool_call_count", 0)
+    if type(count) is not int or count < 0:
+        raise ValueError("Toolformer tool_call_count must be non-negative")
+    tool_result = thaw_json(request.previous_value)
+    row: JsonObject = {
+        "capability_id": capability_id,
+        "arguments": request.state.get("pending_arguments", {}),
+        "result": tool_result,
+    }
+    return dict(
+        value=row,
+        state_update={
+            "tool_trace": (*tuple(trace), row),
+            "tool_call_count": count + 1,
+            "pending_capability_id": "",
+            "pending_arguments": {},
+        },
+        next_node="model",
+        checkpoint=True,
+        checkpoint_value={
+            "tool_call_count": count + 1,
+            "capability_id": capability_id,
+        },
+    )
+
+
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
+        value={
+            "final_answer": request.state.get("final_answer", ""),
+            "generated_text": request.state.get("generated_text", ""),
+            "tool_call_count": request.state.get("tool_call_count", 0),
+            "model_call_count": request.state.get("model_call_count", 0),
+            "tool_trace": request.state.get("tool_trace", ()),
+        }
+    )
+
+
+def build_toolformer_method_program(method,
+    tool_capability_ids: Sequence[str] = TOOLFORMER_PAPER_CAPABILITY_IDS,
+    *,
+    tools_enabled: bool = True,
+) -> None:
+    if type(tools_enabled) is not bool:
+        raise TypeError("Toolformer tools_enabled must be boolean")
+    if isinstance(tool_capability_ids, (str, bytes, bytearray)) or not isinstance(
+        tool_capability_ids,
+        Sequence,
+    ):
+        raise TypeError("Toolformer capability closure must be a sequence")
+    tool_capability_ids = tuple(tool_capability_ids)
+    if any(type(value) is not str or not value.strip() for value in tool_capability_ids):
+        raise ValueError("Toolformer capability closure must contain canonical text")
+    if len(tool_capability_ids) != len(set(tool_capability_ids)):
+        raise ValueError("Toolformer capability closure must be unique")
+    if tools_enabled and not tool_capability_ids:
+        raise ValueError("enabled Toolformer requires a tool capability closure")
+    if any(type(row) is not str or not row.strip() for row in tool_capability_ids):
+        raise ValueError("Toolformer capability ids must be canonical text")
+    if len(tool_capability_ids) != len(set(tool_capability_ids)):
+        raise ValueError("Toolformer capability ids must be unique")
+
+    configuration: JsonObject = {
+        "publication_id": TOOLFORMER_FIDELITY.publication_id,
+        "base_model": TOOLFORMER_FIDELITY.base_model,
+        "tools_enabled": tools_enabled,
+        "tool_capability_ids": tool_capability_ids,
+        "api_top_k": TOOLFORMER_FIDELITY.evaluation_api_top_k,
+        "max_api_calls_per_input": (
+            TOOLFORMER_FIDELITY.evaluation_max_api_calls_per_input
+        ),
+    }
+
+    builder = method
+    builder.flow.agent(
+        "model",
+        "toolformer.decode",
+        _MODEL_AGENT,
+        ("record_model",),
+        view=_model_view,
+        max_visits=2,
+    )
+    builder.flow.route(
+        "record_model",
+        "toolformer.decode.record",
+        _record_model,
+        ("prepare_tool", "return") if tools_enabled else ("return",),
+        max_visits=2,
+        configuration={
+            _TOOLFORMER_NODE_CONFIG_KEY: {
+                "tool_capability_ids": tool_capability_ids,
+                "tools_enabled": tools_enabled,
+            }
+        },
+    )
+    if tools_enabled:
+        builder.flow.compute(
+            "prepare_tool",
+            "toolformer.api.prepare",
+            _prepare_tool,
+            ("tool",),
+            max_visits=1,
+        )
+        builder.flow.dynamic_capability(
+            "tool",
+            "toolformer.api.execute",
+            tool_capability_ids,
+            _tool_target,
+            ("record_tool",),
+            effect='reconcilable',
+            max_visits=1,
+            evidence=("toolformer.api-effect",),
+        )
+        builder.flow.compute(
+            "record_tool",
+            "toolformer.api.record",
+            _record_tool,
+            ("model",),
+            max_visits=1,
+        )
+    builder.flow.finish("return", "toolformer.result", _return_result)
+    builder.contract.configure(configuration)
+    builder.contract.requires(*tool_capability_ids if tools_enabled else ())
+    builder.contract.policy(
+        execution='checkpointable',
+        evidence=(
+                "toolformer.model-decode",
+                "toolformer.api-decision",
+                "toolformer.api-effect",
+            )
+            if tools_enabled
+            else (
+                "toolformer.model-decode",
+                "toolformer.api-decision",
+            ),
+        metrics=(
+            "task_success",
+            "tool_call_count",
+            "model_call_count",
+        ),
+        artifacts=("toolformer_tool_trace",),
+    )
+    return builder
+
+
+METHOD_CONFIGURER = build_toolformer_method_program
+METHOD_ENTRYPOINT = "model"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = [
+    'TOOLFORMER_PAPER_CAPABILITY_IDS',
+    'build_toolformer_method_program',
+    'toolformer_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
+]
+
+METHOD_SPEC = {"method_id": 'toolformer', "version": "paper-protocol", "semantic_contract": 'toolformer' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

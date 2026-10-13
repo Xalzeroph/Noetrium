@@ -1,0 +1,18 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "jarvis1_offline",
+  "benchmark": {
+    "benchmark_id": "jarvis1-offline-185",
+    "title": "JARVIS-1 Public Offline 185-Task Evaluation Cut",
+    "source_uri": "https://github.com/CraftJarvis/JARVIS-1",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}

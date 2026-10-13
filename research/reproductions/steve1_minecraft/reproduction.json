@@ -1,0 +1,191 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "steve1_minecraft",
+  "package_digest": "5a2085a118a9ff115b1c616f7d2942e1e1f4c6ab5ce087bff3c8f5630b7127fa",
+  "definition_digest": "6e6258e199773f1835bc169c59396b250821eb0f7c2084fed0af348595443ee6",
+  "source_registry_digest": "365b9a6eac2c92f89fc90b3802a0fdbdcf92ad106758f8a518a664be076f0881",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "steve-1",
+    "title": "STEVE-1: A Generative Model for Text-to-Behavior in Minecraft",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023 / official paper-consistent commit 874cf9b808c9dd0a5d4446ef2e008e3789c55c57",
+    "identity_digest": "b69380439972878a22fae74050e49a9ac09b6886440dffd630cb53562f6dfac5"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-agent",
+      "minecraft",
+      "vision-language-control"
+    ],
+    "families": [
+      "goal_conditioned_control",
+      "minecraft_agent",
+      "vision_language_action"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "steve1-paper-prompts"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "environment/minecraft",
+      "execution/workflow",
+      "model/multimodal",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "MineCLIP-latent goal conditioning",
+      "classifier-free-guided recurrent VPT policy",
+      "stochastic low-level keyboard/mouse action sampling",
+      "text-to-latent prior conditioning",
+      "visual-prompt latent conditioning"
+    ],
+    "platform_owned": [
+      "NoetriumGraph execution and checkpoints",
+      "content-addressed goal embeddings and recurrent controller state",
+      "model weight/provider binding",
+      "raw-pixel Minecraft environment provider",
+      "trajectory/effect evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/Shalev-Lifshitz/STEVE-1"
+    ],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html"
+    ],
+    "catalog_digest": "4a4cb47ceeb65b958ef8506c40fb5e699138fdccdfaee556232e2a255e00775b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2023",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2023,
+      "publication_id": "steve1-neurips-2023",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
+      "revision": "NeurIPS 2023 Main Conference",
+      "content_sha256": null,
+      "lane_digest": "82c9c819419b61d53842eac4efb2e312b2b24be7b89413bb72abd0191d8933b0"
+    },
+    {
+      "lane_id": "official_paper_consistent",
+      "kind": "official_executable",
+      "repository": "https://github.com/Shalev-Lifshitz/STEVE-1",
+      "commit": "874cf9b808c9dd0a5d4446ef2e008e3789c55c57",
+      "artifacts": [
+        "run_agent/1_gen_paper_videos.sh",
+        "run_agent/2_gen_vid_for_text_prompt.sh",
+        "steve1/MineRLConditionalAgent.py",
+        "steve1/config.py",
+        "steve1/embed_conditioned_policy.py",
+        "steve1/run_agent/programmatic_eval.py",
+        "steve1/run_agent/run_agent.py",
+        "train/3_train.sh",
+        "train/4_train_prior.sh"
+      ],
+      "lane_digest": "e1fad7dac433ed178aea9048facfe5b43a8d5856ba213f4b8d3a16ddc7eef8ab"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/steve1_minecraft/benchmark.py",
+      "declaration_digest": "79c92ce7e773cd568ec025e7abfea477f0906e2b423cc657922093659507939d",
+      "content_sha256": "f9b0a85d9724872daaf109010ab4999c3e58292121155627caa3bc55c540c650"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/steve1_minecraft/fidelity.py",
+      "declaration_digest": "df96f794a44a7cbb34b6bc59ff7e3eb523ad5ff468d3feadc13b9e7cfe01b244",
+      "content_sha256": "b2f4c9a2fe55d2bd17b152c6ce6e5084bb98c26ce1f068735a3ec4be79497ab3"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/steve1_minecraft/program.py",
+      "declaration_digest": "42798aeae968deed1af8ff3af0fe7d157cdc584c9e50d9b990449396699f1f96",
+      "content_sha256": "3be365987e013f508f6f37d5ded419eaccc5fa7290206f859b02b2301ed27dad"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/steve1_minecraft/study.py",
+      "declaration_digest": "fd314b4624fe1db8699ed198d5f990f78cda7570da0fb4b0f999f25da099d80d",
+      "content_sha256": "0b6e1cc30f2764cb8ec50c561960c90e3bed261f8711d1ce3b7973b2d47bc41e"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/steve1_minecraft/source.py",
+      "declaration_digest": "2a42f3ee27ebdb87f853035c8b9389ce36c4c24b013c9bf9a22e222c73e84478",
+      "content_sha256": "6afa84c5aab1dce9add07ef4b778830d1cff65efb0712832c07e372319912f7c"
+    }
+  ],
+  "primary_executable": "research/reproductions/steve1_minecraft/program.py",
+  "reported_results": [
+    {
+      "claim_id": "steve1_early_game_completed_tasks",
+      "metric_id": "robustly_completed_task_count",
+      "value": 12,
+      "qualifiers": {
+        "evaluation_task_count": 13,
+        "scope": "early-game-evaluation-suite",
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "claim_digest": "a9001853189c451870b767bc4c7f0d626f04eaa9797b832620f75d907c8af2a4"
+    },
+    {
+      "claim_id": "steve1_training_cost",
+      "metric_id": "reported_training_cost_usd",
+      "value": 60,
+      "qualifiers": {
+        "wording": "just-$60-to-train",
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "claim_digest": "01c4fa5623c6c64a7d1a08c526709ab26a7a722a1e9b9b112678077712f3d04d"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "steve1_previous_minecraft_instruction_baselines",
+      "description": "Previous open-ended Minecraft instruction-following baselines compared in the STEVE-1 paper.",
+      "qualifiers": {
+        "source": "NeurIPS-2023 FMDM workshop paper"
+      },
+      "baseline_digest": "4523eab9cba45bc5dac4658353620c4e0ec705df0e0866ee6cd90708f0efd386"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Formal numerical claims require immutable VPT, MineCLIP, STEVE-1 policy and prior weight artifacts plus the paper-era MineRL runtime.",
+    "The released repository exposes 11 named paper prompts for both text and visual conditioning (22 executable cells), but does not expose the complete identity of the separate 13-task early-game result suite; that numerical claim remains unmatched rather than fabricated."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "execution_authority_required",
+    "program_id": "steve1_minecraft",
+    "program_digest": "dc83fb87495f6c204baa0b2e6c82cbe650b47c8d7855aed7c93cde5ebbbc9f2c",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "7e4df8993df788bc9889a5f015694b07dc62420f837095a34859268707097089"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

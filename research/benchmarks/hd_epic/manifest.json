@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "hd_epic",
+  "benchmark": {
+    "benchmark_id": "hd-epic",
+    "title": "HD-EPIC",
+    "source_uri": "https://github.com/hgaurav2k/HD-EPIC",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "memevolve",
+  "package_digest": "25fd79496dda8f4f97589107469170c4fbfef28d1457058ac4a270291ec452b1",
+  "definition_digest": "3297eeb5372d74c65d6e4b4fe61b8f801ba514c521c21eea17ce94aabd47a952",
+  "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "memevolve",
+    "title": "MemEvolve: Meta-Evolution of Agent Memory Systems",
+    "paper_uri": "https://arxiv.org/abs/2512.18746",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "f420091746fb65776e285fa476a347e16fdaef80bdf5f576cd5e99d2c9f366dc"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "self-improvement"
+    ],
+    "families": [
+      "memory",
+      "meta_search",
+      "self_evolution"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "evomembench",
+      "memoryarena"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "data/state",
+      "execution",
+      "experimentation/workbench",
+      "participant/method"
+    ],
+    "method_owned": [
+      "memory architecture search space",
+      "memory meta-evolution policy"
+    ],
+    "platform_owned": [
+      "experiment workbench",
+      "lineage",
+      "method execution",
+      "state storage"
+    ],
+    "reference_repositories": [
+      "https://github.com/bingreeky/MemEvolve"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "5ebdf6ceba4d3d5e6e3b36732ccea08eb418704f57510032489802a4d7c44f99"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/bingreeky/MemEvolve",
+      "commit": "75e6b1a32f94066f1fcc44f3a1dfae6bd537c6d1",
+      "artifacts": [],
+      "lane_digest": "4f545c49603d18f388b76b877a6620dc4784b4e7e10caa779472851a05a33486"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/memevolve/fidelity.py",
+      "declaration_digest": "9196ef7bf7079199c8dbfdba8608bbb9e7aac22b4c125a5c7a6f8686c1f5f0bc",
+      "content_sha256": "25e10cf1743b8499bda4d3ae75dff78ccddb3261fc401c6dc83cfa5aa538c235"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/memevolve/program.py",
+      "declaration_digest": "72b1338481d40bd99d6d6fc58836f84734532fbbdb4c6347a64c3f5d1c0cbf00",
+      "content_sha256": "62ab2dc7303760e40323ff60a79c40e6134e408b2530e656423f1e316fe0a41d"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/memevolve/study.py",
+      "declaration_digest": "f99efcdf65c4ffd90f215782b5c9c724d3df72f8f3953b1776065234a28dc32e",
+      "content_sha256": "534eee79a0ea6bf1488861d25df085bd92fa5c9ab27570c8f0e7a493289d28b5"
+    }
+  ],
+  "primary_executable": "research/reproductions/memevolve/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "memevolve",
+    "program_digest": "01d39fbafbc3f7458641015981cc744d1d69df33f01a630b700fafab178bd4b4",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'evomembench' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_memevolve_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

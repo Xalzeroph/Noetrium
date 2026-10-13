@@ -1,0 +1,227 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "vima_embodied",
+  "package_digest": "56777e605e847cfcf9f2c2aa56d6dca7ec860e38ae219344b2b5550505eec6d9",
+  "definition_digest": "62f4dca97f46a836811bc561db01f6c0f36f911b2d67365715e2385e434b5a5e",
+  "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "vima",
+    "title": "VIMA: Robot Manipulation with Multimodal Prompts",
+    "paper_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
+    "year": 2023,
+    "paper_revision": "ICML 2023 camera-ready / VIMA policy a16536f55780738ec2ce932f882f15bc011d7307 / VIMA-Bench 224c2d870d6063d90215201ba42d4211ddc957d7",
+    "identity_digest": "407f8d1fbd5158c526b87e1191cfdfc6fd642a7b186d5f3902d7a3bdc1d1bc48"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "multimodal"
+    ],
+    "families": [
+      "autoregressive_control",
+      "embodied",
+      "multimodal_prompting",
+      "object_centric_policy",
+      "robot_manipulation"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "vima-bench"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "environment/embodied",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "autoregressive observation/action-token interleaving",
+      "camera-ready action de-discretization semantics",
+      "interleaved language/object prompt sequence semantics",
+      "object-centric observation history semantics",
+      "six-component discretized pick/place action policy"
+    ],
+    "platform_owned": [
+      "NoetriumGraph host and journal authority",
+      "benchmark/study orchestration",
+      "effect evidence",
+      "embodied environment execution",
+      "model serving and policy execution",
+      "multimodal tensor content identity and transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/vimalabs/VIMA",
+      "https://github.com/vimalabs/VIMABench"
+    ],
+    "reference_publications": [
+      "https://proceedings.mlr.press/v202/jiang23b.html"
+    ],
+    "catalog_digest": "efe7f2a9a1e4d83d2b1cd976b749fdc582d2509f04037695ce6ac771d9549527"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "benchmark_camera_ready",
+      "kind": "official_executable",
+      "repository": "https://github.com/vimalabs/VIMABench",
+      "commit": "224c2d870d6063d90215201ba42d4211ddc957d7",
+      "artifacts": [
+        "README.md",
+        "scripts/data_generation",
+        "scripts/oracle",
+        "vima_bench",
+        "vimasim"
+      ],
+      "lane_digest": "38298a1e437d9a38bd87f385374334a88d343f09acd1fd14b1735e4dbc28ecc2"
+    },
+    {
+      "lane_id": "icml_2023_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICML",
+      "year": 2023,
+      "publication_id": "vima-icml-2023",
+      "publication_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
+      "revision": "ICML 2023 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "ae3ba3d4b35d033f4e6267bcc33b83a2f5690ce6df2d99460b588b993e2447f5"
+    },
+    {
+      "lane_id": "policy_camera_ready",
+      "kind": "official_executable",
+      "repository": "https://github.com/vimalabs/VIMA",
+      "commit": "a16536f55780738ec2ce932f882f15bc011d7307",
+      "artifacts": [
+        "scripts/example.py",
+        "vima/nn/action_decoder/action_decoder.py",
+        "vima/nn/action_decoder/dists.py",
+        "vima/nn/action_embd",
+        "vima/nn/obj_encoder",
+        "vima/nn/prompt_encoder",
+        "vima/nn/seq_modeling",
+        "vima/policy/vima_policy.py"
+      ],
+      "lane_digest": "9a4ef7efd91d469c15920e0841e6bea20037cec33ab1aaed5f1066b5f604f7c6"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/vima_embodied/benchmark.py",
+      "declaration_digest": "ec50fad6d922faead04028a97b6e898358702b2a404cbd66240c16265dc7b804",
+      "content_sha256": "6510089182824ce8b307ef5bc177111a6718057bdba1f9e86bbd2ad1c42cbccd"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/vima_embodied/fidelity.py",
+      "declaration_digest": "90fe0ba92b82723b7c441d804a8458326f8b9d246fee504064e3e49ef577f927",
+      "content_sha256": "411208fbf724b43d95ceb21086a8df95fcd6d0d7c2ba2e46618a5bad3c0f894d"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/vima_embodied/program.py",
+      "declaration_digest": "c48b509179323a98d984b27a2db0ab077bb47dc6294e685d854911bcda4b2807",
+      "content_sha256": "2da59447fda853eb17f6a6e99f199ac7813fdea6710614c02cefe812fc64253a"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/vima_embodied/study.py",
+      "declaration_digest": "21412ffef47bbeae69b82812c3ab02453172e65eb77442fdde591e3ec4472ac3",
+      "content_sha256": "fed6e6cc58ca11d96836227984652610c6de9a77a83594ba6b44a7e8334a889d"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/vima_embodied/policy.py",
+      "declaration_digest": "0c80a47cbb46d1ac9a580bf13e291ae11e7826ac1fa982a316a01e3f01182298",
+      "content_sha256": "37f53bf5506fb7f4891c0225df5041a193024cb5c9598005e620686a47e2e08a"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/vima_embodied/source.py",
+      "declaration_digest": "642190318ea2fece4fc68ee493dca27d5aed774601ecf9a6bf09d4c77e2bb1c4",
+      "content_sha256": "fcb212e7044a06aa5a71e0072ff27e1bcdd1b21e2577c22d012ddc9f51d41192"
+    }
+  ],
+  "primary_executable": "research/reproductions/vima_embodied/program.py",
+  "reported_results": [
+    {
+      "claim_id": "vima_hardest_zero_shot_multiplier",
+      "metric_id": "task_success_rate_multiplier",
+      "value": 2.9,
+      "qualifiers": {
+        "scope": "hardest-zero-shot-generalization",
+        "bound": "up-to",
+        "same_training_data": true,
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "0f11de5231e9040b61da34a60db9528e6425d14a996384d9452eaa4784ad04f9"
+    },
+    {
+      "claim_id": "vima_tenfold_less_data_multiplier",
+      "metric_id": "task_success_rate_multiplier",
+      "value": 2.7,
+      "qualifiers": {
+        "training_data_ratio": 0.1,
+        "comparison": "best-competing-variant",
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "5f214573954c9510b6b015c73e89672060a6c065f1a60cebe91bed400c12e37e"
+    },
+    {
+      "claim_id": "vima_expert_trajectory_scale",
+      "metric_id": "expert_trajectory_count",
+      "value": 600000,
+      "qualifiers": {
+        "bound": "greater-than",
+        "source": "ICML-2023 abstract"
+      },
+      "claim_digest": "c7db0053f39fe3c4ea7a9f215cb57784cc3748f6e43fedffcdc8c797fcd831bd"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "vima_competing_policy_variants",
+      "description": "Alternative robot-policy designs and competing variants in the ICML 2023 generalization and data-efficiency comparisons.",
+      "qualifiers": {
+        "source": "ICML-2023 paper evaluation"
+      },
+      "baseline_digest": "95ee8c88fee7838b17465dc6ce5eda10520620f7dc4d76daf5c9e798c94c1497"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "A qualified concrete VIMA-Bench embodied simulator adapter is still required for formal environment execution.",
+    "The paper specifies multiple test episodes but the complete paper-result episode seed/count schedule is not content-addressed in the audited camera-ready executable; the formal cut therefore freezes the official seed-42 executable protocol without claiming matched aggregate results.",
+    "Full checkpoint-level result reproduction requires immutable released policy checkpoints and the camera-ready observation/prompt frontend."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "execution_authority_required",
+    "program_id": "vima_embodied",
+    "program_digest": "cc0cd10abcbe025bc3143b486b513f3ecbff9bb1a6df34c7b414eb704aa013de",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "0d402d991ae4211d8ab184a7030a1ebc8bcf437f438075875e1e0cd94b11da3f"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

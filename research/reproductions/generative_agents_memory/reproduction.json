@@ -1,0 +1,157 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "generative_agents_memory",
+  "package_digest": "a8fdbed3cc05c7013a84deaa7bfb2fccd67693e8c6a051e11b4b6ecb57ba3fd4",
+  "definition_digest": "704051627998c77ae36472baf6ec40a4cf3b4c932cb2400ec00954290be4d0eb",
+  "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "generative-agents",
+    "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+    "paper_uri": "https://uist.acm.org/2023/proceedings/",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "fb80a64896170cd9524cd20766511043130f08065babcc70a553ed6857713901"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multi-agent",
+      "social-economic"
+    ],
+    "families": [
+      "memory",
+      "multi_agent",
+      "planning",
+      "reflection"
+    ],
+    "priority": 2,
+    "benchmark_ids": [
+      "generative-agents-smallville"
+    ],
+    "platform_pressure": [
+      "data/projection",
+      "data/query",
+      "data/state",
+      "execution/workflow",
+      "experimentation/study",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "behavior planning semantics",
+      "memory stream scoring",
+      "reflection synthesis"
+    ],
+    "platform_owned": [
+      "durable state",
+      "multi-agent execution",
+      "semantic projection and query",
+      "study matrix",
+      "telemetry"
+    ],
+    "reference_repositories": [
+      "https://github.com/joonspk-research/generative_agents"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "28b1193acded39fefeec282a06c33baba6c93977c79650286135b72977bc2ee2"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/joonspk-research/generative_agents",
+      "commit": "fe05a71d3e4ed7d10bf68aa4eda6dd995ec070f4",
+      "artifacts": [],
+      "lane_digest": "9b0c30ac81871b40fa787953210fe528c3511c3c383d266d96cd0e8d1ca3911b"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/generative_agents_memory/fidelity.py",
+      "declaration_digest": "4e999244f74cb6cd1799b5946296ce603962d8418ad1252d372257b56996ec7a",
+      "content_sha256": "eadabe053f576e9bb2ae9652df3929352fb1f90f1023e6dbfc01c124c8996826"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/generative_agents_memory/program.py",
+      "declaration_digest": "b5823c30ad49453aed1e99dd3ad412fea69fd97e55e32e2cebebb64cf6a3dbfa",
+      "content_sha256": "bd15f47bb0f670e81c0b518f6b90c4b7aab8745d0194af7861a85979d364f3ae"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/generative_agents_memory/study.py",
+      "declaration_digest": "948566e4d79fb43fa2458349f2bc69fb4541917885d8674741321e6f830f2724",
+      "content_sha256": "ca8374f86f7f2b819788b0d6ee558e23db7a3fbbcc33a8e190cda0013e73a900"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/generative_agents_memory/retrieval.py",
+      "declaration_digest": "0a8b9cf6b6076c1fa98d5a82597bc9406577e432c7eb48658c21b13bd8fff1d2",
+      "content_sha256": "db6a57ae069b3a807f76de2a177f6e7bcacc9b1c8039f38d4cdc9059ab7f835e"
+    }
+  ],
+  "primary_executable": "research/reproductions/generative_agents_memory/program.py",
+  "reported_results": [
+    {
+      "claim_id": "generative_agents_full_architecture_believability",
+      "metric_id": "trueskill_mu",
+      "value": 29.89,
+      "qualifiers": {
+        "evaluation": "interview-believability-ranking",
+        "condition": "full-architecture",
+        "participant_count": 100,
+        "source": "UIST 2023 Figure 8"
+      },
+      "claim_digest": "cf5a3eb7148dd4cbdec8a9adceac00da6f165d77d170b2446d05aabb8b5acd44"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "generative_agents_ablations",
+      "description": "UIST 2023 controlled believability ablations used to isolate reflection, planning and memory contributions.",
+      "qualifiers": {
+        "no_reflection_trueskill_mu": 26.88,
+        "no_reflection_or_planning_trueskill_mu": 25.64,
+        "fully_ablated_trueskill_mu": 21.21,
+        "human_crowdworker_trueskill_mu": 22.95,
+        "source": "UIST 2023 Figure 8"
+      },
+      "baseline_digest": "c5c3971afe9008ae02a8fe879302a27226b6dbff70f318725f0bd65a76461ae7"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched UIST social-behavior results still require the exact paper-era Smallville persona/world snapshot, historical hosted model revision, and human believability rater assignment."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_generative_agents_retrieval_v1.py",
+      "content_sha256": "7e4cbf12ab16676264f2d34ef9fff2542d9a35bc4d79682e1c4d708d0d5ba40f"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "execution_authority_required",
+    "program_id": "generative_agents_memory",
+    "program_digest": "351c06cb1851e8aed660dece1cee6a5794e1538865cf5fb622f3d7077ec7cdd2",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "58b95086a4c0ea1faec84f6b15511a642a73a6c18a9729b9c6b7b25292cc72cd"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "ego2web",
+  "benchmark": {
+    "benchmark_id": "ego2web",
+    "title": "Ego2Web",
+    "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+    "environment_kinds": [
+      "web"
+    ],
+    "modalities": [
+      "text",
+      "video",
+      "structured"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "babyai",
+  "benchmark": {
+    "benchmark_id": "babyai",
+    "title": "BabyAI",
+    "source_uri": "https://github.com/mila-iqia/babyai",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

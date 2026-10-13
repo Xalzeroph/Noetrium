@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "moviechat_1k",
+  "benchmark": {
+    "benchmark_id": "moviechat-1k",
+    "title": "MovieChat-1K",
+    "source_uri": "https://huggingface.co/datasets/Enxin/MovieChat-1K-test",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

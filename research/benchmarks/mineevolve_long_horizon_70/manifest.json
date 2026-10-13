@@ -1,0 +1,17 @@
+{
+  "benchmark": {
+    "benchmark_id": "mineevolve-long-horizon-70",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "game_state"
+    ],
+    "source_uri": "https://github.com/xzw-ustc/MC-MineEvolve",
+    "title": "MineEvolve Long-Horizon 70 Native Port"
+  },
+  "package": "mineevolve_long_horizon_70",
+  "schema": "noetrium.benchmark-manifest.v2"
+}

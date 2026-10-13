@@ -1,0 +1,19 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "multiagentbench",
+  "benchmark": {
+    "benchmark_id": "multiagentbench",
+    "title": "MultiAgentBench",
+    "source_uri": "https://github.com/ulab-uiuc/MARBLE",
+    "environment_kinds": [
+      "text_world",
+      "software",
+      "minecraft"
+    ],
+    "modalities": [
+      "text",
+      "structured",
+      "image"
+    ]
+  }
+}

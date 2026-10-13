@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "hm3d_ovon",
+  "benchmark": {
+    "benchmark_id": "hm3d-ovon",
+    "title": "HM3D-OVON",
+    "source_uri": "https://github.com/facebookresearch/habitat-lab",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

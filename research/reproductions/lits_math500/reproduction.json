@@ -1,0 +1,134 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "lits_math500",
+  "package_digest": "09b47f4c11483ff177d3e85c6fe5e38008f93e12cd843f63a1a571622f889817",
+  "definition_digest": "51c9153cde8ace573c3c495a1b1dbc40ebd742e53ae0ed3cdcc50b0d55a7ee38",
+  "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "lits",
+    "title": "LiTS: A Modular Framework for LLM Tree Search",
+    "paper_uri": "https://arxiv.org/abs/2603.00631",
+    "year": 2026,
+    "paper_revision": "arXiv:2603.00631v1 / ACL 2026 Demo",
+    "identity_digest": "31e51150a8bfe2ef1ab1a060d2b07cebb041a94fa833abe9d8b9bd14dd138712"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reasoning",
+      "runtime-systems"
+    ],
+    "families": [
+      "modular_search",
+      "reasoning",
+      "tool_use",
+      "tree_search"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "math500"
+    ],
+    "platform_pressure": [
+      "execution",
+      "experimentation/study",
+      "model/assignment",
+      "model/request",
+      "observability/telemetry"
+    ],
+    "method_owned": [
+      "MCTS/BFS search semantics",
+      "Policy/Transition/RewardModel decomposition",
+      "component registration and composition policy"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "bounded method execution",
+      "measurements and evidence",
+      "named model-role binding"
+    ],
+    "reference_repositories": [
+      "https://github.com/xinzhel/lits-llm"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "a613d8a7d9acec80abf9b2ec604eaabf63a5351a50e9248845178a597bdc01f1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "paper_era_lits_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/xinzhel/lits-llm",
+      "commit": "4f522bb7bf5d5bfd68c42649efe44c566dfa039c",
+      "artifacts": [
+        "demos/lits_benchmark/math_qa.py",
+        "lits/agents/tree/mcts.py",
+        "lits/components/policy/concat.py",
+        "lits/components/reward/generative.py",
+        "lits/components/transition/concat.py"
+      ],
+      "lane_digest": "11789e9a84700bada32e0ccaa014f57cf0d570c4c2c830c6127266e9930da6c5"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/lits_math500/fidelity.py",
+      "declaration_digest": "afa36a91cc566406ece6833409f36e539f7bf1fc6862491a0ab50be547b11223",
+      "content_sha256": "04b936f2f89d762e2160bb8f1d06c7841c00789399fed185628d201c8a5e7964"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/lits_math500/program.py",
+      "declaration_digest": "cd98e4e187fea750ec6aeceac755f6eaec676105cb9644ac1662decc7045b38e",
+      "content_sha256": "bebda338fc06e7fec512e5385b9f03dfae5d18c4288e04b7510261c44e4f71bd"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/lits_math500/study.py",
+      "declaration_digest": "d8ff589b2c868062190b411a48aee1cb05922ba1ab2484091dc81782bfe0934f",
+      "content_sha256": "9639a01644c098db10489c9286a5a7024aba95be5e40dc64fbb8b78e514e4104"
+    }
+  ],
+  "primary_executable": "research/reproductions/lits_math500/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "concrete model identity is intentionally external to the released example and must be declared by an executable study lane",
+      "delta_digest": "bfe25f003531b634eaeb5a10855ce5060d9f7de91586d16b8005b8028c812a16"
+    }
+  ],
+  "blockers": [
+    "the released MATH500 example does not freeze one concrete model provider/revision, so matched paper-result execution requires an explicit model lane selection"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "lits_math500",
+    "program_digest": "c54a30da820b8f1cbc5bf8e8aad469410f337d77b6c4fd57c0401e32b408ab84",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'math500' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

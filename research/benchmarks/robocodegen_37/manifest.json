@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "robocodegen_37",
+  "benchmark": {
+    "benchmark_id": "robocodegen-37",
+    "title": "RoboCodeGen 37",
+    "source_uri": "https://arxiv.org/abs/2209.07753",
+    "environment_kinds": [
+      "software"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "hats_cvpr2026",
+  "package_digest": "a81601c3964d8c47cbf7d8d2c78749d4795c592f560c626372bfe8a5984999c3",
+  "definition_digest": "dbf369e8f9543178f4cc9352880cc5c4fb98c1ea6aa93385139f6f2ec532074b",
+  "source_registry_digest": "6ded210c5feb62419b23855eed7f730eaf0c375454a28473e6137c2d262643f8",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "hats_cvpr2026",
+    "title": "HATS: Hardness-Aware Trajectory Synthesis for GUI Agents",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "f62ee880dd2c53b2804b250655e0194b56f47a2d8ea91ae4c5d83aa0f076df84"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "data-generation",
+      "gui-agent",
+      "hardness-aware-exploration",
+      "mcts",
+      "trajectory-synthesis"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "androidworld",
+      "webarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Estimate semantic ambiguity and under-representation of candidate GUI actions.",
+      "Generate an instruction from the explored action trajectory.",
+      "Inject missing contextual cues until alignment reaches the paper threshold, then admit the trajectory.",
+      "Measure action-level reconstruction recall between instruction replay and source trajectory.",
+      "Replay the synthesized instruction in the environment to reconstruct the trajectory.",
+      "Select and expand GUI states with hardness-driven UCB Monte Carlo Tree Search."
+    ],
+    "platform_owned": [
+      "NoetriumGraph execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/JiuTian-VL/HATS"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "df698ccf037868a462bfffb6ec0277ef9388c8302495579dac16d605755a48fe"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Shao_HATS_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "1b72359c64a384abf06ea75539ec836567e58f269c739cb365fed5de87e907c3"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/JiuTian-VL/HATS",
+      "commit": "8840bd1b7c28c0d04a2733e67fd69ed09f406278",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "9ec69b2ff983f0fb058f63e6f0fea27e6f99ee636485e05080c6c8b9832d7943"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/hats_cvpr2026/benchmark.py",
+      "declaration_digest": "2584a8c5e19eaf212015aeb555c9ccb57bed0a2164eef73b74058da45ed430ed",
+      "content_sha256": "b98b9f307133aabbaafa5d3bdb9321b4f223e6a3f78a2488d54c1185e1472afa"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/hats_cvpr2026/program.py",
+      "declaration_digest": "e8e706dd6a22a3c752a21313cb51491c514e1fc17b116bf2098e3649a65ecec3",
+      "content_sha256": "15159dec02a088ba6320b56a47acdb5823cc898dad5e4d3c9a76384aa097d80e"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/hats_cvpr2026/study.py",
+      "declaration_digest": "3127b63ac482d8354cb6268a0d3d0e0f3d36e632d8e0249d042d67212aed7d29",
+      "content_sha256": "167c1a6636de050662c17b8ea555c68df99b48041254899aac1802eefe1dbe7c"
+    }
+  ],
+  "primary_executable": "research/reproductions/hats_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "hats_androidworld",
+      "metric_id": "androidworld_score",
+      "value": 22.6,
+      "qualifiers": {
+        "benchmark": "AndroidWorld",
+        "unit": "score"
+      },
+      "claim_digest": "481bdbbebb97067b4b5687e136d627b74108f6031f8a8a15fd34dbb1b8ba9ba7"
+    },
+    {
+      "claim_id": "hats_webarena",
+      "metric_id": "webarena_score",
+      "value": 20.6,
+      "qualifiers": {
+        "benchmark": "WebArena",
+        "unit": "score"
+      },
+      "claim_digest": "8bcf19964da88700de47ec0188d1de2d1813b52e079093c8afe74149c3fe8296"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "OS-Genesis",
+      "qualifiers": {},
+      "baseline_digest": "1e007d90b318f997abbe91ea56821a9f68472fce8aca444c63c495cab06f6307"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "uniform trajectory synthesis",
+      "qualifiers": {},
+      "baseline_digest": "41621737d50c9d513e076ee3f7265f24c601756210b04bef73c6f9eba86f54f2"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "paper GUI data-generation baselines",
+      "qualifiers": {},
+      "baseline_digest": "1316641ca4c03b3d05db8e78e3b58f0b8b124e7e22d5dd4d9838c9ddaceea139"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned HATS repository, AndroidWorld/WebArena cuts and synthesis-model identities.",
+    "Training-set downstream gains require regenerated accepted trajectories plus downstream agent-training receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "bc19f66a76a1b8dc4ecb2c692c09686614b6ba3519646481fadd9a452e989c99"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "hats_cvpr2026",
+    "program_digest": "fb934895e4f6667c1e231cac3498a5b61cff7b3dd41746d52ec78aff90fd6ad1",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_ablation_matrix",
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

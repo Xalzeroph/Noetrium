@@ -1,0 +1,241 @@
+{
+  "schema": "noetrium.reproduction.projection.v11",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "voyager_minecraft",
+  "package_digest": "4c207b4cf999c54195e6ac756050ce00e1308f315fdd8021e9c5e81e0c49056b",
+  "definition_digest": "8567683c356b86a44776859220c9f1e6bbd724bcb9be25ec663b630f110f3e42",
+  "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "voyager",
+    "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+    "paper_uri": "https://mlanthology.org/tmlr/2024/wang2024tmlr-voyager/",
+    "year": 2024,
+    "paper_revision": "TMLR 2024 / official paper-release executable commit edeee8383a22b96b54bff51c6cf809306a7b34a3",
+    "identity_digest": "1be46d1273af2f068fbb31634da8adda4abc061f428f7d31bd1142394c775a39"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "game-worlds",
+      "memory",
+      "self-improvement"
+    ],
+    "families": [
+      "curriculum",
+      "embodied",
+      "self_improvement",
+      "skill_library"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "voyager-minecraft"
+    ],
+    "platform_pressure": [
+      "environment/minecraft",
+      "execution/machines",
+      "execution/workflow",
+      "memory",
+      "model/request",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "automatic curriculum",
+      "chest memory update semantics",
+      "curriculum QA cache semantics",
+      "iterative prompting strategy",
+      "self-verification loop",
+      "skill library write and retrieval semantics"
+    ],
+    "platform_owned": [
+      "Machine Journal authority",
+      "MemoryMachine hosting",
+      "Minecraft provider and sandbox mechanics",
+      "NoetriumGraph hosting",
+      "model invocation",
+      "nested Machine composition",
+      "recovery and effect receipts"
+    ],
+    "reference_repositories": [
+      "https://github.com/MineDojo/Voyager"
+    ],
+    "reference_publications": [
+      "https://mlanthology.org/tmlr/2024/wang2024tmlr-voyager/"
+    ],
+    "catalog_digest": "ad8c9e0a96b522bf8c69b4ac1a2fb85ae4ee1b6f3e3ed6c27013768346d22ff5"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_paper_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/MineDojo/Voyager",
+      "commit": "edeee8383a22b96b54bff51c6cf809306a7b34a3",
+      "artifacts": [
+        "skill_library/README.md",
+        "voyager/agents/action.py",
+        "voyager/agents/critic.py",
+        "voyager/agents/curriculum.py",
+        "voyager/agents/skill.py",
+        "voyager/control_primitives",
+        "voyager/env",
+        "voyager/prompts",
+        "voyager/voyager.py"
+      ],
+      "lane_digest": "46051cc3cfdadc93b474a6054783ba835fa5c1e38f76bbee5576217e6dc8a7fe"
+    },
+    {
+      "lane_id": "post_release_compatibility",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/MineDojo/Voyager",
+      "commit": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+      "artifacts": [
+        "requirements.txt",
+        "voyager/agents/action.py",
+        "voyager/agents/critic.py",
+        "voyager/agents/curriculum.py",
+        "voyager/agents/skill.py",
+        "voyager/env/mineflayer/package.json",
+        "voyager/voyager.py"
+      ],
+      "lane_digest": "d4c063ff0beecbeb6043193d641ee195854e44e2aea8bf7c63a4892efc4f1edc"
+    },
+    {
+      "lane_id": "tmlr_2024_final",
+      "kind": "paper_provenance",
+      "venue": "TMLR",
+      "year": 2024,
+      "publication_id": "wang2024tmlr-voyager",
+      "publication_uri": "https://mlanthology.org/tmlr/2024/wang2024tmlr-voyager/",
+      "revision": "TMLR 2024 final paper",
+      "content_sha256": null,
+      "lane_digest": "a90b151c6f7f0ac930c647eec36907a0c8a2dccac996d882cddbf92c9a65b779"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/voyager_minecraft/benchmark.py",
+      "declaration_digest": "37ce346ce07d2b358a99fd6645f68140dae894c8473dc42724ff2f5ea89ccf7c",
+      "content_sha256": "46f2f9598baaa969727e0c4dfa50922d6c06ba23c2ecafc731839829478116cc"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/voyager_minecraft/fidelity.py",
+      "declaration_digest": "1f0ec2b34c8b981c068a0506148d103f1080ab4f77ef08a2c5a81218a811a309",
+      "content_sha256": "8bfafd06a2a443a232511f90e6f68180feab6a71dfc3c71f7707272b18f05a00"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/voyager_minecraft/program.py",
+      "declaration_digest": "ffcf35749c06e5b1ec19466ccffb3be209f0a26a426f44e9f6f6dbe1a64ba78f",
+      "content_sha256": "51dc691f470c1c399c00a0a8a464916f59a78de85024ed7e05943bcf63d6e2f6"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/voyager_minecraft/study.py",
+      "declaration_digest": "c292ce512d0a20016b7c5e598fbc7d6d7704d526e7f81372f1fb32d03af7e7d1",
+      "content_sha256": "1f696e63faade2a71f79a017556f3a054f98c4ed272a4cb9d9dc253479d91052"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/voyager_minecraft/source.py",
+      "declaration_digest": "f40e961995f11502d49266f2610775c6d2f6b4081b5e0a964b33109dc97b3f23",
+      "content_sha256": "12b811dc43f4b48d8cf987e0c7e97d200fdd20f651119d1021d37a0bb5cafeaa"
+    }
+  ],
+  "primary_executable": "research/reproductions/voyager_minecraft/program.py",
+  "reported_results": [
+    {
+      "claim_id": "voyager_unique_items_multiplier",
+      "metric_id": "unique_items_multiplier",
+      "value": 3.3,
+      "qualifiers": {
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "5f586c3aaf2d6d2d2e4ff31ad2f1b224465b4920d064afa0b1401af8e8a0fc6c"
+    },
+    {
+      "claim_id": "voyager_tech_tree_speed_multiplier",
+      "metric_id": "tech_tree_unlock_speed_multiplier",
+      "value": 15.3,
+      "qualifiers": {
+        "bound": "up-to",
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "8ff8c12fe99c79d45e4833afaed528c9bf1f402628545be27876903f0a3507f8"
+    },
+    {
+      "claim_id": "voyager_traversal_distance_multiplier",
+      "metric_id": "traversal_distance_multiplier",
+      "value": 2.3,
+      "qualifiers": {
+        "comparison": "prior-state-of-the-art",
+        "source": "TMLR paper"
+      },
+      "claim_digest": "f92673e199a93c1b6d0bb40a22f9c1c8b57adc0408528bc197b9d993304d3679"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "voyager_prior_minecraft_agents",
+      "description": "Prior Minecraft embodied agents used for the lifelong-learning comparison in the Voyager paper.",
+      "qualifiers": {
+        "source": "TMLR paper evaluation"
+      },
+      "baseline_digest": "55997df076ca4a19fa659fb464825c1dc43045a9d59fa211492e8906fc762ce7"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The paper-release curriculum human-message path uses ambient Python random.random() for independent 0.8 inclusion of warmed-up observation sections. The reproduction preserves that Bernoulli distribution but obtains the realized mask through research.random.bernoulli-mask so the decision and provider receipt are journaled and replayable.",
+      "delta_digest": "85de4c39ee0355b2b194527ee97b7d8f0c76b593a56a49ad7f7ad1bc2d0ea61a"
+    },
+    {
+      "kind": "unresolved",
+      "description": "Voyager executes generated JavaScript together with learned Mineflayer control programs. Noetrium currently has typed Minecraft actions but no qualified arbitrary-program sandbox; the NoetriumGraph therefore declares voyager.minecraft.execute_program as an explicit capability contract rather than treating primitive actions as equivalent.",
+      "delta_digest": "f720cee9f0259f9db9b30bc13ea4436ed61468265ec7c45a99e047054cd9ee09"
+    }
+  ],
+  "blockers": [
+    "qualified sandboxed Mineflayer JavaScript program executor is not yet available",
+    "the paper does not publish the exact Minecraft world seeds for the three lifelong-learning trials; matched-result execution must bind acquired original worlds or a declared substitute seed policy",
+    "exact historical hosted GPT-4/GPT-3.5 serving snapshots are not immutable public model artifacts",
+    "no matched TMLR execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_voyager_curriculum_v1.py",
+      "content_sha256": "ce3d2b8416871b6e7d977e90478882a8336e83e61f47c5ae88c34c69b1696758"
+    },
+    {
+      "path": "tests/test_scientific_web_embodied_fidelity_v1.py",
+      "content_sha256": "1c355192518f9bb7c79ac82d4234260deea7730b84aa0ca3b8470ba230cec3c9"
+    }
+  ],
+  "research": {
+    "surface": "noetrium",
+    "execution_state": "execution_authority_required",
+    "program_id": "voyager_minecraft",
+    "program_digest": "eaeac1466dffd84c785be23029913f10db332f2c0d699890e25eba2a53ab5596",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "3f7944345f5464da9512671d817ac209d6c3553972e0d5bfd4f741b797986746"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

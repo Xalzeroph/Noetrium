@@ -1,0 +1,165 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import math
+from typing import Protocol
+
+from .contracts import ServiceLaunchContract, ServiceProcessIdentity
+from .environment import MaterializedServiceEnvironment
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceReconcileObservation:
+    state_present: bool
+    process: ServiceProcessIdentity | None
+    evidence_refs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceQuiescenceOutcome:
+    contract_digest: str
+    quiescent: bool
+    summary: str
+    evidence_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.contract_digest) is not str
+            or len(self.contract_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.contract_digest)
+        ):
+            raise ValueError(
+                "service quiescence contract digest must be canonical SHA-256"
+            )
+        if type(self.quiescent) is not bool:
+            raise TypeError("service quiescence flag must be bool")
+        if type(self.summary) is not str or not self.summary.strip():
+            raise ValueError("service quiescence summary is required")
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceStartOutcome:
+    contract_digest: str
+    process: ServiceProcessIdentity
+    ready_evidence_ref: str
+    ready_at: float
+    evidence_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(float(self.ready_at)) or self.ready_at <= 0:
+            raise ValueError("service readiness timestamp must be finite and positive")
+
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceStopOutcome:
+    contract_digest: str
+    stopped: bool
+    evidence_refs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceReadyObservation:
+    contract_digest: str
+    process: ServiceProcessIdentity
+    ready_evidence_ref: str
+    ready_at: float
+    evidence_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(float(self.ready_at)) or self.ready_at <= 0:
+            raise ValueError("service readiness timestamp must be finite and positive")
+
+
+
+class ServiceEnvironmentPort(Protocol):
+    @property
+    def digest(self) -> str: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceLaunchPreflightReport:
+    contract_digest: str
+    checks: tuple[tuple[str, bool], ...]
+    errors: tuple[str, ...] = ()
+
+    @property
+    def ready(self) -> bool:
+        return not self.errors and all(passed for _, passed in self.checks)
+
+
+class ServiceLaunchPreflightPort(Protocol):
+    """Validate a frozen service contract before any process-side effect."""
+
+    def validate(
+        self,
+        contract: ServiceLaunchContract,
+        environment: ServiceEnvironmentPort,
+    ) -> ServiceLaunchPreflightReport: ...
+
+
+class ExactServiceRuntimePort(Protocol):
+    """Cross-system semantic Service runtime ABI; no supervisor state escapes."""
+
+    def reconcile_exact(self, contract: ServiceLaunchContract) -> ServiceReconcileObservation: ...
+    def inspect_quiescence_exact(
+        self,
+        contract: ServiceLaunchContract,
+    ) -> ServiceQuiescenceOutcome: ...
+    def quiesce_exact(
+        self,
+        contract: ServiceLaunchContract,
+    ) -> ServiceQuiescenceOutcome: ...
+    def start_exact(self, contract: ServiceLaunchContract) -> ServiceStartOutcome: ...
+    def verify_ready_exact(self, contract: ServiceLaunchContract) -> ServiceReadyObservation: ...
+    def stop_exact(
+        self,
+        contract: ServiceLaunchContract,
+        expected_process: ServiceProcessIdentity,
+    ) -> ServiceStopOutcome: ...
+
+
+class ServiceProcessLivenessPort(Protocol):
+    """Narrow process liveness view exposed to domain-specific readiness probes."""
+
+    def alive(self, process: ServiceProcessIdentity) -> bool: ...
+
+
+class ServiceReadinessProbePort(Protocol):
+    """Domain-specific readiness over a frozen service and liveness-only process view."""
+
+    def wait_ready(
+        self,
+        process: ServiceProcessIdentity,
+        contract: ServiceLaunchContract,
+        liveness: ServiceProcessLivenessPort,
+    ) -> str: ...
+
+
+class ServiceRuntimeFactoryPort(Protocol):
+    """Create one exact service runtime without exposing Runtime implementation topology."""
+
+    def open(
+        self,
+        contract: ServiceLaunchContract,
+        *,
+        environment: MaterializedServiceEnvironment,
+        readiness: ServiceReadinessProbePort,
+        preflight: ServiceLaunchPreflightPort | None = None,
+    ) -> ExactServiceRuntimePort: ...
+
+
+__all__ = [
+    "ExactServiceRuntimePort",
+    "ServiceEnvironmentPort",
+    "ServiceLaunchPreflightReport",
+    "ServiceLaunchPreflightPort",
+    "ServiceProcessLivenessPort",
+    "ServiceReadinessProbePort",
+    "ServiceQuiescenceOutcome",
+    "ServiceReadyObservation",
+    "ServiceReconcileObservation",
+    "ServiceRuntimeFactoryPort",
+    "ServiceStartOutcome",
+    "ServiceStopOutcome",
+]

@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "calvin",
+  "benchmark": {
+    "benchmark_id": "calvin",
+    "title": "CALVIN",
+    "source_uri": "https://github.com/mees/calvin",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "robot_state"
+    ]
+  }
+}
